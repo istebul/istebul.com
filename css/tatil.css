@@ -272,6 +272,7 @@ body.vacation-page {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 44px;
   padding: 10px 18px;
   border-radius: 10px;
   font-weight: 600;
@@ -311,6 +312,7 @@ body.vacation-page {
 }
 
 .btn-sm {
+  min-height: 44px;
   padding: 8px 14px;
   font-size: 0.85rem;
 }
@@ -637,6 +639,10 @@ body.vacation-page {
   flex-wrap: wrap;
 }
 
+.vacation-wizard-actions .btn {
+  min-height: 44px;
+}
+
 .vacation-chip-grid {
   display: flex;
   flex-wrap: wrap;
@@ -646,6 +652,7 @@ body.vacation-page {
 .vacation-chip {
   border: 1px solid rgba(148, 163, 184, 0.36);
   border-radius: 999px;
+  min-height: 44px;
   padding: 8px 14px;
   font-size: 0.85rem;
   background: rgba(15, 23, 42, 0.6);
@@ -1469,4 +1476,47 @@ body.vacation-page {
     flex-wrap: wrap;
     position: relative;
   }
+}
+
+.vacation-results-empty-state {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--vacation-radius, 16px);
+  border: 1px dashed var(--vacation-border, #e2e8f0);
+  background: #f8fafc;
+  color: #475569;
+}
+
+.vacation-results-empty-state h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.vacation-results-empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.housing-results-empty-state {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.housing-results-empty-state h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.housing-results-empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }

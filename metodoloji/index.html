@@ -1,74 +1,242 @@
-<!doctype html>
-<html lang="tr">
+<!DOCTYPE html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Metodoloji | isteBul — Şeffaf Karar Altyapısı</title>
-  <meta name="description" content="isteBul skor ve TCO metodolojisi: kural tabanlı motor, deterministik uyum skoru, AI yalnızca gerekçe. Finansal tavsiye değildir.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Metodoloji | isteBul — Şeffaf Karar Altyapısı ve Skorlama</title>
+  <meta name="description" content="Karar skoru, güven skoru, risk analizi, TCO hesabı, AI executive summary ve partner eşleştirme mantığı. isteBul karar motoru metodolojisi — finansal tavsiye değildir.">
   <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="googlebot" content="index, follow">
   <link rel="canonical" href="https://www.istebul.com/metodoloji/">
+  <link rel="alternate" hreflang="tr" href="https://www.istebul.com/metodoloji/">
+  <link rel="alternate" hreflang="en" href="https://www.istebul.com/en/metodoloji/">
+  <link rel="alternate" hreflang="de" href="https://www.istebul.com/de/metodoloji/">
+  <link rel="alternate" hreflang="ar" href="https://www.istebul.com/ar/metodoloji/">
+  <link rel="alternate" hreflang="it" href="https://www.istebul.com/it/metodoloji/">
+  <link rel="alternate" hreflang="fr" href="https://www.istebul.com/fr/metodoloji/">
+  <link rel="alternate" hreflang="es" href="https://www.istebul.com/es/metodoloji/">
+  <link rel="alternate" hreflang="ja" href="https://www.istebul.com/ja/metodoloji/">
+  <link rel="alternate" hreflang="zh" href="https://www.istebul.com/zh/metodoloji/">
+  <link rel="alternate" hreflang="x-default" href="https://www.istebul.com/metodoloji/">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+    <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
   <meta property="og:locale" content="tr_TR">
   <meta property="og:site_name" content="isteBul">
-  <meta property="og:title" content="Metodoloji | isteBul — Şeffaf Karar Altyapısı">
-  <meta property="og:description" content="isteBul skor ve TCO metodolojisi: kural tabanlı motor, deterministik uyum skoru, AI yalnızca gerekçe. Finansal tavsiye değildir.">
+  <meta property="og:title" content="Metodoloji | isteBul — Şeffaf Karar Altyapısı ve Skorlama">
+  <meta property="og:description" content="Karar skoru, güven skoru, risk analizi, TCO hesabı, AI executive summary ve partner eşleştirme mantığı. isteBul karar motoru metodolojisi — finansal tavsiye değildir.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.istebul.com/metodoloji/">
   <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Metodoloji | isteBul — Şeffaf Karar Altyapısı">
-  <meta name="twitter:description" content="isteBul skor ve TCO metodolojisi: kural tabanlı motor, deterministik uyum skoru, AI yalnızca gerekçe. Finansal tavsiye değildir.">
-  <link rel="stylesheet" href="/css/auto.css?v=4">
-  <link rel="stylesheet" href="/css/corporate-pages.css?v=1">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Karar altyapısı metodolojisi","description":"isteBul skor ve TCO metodolojisi: kural tabanlı motor, deterministik uyum skoru, AI yalnızca gerekçe. Finansal tavsiye değildir.","author":{"@type":"Organization","name":"isteBul"},"publisher":{"@type":"Organization","name":"isteBul","url":"https://www.istebul.com"},"inLanguage":"tr-TR"}</script>
+  <meta name="twitter:title" content="Metodoloji | isteBul — Şeffaf Karar Altyapısı ve Skorlama">
+  <meta name="twitter:description" content="Karar skoru, güven skoru, risk analizi, TCO hesabı, AI executive summary ve partner eşleştirme mantığı. isteBul karar motoru metodolojisi — finansal tavsiye değildir.">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <link rel="stylesheet" href="/css/seo-landing.css">
+  <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=2">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=2">
+  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
+  <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.istebul.com/#organization","name":"isteBul","url":"https://www.istebul.com/","logo":"https://www.istebul.com/assets/icons/favicon-512.png"},{"@type":"WebSite","@id":"https://www.istebul.com/#website","url":"https://www.istebul.com/","name":"isteBul","publisher":{"@id":"https://www.istebul.com/#organization"},"inLanguage":"tr-TR"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana sayfa","item":"https://www.istebul.com/"},{"@type":"ListItem","position":2,"name":"Metodoloji","item":"https://www.istebul.com/metodoloji/"}]},{"@type":"Article","headline":"Metodoloji | isteBul — Şeffaf Karar Altyapısı ve Skorlama","description":"Karar skoru, güven skoru, risk analizi, TCO hesabı, AI executive summary ve partner eşleştirme mantığı. isteBul karar motoru metodolojisi — finansal tavsiye değildir.","inLanguage":"tr-TR","datePublished":"2026-01-15","dateModified":"2026-06-17","author":{"@id":"https://www.istebul.com/#organization"},"publisher":{"@id":"https://www.istebul.com/#organization"},"mainEntityOfPage":"https://www.istebul.com/metodoloji/"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul finansal tavsiye veriyor mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Analizler bilgilendirme amaçlıdır; bağlayıcı kredi onayı, yatırım veya sigorta taahhüdü değildir."}},{"@type":"Question","name":"AI skorumu değiştirebilir mi?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Skor ve TCO deterministik motordadır; AI yalnızca açıklama üretir."}},{"@type":"Question","name":"Partner teklifleri tarafsız mı?","acceptedAnswer":{"@type":"Answer","text":"Sıralama kullanıcı profiline göre yapılır; gizli tek marka önceliği yoktur. Partner ilişkisi açıkça işaretlenir."}},{"@type":"Question","name":"Metodoloji ne sıklıkla güncellenir?","acceptedAnswer":{"@type":"Answer","text":"Kural seti ve veri kaynakları ürün sürümleriyle birlikte gözden geçirilir; önemli değişiklikler bu sayfada yansıtılır."}}]}]}</script>
 </head>
-<body>
-  <header class="auto-header corporate-header">
-    <a class="logo" href="/">isteBul</a>
-    <nav class="corporate-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana sayfa</a>
-      <a href="/auto/">Auto</a>
-      <a href="/konut/">Konut</a>
-      <a href="/tatil/">Tatil</a>
-      <a href="/finans/">Finans</a>
-      <a href="/metodoloji/" class="is-active">Metodoloji</a>
-      <a href="/hakkimizda.html">Hakkımızda</a>
+<body class="seo-page">
+  <header class="seo-header">
+    <a class="seo-logo ib-brand-lockup" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-brand-logo-nav" src="/assets/brand/istebul-logo-nav.svg" alt="" width="120" height="28" decoding="async">
+    </a>
+    <nav class="seo-nav" aria-label="Ana navigasyon">
+      <a href="/karar-asistani/">Ön değerlendirme</a>
+      <a href="/karar-asistani/">Karar Asistanı</a>
+      <a href="/rehber/arac-alim-karar-asistani/">Rehber</a>
       <a href="/partner-olun.html">Partner</a>
     </nav>
   </header>
-  <main class="section legal-page corporate-page">
-    <p class="kicker">Metodoloji</p>
-    <h1>Karar altyapısı metodolojisi</h1>
-    <p class="lead">isteBul bir ilan sitesi veya sohbet botu değil. Skor ve toplam maliyet deterministik motorla hesaplanır; yapay zeka yalnızca gerekçe ve özet üretir — skoru değiştirmez.</p>
-    <section class="auto-methodology premium-methodology"><div><h3>1. Profil ve girdi</h3><p>Bütçe, kullanım senaryosu, süre, finansman tercihi ve risk toleransı standart bir profil şemasında toplanır. Eksik veya tutarsız girdiler güven bandını düşürür.</p></div></section>
-    <section class="auto-methodology premium-methodology"><div><h3>2. Deterministik motor</h3><p>TCO kalemleri (satın alma, amortisman, yakıt/enerji, bakım, sigorta, finansman), kredi etkisi ve uyum skoru kural tabanlı motorla hesaplanır. Aynı girdi aynı skoru üretir.</p></div></section>
-    <section class="auto-methodology premium-methodology"><div><h3>3. AI gerekçe katmanı</h3><p>Yapay zeka motor çıktısını yorumlar ve özetler; fiyat veya skor uydurmaz. Generic sohbet botlarından fark: sayılar önce motor, metin sonra.</p></div></section>
-    <section class="auto-methodology premium-methodology"><div><h3>4. Karşılaştırma ve kapanış</h3><p>Alternatifler matris ve karşılaştırma merkezinde yan yana sunulur. Kullanıcı hazırsa skorlu lead partner webhook ile iletilir; outcome geri bildirimi kalibrasyon için kullanılır.</p></div></section>
-    <section class="auto-methodology premium-methodology">
-      <div><h3>İlkeler</h3></div>
-      <ul><li>Tarafsız skor — gizli pazar yeri önceliği yok</li>
-      <li>Bilgilendirme amaçlı — bağlayıcı teklif veya getiri taahhüdü değil</li>
-      <li>KVKK uyumlu veri işleme ve Stripe ile güvenli ödeme</li></ul>
-    </section>
-    <div class="actions corporate-actions">
-      <a class="btn primary" href="/auto/">Auto analizini dene</a>
-      <a class="btn secondary" href="/planlar">Planları incele</a>
+  <main class="seo-main">
+    <nav class="seo-breadcrumb" aria-label="Breadcrumb"><a href="/">Ana sayfa</a> <span aria-hidden="true">/</span> <span aria-current="page">Metodoloji</span></nav>
+    <div class="seo-article-layout">
+      
+      <article class="seo-article-body">
+      <p class="seo-kicker">Türkiye · Karar rehberi</p>
+      <h1>isteBul karar altyapısı metodolojisi</h1>
+      
+      
+      <p class="seo-lead">isteBul bir ilan sitesi veya genel amaçlı sohbet botu değildir. Platform; büyük tutarlı satın alma kararlarında toplam maliyet, risk ve uygunluğu ölçen kural tabanlı bir karar motoru üzerine kuruludur. Yapay zeka yalnızca motor çıktısını açıklar; skorları veya fiyatları üretmez. Bu sayfa, Google ve kullanıcılar için denetlenebilir metodolojimizi açıklar.</p>
+      
+      
+      
+      <section class="seo-section" id="karar-skoru-nedir">
+        <h2>Karar Skoru Nedir?</h2>
+        <p>Karar skoru, profilinizde toplanan bütçe, kullanım senaryosu, finansman tercihi ve risk toleransının segment ve maliyet sinyalleriyle eşleştirilmesiyle üretilen 0–100 arası bir uygunluk göstergesidir. Skor «bu araç kesin alınmalı» demez; «mevcut girdilerinizle bu seçenek ne kadar tutarlı» sorusuna yanıt verir.</p>
+        <h3>Skor bileşenleri</h3>
+        <p>Bütçe uyumu, aylık taşıma kapasitesi, TCO bandı, segment özellikleri (yakıt, bakım, sigorta) ve kullanım tipi (şehir içi, uzun yol, aile) ağırlıklı olarak birleştirilir. Ağırlıklar ürün sürümünde dokümante edilir; gizli «tek marka» önceliği yoktur.</p>
+<h3>Skorun sınırları</h3>
+        <p>Ekspertiz, hukuki inceleme veya bağlayıcı kredi onayı skorun yerine geçmez. Skor bilgilendirme amaçlıdır; nihai sözleşme ve taahhüt kullanıcı ile yetkili kurumlar arasındadır.</p>
+      </section>
+<section class="seo-section" id="guven-skoru-nedir">
+        <h2>Güven Skoru Nedir?</h2>
+        <p>Güven skoru, girdi kalitesi ve veri tamlığına dayanır. Eksik bütçe, çelişkili kullanım bilgisi veya aşırı dar segment seçimi güven bandını düşürür; böylece yüksek karar skoruna rağmen «düşük güven» uyarısı görebilirsiniz.</p>
+        <h3>Ne zaman yükselir?</h3>
+        <p>Tutarlı yanıtlar, gerçekçi bütçe bandı ve finansman senaryosu netliği güven skorunu artırır. İsteğe bağlı doğrulama adımları (ör. telefon) operasyonel güven için kullanılabilir; skor motorunu değiştirmez.</p>
+      </section>
+<section class="seo-section" id="risk-analizi-nasil-calisir">
+        <h2>Risk Analizi Nasıl Çalışır?</h2>
+        <p>Risk katmanı; finansman baskısı, beklenmedik bakım payı, likidite (ikinci el satılabilirlik sinyali) ve kullanım yoğunluğunu bir araya getirir. Sonuç «Düşük / Orta / Yüksek» gibi okunabilir bantlarda sunulur.</p>
+        <h3>Deterministik kurallar</h3>
+        <p>Aynı girdi seti aynı risk çıktısını üretir. AI bu çıktıyı yorumlar; risk seviyesini keyfi olarak yükseltmez veya düşürmez.</p>
+<h3>Kategori farkları</h3>
+        <p>Auto, konut, tatil ve finansman dikeylerinde risk faktörleri farklıdır (ör. konutta lokasyon ve deprem riski, tatilde sezon ve iptal koşulları). Her dikey kendi kural setini kullanır.</p>
+      </section>
+<section class="seo-section" id="toplam-sahiplik-maliyeti-tco-hesabi">
+        <h2>Toplam Sahiplik Maliyeti (TCO) Hesabı</h2>
+        <p>TCO; satın alma, finansman faizi, yakıt veya enerji, periyodik bakım, sigorta (trafik/kasko), vergi ve tahmini değer kaybını kapsar. Liste fiyatı yerine 12–60 ay projeksiyon sunulabilir.</p>
+        <h3>Türkiye pazarı varsayımları</h3>
+        <p>Yakıt fiyatı, MTV, kasko prim aralıkları ve segment bakım maliyetleri piyasa verileri ve kural tabanlı varsayımlarla modellenir. Kullanıcı özel teklif girdiyse simülasyon buna göre güncellenir.</p>
+<h3>Şeffaflık</h3>
+        <p>TCO kalemleri sonuç ekranında ayrıştırılır; gizli «paket» maliyeti yoktur. Finansman simülasyonu bilgilendirme amaçlıdır — banka onayı değildir.</p>
+      </section>
+<section class="seo-section" id="ai-executive-summary-nasil-uretilir">
+        <h2>AI Executive Summary Nasıl Üretilir?</h2>
+        <p>Motor skor, TCO ve risk çıktısını ürettikten sonra yapay zeka katmanı bu sayıları özetleyen Türkçe bir «yönetici özeti» yazar. Prompt, skoru değiştirmeyecek şekilde kısıtlanmıştır; uydurma fiyat veya garanti içermez.</p>
+        <h3>Fallback</h3>
+        <p>AI servisi erişilemezse kural tabanlı şablon metin gösterilir; kullanıcı boş ekran görmez. Bu, üretim güvenilirliği için zorunludur.</p>
+      </section>
+<section class="seo-section" id="partner-eslestirme-mantigi">
+        <h2>Partner Eşleştirme Mantığı</h2>
+        <p>Kullanıcı onayıyla skorlu lead, kategori ve bölgeye uygun partnerlere iletilir. Eşleştirme «en yüksek komisyon» değil; tanımlı servis seviyesi, kategori uyumu ve kullanıcı tercihine dayanır.</p>
+        <h3>Webhook ve ölçüm</h3>
+        <p>Partner tarafında outcome (randevu, satış, iptal) geri bildirimi kalibrasyon için kullanılır; bireysel kullanıcı skorunu geriye dönük manipüle etmez.</p>
+      </section>
+<section class="seo-section" id="veri-kaynaklari">
+        <h2>Veri Kaynakları</h2>
+        <p>Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. TCMB EVDS canlı API ile; TÜİK yayınları manuel referans olarak kalibrasyon varsayımlarına yansıtılır. Planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.</p>
+        <h3>Güncelleme</h3>
+        <p>Piyasa verileri periyodik güncellenir; kritik değişiklikler metodoloji notlarında ve veri kaynakları merkezinde yansıtılır. Geçmiş analizleriniz hesabınızda saklanabilir — silme talebi destek kanalından yapılır.</p>
+<h3>Şeffaflık merkezi</h3>
+        <p>Kaynak adı, kullanım amacı, veri kategorileri ve son güncelleme tarihleri için Veri Kaynakları sayfasına bakın: /veri-kaynaklari/</p>
+      </section>
+<section class="seo-section" id="gizlilik-ve-guvenlik">
+        <h2>Gizlilik ve Güvenlik</h2>
+        <p>TLS şifreleme, Turnstile bot koruması (Auto), ödeme altyapısı (aktivasyon sonrası) ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.</p>
+        <h3>Saklama</h3>
+        <p>Veri saklama süreleri uyumluluk dokümantasyonunda tanımlıdır. Pazarlama iletişimi yalnızca açık rıza ile yapılır.</p>
+      </section>
+<section class="seo-section" id="denetlenebilirlik-ve-surumleme">
+        <h2>Denetlenebilirlik ve sürümleme</h2>
+        <p>Kural setleri ürün sürümüyle etiketlenir; aynı sürüm ve aynı girdi aynı skoru üretir. Regresyon testleri kritik senaryolarda otomatik çalıştırılır. AI prompt değişiklikleri skor motorundan ayrı versiyonlanır. Bu ayrım, «model her seferinde farklı sonuç verdi» algısını azaltır ve kurumsal alıcılar için denetim izi sağlar.</p>
+        <h3>İnsan onayı</h3>
+        <p>Yüksek tutarlı lead iletiminde kullanıcı onayı ve KVKK aydınlatması zorunludur; otomatik paylaşım yapılmaz.</p>
+      </section>
+<section class="seo-section" id="sinirlamalar-ve-sorumluluk-reddi">
+        <h2>Sınırlamalar ve sorumluluk reddi</h2>
+        <p>isteBul banka, sigorta şirketi veya bayi değildir. Sunulan simülasyonlar piyasa koşullarına göre değişir; bağlayıcı teklif yerine geçmez. Kullanıcı, ekspertiz ve hukuki inceleme sorumluluğunu üstlenir. Platform, üçüncü taraf partnerlerin performansını garanti etmez; outcome verisi kalibrasyon içindir.</p>
+        
+      </section>
+<section class="seo-section" id="kategori-genislemesi-auto-konut-tatil-finans">
+        <h2>Kategori genişlemesi: Auto, konut, tatil, finans</h2>
+        <p>Karar motoru çekirdeği kategoriler arasında paylaşılır; her dikey kendi girdi şeması ve risk faktör setini kullanır. Auto’da TCO ve kredi etkisi ön plandayken konutta lokasyon, aidat ve deprem riski ağırlık kazanır. Tatilde sezon, konaklama tipi ve iptal koşulları maliyet bandını genişletir. Finansman dikeyinde vade, faiz ve nakit akışı stres testi öne çıkar. Bu ayrım, tek bir «genel sohbet» modeli yerine yapılandırılmış karar çıktısı üretmeyi mümkün kılar. Yeni kategori eklerken önce girdi şeması ve kural seti tanımlanır; AI katmanı en son bağlanır.</p>
+        <h3>Sigorta ve kasko</h3>
+        <p>Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko karar analizi /kasko/ adresinde canlıdır (hasar riski, teminat kapsamı, prim verimliliği). Auto sonuçlarında sigorta ve kasko kalemleri TCO içinde ayrıştırılmıştır.</p>
+      </section>
+<section class="seo-section" id="kalite-guvence-ve-regresyon">
+        <h2>Kalite güvence ve regresyon</h2>
+        <p>Skor motoru değişiklikleri regresyon senaryolarıyla test edilir: sabit girdi setleri, beklenen skor aralıkları ve TCO bantları. AI metin çıktılarında halüsinasyon kontrolü için sayısal ideler prompt’a enjekte edilir; modelin skor uydurması engellenir. Üretimde AI erişilemezse kural tabanlı özet devreye girer. Kullanıcı geri bildirimi («sonuç yararlı mı») ürün iyileştirmesi içindir; bireysel skoru geriye dönük değiştirmez. Partner outcome verisi toplu kalibrasyon için kullanılır; bireysel kullanıcıya ceza uygulanmaz.</p>
+        
+      </section>
+<section class="seo-section" id="organik-arama-ve-icerik-stratejisi">
+        <h2>Organik arama ve içerik stratejisi</h2>
+        <p>Rehber sayfaları (/rehber/) statik HTML olarak üretilir; SPA fallback’inden önce sunulur. Sitemap lastmod alanları build tarihi ile güncellenir. BreadcrumbList ve FAQPage şemaları zengin sonuçlar için eklenir. Admin, profil ve partner onboarding sayfaları noindex ile korunur. Eski WordPress veya kategori URL’leri 410/301 ile temizlenir. İç linkleme ana sayfa «Karar Rehberi» bloğu ve footer rehber linkleriyle güçlendirilir.</p>
+        <h3>hreflang</h3>
+        <p>Çoklu dil yayılımında alternates kullanılır; şu an Türkiye odaklı tr-TR ağırlıklıdır.</p>
+      </section>
+<section class="seo-section" id="kullanici-haklari-ve-seffaflik">
+        <h2>Kullanıcı hakları ve şeffaflık</h2>
+        <p>KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ücretli ödemeler sağlayıcı aktivasyonu sonrasında yetkili ödeme kuruluşu üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.</p>
+        
+      </section>
+<section class="seo-section" id="olcum-deneyler-ve-surekli-iyilestirme">
+        <h2>Ölçüm, deneyler ve sürekli iyileştirme</h2>
+        <p>Ürün ekibi funnel adımlarını (analiz başlatma, sonuç görüntüleme, lead onayı) anonim ve toplu olarak izler. A/B deneyleri etik sınırlar içinde yürütülür; skor algoritması deneylerde keyfi değiştirilmez. Partner tarafında randevu ve satış outcome metrikleri kalibrasyon için kullanılır. Hata durumlarında error boundary ve operasyonel telemetri devreye girer; kullanıcıya teknik detay sızdırılmaz. Metodoloji güncellemeleri bu sayfada ve duyurular kanalında paylaşılır. Yatırımcı veya basın taleplerinde «karar platformu» konumlandırması korunur: ilan sitesi veya getiri vaadi değil, şeffaf karar altyapısı anlatılır. Gelecekte açılacak kategorilerde aynı «motor önce, AI sonra» ilkesi uygulanacaktır.</p>
+        <h3>Topluluk ve geri bildirim</h3>
+        <p>Kullanıcı önerileri ürün yol haritasına girer; bireysel skor manipülasyonu yapılmaz. Hata bildirimleri için info@istebul.com kanalı kullanılabilir.</p>
+<h3>Dokümantasyon</h3>
+        <p>Partner API ve webhook dokümantasyonu ayrı sayfalarda sunulur; metodoloji sayfası tüketici ve SEO otoritesi odaklıdır.</p>
+      </section>
+      
+      
+      
+      
+      <section class="seo-section seo-conclusion" id="sonuc"><h2>Sonuç</h2><p>Özetle: isteBul kararları önce sayılarla, sonra açıklamayla sunar. Karar skoru uygunluğu, güven skoru veri kalitesini, risk analizi finansman ve kullanım baskısını, TCO ise uzun vadeli nakit çıkışını ölçer. AI executive summary bu çıktıları anlaşılır Türkçe ile özetler; skoru değiştirmez. Partner eşleştirme yalnızca onaylı lead ile çalışır; gizli öncelik yoktur. Veri kaynakları segment sinyalleri ve kullanıcı girdilerinden oluşur; KVKK ve güvenlik kontrolleri üretim mimarisinin parçasıdır. Şeffaflık, tekrarlanabilirlik ve kullanıcı hakları organik arama otoritesi ile güven için temel önceliğimizdir. Araç kararınızı somutlaştırmak için Auto analizini başlatabilir, /rehber/ yazılarımızı okuyabilir veya /karsilastir/ merkezinde alternatifleri yan yana değerlendirebilirsiniz. Finansal tavsiye veya getiri taahhüdü yoktur; ekspertiz ve banka onayı nihai adımlardır.</p></section>
+      <section class="seo-section seo-faq">
+        <h2>Sık sorulan sorular</h2>
+        <details><summary>isteBul finansal tavsiye veriyor mu?</summary><p>Hayır. Analizler bilgilendirme amaçlıdır; bağlayıcı kredi onayı, yatırım veya sigorta taahhüdü değildir.</p></details>
+<details><summary>AI skorumu değiştirebilir mi?</summary><p>Hayır. Skor ve TCO deterministik motordadır; AI yalnızca açıklama üretir.</p></details>
+<details><summary>Partner teklifleri tarafsız mı?</summary><p>Sıralama kullanıcı profiline göre yapılır; gizli tek marka önceliği yoktur. Partner ilişkisi açıkça işaretlenir.</p></details>
+<details><summary>Metodoloji ne sıklıkla güncellenir?</summary><p>Kural seti ve veri kaynakları ürün sürümleriyle birlikte gözden geçirilir; önemli değişiklikler bu sayfada yansıtılır.</p></details>
+      </section>
+      
+      <section class="seo-section seo-related">
+        <h2>Sonraki rehber önerileri</h2>
+        <ul><li><a href="/veri-kaynaklari/">Veri kaynakları</a></li><li><a href="/auto/">Araç maliyet analizi</a></li><li><a href="/rehber/tco-rehberi/">TCO rehberi</a></li><li><a href="/karar-asistani/">Karar asistanı</a></li></ul>
+      </section>
+      <div class="seo-cta">
+        <div class="seo-cta-row-inner">
+          <a class="seo-cta-btn" href="/karar-asistani/">Ön değerlendirme başlat</a>
+          
+        </div>
+        <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Skorlar kural motorundan gelir</p>
+      </div>
+      </article>
     </div>
-    <p class="corporate-disclaimer">Analiz ve skorlar bilgilendirme amaçlıdır; finansal tavsiye veya getiri taahhüdü değildir.</p>
   </main>
-  <footer class="corporate-footer">
-    <div>
-      <strong>isteBul</strong>
-      <p>Karar zekâsı platformu — ilan sitesi değil, karar motoru.</p>
+  <footer class="seo-footer">
+    <div class="seo-footer-grid">
+      <div>
+        <strong>isteBul</strong>
+        <p>Türkiye odaklı araç alım karar destek platformu — TCO, kredi ve karşılaştırma.</p>
+        <nav class="ib-site-social ib-site-social--footer" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+      </div>
+      <div>
+        <h2>Platform</h2>
+        <ul>
+          <li><a href="/">Ana sayfa</a></li>
+          <li><a href="/karar-asistani/">Ön değerlendirme başlat</a></li>
+          <li><a href="/secenekler/">Seçenekler</a></li>
+          <li><a href="/karsilastir/">Karşılaştır</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Rehber</h2>
+        <ul>
+          <li><a href="/veri-kaynaklari/">Veri kaynakları</a></li>
+          <li><a href="/auto/">Araç maliyet analizi</a></li>
+          <li><a href="/rehber/tco-rehberi/">TCO rehberi</a></li>
+          <li><a href="/karar-asistani/">Karar asistanı</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Kurumsal</h2>
+        <ul>
+          <li><a href="/hakkimizda.html">Hakkımızda</a></li>
+          <li><a href="/metodoloji/">Metodoloji</a></li>
+          <li><a href="/veri-kaynaklari/">Veri Kaynakları</a></li>
+          <li><a href="/iletisim.html">İletişim</a></li>
+          <li><a href="/yardim.html">Yardım merkezi</a></li>
+          <li><a href="/gizlilik.html">Gizlilik</a></li>
+          <li><a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a></li>
+          <li><a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a></li>
+        </ul>
+      </div>
     </div>
-    <nav>
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/metodoloji/">Metodoloji</a>
-      <a href="/iletisim.html">İletişim</a>
-      <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
-      <a href="/partner-olun.html">Partner olun</a>
-    </nav>
+    <p class="seo-copy">&copy; 2026 isteBul. Tüm hakları saklıdır.</p>
   </footer>
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
+<script src="/env.js" defer></script>
+<script type="module" src="/js/runtime/site-social-init.js"></script>
 </body>
 </html>

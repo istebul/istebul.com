@@ -2,6 +2,7 @@
  * Deep recommendation intelligence — deterministic scores & comparison matrix.
  */
 import { buildWhyNotRanked, buildTradeoffExplanations } from '../engines/decision-consultant.js';
+import { formatScore, formatScoreOutOf100 } from '../features/results/results-engine.js';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -12,9 +13,9 @@ function scoreBudgetFit(vehicle, form) {
   const price = Number(vehicle.price || 0);
   if (!budget || !price) return 55;
   const ratio = price / budget;
-  if (ratio <= 0.92) return clamp(95 - ratio * 20, 70, 95);
+  if (ratio <= 0.92) return clamp(Math.round(95 - ratio * 20), 70, 95);
   if (ratio <= 1.05) return 62;
-  return clamp(45 - (ratio - 1) * 80, 20, 50);
+  return clamp(Math.round(45 - (ratio - 1) * 80), 20, 50);
 }
 
 function scoreReliability(vehicle) {
@@ -57,6 +58,28 @@ function idealUserProfile(vehicle, form) {
  * @param {object} form
  * @param {{ alternatives?: object[], rank?: number, leader?: object }} ctx
  */
+/**
+ * Deterministic tie-break when rounded match scores tie (does not change displayed score).
+ * @param {object} vehicle
+ * @param {object} form
+ */
+export function computeAutoRankingTieBreak(vehicle, form) {
+  const intel = buildRecommendationIntelligence(vehicle, form, {
+    alternatives: [vehicle],
+    rank: 0,
+    leader: vehicle
+  });
+  const tco = Number(vehicle.costs?.ownership?.totals?.months12 || vehicle.costs?.total || 0);
+  const tcoBonus = tco > 0 ? Math.max(0, 50 - Math.round(tco / 50000)) : 25;
+  return (
+    intel.budgetFitScore * 1000 +
+    intel.resaleScore * 10 +
+    (intel.confidenceScore || 0) +
+    tcoBonus +
+    (Number(vehicle.scoreRaw) || Number(vehicle.score) || 0) / 1000
+  );
+}
+
 export function buildRecommendationIntelligence(vehicle, form, ctx = {}) {
   const alternatives = ctx.alternatives || [];
   const rank = ctx.rank ?? 0;
@@ -89,7 +112,7 @@ export function renderComparisonMatrix(results = [], formData = {}, esc = (s) =>
   if (top.length < 2) return '';
 
   const metrics = [
-    { key: 'score', label: 'Uyum skoru', fmt: (v) => `${v.score}/100` },
+    { key: 'score', label: 'Uyum skoru', fmt: (v) => formatScoreOutOf100(v.score) },
     {
       key: 'tco12',
       label: '12 ay TCO',
@@ -109,17 +132,23 @@ export function renderComparisonMatrix(results = [], formData = {}, esc = (s) =>
     {
       key: 'confidence',
       label: 'Veri güveni',
-      fmt: (v) => `${v.confidenceMeta?.score ?? v.confidence ?? '—'}/100`
+      fmt: (v) => formatScoreOutOf100(v.confidenceMeta?.score ?? v.confidence)
     },
     {
       key: 'budgetFit',
       label: 'Bütçe uyumu',
-      fmt: (v) => `${buildRecommendationIntelligence(v, formData, { alternatives: top }).budgetFitScore}/100`
+      fmt: (v) =>
+        formatScoreOutOf100(
+          buildRecommendationIntelligence(v, formData, { alternatives: top }).budgetFitScore
+        )
     },
     {
       key: 'resale',
       label: 'Likidite',
-      fmt: (v) => `${buildRecommendationIntelligence(v, formData, { alternatives: top }).resaleScore}/100`
+      fmt: (v) =>
+        formatScoreOutOf100(
+          buildRecommendationIntelligence(v, formData, { alternatives: top }).resaleScore
+        )
     }
   ];
 
@@ -171,7 +200,7 @@ export function renderRecommendationIntelligencePanel(intel = {}, esc = (s) => S
     <section class="ib-rec-intel-panel" aria-label="Karar zekası skorları">
       <h4>Karar zekası özeti</h4>
       <div class="ib-rec-intel-scores">
-        ${rows.map(([label, val]) => `<span><small>${esc(label)}</small><strong>${esc(String(val))}/100</strong></span>`).join('')}
+        ${rows.map(([label, val]) => `<span><small>${esc(label)}</small><strong>${esc(formatScoreOutOf100(val))}</strong></span>`).join('')}
       </div>
       <p class="text-muted-sm"><strong>İdeal profil:</strong> ${esc(intel.idealUserProfile)}</p>
       <p class="text-muted-sm"><strong>Trade-off:</strong> ${esc(intel.tradeoffs || '—')}</p>

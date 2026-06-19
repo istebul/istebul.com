@@ -1,5 +1,11 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
-import { fetchAdminTable, collectAdminWarnings, renderAdminWarningBanner } from './admin-query.js';
+import {
+  enrichVerticalLeadsDispatch,
+  manualVerticalDispatch,
+  renderVerticalDispatchDetail,
+  verticalDispatchBadge
+} from '../features/admin/vertical-partner-dispatch.js';
+import { fetchAdminTable, renderAdminDataSourceNotices } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
 const HOUSING_SETTING_KEYS = [
@@ -87,7 +93,7 @@ async function loadHousingLeads(sb, adminAction, toast) {
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut leadleri');
   const allRows = res.data || [];
   renderHousingLeadStats(allRows, eventsRes.data || []);
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
   const search = (document.getElementById('housing-leads-search')?.value || '').toLowerCase().trim();
   const status = document.getElementById('housing-leads-status-filter')?.value || '';
   const rows = allRows.filter((row) => {
@@ -100,11 +106,14 @@ async function loadHousingLeads(sb, adminAction, toast) {
     el.innerHTML = `${banner}<p class="empty">Filtreye uygun kayıt bulunamadı.</p>`;
     return;
   }
+  const enrichedRows = await enrichVerticalLeadsDispatch(sb, rows);
   el.innerHTML = `${banner}<table class="table"><thead><tr>
     <th>Tarih</th><th>Ad</th><th>Telefon</th><th>E-posta</th><th>Amaç</th><th>Tip</th><th>Bütçe</th>
-    <th>Skor</th><th>Risk</th><th>Lokasyon</th><th>Durum</th><th>Not</th><th>Takip</th>
+    <th>Skor</th><th>Risk</th><th>Lokasyon</th><th>Partner</th><th>Durum</th><th>Not</th><th>Takip</th>
   </tr></thead><tbody>${
-    rows.map((row) => `<tr data-housing-lead-id="${safeAttr(row.id)}">
+    enrichedRows.map((row) => {
+      const dispatchBadge = verticalDispatchBadge(row.partner_dispatch_status);
+      return `<tr data-housing-lead-id="${safeAttr(row.id)}">
       <td class="cell-nowrap">${new Date(row.created_at).toLocaleString('tr-TR')}</td>
       <td>${escapeHtml(row.full_name || '—')}</td>
       <td>${escapeHtml(row.phone || '—')}</td>
@@ -115,12 +124,15 @@ async function loadHousingLeads(sb, adminAction, toast) {
       <td><strong>${escapeHtml(String(row.decision_score || '—'))}</strong></td>
       <td>${escapeHtml(row.risk_level || '—')}</td>
       <td>${escapeHtml(row.location_text || '—')}</td>
+      <td><span class="badge ${dispatchBadge.badge}">${escapeHtml(dispatchBadge.label)}</span></td>
       <td><select class="status-select" data-action="housing-update-status" data-id="${safeAttr(row.id)}">
         ${['new', 'incelendi', 'arandi', 'uygun', 'partnere_yonlendirildi', 'kapandi', 'reddedildi'].map((opt) => `<option value="${opt}" ${row.status === opt ? 'selected' : ''}>${opt}</option>`).join('')}
       </select></td>
       <td><input type="text" class="form-input" data-action="housing-update-notes" data-id="${safeAttr(row.id)}" value="${safeAttr(row.notes || '')}" placeholder="Not"></td>
       <td><input type="datetime-local" class="form-input" data-action="housing-update-follow" data-id="${safeAttr(row.id)}" value="${row.follow_up_at ? new Date(row.follow_up_at).toISOString().slice(0, 16) : ''}"></td>
-    </tr>`).join('')
+    </tr>
+    <tr><td colspan="14">${renderVerticalDispatchDetail(row, 'housing_leads')}</td></tr>`;
+    }).join('')
   }</tbody></table>`;
   el.querySelectorAll('[data-action="housing-update-status"]').forEach((select) => {
     select.addEventListener('change', async () => {
@@ -154,7 +166,7 @@ async function loadHousingLocations(sb) {
     direct: () => sb.from('housing_locations').select('*').order('created_at', { ascending: false }).limit(600)
   });
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut lokasyonları');
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
   el.innerHTML = `${banner}<table class="table"><thead><tr><th>Şehir</th><th>İlçe/Semt</th><th>Fiyat seviyesi</th><th>Ulaşım</th><th>Yaşam kalitesi</th><th>Yatırım</th><th>Risk</th><th>Durum</th></tr></thead><tbody>${
     (res.data || []).map((row) => `<tr>
       <td>${escapeHtml(row.city || '—')}</td>
@@ -180,7 +192,7 @@ async function loadHousingPartners(sb) {
     direct: () => sb.from('housing_partners').select('*').order('created_at', { ascending: false }).limit(500)
   });
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut partnerleri');
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
   el.innerHTML = `${banner}<table class="table"><thead><tr><th>Partner</th><th>Tip</th><th>Şehir</th><th>İlçe</th><th>Link</th><th>Komisyon notu</th><th>Durum</th></tr></thead><tbody>${
     (res.data || []).map((row) => `<tr>
       <td>${escapeHtml(row.partner_name || '—')}</td>

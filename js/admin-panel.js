@@ -1,4 +1,4 @@
-import { getSupabaseClient } from './core/supabase.js';
+import { getAdminSupabaseClient, isSupabaseConfigured, SUPABASE_CONFIG_ERROR } from './core/supabase.js';
 import { invokeAdminFunction, adminList } from './core/admin-client.js';
 import { escapeHtml, safeAttr, safeJsonParse, safeExternalUrl } from './core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from './core/phone.js';
@@ -12,6 +12,7 @@ import {
   CRM_PIPELINE_QUICK,
   funnelConversionPct
 } from './features/admin/partner-ops.js';
+import { manualVerticalDispatch } from './features/admin/vertical-partner-dispatch.js';
 import { computeMoatDashboard } from './features/admin/moat-intelligence.js';
 import {
   buildMoatMetricsFromAdminData,
@@ -20,9 +21,10 @@ import {
 import { SCALE_LIMITS } from './core/scale-limits.js';
 import {
   fetchAdminTable,
-  collectAdminWarnings,
-  renderAdminWarningBanner
+  fetchAdminRowById,
+  renderAdminDataSourceNotices
 } from './admin/admin-query.js';
+import { isAdminProfile } from './admin/admin-route-guard.js';
 import {
   computeExecutiveFunnel,
   computeChannelBreakdown,
@@ -46,31 +48,90 @@ import {
   getPartnerCrmWinProbability,
   renderPartnerPipelineBoardHtml
 } from './features/sales/partner-crm-pipeline.js';
-import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
+import {
+  registerAdminPageHandlers,
+  showAdminPage,
+  bootAdminPageFromUrl
+} from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
+import { bindAdminExternalNavLinks, injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
+import { initSigortaAdmin } from './admin/sigorta-admin.js';
+import { initKaskoAdmin } from './admin/kasko-admin.js';
+import { initPartnerEndpointsAdmin } from './admin/partner-endpoints-admin.js';
+import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
+import {
+  bindPartnerApplicationsAdminUi,
+  getPartnerApplicationFormMarkup,
+  handlePartnerApplicationAdminAction,
+  loadPartnerApplications as loadPartnerApplicationsPage
+} from './admin/partner-applications-admin.js';
+import {
+  handlePostsAdminAction,
+  initPostsAdmin,
+  loadBlogPostsAdmin,
+  loadNewsPostsAdmin
+} from './admin/posts-admin.js';
+import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
+import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
+import {
+  buildSiteAnalyticsMetrics,
+  buildPagePathDetail,
+  filterRowsByPreset,
+  renderSiteAnalyticsDashboard,
+  renderPagePathDetailPanel,
+  renderPlatformAnalyticsEmptyGuide,
+  exportPlatformAnalyticsCsv,
+  FILTER_PRESETS
+} from './admin/platform-site-analytics-dashboard.js';
+import {
+  ANALYTICS_DATA_MODES,
+  ANALYTICS_DATA_MODE_LABELS,
+  filterAnalyticsRows,
+  renderAnalyticsDataModeToolbar,
+  fetchAnalyticsCleanStartAt
+} from './admin/analytics-traffic-filters.js';
+import {
+  getDeviceHash,
+  markCurrentDeviceAsInternalTest
+} from './core/analytics-internal.js';
 
-const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
+let platformAnalyticsFilter = '7d';
+let platformAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
+let unifiedFunnelDataMode = ANALYTICS_DATA_MODES.REAL;
+let autoAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
+let analyticsCleanStartAt = null;
+let lastPlatformSiteMetrics = null;
+let lastPlatformAnalyticsRows = null;
 
-if (!sb) {
+function renderAdminConfigError(message) {
   document.body.innerHTML = `
     <div class="admin-config-error">
       <div>
-        <h2>Supabase yapılandırması eksik</h2>
-        <p>SUPABASE_URL veya SUPABASE_ANON_KEY yüklenemedi.</p>
+        <h2>Kimlik doğrulama servisi yapılandırılamadı</h2>
+        <p>${escapeHtml(message)}</p>
+        <p class="text-muted-sm">Cloudflare Pages veya GitHub Actions ortamında <code>SUPABASE_URL</code> ve <code>SUPABASE_ANON_KEY</code> tanımlı olmalı; ardından <code>npm run build</code> ile yeniden deploy edin.</p>
       </div>
     </div>
   `;
+}
+
+if (!isSupabaseConfigured()) {
+  renderAdminConfigError(SUPABASE_CONFIG_ERROR);
   throw new Error('Supabase config missing');
 }
+
+const sb = getAdminSupabaseClient();
 let currentUser = null;
+
+window.__adminReloadDashboard = () => loadDashboard();
 
 function showLoginError(message) {
   const err = document.getElementById('login-error');
@@ -91,6 +152,10 @@ async function login() {
   const password = document.getElementById('login-password').value;
   const btn = document.getElementById('login-btn');
   clearLoginError();
+  if (!isSupabaseConfigured()) {
+    showLoginError(SUPABASE_CONFIG_ERROR);
+    return;
+  }
   if (!email || !password) {
     showLoginError('E-posta ve şifre alanlarını doldurun.');
     return;
@@ -114,7 +179,11 @@ async function login() {
     return;
   }
   currentUser = data.user;
-  showApp();
+  await showApp();
+  const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+  if (returnTo && returnTo.startsWith('/admin')) {
+    window.location.assign(returnTo);
+  }
 }
 
 async function logout() {
@@ -130,7 +199,7 @@ async function showApp() {
     .eq('id', currentUser.id)
     .single();
 
-  if (error || !profile || profile.role !== 'admin' || profile.is_banned === true) {
+  if (error || !profile || !isAdminProfile(profile)) {
     await sb.auth.signOut();
     currentUser = null;
     document.getElementById('app').style.display = 'none';
@@ -148,12 +217,15 @@ async function showApp() {
   const topAvatar = document.getElementById('admin-topbar-avatar');
   if (topEmail) topEmail.textContent = email;
   if (topAvatar) topAvatar.textContent = email[0]?.toUpperCase() || 'A';
+  injectAdminListingManagementNav();
+  initPartnerApplicationsShell();
   loadDashboard();
   loadSettings();
   loadAnnouncements();
   loadCampaigns();
   loadFaqs();
-  loadPosts();
+  loadNewsPostsAdmin();
+  loadBlogPostsAdmin();
   loadListings();
   loadUsers();
   loadAutoLeads();
@@ -161,9 +233,10 @@ async function showApp() {
   loadPlatformAnalytics();
   loadExecutiveKpis();
   loadOperationalHealth();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
   loadPartnerApplications();
   loadPartnerDispatchLogs();
+  bootAdminPageFromUrl();
 }
 
 function closeAdminSidebar() {
@@ -221,16 +294,24 @@ async function loadOpsAiAssistantPage() {
   await loadOpsAiAssistant(
     internalDashboardDeps(),
     escapeHtml,
-    renderAdminWarningBanner
+    renderAdminDataSourceNotices
   );
+}
+
+async function refreshLinkedInOpsAssistant() {
+  await loadLinkedInOpsAssistantPage();
+}
+
+async function loadLinkedInOpsAssistantPage() {
+  const { loadLinkedInOpsAssistant } = await import('./admin/linkedin-ops-assistant.js');
+  await loadLinkedInOpsAssistant(escapeHtml);
 }
 
 function internalDashboardDepsBase() {
   return {
     sb,
     fetchAdminTable,
-    SCALE_LIMITS,
-    collectAdminWarnings
+    SCALE_LIMITS
   };
 }
 
@@ -250,7 +331,7 @@ async function loadCompanyDashboard(kind, rootId) {
     kind,
     rootId,
     escapeHtml,
-    renderAdminWarningBanner
+    renderAdminDataSourceNotices
   );
 }
 
@@ -316,7 +397,7 @@ async function loadOperationalHealth() {
     })
   ]);
 
-  const warnings = collectAdminWarnings([opsEventsRes, dispatchRes, auditRes, leadsRes]);
+  const opsHealthBatch = [opsEventsRes, dispatchRes, auditRes, leadsRes];
   const allOpsEvents = opsEventsRes.data || [];
   const sinceMs = new Date(since).getTime();
   const severityRows = rollupSeverity24h(allOpsEvents);
@@ -355,7 +436,7 @@ async function loadOperationalHealth() {
   const healthTable = rollupHealth24h(allOpsEvents).slice(0, 15);
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(opsHealthBatch)}
     <div class="stat-grid">
       <div class="stat-card">
         <div class="stat-label">Critical (24h)</div>
@@ -584,7 +665,7 @@ async function loadOpsCommandCenter() {
       direct: () =>
         sb
           .from('partner_lead_dispatch_logs')
-          .select('success, created_at, duration_ms')
+          .select('success, created_at, latency_ms')
           .gte('created_at', since24h)
           .limit(500)
     }),
@@ -592,6 +673,7 @@ async function loadOpsCommandCenter() {
       table: 'lifecycle_enrollments',
       select: 'flow_id, status, enrolled_at',
       limit: 3000,
+      order: { column: 'enrolled_at', ascending: false },
       direct: () =>
         sb
           .from('lifecycle_enrollments')
@@ -645,7 +727,7 @@ async function loadOpsCommandCenter() {
     })
   ]);
 
-  const warnings = collectAdminWarnings([
+  const opsCommandBatch = [
     subsRes,
     leadsRes,
     eventsRes,
@@ -656,7 +738,7 @@ async function loadOpsCommandCenter() {
     endpointsRes,
     retryLeadsRes,
     ceoLeadsRes
-  ]);
+  ];
 
   const sinceMs = new Date(since).getTime();
   const events = (eventsRes.data || []).filter((row) => {
@@ -711,7 +793,7 @@ async function loadOpsCommandCenter() {
         : 'var(--warning)';
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(opsCommandBatch)}
     <p class="text-muted-sm" style="margin:0 0 16px">
       P9 Ops + P12 Partner + P13 CEO alerts · <code>npm run metrics:ops:center</code> · <code>npm run ceo:alerts:run</code>
     </p>
@@ -904,7 +986,7 @@ async function loadStartupOperatingCenter() {
       })
     ]);
 
-    const warnings = collectAdminWarnings([eventsRes, subsRes, opsRes]);
+    const startupBatch = [eventsRes, subsRes, opsRes];
     opsCenter = buildOpsCommandCenter({
       analyticsEvents: eventsRes.data || [],
       subscriptions: subsRes.data || [],
@@ -917,7 +999,7 @@ async function loadStartupOperatingCenter() {
 
     const snapshot = buildStartupOperatingSnapshot({ config, opsCenter });
     el.innerHTML =
-      renderAdminWarningBanner(warnings) + renderStartupOperatingCenter(snapshot, escapeHtml);
+      renderAdminDataSourceNotices(startupBatch) + renderStartupOperatingCenter(snapshot, escapeHtml);
     return;
   } catch {
     /* static config only */
@@ -988,7 +1070,7 @@ async function loadScaleArchitectureCenter() {
       })
     ]);
 
-    const warnings = collectAdminWarnings([eventsRes, opsRes]);
+    const scaleBatch = [eventsRes, opsRes];
     const opsCenter = buildOpsCommandCenter({
       analyticsEvents: eventsRes.data || [],
       subscriptions: [],
@@ -1006,7 +1088,7 @@ async function loadScaleArchitectureCenter() {
 
     const report = buildScaleArchitectureReport({ config, liveSignals });
     el.innerHTML =
-      renderAdminWarningBanner(warnings) + renderScaleArchitectureCenter(report, escapeHtml);
+      renderAdminDataSourceNotices(scaleBatch) + renderScaleArchitectureCenter(report, escapeHtml);
     return;
   } catch {
     /* static matrix */
@@ -1310,7 +1392,7 @@ async function loadAcquisitionExit() {
       })
     ]);
 
-    const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
+    const exitBatch = [subsRes, leadsRes, eventsRes];
     const founderMetrics = computeExitOptionalityMetrics({
       leads: leadsRes.data || [],
       subscriptions: subsRes.data || [],
@@ -1324,7 +1406,7 @@ async function loadAcquisitionExit() {
     });
 
     el.innerHTML =
-      renderAdminWarningBanner(warnings) +
+      renderAdminDataSourceNotices(exitBatch) +
       renderAcquisitionExitCenter(snapshot, escapeHtml, founderMetrics);
   } catch (err) {
     console.error('[admin] acquisition-exit', err);
@@ -1380,7 +1462,7 @@ async function loadExecutiveKpis() {
     })
   ]);
 
-  const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
+  const executiveKpiBatch = [subsRes, leadsRes, eventsRes];
   const sinceMs = new Date(since).getTime();
   const events = (eventsRes.data || []).filter((row) => {
     const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
@@ -1399,7 +1481,7 @@ async function loadExecutiveKpis() {
       leadsRes.error?.message ||
       subsRes.error?.message ||
       'Veri yüklenemedi';
-    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(msg)}</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices(executiveKpiBatch)}<p class="empty">Hata: ${escapeHtml(msg)}</p>`;
     return;
   }
 
@@ -1456,11 +1538,11 @@ async function loadExecutiveKpis() {
   const c = dash.conversions.counts;
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
-    <p class="text-muted-sm" style="margin:0 0 16px">CEO decision dashboard · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
+    ${renderAdminDataSourceNotices(executiveKpiBatch)}
+    <p class="text-muted-sm" style="margin:0 0 16px">Yatırımcı KPI · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;background:rgba(37,99,235,0.08);border-radius:10px">
-      <strong>Executive summary</strong>
+      <strong>Yatırımcı özeti</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${dash.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
       </ul>
@@ -1507,7 +1589,7 @@ async function loadExecutiveKpis() {
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Executive funnel (step CR)</h3>
+    <h3 style="margin:0 0 12px">Yatırımcı hunisi (adım CR)</h3>
     <table class="table">
       <thead><tr><th>Step</th><th>Events</th><th>Step CR</th><th>From landing</th></tr></thead>
       <tbody>
@@ -1570,10 +1652,17 @@ async function adminAction(payload) {
   }
 }
 
+initPostsAdmin(sb, {
+  toast: (message, type) => toast(message, type),
+  adminAction
+});
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
 const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
+const sigortaAdmin = initSigortaAdmin({ sb, adminAction, toast });
+const kaskoAdmin = initKaskoAdmin({ sb, adminAction, toast });
+const partnerEndpointsAdmin = initPartnerEndpointsAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -1582,28 +1671,73 @@ async function loadDashboard() {
   };
 
   try {
-    const [u, l, a, f, p, campaignRow, leadsRes] = await Promise.all([
-      sb.from('profiles').select('*', { count: 'exact', head: true }),
-      sb.from('listings').select('*', { count: 'exact', head: true }),
-      sb.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true),
-      sb.from('faqs').select('*', { count: 'exact', head: true }),
-      sb.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true),
-      sb.from('site_settings').select('value').eq('key', 'public_campaigns').maybeSingle(),
-      sb.from('auto_leads').select('status, created_at').limit(800)
-    ]);
+    const [profilesRes, listingsRes, annRes, faqsRes, postsRes, settingsRes, leadsRes] =
+      await Promise.all([
+        fetchAdminTable(sb, {
+          table: 'profiles',
+          select: 'id',
+          limit: 5000,
+          direct: () => sb.from('profiles').select('id').limit(5000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'listings',
+          select: 'id',
+          limit: 5000,
+          direct: () => sb.from('listings').select('id').limit(5000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'announcements',
+          select: 'id, is_active',
+          limit: 2000,
+          direct: () => sb.from('announcements').select('id, is_active').limit(2000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'faqs',
+          select: 'id',
+          limit: 2000,
+          direct: () => sb.from('faqs').select('id').limit(2000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'posts',
+          select: 'id, is_published',
+          limit: 2000,
+          direct: () => sb.from('posts').select('id, is_published').limit(2000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'site_settings',
+          select: 'key, value',
+          limit: 500,
+          direct: () => sb.from('site_settings').select('key, value').limit(500)
+        }),
+        fetchAdminTable(sb, {
+          table: 'auto_leads',
+          select: 'status, created_at',
+          limit: 5000,
+          direct: () => sb.from('auto_leads').select('status, created_at').limit(5000)
+        })
+      ]);
 
-    setStat('stat-users', u.count ?? '—');
-    setStat('stat-listings', l.count ?? '—');
-    setStat('stat-ann', a.count ?? '—');
-    setStat('stat-faqs', f.count ?? '—');
-    setStat('stat-posts', p.count ?? '—');
+    setStat('stat-users', profilesRes.data?.length ?? '—');
+    setStat('stat-listings', listingsRes.data?.length ?? '—');
+    setStat(
+      'stat-ann',
+      (annRes.data || []).filter((row) => row.is_active).length || '—'
+    );
+    setStat('stat-faqs', faqsRes.data?.length ?? '—');
+    setStat(
+      'stat-posts',
+      (postsRes.data || []).filter((row) => row.is_published).length || '—'
+    );
 
     const statCampaigns = document.getElementById('stat-campaigns');
     if (statCampaigns) {
       let activeCampaigns = DEFAULT_CAMPAIGNS.length;
-      if (campaignRow.data?.value) {
+      const campaignSetting = (settingsRes.data || []).find(
+        (row) => row.key === 'public_campaigns'
+      );
+      if (campaignSetting?.value) {
         try {
-          const parsed = JSON.parse(campaignRow.data.value);
+          const parsed = JSON.parse(campaignSetting.value);
           activeCampaigns = Array.isArray(parsed)
             ? parsed.filter((c) => c?.is_active !== false).length
             : 0;
@@ -1630,18 +1764,61 @@ async function loadDashboard() {
       leads.length > 0 ? Math.round((wonLeads.length / leads.length) * 1000) / 10 : 0;
     setStat('stat-conversion', leads.length ? `%${convPct}` : '—');
     setStat('stat-system-alerts', '0');
+    await loadEvdsStatusCard();
   } catch {
     /* dashboard stats are best-effort */
   }
 }
 
+async function loadEvdsStatusCard() {
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  try {
+    const res = await fetch('/api/evds-snapshot', { credentials: 'same-origin' });
+    const body = await res.json().catch(() => ({}));
+    const data = body?.data;
+
+    if (!data) {
+      set('evds-status-connection', 'Bilinmiyor');
+      return;
+    }
+
+    const statusMap = {
+      connected: 'Bağlı',
+      unconfigured: 'Anahtar yok',
+      degraded: 'Kısıtlı'
+    };
+    set('evds-status-connection', statusMap[data.status] || data.status || '—');
+    set(
+      'evds-status-fetched',
+      data.fetchedAt ? new Date(data.fetchedAt).toLocaleString('tr-TR') : '—'
+    );
+    set('evds-status-data-date', data.dataDate || '—');
+    set('evds-status-source', data.source || '—');
+  } catch {
+    set('evds-status-connection', 'Erişilemedi');
+    set('evds-status-fetched', '—');
+    set('evds-status-data-date', '—');
+    set('evds-status-source', '—');
+  }
+}
+
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
-              'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone'];
-const BOOLEAN_SETTING_KEYS = ['maintenance','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
+              'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone',
+              'analytics_clean_start_at','live_finance_feed_url'];
+const BOOLEAN_SETTING_KEYS = ['maintenance','live_providers_enabled','ai_listings_public_enabled','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
 
 async function loadSettings() {
-  const { data } = await sb.from('site_settings').select('*');
-  if (!data) return;
+  const res = await fetchAdminTable(sb, {
+    table: 'site_settings',
+    limit: 500,
+    direct: () => sb.from('site_settings').select('*')
+  });
+  const data = res.data;
+  if (!data?.length) return;
   const map = {};
   data.forEach(r => map[r.key] = r.value);
   KEYS.forEach(f => {
@@ -1654,17 +1831,205 @@ async function loadSettings() {
     const value = map[key];
     el.checked = value == null ? true : String(value).toLowerCase() === 'true';
   });
+  const cleanStart = map.analytics_clean_start_at;
+  analyticsCleanStartAt = cleanStart || null;
+  const cleanEl = document.getElementById('s-analytics_clean_start_at');
+  if (cleanEl && cleanStart) {
+    try {
+      const d = new Date(cleanStart);
+      if (!Number.isNaN(d.getTime())) {
+        cleanEl.value = d.toISOString().slice(0, 16);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  loadAnalyticsExclusionSettings();
+  warnIfSocialSettingsEmpty();
+  updateLiveDataAdminHint();
+}
+
+async function loadAnalyticsExclusionSettings() {
+  const listEl = document.getElementById('analytics-exclusion-list');
+  if (!listEl) return;
+  try {
+    let rows = [];
+    try {
+      const res = await invokeAdminFunction(sb, {
+        action: 'list_analytics_exclusions'
+      });
+      rows = res?.data || [];
+    } catch (edgeErr) {
+      const msg = String(edgeErr?.message || '');
+      const useFallback =
+        /invalid action or table/i.test(msg) ||
+        /schema cache|could not find the table|does not exist/i.test(msg);
+      if (!useFallback) throw edgeErr;
+      const fallback = await fetchAdminTable(sb, {
+        table: 'analytics_exclusion_rules',
+        limit: 200,
+        order: { column: 'created_at', ascending: false },
+        direct: () =>
+          sb
+            .from('analytics_exclusion_rules')
+            .select('id, type, value_hash, label, is_active, created_at')
+            .order('created_at', { ascending: false })
+            .limit(200)
+      });
+      if (fallback.error && !fallback.data?.length) {
+        const missingTable = /analytics_exclusion_rules|PGRST205/i.test(
+          String(fallback.error?.message || edgeErr?.message || '')
+        );
+        if (missingTable) throw new Error('SCHEMA_MISSING_ANALYTICS_EXCLUSION');
+        throw edgeErr;
+      }
+      rows = fallback.data || [];
+      if (fallback.source === 'direct' && rows.length) {
+        toast('Kurallar doğrudan veritabanından yüklendi (edge güncellemesi bekleniyor).', 'success');
+      }
+    }
+    if (!rows.length) {
+      listEl.innerHTML = '<p class="text-muted-sm">Henüz dahili IP/cihaz kuralı yok.</p>';
+      return;
+    }
+    listEl.innerHTML = `
+      <table class="table">
+        <thead><tr><th>Tür</th><th>Hash</th><th>Etiket</th><th></th></tr></thead>
+        <tbody>
+          ${rows
+            .map(
+              (row) => `
+            <tr>
+              <td>${escapeHtml(row.type)}</td>
+              <td><code>${escapeHtml(String(row.value_hash).slice(0, 16))}…</code></td>
+              <td>${escapeHtml(row.label || '—')}</td>
+              <td><button type="button" class="btn btn-danger btn-sm" data-action="analytics-delete-exclusion" data-id="${safeAttr(row.id)}">Sil</button></td>
+            </tr>`
+            )
+            .join('')}
+        </tbody>
+      </table>`;
+  } catch (err) {
+    if (String(err?.message) === 'SCHEMA_MISSING_ANALYTICS_EXCLUSION') {
+      listEl.innerHTML = `
+        <div class="empty">
+          <p><strong>Veritabanı tablosu eksik:</strong> <code>analytics_exclusion_rules</code></p>
+          <p class="text-muted-sm">Production Deploy → Supabase adımında migration uygulanmalı. Geçici çözüm: Supabase Dashboard → SQL Editor →
+            <code>supabase/migrations/20260602_analytics_internal_traffic.sql</code> dosyasının tamamını çalıştırın, ardından sayfayı yenileyin.</p>
+          <button type="button" class="btn btn-primary btn-sm" data-action="reload-analytics-exclusions">Tekrar dene</button>
+        </div>`;
+      return;
+    }
+    listEl.innerHTML = `<p class="empty">Kurallar yüklenemedi: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function addAnalyticsInternalIp() {
+  const ip = document.getElementById('analytics-internal-ip')?.value?.trim();
+  const label = document.getElementById('analytics-internal-ip-label')?.value?.trim() || 'Admin IP';
+  if (!ip) {
+    toast('IP adresi girin', 'error');
+    return;
+  }
+  await invokeAdminFunction(sb, {
+    action: 'add_analytics_ip_exclusion',
+    values: { ip, label }
+  });
+  toast('IP hash eklendi');
+  document.getElementById('analytics-internal-ip').value = '';
+  loadAnalyticsExclusionSettings();
+}
+
+async function markAnalyticsTestDevice() {
+  markCurrentDeviceAsInternalTest();
+  const device_hash = await getDeviceHash();
+  await invokeAdminFunction(sb, {
+    action: 'register_analytics_device_exclusion',
+    values: { device_hash, label: 'Admin panel — bu cihaz' }
+  });
+  const status = document.getElementById('analytics-device-status');
+  if (status) {
+    status.textContent = 'Bu cihaz test cihazı olarak işaretlendi. Bu tarayıcıdan gelen eventler internal sayılır.';
+  }
+  toast('Test cihazı kaydedildi');
+  loadAnalyticsExclusionSettings();
+}
+
+const SOCIAL_SETTING_KEYS = ['instagram', 'twitter', 'facebook', 'linkedin', 'youtube', 'tiktok'];
+
+function warnIfSocialSettingsEmpty({ notify = false } = {}) {
+  const filled = SOCIAL_SETTING_KEYS.filter((key) => {
+    const el = document.getElementById(`s-${key}`);
+    return el?.value?.trim();
+  });
+  const hint = document.getElementById('social-settings-hint');
+  if (!filled.length) {
+    if (hint) hint.textContent = 'Uyarı: Tüm sosyal alanlar boş — sitede ikon görünmez.';
+    if (notify) toast('Sosyal medya alanları boş — footer ikonları gizli kalacak.', 'error');
+    return false;
+  }
+  if (hint) {
+    hint.textContent = `Footer’da ${filled.length} platform yayında (${filled.join(', ')}).`;
+  }
+  return true;
 }
 
 async function saveSettings() {
-  const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '' }));
+  warnIfSocialSettingsEmpty({ notify: true });
+  const liveToggle = document.getElementById('s-live_providers_enabled');
+  const liveFeedInput = document.getElementById('s-live_finance_feed_url');
+  const liveEnabled = Boolean(liveToggle?.checked);
+  const liveFeedUrl = String(liveFeedInput?.value || '').trim();
+  if (liveEnabled && !liveFeedUrl) {
+    toast('Canlı sağlayıcı modu için önce geçerli bir feed URL girin.', 'error');
+    liveFeedInput?.focus();
+    updateLiveDataAdminHint();
+    return;
+  }
+  const rows = KEYS.map((f) => {
+    let value = document.getElementById('s-' + f)?.value || '';
+    if (f === 'analytics_clean_start_at' && value) {
+      try {
+        const d = new Date(value);
+        if (!Number.isNaN(d.getTime())) value = d.toISOString();
+      } catch {
+        /* keep raw */
+      }
+    }
+    return { key: f, value };
+  });
   BOOLEAN_SETTING_KEYS.forEach((key) => {
     const el = document.getElementById('s-' + key);
     if (!el) return;
     rows.push({ key, value: el.checked ? 'true' : 'false' });
   });
   await adminAction({ action: 'upsert_settings', table: 'site_settings', id: 'settings', values: rows });
+  const cleanRow = rows.find((r) => r.key === 'analytics_clean_start_at');
+  if (cleanRow?.value) analyticsCleanStartAt = cleanRow.value;
   toast('Kaydedildi!');
+  updateLiveDataAdminHint();
+}
+
+function updateLiveDataAdminHint() {
+  const hint = document.getElementById('live-data-admin-hint');
+  const liveToggle = document.getElementById('s-live_providers_enabled');
+  const liveFeedInput = document.getElementById('s-live_finance_feed_url');
+  if (!hint) return;
+  const liveEnabled = Boolean(liveToggle?.checked);
+  const liveFeedUrl = String(liveFeedInput?.value || '').trim();
+  if (liveEnabled && liveFeedUrl) {
+    hint.textContent = 'Canlı mod açık — feed URL kayıtlı. UI etiketlerinin doğru göründüğünü doğrulayın.';
+    hint.style.color = '';
+  } else if (liveEnabled && !liveFeedUrl) {
+    hint.textContent = 'Uyarı: Canlı mod seçili ama feed URL boş — kayıt reddedilir.';
+    hint.style.color = '#dc2626';
+  } else if (!liveEnabled && liveFeedUrl) {
+    hint.textContent = 'Feed URL kayıtlı; canlı mod kapalı (simülasyon). Açmak için toggle’ı işaretleyin.';
+    hint.style.color = '';
+  } else {
+    hint.textContent = 'Simülasyon modu — canlı mod için feed URL + toggle gerekir. Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md';
+    hint.style.color = '';
+  }
 }
 
 async function loadAnnouncements() {
@@ -1755,59 +2120,6 @@ async function deleteFaq(id) {
   await adminAction({ action: 'delete', table: 'faqs', id });
   toast('Silindi');
   loadFaqs(); loadDashboard();
-}
-
-function autoSlug() {
-  const title = document.getElementById('post-title').value;
-  document.getElementById('post-slug').value = title.toLowerCase()
-    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
-    .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
-}
-
-async function loadPosts() {
-  const el = document.getElementById('posts-list');
-  const res = await fetchAdminTable(sb, {
-    table: 'posts',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: () => sb.from('posts').select('*').order('created_at', { ascending: false })
-  });
-  const data = res.data || [];
-  if (!data.length) {
-    el.innerHTML = res.error
-      ? `<p class="empty">Yazılar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
-      : '<p class="empty">Henüz yazı yok.</p>';
-    return;
-  }
-  el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Slug</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data.map(p => `<tr><td><strong>${escapeHtml(p.title||'—')}</strong></td><td class="text-muted text-xs">/${escapeHtml(p.slug||'—')}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${safeAttr(p.id)}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${safeAttr(p.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
-}
-
-async function savePost() {
-  const title = document.getElementById('post-title').value.trim();
-  const slug = document.getElementById('post-slug').value.trim() || title.toLowerCase().replace(/\s+/g,'-');
-  const content = document.getElementById('post-content').value.trim();
-  const is_published = document.getElementById('post-published').checked;
-  if (!title) { toast('Başlık zorunlu', 'error'); return; }
-  await adminAction({ action: 'insert', table: 'posts', id: 'new', values: { title, slug, content, is_published } });
-  toast('Yazı eklendi');
-  document.getElementById('post-title').value = '';
-  document.getElementById('post-slug').value = '';
-  document.getElementById('post-content').value = '';
-  loadPosts(); loadDashboard();
-}
-
-async function togglePost(id, current) {
-  await adminAction({ action: 'update', table: 'posts', id, values: { is_published: !current } });
-  toast(current ? 'Taslağa alındı' : 'Yayınlandı');
-  loadPosts(); loadDashboard();
-}
-
-async function deletePost(id) {
-  if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  await adminAction({ action: 'delete', table: 'posts', id });
-  toast('Silindi');
-  loadPosts(); loadDashboard();
 }
 
 const CAMPAIGNS_SETTING_KEY = 'public_campaigns';
@@ -2058,7 +2370,7 @@ async function loadListings() {
   if (!data.length) {
     el.innerHTML = res.error
       ? `<p class="empty">İlanlar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
-      : '<p class="empty">Henüz ilan yok.</p>';
+      : '<p class="empty">Henüz değerlendirilebilir seçenek yok.</p>';
     return;
   }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
@@ -2125,33 +2437,60 @@ async function loadUsers() {
 async function trackAdminCrmEvent(eventName, metadata = {}) {
   try {
     const { analytics } = await import('./core/analytics.js');
-    analytics.track(eventName, metadata, {
-      category: 'admin',
-      funnel: 'crm',
-      funnel_step: eventName,
-      force: true
-    });
+    await analytics.track(
+      eventName,
+      { ...metadata, admin_crm: true },
+      {
+        category: 'admin',
+        funnel: 'crm',
+        funnel_step: eventName,
+        force: true
+      }
+    );
     analytics.flush();
-  } catch {}
+  } catch {
+    /* admin CRM telemetry is best-effort */
+  }
 }
 
 async function trackAdminAutoEvent(eventName, metadata = {}) {
   return trackAdminCrmEvent(eventName, metadata);
 }
 
-async function loadAutoAnalytics() {
+async function loadAutoAnalytics(dataMode = autoAnalyticsDataMode) {
   const el = document.getElementById('auto-analytics-list');
   if (!el) return;
+
+  autoAnalyticsDataMode = dataMode;
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  if (!analyticsCleanStartAt) {
+    analyticsCleanStartAt = await fetchAnalyticsCleanStartAt(sb);
+  }
+
+  const windowDays = SCALE_LIMITS.admin.analyticsWindowDays || 30;
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+  const analyticsSelect =
+    'event_name, email, phone, created_at, session_id, is_internal, internal_reason, traffic_type, properties, utm_source';
 
   let events = [];
   let leadRows = [];
 
   try {
-    [events, leadRows] = await Promise.all([
-      adminList(sb, {
-        table: 'auto_events',
+    const [analyticsRes, leadList] = await Promise.all([
+      fetchAdminTable(sb, {
+        table: 'analytics_events',
+        select: analyticsSelect,
+        limit: SCALE_LIMITS.admin.analyticsRowLimit,
         order: { column: 'created_at', ascending: false },
-        limit: 500
+        direct: () =>
+          sb
+            .from('analytics_events')
+            .select(analyticsSelect)
+            .gte('created_at', since)
+            .like('event_name', 'auto_%')
+            .order('created_at', { ascending: false })
+            .limit(SCALE_LIMITS.admin.analyticsRowLimit)
       }),
       adminList(sb, {
         table: 'auto_leads',
@@ -2159,10 +2498,33 @@ async function loadAutoAnalytics() {
         limit: 1000
       })
     ]);
+    leadRows = leadList;
+    const rawAnalytics = (analyticsRes.data || []).filter((row) =>
+      String(row.event_name || '').startsWith('auto_')
+    );
+    events = filterAnalyticsRows(
+      rawAnalytics,
+      dataMode,
+      dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
+    );
+    if (!events.length && dataMode === ANALYTICS_DATA_MODES.REAL) {
+      const legacy = await adminList(sb, {
+        table: 'auto_events',
+        order: { column: 'created_at', ascending: false },
+        limit: 500
+      });
+      events = legacy.filter((row) => {
+        const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+        return ts >= new Date(since).getTime();
+      });
+    }
   } catch (error) {
     el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
     return;
   }
+
+  const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
+  const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Temiz başlangıç: ${analyticsCleanStartAt ? new Date(analyticsCleanStartAt).toLocaleString('tr-TR') : '—'}</p>`;
 
   const counts = events.reduce((acc, event) => {
     acc[event.event_name] = (acc[event.event_name] || 0) + 1;
@@ -2294,6 +2656,8 @@ async function loadAutoAnalytics() {
   ];
 
   el.innerHTML = `
+    ${dataModeToolbar}
+    ${modeNote}
     <h3 style="margin:0 0 14px 0;">Operasyon</h3>
     <div class="stat-grid">
       ${opsCards.map(([label, value, sub]) => `
@@ -2356,6 +2720,12 @@ async function loadAutoAnalytics() {
       </table>
     ` : '<p class="empty">Henüz analytics event yok.</p>'}
   `;
+
+  el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadAutoAnalytics(btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
+    });
+  });
 }
 
 
@@ -2476,23 +2846,34 @@ function renderGrowthCommandCenter(rows) {
   `;
 }
 
-async function loadPlatformAnalytics() {
+async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMode = platformAnalyticsDataMode) {
   const el = document.getElementById('platform-analytics-root');
   if (!el) return;
 
+  platformAnalyticsFilter = filterId;
+  platformAnalyticsDataMode = dataMode;
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const since = new Date(
-    Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000
-  ).toISOString();
+  if (!analyticsCleanStartAt) {
+    analyticsCleanStartAt = await fetchAnalyticsCleanStartAt(sb);
+  }
+
+  const preset = FILTER_PRESETS.find((p) => p.id === filterId) || FILTER_PRESETS[1];
+  const windowDays = preset.id === 'all' ? 365 : preset.days;
+  const rowLimit =
+    preset.id === 'all' || preset.id === '30d'
+      ? SCALE_LIMITS.admin.executiveRowLimit
+      : SCALE_LIMITS.admin.analyticsRowLimit;
+
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
   const sinceMs = new Date(since).getTime();
   const selectExpr =
-    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties';
+    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties, page_path, is_internal, internal_reason, traffic_type, utm_source, utm_medium, utm_campaign, referrer, landing_page';
 
   const analyticsRes = await fetchAdminTable(sb, {
     table: 'analytics_events',
     select: selectExpr,
-    limit: SCALE_LIMITS.admin.analyticsRowLimit,
+    limit: rowLimit,
     order: { column: 'created_at', ascending: false },
     direct: () =>
       sb
@@ -2500,11 +2881,17 @@ async function loadPlatformAnalytics() {
         .select(selectExpr)
         .gte('created_at', since)
         .order('created_at', { ascending: false })
-        .limit(SCALE_LIMITS.admin.analyticsRowLimit)
+        .limit(rowLimit)
   });
 
+  const analyticsBanner = renderAdminDataSourceNotices([analyticsRes]);
+
   if (analyticsRes.error && !(analyticsRes.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([analyticsRes]))}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message)}</p>`;
+    lastPlatformAnalyticsRows = null;
+    el.innerHTML = `${analyticsBanner}${renderPlatformAnalyticsEmptyGuide({
+      fetchError: analyticsRes.error.message
+    })}`;
+    bindPlatformAnalyticsToolbar(el, filterId, dataMode);
     return;
   }
 
@@ -2512,47 +2899,67 @@ async function loadPlatformAnalytics() {
     const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
     return ts >= sinceMs;
   });
-  const analyticsBanner =
-    analyticsRes.source === 'admin-action'
-      ? renderAdminWarningBanner(collectAdminWarnings([analyticsRes]))
-      : '';
-  if (!rows.length) {
-    el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
+
+  const timeFiltered = filterRowsByPreset(rows, filterId);
+  const filteredRows = filterAnalyticsRows(
+    timeFiltered,
+    dataMode,
+    dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
+  );
+
+  if (!rows.length || !filteredRows.length) {
+    lastPlatformAnalyticsRows = filteredRows.length ? filteredRows : null;
+    el.innerHTML = `${analyticsBanner}${renderAnalyticsDataModeToolbar(dataMode)}${renderPlatformAnalyticsEmptyGuide({
+      rawRowCount: rows.length,
+      filteredRowCount: filteredRows.length,
+      dataMode
+    })}`;
+    bindPlatformAnalyticsToolbar(el, filterId, dataMode);
     return;
   }
 
-  const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Son ${SCALE_LIMITS.admin.analyticsWindowDays} gün · en fazla ${SCALE_LIMITS.admin.analyticsRowLimit} event (P4.7 scale guard).</p>`;
+  lastPlatformAnalyticsRows = filteredRows;
+  const siteMetrics = buildSiteAnalyticsMetrics(filteredRows);
+  lastPlatformSiteMetrics = siteMetrics;
+  const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
+  const siteDashboard = renderSiteAnalyticsDashboard(siteMetrics, {
+    filterId,
+    windowNote: `${preset.label} · ${ANALYTICS_DATA_MODE_LABELS?.[dataMode] || dataMode} · en fazla ${rowLimit} event. Temiz başlangıç: ${analyticsCleanStartAt ? new Date(analyticsCleanStartAt).toLocaleString('tr-TR') : '—'}`
+  });
 
-  const pageViews = countEvents(rows, 'page_view') + countEvents(rows, 'auto_page_view');
-  const authModal = countEvents(rows, 'auth_modal_open');
-  const authLoginOk = countEvents(rows, 'auth_login_success');
-  const authRegisterOk = countEvents(rows, 'auth_register_success');
-  const checkoutStarted = countFunnelStep(rows, 'checkout_start');
-  const checkoutCompleted = countFunnelStep(rows, 'checkout_complete');
-  const paidConversions = countFunnelStep(rows, 'paid_conversion');
-  const leadSubmit = countEvents(rows, 'lead_submit') + countEvents(rows, 'auto_lead_submit');
-  const partnerOk = countEvents(rows, 'partner_dispatch_success');
-  const partnerFail = countEvents(rows, 'partner_dispatch_failed');
-  const financeStart = countEvents(rows, 'finance_funnel_start');
-  const ctaClicks = countEvents(rows, 'cta_click');
-  const pricingViews = countFunnelStep(rows, 'pricing_view');
-  const checkoutAbandoned = countEvents(rows, 'checkout_abandoned');
-  const partnerLanding = countEvents(rows, 'partner_landing_view');
-  const partnerApply = countEvents(rows, 'partner_application_submit');
-  const partnerOnboarding = countEvents(rows, 'partner_onboarding_view');
-  const partnerWebhookDraft = countEvents(rows, 'partner_webhook_draft_saved');
-  const referralLand = countEvents(rows, 'growth_referral_land');
-  const referralShare = countEvents(rows, 'growth_referral_share');
-  const referralConvert = countEvents(rows, 'growth_referral_convert');
-  const referralLinkCreated = countEvents(rows, 'referral_link_created');
-  const referralLinkClicked = countEvents(rows, 'referral_link_clicked');
-  const referralSignup = countEvents(rows, 'referral_signup');
-  const referralConversion = countEvents(rows, 'referral_conversion');
-  const upsellViews = countEvents(rows, 'upsell_view');
-  const upsellClicks = countEvents(rows, 'upsell_click');
-  const upsellConversions = countEvents(rows, 'upsell_conversion');
-  const lifecycleEnroll = countEvents(rows, 'lifecycle_enroll_requested');
-  const growthChannelRows = rows.filter((row) => row.event_category === 'growth');
+  const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Legacy platform özeti · ${escapeHtml(preset.label)}.</p>`;
+
+  const kpiRows = filteredRows;
+  const pageViews = countEvents(kpiRows, 'page_view') + countEvents(kpiRows, 'auto_page_view');
+  const authModal = countEvents(kpiRows, 'auth_modal_open');
+  const authLoginOk = countEvents(kpiRows, 'auth_login_success');
+  const authRegisterOk = countEvents(kpiRows, 'auth_register_success');
+  const checkoutStarted = countFunnelStep(kpiRows, 'checkout_start');
+  const checkoutCompleted = countFunnelStep(kpiRows, 'checkout_complete');
+  const paidConversions = countFunnelStep(kpiRows, 'paid_conversion');
+  const leadSubmit = countEvents(kpiRows, 'lead_submit') + countEvents(kpiRows, 'auto_lead_submit');
+  const partnerOk = countEvents(kpiRows, 'partner_dispatch_success');
+  const partnerFail = countEvents(kpiRows, 'partner_dispatch_failed');
+  const financeStart = countEvents(kpiRows, 'finance_funnel_start');
+  const ctaClicks = countEvents(kpiRows, 'cta_click');
+  const pricingViews = countFunnelStep(kpiRows, 'pricing_view');
+  const checkoutAbandoned = countEvents(kpiRows, 'checkout_abandoned');
+  const partnerLanding = countEvents(kpiRows, 'partner_landing_view');
+  const partnerApply = countEvents(kpiRows, 'partner_application_submit');
+  const partnerOnboarding = countEvents(kpiRows, 'partner_onboarding_view');
+  const partnerWebhookDraft = countEvents(kpiRows, 'partner_webhook_draft_saved');
+  const referralLand = countEvents(kpiRows, 'growth_referral_land');
+  const referralShare = countEvents(kpiRows, 'growth_referral_share');
+  const referralConvert = countEvents(kpiRows, 'growth_referral_convert');
+  const referralLinkCreated = countEvents(kpiRows, 'referral_link_created');
+  const referralLinkClicked = countEvents(kpiRows, 'referral_link_clicked');
+  const referralSignup = countEvents(kpiRows, 'referral_signup');
+  const referralConversion = countEvents(kpiRows, 'referral_conversion');
+  const upsellViews = countEvents(kpiRows, 'upsell_view');
+  const upsellClicks = countEvents(kpiRows, 'upsell_click');
+  const upsellConversions = countEvents(kpiRows, 'upsell_conversion');
+  const lifecycleEnroll = countEvents(kpiRows, 'lifecycle_enroll_requested');
+  const growthChannelRows = kpiRows.filter((row) => row.event_category === 'growth');
   const growthByChannel = growthChannelRows.reduce((acc, row) => {
     const channel = row.funnel || row.attribution?.growth_channel || 'growth';
     acc[channel] = (acc[channel] || 0) + 1;
@@ -2569,13 +2976,13 @@ async function loadPlatformAnalytics() {
   ];
 
   const dropoffRows = autoSteps.map(([eventName, label], index) => {
-    const count = countEvents(rows, eventName);
-    const prev = index > 0 ? countEvents(rows, autoSteps[index - 1][0]) : count;
+    const count = countEvents(kpiRows, eventName);
+    const prev = index > 0 ? countEvents(kpiRows, autoSteps[index - 1][0]) : count;
     const drop = index > 0 && prev ? Math.max(0, prev - count) : 0;
     return { label, count, drop, conv: index > 0 ? conversionPct(count, prev) : '100%' };
   });
 
-  const attributionMap = rows
+  const attributionMap = kpiRows
     .filter((row) => row.event_name === 'revenue_attributed' || row.event_name === 'checkout_completed')
     .reduce((acc, row) => {
       const source = row.attribution?.utm_source || 'direct';
@@ -2583,7 +2990,7 @@ async function loadPlatformAnalytics() {
       return acc;
     }, {});
 
-  const crmEvents = rows.filter((row) => row.event_name.startsWith('crm_'));
+  const crmEvents = kpiRows.filter((row) => row.event_name.startsWith('crm_'));
 
   const executiveFunnel = [
     ['landing_visit', 'Landing ziyaret'],
@@ -2600,17 +3007,17 @@ async function loadPlatformAnalytics() {
   ];
 
   const executiveRows = executiveFunnel.map(([key, label], index) => {
-    const count = countFunnelStep(rows, key);
+    const count = countFunnelStep(kpiRows, key);
     const prevKey = index > 0 ? executiveFunnel[index - 1][0] : null;
-    const prev = prevKey ? countFunnelStep(rows, prevKey) : count;
+    const prev = prevKey ? countFunnelStep(kpiRows, prevKey) : count;
     return { label, count, conv: index > 0 ? conversionPct(count, prev) : '—' };
   });
 
   const channelRevenue = sumRevenueCentsByChannel(
-    rows,
+    kpiRows,
     ['paid_conversion', 'checkout_completed', 'checkout_complete', 'revenue_attributed']
   );
-  const channelLeads = rows
+  const channelLeads = kpiRows
     .filter((row) => row.event_name === 'lead_submit' || row.event_name === 'auto_lead_submit')
     .reduce((acc, row) => {
       const props = row.properties || {};
@@ -2625,8 +3032,11 @@ async function loadPlatformAnalytics() {
 
   el.innerHTML = `
     ${analyticsBanner}
+    ${dataModeToolbar}
+    ${siteDashboard}
+    <div style="height:24px"></div>
     ${windowNote}
-    ${renderGrowthCommandCenter(rows)}
+    ${renderGrowthCommandCenter(kpiRows)}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
     <table class="table">
@@ -2739,42 +3149,51 @@ async function loadPlatformAnalytics() {
     <h3 style="margin:0 0 14px 0;">Admin CRM outcomes</h3>
     <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
   `;
+
+  bindPlatformAnalyticsToolbar(el, filterId, dataMode);
 }
 
-async function createPartnerEndpoint() {
-  const name = document.getElementById('partner-name')?.value?.trim();
-  const routeType = document.getElementById('partner-route-type')?.value;
-  const webhookUrl = document.getElementById('partner-webhook-url')?.value?.trim();
-  const priorityWeight = Number(document.getElementById('partner-priority-weight')?.value || 100);
-  const dailyCapRaw = document.getElementById('partner-daily-cap')?.value;
-  const notes = document.getElementById('partner-notes')?.value || '';
-
-  if (!name || !routeType || !webhookUrl) {
-    toast('Partner adı, yönlendirme tipi ve webhook URL zorunlu.', 'error');
-    return;
-  }
-
-  await adminAction({
-    action: 'insert',
-    table: 'partner_endpoints',
-    id: 'new',
-    values: {
-      name,
-      route_type: routeType,
-      webhook_url: webhookUrl,
-      is_active: true,
-      priority_weight: priorityWeight,
-      daily_cap: dailyCapRaw ? Number(dailyCapRaw) : null,
-      notes
-    }
+function bindPlatformAnalyticsToolbar(el, filterId, dataMode) {
+  if (!el) return;
+  el.querySelectorAll('[data-site-analytics-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadPlatformAnalytics(btn.getAttribute('data-site-analytics-filter') || '7d', platformAnalyticsDataMode);
+    });
   });
-
-  toast('Partner kanalı eklendi');
-  ['partner-name', 'partner-webhook-url', 'partner-daily-cap', 'partner-notes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadPlatformAnalytics(platformAnalyticsFilter, btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
+    });
   });
-  loadPartnerEndpoints();
+  el.querySelectorAll('[data-action="export-platform-csv"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const kind = btn.getAttribute('data-kind');
+      const result = exportPlatformAnalyticsCsv(lastPlatformSiteMetrics, kind);
+      if (result.ok) toast('CSV indirildi');
+      else if (result.error === 'empty') toast('Dışa aktarılacak satır yok', 'error');
+      else toast('Önce veri yükleyin', 'error');
+    });
+  });
+  el.querySelectorAll('[data-page-target="settings"]').forEach((btn) => {
+    btn.addEventListener('click', () => showPage('settings', btn));
+  });
+  el.querySelectorAll('[data-action="analytics-path-detail"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const path = btn.getAttribute('data-path');
+      if (!path || !lastPlatformAnalyticsRows?.length) {
+        toast('Önce veri yükleyin', 'error');
+        return;
+      }
+      const panel = document.getElementById('platform-path-detail-panel');
+      const detail = buildPagePathDetail(lastPlatformAnalyticsRows, path);
+      if (panel) {
+        panel.outerHTML = renderPagePathDetailPanel(detail);
+        document
+          .getElementById('platform-path-detail-panel')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  });
 }
 
 async function provisionPartnerFromApplication(applicationId) {
@@ -2820,7 +3239,7 @@ async function provisionPartnerFromApplication(applicationId) {
 
   if (lookupError || !endpointRow?.id) {
     toast('Endpoint oluşturuldu ancak ID alınamadı — listeyi yenileyin.', 'error');
-    loadPartnerEndpoints();
+    partnerEndpointsAdmin.loadPartnerEndpoints();
     return;
   }
 
@@ -2838,207 +3257,29 @@ async function provisionPartnerFromApplication(applicationId) {
 
   toast('Partner endpoint oluşturuldu — test sonrası aktif edin.');
   loadPartnerApplications();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
 }
 
-async function editPartnerEndpoint(id, currentName, currentWebhook) {
-  const name = window.prompt('Partner adı:', currentName || '');
-  if (!name) return;
-  const webhookUrl = window.prompt('Webhook URL:', currentWebhook || '');
-  if (!webhookUrl) return;
+const partnerApplicationsCtx = () => ({
+  sb,
+  adminAction,
+  toast,
+  escapeHtml,
+  safeAttr,
+  renderAdminDataSourceNotices
+});
 
-  await adminAction({
-    action: 'update',
-    table: 'partner_endpoints',
-    id,
-    values: {
-      name: name.trim(),
-      webhook_url: webhookUrl.trim()
-    }
-  });
-
-  toast('Partner endpoint güncellendi');
-  loadPartnerEndpoints();
-}
-
-async function togglePartnerEndpoint(id, active) {
-  await adminAction({
-    action: 'update',
-    table: 'partner_endpoints',
-    id,
-    values: {
-      is_active: active === 'true'
-    }
-  });
-
-  toast('Partner kanalı güncellendi');
-  loadPartnerEndpoints();
-}
-
-async function loadPartnerEndpoints() {
-  const el = document.getElementById('partner-endpoints-list');
-  if (!el) return;
-
-  const res = await fetchAdminTable(sb, {
-    table: 'partner_endpoints',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: () =>
-      sb.from('partner_endpoints').select('*').order('priority_weight', { ascending: false })
-  });
-
-  if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
-    return;
-  }
-
-  const data = res.data || [];
-  if (!data.length) {
-    el.innerHTML = '<p class="empty">Partner endpoint yok.</p>';
-    return;
-  }
-
-  el.innerHTML = `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Partner</th>
-          <th>Yönlendirme</th>
-          <th>Durum</th>
-          <th>Öncelik</th>
-          <th>Günlük Limit</th>
-          <th>Bugün Gönderilen</th>
-          <th>Sağlık</th>
-          <th>Başarılı</th>
-          <th>Başarısız</th>
-          <th>İşlem</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map(row => `
-          <tr>
-            <td><strong>${escapeHtml(row.name)}</strong></td>
-            <td>${escapeHtml({
-              dealer_partner: 'Bayi / Galeri',
-              finance_partner: 'Finansman',
-              insurance_partner: 'Sigorta',
-              premium_report: 'Premium Rapor',
-              general_sales: 'Genel Satış'
-            }[row.route_type] || row.route_type)}</td>
-            <td>${row.is_active ? 'Aktif' : 'Pasif'}</td>
-            <td>${row.priority_weight || 0}</td>
-            <td>${row.daily_cap || '∞'}</td>
-            <td>${row.sent_today || 0}</td>
-            <td><span class="badge ${row.health_status === 'healthy' ? 'badge-green' : row.health_status === 'degraded' ? 'badge-yellow' : 'badge-red'}">${escapeHtml(row.health_status || 'healthy')}</span></td>
-            <td>${row.success_count || 0}</td>
-            <td>${row.fail_count || 0}</td>
-            <td class="table-actions">
-              <button class="btn btn-ghost btn-sm" data-action="edit-partner-endpoint" data-id="${safeAttr(row.id)}" data-name="${safeAttr(row.name)}" data-webhook="${safeAttr(row.webhook_url)}">Düzenle</button>
-              <button class="btn btn-ghost btn-sm" data-action="toggle-partner-endpoint" data-id="${safeAttr(row.id)}" data-active="${row.is_active ? 'false' : 'true'}">
-                ${row.is_active ? 'Pasif yap' : 'Aktif yap'}
-              </button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+function initPartnerApplicationsShell() {
+  const shell = document.getElementById('partner-applications-shell');
+  if (!shell || shell.dataset.ready === '1') return;
+  shell.innerHTML = getPartnerApplicationFormMarkup();
+  shell.dataset.ready = '1';
+  bindPartnerApplicationsAdminUi(partnerApplicationsCtx());
 }
 
 async function loadPartnerApplications() {
-  const el = document.getElementById('partner-applications-list');
-  if (!el) return;
-
-  const res = await fetchAdminTable(sb, {
-    table: 'partner_applications',
-    select: '*',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: (selectExpr) => {
-      const cols = selectExpr || '*';
-      return sb
-        .from('partner_applications')
-        .select(cols)
-        .order('created_at', { ascending: false })
-        .limit(200);
-    }
-  });
-
-  const warnings = collectAdminWarnings([res]);
-
-  if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p><p class="text-muted-sm">Migration: <code>supabase db push</code> (20260609_partner_applications_schema_repair.sql)</p>`;
-    return;
-  }
-
-  const data = res.data || [];
-  if (!data.length) {
-    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Başvuru yok.</p>`;
-    return;
-  }
-
-  const crmOptions = partnerCrmStatusOptions();
-  const pipelineBoard = renderPartnerPipelineBoardHtml(
-    data.map((row) => ({ ...row, status: normalizePartnerCrmStatus(row.status) }))
-  );
-
-  el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
-    ${pipelineBoard}
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Firma</th>
-          <th>İletişim</th>
-          <th>Kategori</th>
-          <th>Webhook</th>
-          <th>Durum</th>
-          <th>Tarih</th>
-          <th>Plan</th>
-          <th>Skor</th>
-          <th>Hız</th>
-          <th>İşlem</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map((row) => {
-          const velocity = computeOnboardingVelocity(row);
-          const dealScore = scorePartnerApplication(row);
-          const nextAction = recommendNextSalesAction(row);
-          return `
-          <tr>
-            <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small><br><small class="text-muted">${escapeHtml(nextAction.action)}</small></td>
-            <td>${escapeHtml(row.phone)}<br><small>${escapeHtml(row.email)}</small></td>
-            <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
-            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft != null && row.webhook_url_draft !== '' ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
-            <td>
-              <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}"
-                data-previous-status="${safeAttr(normalizePartnerCrmStatus(row.status))}">
-                ${crmOptions.map(({ value, label }) => {
-                  const current = normalizePartnerCrmStatus(row.status);
-                  return `<option value="${value}" ${current === value ? 'selected' : ''}>${escapeHtml(label)}</option>`;
-                }).join('')}
-              </select>
-              <small class="text-muted">P(win) ${Math.round(getPartnerCrmWinProbability(row.status) * 100)}%</small>
-            </td>
-            <td>${formatShortDate(row.created_at)}</td>
-            <td><small>${escapeHtml(row.billing_plan != null ? row.billing_plan : 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
-            <td><span class="badge badge-blue">${dealScore}</span></td>
-            <td><span class="badge ${velocityBadgeClass(velocity)} ib-sales-velocity-badge">${escapeHtml(velocity.label)}</span><br><small>${velocity.daysSinceApply}g · %${velocity.progressPct}</small></td>
-            <td class="table-actions">
-              <select class="ib-sales-touch-select" data-action="log-partner-sales-touch" data-id="${safeAttr(row.id)}" data-stage="${safeAttr(row.status || '')}" data-tier="${safeAttr(row.billing_plan || '')}">
-                <option value="">Satış dokunuşu</option>
-                ${SALES_TOUCH_TYPES.map((t) => `<option value="${t.id}">${escapeHtml(t.label)}</option>`).join('')}
-              </select>
-              ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-basvuru.html?token=${encodeURIComponent(row.onboarding_token)}&step=2" target="_blank" rel="noopener">Onboarding</a>` : ''}
-              ${row.partner_endpoint_id == null || row.partner_endpoint_id === '' ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
-            </td>
-          </tr>
-        `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
+  initPartnerApplicationsShell();
+  await loadPartnerApplicationsPage(partnerApplicationsCtx());
 }
 
 async function loadPartnerDispatchLogs() {
@@ -3064,7 +3305,7 @@ async function loadPartnerDispatchLogs() {
   });
 
   if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices([res])}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
     return;
   }
 
@@ -3138,7 +3379,7 @@ async function manualDispatchLead(leadId, force = false) {
 
   loadAutoLeads();
   loadPartnerDispatchLogs();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
   if (activeDrawerLeadId) refreshOpenLeadDrawer();
 }
 
@@ -3246,20 +3487,28 @@ function renderPartnerStatusBadgeHtml(status) {
 
 async function fetchLeadDispatchLogs(leadId) {
   if (!leadId) return [];
-  const { data, error } = await sb
-    .from('partner_lead_dispatch_logs')
-    .select('*')
-    .eq('lead_id', leadId)
-    .order('created_at', { ascending: false })
-    .limit(10);
-  if (error) return [];
-  return data || [];
+  const res = await fetchAdminTable(sb, {
+    table: 'partner_lead_dispatch_logs',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('partner_lead_dispatch_logs')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+  });
+  return (res.data || []).filter((row) => row.lead_id === leadId).slice(0, 10);
 }
 
 async function refreshOpenLeadDrawer() {
   if (!activeDrawerLeadId) return;
-  const { data, error } = await sb.from('auto_leads').select('*').eq('id', activeDrawerLeadId).maybeSingle();
-  if (!error && data) await openLeadDrawer(data);
+  const res = await fetchAdminRowById(sb, {
+    table: 'auto_leads',
+    id: activeDrawerLeadId
+  });
+  if (res.data) await openLeadDrawer(res.data);
 }
 
 function formatFollowUpLabel(lead) {
@@ -3779,9 +4028,14 @@ async function openLeadDrawer(lead) {
   `).join('');
 
   const logs = await fetchLeadDispatchLogs(lead.id);
+  const partnerPool = await fetchActivePartnerPool(sb);
 
   content.innerHTML = `
     ${renderDispatchPanelHtml(lead, logs)}
+    ${renderLeadAiSummaryHtml(lead, escapeHtml, {
+      partners: partnerPool.partners,
+      source: partnerPool.source
+    })}
     <section class="lead-drawer-section">
       <h4>CRM durumu</h4>
       <div class="lead-pipeline-chips">${pipelineChips}</div>
@@ -3971,7 +4225,7 @@ async function updateAutoLeadStatus(id, status) {
   toast('Lead durumu güncellendi');
   loadAutoLeads();
   loadAutoAnalytics();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
   if (activeDrawerLeadId === id) refreshOpenLeadDrawer();
 }
 
@@ -4073,15 +4327,22 @@ sb.auth.getSession().then(({ data }) => {
   if (data.session) { currentUser = data.session.user; showApp(); }
 });
 
-async function loadUnifiedFunnelDashboard() {
+async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
   const el = document.getElementById('unified-funnel-root');
   if (!el) return;
+
+  unifiedFunnelDataMode = dataMode;
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const since = new Date(Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000).toISOString();
-  const selectExpr = 'event_name, event_type, session_id, metadata, created_at';
+  if (!analyticsCleanStartAt) {
+    analyticsCleanStartAt = await fetchAnalyticsCleanStartAt(sb);
+  }
 
-  const [analyticsRes, housingRes, vacationRes] = await Promise.all([
+  const since = new Date(Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000).toISOString();
+  const selectExpr =
+    'event_name, event_type, session_id, metadata, created_at, is_internal, traffic_type, properties';
+
+  const [analyticsRes, housingRes, vacationRes, verticalRes] = await Promise.all([
     fetchAdminTable(sb, {
       table: 'analytics_events',
       select: selectExpr,
@@ -4103,18 +4364,45 @@ async function loadUnifiedFunnelDashboard() {
       limit: 5000,
       order: { column: 'created_at', ascending: false },
       direct: () => sb.from('vacation_events').select('event_type, session_id, metadata, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'vertical_events',
+      select: 'vertical, event_type, session_id, metadata, created_at',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('vertical_events')
+          .select('vertical, event_type, session_id, metadata, created_at')
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(5000)
     })
   ]);
 
   const { buildUnifiedFunnelMetrics, renderUnifiedFunnelDashboard } = await import('./admin/unified-funnel-dashboard.js');
+  const filteredAnalytics = filterAnalyticsRows(
+    analyticsRes.data || [],
+    dataMode,
+    dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
+  );
   const rows = [
-    ...(analyticsRes.data || []),
+    ...filteredAnalytics,
     ...(housingRes.data || []),
-    ...(vacationRes.data || [])
+    ...(vacationRes.data || []),
+    ...(verticalRes.data || [])
   ];
   const metrics = buildUnifiedFunnelMetrics(rows);
-  const banner = renderAdminWarningBanner(collectAdminWarnings([analyticsRes, housingRes, vacationRes]));
-  el.innerHTML = `${banner}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
+  const banner = renderAdminDataSourceNotices([analyticsRes, housingRes, vacationRes, verticalRes]);
+  const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
+  const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Platform eventleri ITE ile filtrelenir; konut/tatil/vertical_events legacy tabloları ham veridir.</p><p class="text-muted-sm funnel-cutover-note" style="margin:0 0 12px;padding:10px 12px;border-left:3px solid var(--border,#d1d5db);background:var(--surface-muted,#f9fafb)">5 Haziran 2026 sonrası wizard_start page load\u2019dan kullanıcı etkileşimine taşındı; önceki dönemle karşılaştırmada start oranları şişkin olabilir.</p>`;
+  el.innerHTML = `${banner}${dataModeToolbar}${modeNote}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
+
+  el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadUnifiedFunnelDashboard(btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
+    });
+  });
 }
 
 registerAdminPageHandlers({
@@ -4124,7 +4412,8 @@ registerAdminPageHandlers({
   announcements: () => loadAnnouncements(),
   campaigns: () => loadCampaigns(),
   faqs: () => loadFaqs(),
-  blog: () => loadPosts(),
+  'home-news': () => loadNewsPostsAdmin(),
+  blog: () => loadBlogPostsAdmin(),
   listings: () => loadListings(),
   users: () => loadUsers(),
   'auto-leads': () => loadAutoLeads(),
@@ -4143,6 +4432,8 @@ registerAdminPageHandlers({
   'finance-leads': () => financeAdmin.loadFinanceLeads(),
   'finance-partners': () => financeAdmin.loadFinancePartners(),
   'finance-scoring': () => financeAdmin.loadFinanceScoring(),
+  'sigorta-leads': () => sigortaAdmin.loadSigortaLeads(),
+  'kasko-leads': () => kaskoAdmin.loadKaskoLeads(),
   'unified-funnel': () => loadUnifiedFunnelDashboard(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
@@ -4153,6 +4444,7 @@ registerAdminPageHandlers({
     refreshInternalDashboard('partner_ops', 'dashboard-partner-ops-root'),
   'dashboard-support': () => refreshInternalDashboard('support', 'dashboard-support-root'),
   'ops-ai-assistant': () => refreshOpsAiAssistant(),
+  'linkedin-ops-assistant': () => refreshLinkedInOpsAssistant(),
   'investor-metrics': () => loadExecutiveKpis(),
   observability: () => loadOperationalHealth(),
   'ops-command-center': () => loadOpsCommandCenter(),
@@ -4166,12 +4458,16 @@ registerAdminPageHandlers({
   'expansion-prioritization': () => loadExpansionPrioritization(),
   'strategic-partnerships': () => loadStrategicPartnerships(),
   'acquisition-exit': () => loadAcquisitionExit(),
-  'partner-endpoints': () => loadPartnerEndpoints(),
+  'partner-endpoints': () => {
+    partnerEndpointsAdmin.mountRouteTypeSelect();
+    partnerEndpointsAdmin.loadPartnerEndpoints();
+  },
   'partner-applications': async () => {
     await initPartnerSalesMachineAdmin().catch(() => {});
     await loadPartnerApplications();
   },
-  'partner-dispatch-logs': () => loadPartnerDispatchLogs()
+  'partner-dispatch-logs': () => loadPartnerDispatchLogs(),
+  payments: () => loadPaymentsAdminPage()
 });
 
 function bindAdminPanelEvents() {
@@ -4190,16 +4486,23 @@ function bindAdminPanelEvents() {
     });
   });
 
+  bindAdminExternalNavLinks();
+
   initAdminMobileNav();
   initAdminShell();
 
   document.querySelectorAll('[data-action="save-settings"]').forEach((el) => {
     el.addEventListener('click', saveSettings);
   });
+  ['s-live_providers_enabled', 's-live_finance_feed_url'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', updateLiveDataAdminHint);
+    el.addEventListener('input', updateLiveDataAdminHint);
+  });
 
   document.querySelector('[data-action="save-announcement"]')?.addEventListener('click', saveAnnouncement);
   document.querySelector('[data-action="save-faq"]')?.addEventListener('click', saveFaq);
-  document.querySelector('[data-action="save-post"]')?.addEventListener('click', savePost);
   document.querySelector('[data-action="save-campaign"]')?.addEventListener('click', saveCampaign);
   document.querySelector('[data-action="reset-campaign-form"]')?.addEventListener('click', resetCampaignForm);
   document.querySelector('[data-action="seed-default-campaigns"]')?.addEventListener('click', seedDefaultCampaigns);
@@ -4211,6 +4514,9 @@ function bindAdminPanelEvents() {
     if (await vacationAdmin.handleVacationAction(event, el)) return;
     if (await housingAdmin.handleHousingAction(event, el)) return;
     if (await financeAdmin.handleFinanceAction(event, el)) return;
+    if (await sigortaAdmin.handleSigortaAction(event, el)) return;
+    if (await kaskoAdmin.handleKaskoAction(event, el)) return;
+    if (await partnerEndpointsAdmin.handlePartnerEndpointsAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4327,6 +4633,23 @@ function bindAdminPanelEvents() {
       return;
     }
 
+    if (action === 'vertical-retry-dispatch') {
+      const leadTable = el.dataset.leadTable || 'housing_leads';
+      manualVerticalDispatch(sb, {
+        leadId: id,
+        leadTable,
+        force: true,
+        toast
+      }).then(() => {
+        if (leadTable === 'housing_leads') housingAdmin.loadHousingLeads();
+        else if (leadTable === 'vacation_leads') vacationAdmin.loadVacationLeads();
+        else if (leadTable === 'sigorta_leads') sigortaAdmin.loadSigortaLeads();
+        else if (leadTable === 'kasko_leads') kaskoAdmin.loadKaskoLeads();
+        else if (leadTable === 'vertical_leads') verticalAdmin.loadVerticalLeads();
+      });
+      return;
+    }
+
     if (action === 'view-lead-dispatch-logs') {
       const filter = document.getElementById('dispatch-log-lead-filter');
       if (filter) filter.value = id;
@@ -4345,24 +4668,27 @@ function bindAdminPanelEvents() {
       return;
     }
 
-    if (action === 'edit-partner-endpoint') {
-      editPartnerEndpoint(id, el.dataset.name, el.dataset.webhook);
+    if (
+      await handlePartnerApplicationAdminAction(partnerApplicationsCtx(), action, el)
+    ) {
       return;
     }
 
     if (action === 'update-partner-application-status') {
       const prev = el.dataset.previousStatus || '';
       const next = el.value;
-      adminAction({
-        action: 'update',
-        table: 'partner_applications',
-        id,
-        values: { status: next }
-      }).then(() => {
+      try {
+        await adminAction({
+          action: 'updatePartnerApplication',
+          id,
+          values: { status: next }
+        });
         logPartnerCrmStageChange(prev, next, { application_id: id, force: true });
         toast('CRM aşaması güncellendi', 'success');
-        loadPartnerApplications();
-      });
+        await loadPartnerApplications();
+      } catch (error) {
+        toast(error.message || 'Durum güncellenemedi', 'error');
+      }
       return;
     }
 
@@ -4404,12 +4730,33 @@ function bindAdminPanelEvents() {
       return;
     }
 
+    if (action === 'reload-analytics-exclusions') {
+      loadAnalyticsExclusionSettings();
+      return;
+    }
+    if (action === 'analytics-add-ip') {
+      addAnalyticsInternalIp().catch((err) => toast(err.message || 'IP eklenemedi', 'error'));
+      return;
+    }
+    if (action === 'analytics-mark-device') {
+      markAnalyticsTestDevice().catch((err) => toast(err.message || 'Cihaz kaydedilemedi', 'error'));
+      return;
+    }
+    if (action === 'analytics-delete-exclusion') {
+      adminAction({ action: 'delete_analytics_exclusion', id })
+        .then(() => {
+          toast('Kural silindi');
+          loadAnalyticsExclusionSettings();
+        })
+        .catch(() => {});
+      return;
+    }
+
     if (action === 'toggle-ann') toggleAnn(id, isActive);
     if (action === 'delete-ann') deleteAnn(id);
     if (action === 'toggle-faq') toggleFaq(id, isActive);
     if (action === 'delete-faq') deleteFaq(id);
-    if (action === 'toggle-post') togglePost(id, isActive);
-    if (action === 'delete-post') deletePost(id);
+    if (handlePostsAdminAction(action, id, isActive)) return;
     if (action === 'edit-campaign') editCampaign(id);
     if (action === 'toggle-campaign') toggleCampaign(id);
     if (action === 'delete-campaign') deleteCampaign(id);
@@ -4468,6 +4815,14 @@ document.addEventListener('change', (event) => {
   ['finance-leads-search', 'finance-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => financeAdmin.loadFinanceLeads());
     document.getElementById(id)?.addEventListener('change', () => financeAdmin.loadFinanceLeads());
+  });
+  ['sigorta-leads-search', 'sigorta-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => sigortaAdmin.loadSigortaLeads());
+    document.getElementById(id)?.addEventListener('change', () => sigortaAdmin.loadSigortaLeads());
+  });
+  ['kasko-leads-search', 'kasko-leads-status-filter', 'kasko-leads-category-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => kaskoAdmin.loadKaskoLeads());
+    document.getElementById(id)?.addEventListener('change', () => kaskoAdmin.loadKaskoLeads());
   });
   ['vertical-leads-search', 'vertical-leads-vertical-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => verticalAdmin.loadVerticalLeads());

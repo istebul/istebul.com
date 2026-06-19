@@ -37,7 +37,7 @@ const requiredRoutes = [
   '/karsilastir/',
   '/planlar',
   '/#how-it-works',
-  '/#sample-preview',
+  '/#home-vertical-focus',
   '/#pricing'
 ];
 for (const route of requiredRoutes) {
@@ -49,10 +49,21 @@ for (const route of requiredRoutes) {
   }
 }
 
-const heroMust = ['Kararımı Analiz Et', 'Nasıl Çalışır?'];
-for (const text of heroMust) {
+const marketingCopy = fs.readFileSync(path.join(root, 'js/features/i18n/marketing-copy.js'), 'utf8');
+
+const heroMust = ['Ön değerlendirmeye başla', 'Nasıl Çalışır?'];
+const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Ön değerlendirmeye başla'];
+const categoryCtaMust = ['Tam analize başla'];
+for (const text of [...heroMust, ...navMust]) {
   if (!html.includes(text)) {
-    console.error('FAIL: hero missing CTA text:', text);
+    console.error('FAIL: homepage missing expected text:', text);
+    failed = true;
+  }
+}
+
+for (const text of categoryCtaMust) {
+  if (!marketingCopy.includes(text)) {
+    console.error('FAIL: homepage category CTA copy missing expected text:', text);
     failed = true;
   }
 }

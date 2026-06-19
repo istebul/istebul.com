@@ -13,13 +13,37 @@ import {
   buildHousingScenarios,
   formatTry
 } from './real-estate-calculator.js';
-import { buildHousingAiCommentary } from './real-estate-ai.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
+import { mountKonutResultsV2, syncCanonicalDecisionScore } from '../features/konut/konut-results-v2.js';
+import {
+  mirrorLegacySiteEvent,
+  trackAnalysisCompleted,
+  trackLeadFormOpened
+} from '../platform/site-analytics.js';
+import { withTimeout } from '../core/async-utils.js';
+import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
+import {
+  getKonutFlow,
+  resetKonutFieldsOnPurposeChange,
+  validateKonutStep,
+  validateKonutAllSteps,
+  applyKonutFinancingDefaults
+} from '../konut/konut-flow.js';
+import { CASH_BUFFER_OPTIONS } from '../konut/konut-wizard-profile.js';
+import { adaptKonutCard } from '../features/decision-cards/adapters/konut-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
+import { bootstrapKonutFromAssistantQuery } from './konut-assistant-bootstrap.js';
 
-const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
+function stepLabelsForState() {
+  return getKonutFlow(state.purchasePurpose).stepLabels;
+}
 const PURPOSE_OPTIONS = [
   'Satın almak istiyorum',
   'Kiralamak istiyorum',
@@ -57,10 +81,11 @@ const state = {
   purchasePurpose: '',
   totalBudget: '',
   downPayment: '',
+  cash_buffer_months: '',
   monthlyCapacity: '',
   useFinancing: '',
   termMonths: '120',
-  interestRate: '3.2',
+  interestRate: '42',
   extraCostTolerance: '',
   loanAmount: '',
   monthlyIncome: '',
@@ -86,11 +111,46 @@ const state = {
   leadName: '',
   leadEmail: '',
   leadPhone: '',
-  wantPartnerOffer: false
+  wantPartnerOffer: false,
+  assistantPrefillHint: false
 };
 
 let lastResultPayload = null;
 let resultsRendered = false;
+let wizardCompleteFired = false;
+let leadOpenFired = false;
+let selectedHousingScenarioId = '';
+
+const HOUSING_ANALYSIS_START_KEY = 'ib_housing_analysis_start';
+
+function hasHomeAnalysisStartFired() {
+  try {
+    return sessionStorage.getItem(HOUSING_ANALYSIS_START_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markHomeAnalysisStartFired() {
+  try {
+    sessionStorage.setItem(HOUSING_ANALYSIS_START_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
+
+function maybeFireHomeAnalysisStart(source = 'interaction') {
+  if (hasHomeAnalysisStartFired()) return;
+  markHomeAnalysisStartFired();
+  trackEvent('home_analysis_start', { source });
+}
+
+function maybeFireHomeLeadOpen(source = 'interaction') {
+  if (leadOpenFired) return;
+  leadOpenFired = true;
+  trackEvent('home_lead_open', { source });
+  trackLeadFormOpened('konut', { source });
+}
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -130,11 +190,16 @@ async function intake(type, payload = {}) {
   const key = window.__env?.SUPABASE_ANON_KEY;
   if (!base || !key) return { ok: false };
   try {
-    const res = await fetch(`${base.replace(/\/$/, '')}/functions/v1/housing-intake`, {
-      method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, session_id: sessionId(), ...payload })
-    });
+    const res = await withTimeout(
+      fetch(`${base.replace(/\/$/, '')}/functions/v1/housing-intake`, {
+        method: 'POST',
+        headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, session_id: sessionId(), ...payload })
+      }),
+      8000,
+      null
+    );
+    if (!res) return { ok: false, timeout: true };
     const data = await res.json().catch(() => ({}));
     return { ok: res.ok, data };
   } catch (error) {
@@ -144,13 +209,14 @@ async function intake(type, payload = {}) {
 }
 
 function trackEvent(eventType, metadata = {}) {
+  mirrorLegacySiteEvent(eventType, { category: 'konut', ...metadata });
   void intake('event', { event_type: eventType, metadata: { session_id: sessionId(), ...metadata } });
 }
 
 function mountProgress() {
   const progress = $('#housing-progress');
   if (!progress) return;
-  progress.innerHTML = STEP_LABELS.map((label, idx) => `
+  progress.innerHTML = stepLabelsForState().map((label, idx) => `
     <span class="housing-progress-item ${idx <= state.step ? 'is-active' : ''}">${idx + 1}. ${escapeHtml(label)}</span>
   `).join('');
 }
@@ -158,6 +224,12 @@ function mountProgress() {
 function cardButtons(options, field, selected) {
   return `<div class="housing-card-grid">${options.map((label) => `
     <button type="button" class="housing-option-card ${selected === label ? 'is-selected' : ''}" data-field="${field}" data-value="${escapeHtml(label)}">${escapeHtml(label)}</button>
+  `).join('')}</div>`;
+}
+
+function cardButtonsFromPairs(pairs, field, selected) {
+  return `<div class="housing-card-grid">${pairs.map(([value, label]) => `
+    <button type="button" class="housing-option-card ${selected === value ? 'is-selected' : ''}" data-field="${field}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>
   `).join('')}</div>`;
 }
 
@@ -175,6 +247,10 @@ function budgetFields() {
     <div class="housing-form-grid housing-form-grid--budget">
       <label>Toplam bütçe<input data-input="totalBudget" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.totalBudget)}"></label>
       <label>Peşinat<input data-input="downPayment" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.downPayment)}"></label>
+      <div class="housing-form-span">
+        <p class="housing-field-hint">Peşinat sonrası kaç aylık güvenlik payınız kalıyor?</p>
+        ${cardButtonsFromPairs(CASH_BUFFER_OPTIONS, 'cash_buffer_months', state.cash_buffer_months)}
+      </div>
       <label>Aylık ödeyebileceğiniz maksimum tutar<input data-input="monthlyCapacity" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyCapacity)}"></label>
       <label>Aylık net gelir<input data-input="monthlyIncome" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyIncome)}"></label>
       <label>Mevcut borç ödemeleri<input data-input="currentDebt" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.currentDebt)}"></label>
@@ -216,7 +292,7 @@ function locationFields() {
 
 function homeTypeFields() {
   return `
-    ${cardButtons(HOME_TYPE_OPTIONS, 'homeType', state.homeType)}
+    ${cardButtons(getKonutFlow(state.purchasePurpose).homeTypes, 'homeType', state.homeType)}
     <div class="housing-form-grid">
       <label>Hane büyüklüğü<input data-input="householdSize" type="number" min="1" max="12" inputmode="numeric" value="${escapeHtml(state.householdSize)}" placeholder="Örn: 4"></label>
       <label>Oda sayısı<input data-input="roomCount" value="${escapeHtml(state.roomCount)}" placeholder="2+1, 3+1"></label>
@@ -237,29 +313,15 @@ function riskFields() {
       <label>Ulaşım maliyeti (aylık)<input data-input="transportCost" type="number" min="0" value="${escapeHtml(state.transportCost)}"></label>
     </div>
     <p class="housing-field-hint">Risk ve tercih öncelikleri (opsiyonel, en fazla 6):</p>
-    ${chipButtons(RISK_PREFS, state.riskPreferences, 'toggle-risk')}`;
+    ${chipButtons(getKonutFlow(state.purchasePurpose).riskPrefs, state.riskPreferences, 'toggle-risk')}`;
 }
 
 function validateStep(stepIndex) {
-  if (stepIndex === 0 && !state.purchasePurpose) return 'Karar amacını seçin.';
-  if (stepIndex === 1) {
-    if (!Number(state.totalBudget)) return 'Toplam bütçe zorunludur.';
-    if (!Number(state.monthlyIncome)) return 'Aylık net gelir zorunludur.';
-    if (!Number(state.monthlyCapacity)) return 'Aylık ödeme kapasitesi zorunludur.';
-    if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
-    if (!state.useFinancing) return 'Kredi kullanım tercihini seçin.';
-  }
-  if (stepIndex === 2 && !String(state.city || '').trim()) return 'İl seçimi zorunludur.';
-  if (stepIndex === 3 && !state.homeType) return 'Konut tipini seçin.';
-  return '';
+  return validateKonutStep(state, stepIndex);
 }
 
 function validateAllSteps() {
-  for (let i = 0; i < STEP_LABELS.length; i += 1) {
-    const msg = validateStep(i);
-    if (msg) return { step: i, message: msg };
-  }
-  return null;
+  return validateKonutAllSteps(state);
 }
 
 function buildMetrics() {
@@ -303,7 +365,7 @@ function buildMetrics() {
   });
   const scoreBand = getScoreBand(score);
   const creditLoadScore = Math.round(100 - Math.min(dti, 100));
-  return {
+  const metrics = {
     ownership,
     dti,
     locationFit,
@@ -325,6 +387,8 @@ function buildMetrics() {
     creditLoadScore,
     creditLoadLabel: dti > 45 ? 'Yüksek baskı' : dti > 32 ? 'Orta baskı' : 'Kontrollü'
   };
+  syncCanonicalDecisionScore(state, metrics, getScoreBand);
+  return metrics;
 }
 
 function buildProfileSummary() {
@@ -425,18 +489,35 @@ function renderStep() {
   const wizard = $('#housing-wizard');
   if (!wizard) return;
 
+  const flow = getKonutFlow(state.purchasePurpose);
   const steps = [
     { title: 'Adım 1 — Karar amacı', html: cardButtons(PURPOSE_OPTIONS, 'purchasePurpose', state.purchasePurpose) },
-    { title: 'Adım 2 — Bütçe', html: budgetFields() },
-    { title: 'Adım 3 — Lokasyon', html: locationFields() },
-    { title: 'Adım 4 — Konut tipi', html: homeTypeFields() },
-    { title: 'Adım 5 — Riskler', html: riskFields() }
+    {
+      title: flow.budgetTitle,
+      html: `<p class="housing-field-hint">${escapeHtml(flow.budgetHint)}</p>${budgetFields()}`
+    },
+    { title: 'Adım 3 — Lokasyon tercihi', html: locationFields() },
+    {
+      title:
+        flow.stepLabels[3] === 'Konut tipi'
+          ? 'Adım 4 — Konut tipi'
+          : `Adım 4 — ${flow.stepLabels[3]}`,
+      html: homeTypeFields()
+    },
+    {
+      title:
+        flow.stepLabels[4] === 'Riskler'
+          ? 'Adım 5 — Riskler ve öncelikler'
+          : `Adım 5 — ${flow.stepLabels[4]}`,
+      html: riskFields()
+    }
   ];
   const body = steps[state.step];
   const isLast = state.step === steps.length - 1;
 
   wizard.innerHTML = `
     <section class="housing-step-card">
+      ${state.assistantPrefillHint ? '<p class="housing-assistant-prefill-hint" data-housing-assistant-prefill>Karar Asistanı profilinizden bazı bilgiler önceden dolduruldu. Detaylı analiz için kalan adımları tamamlayın.</p>' : ''}
       <h2>${body.title}</h2>
       ${body.html}
       <p class="housing-validation" id="housing-validation" role="alert"></p>
@@ -455,12 +536,19 @@ function renderStep() {
 function bindWizardEvents() {
   document.querySelectorAll('[data-field]').forEach((button) => {
     button.addEventListener('click', () => {
-      state[button.dataset.field] = button.dataset.value || '';
+      maybeFireHomeAnalysisStart('field_select');
+      const field = button.dataset.field;
+      const previousValue = state[field];
+      state[field] = button.dataset.value || '';
+      if (field === 'purchasePurpose') {
+        resetKonutFieldsOnPurposeChange(state, previousValue, state.purchasePurpose);
+      }
       renderStep();
     });
   });
   document.querySelectorAll('[data-action="toggle-location"]').forEach((button) => {
     button.addEventListener('click', () => {
+      maybeFireHomeAnalysisStart('chip_select');
       const value = button.dataset.value;
       if (!value) return;
       state.locationPreferences = state.locationPreferences.includes(value)
@@ -471,6 +559,7 @@ function bindWizardEvents() {
   });
   document.querySelectorAll('[data-action="toggle-risk"]').forEach((button) => {
     button.addEventListener('click', () => {
+      maybeFireHomeAnalysisStart('chip_select');
       const value = button.dataset.value;
       if (!value) return;
       if (state.riskPreferences.includes(value)) {
@@ -483,6 +572,7 @@ function bindWizardEvents() {
   });
   document.querySelectorAll('[data-input]').forEach((input) => {
     const handler = () => {
+      maybeFireHomeAnalysisStart('form_input');
       state[input.dataset.input] = input.type === 'checkbox' ? input.checked : input.value;
       updateSidePanel('wizard');
     };
@@ -497,7 +587,9 @@ function bindWizardEvents() {
 }
 
 async function handleNext() {
+  maybeFireHomeAnalysisStart('next_click');
   const validationNode = $('#housing-validation');
+  const nextBtn = $('#housing-next');
   const fail = (message, step = state.step) => {
     if (validationNode) validationNode.textContent = message;
     if (step !== state.step) {
@@ -514,23 +606,43 @@ async function handleNext() {
     return;
   }
 
-  if (state.step < STEP_LABELS.length - 1) {
+  const flow = getKonutFlow(state.purchasePurpose);
+  if (state.step === 1) applyKonutFinancingDefaults(state, flow);
+
+  const labels = stepLabelsForState();
+  const advancingToResults = state.step >= labels.length - 1;
+
+  setSubmitLoading(nextBtn, true, { busyLabel: 'Hazırlanıyor…' });
+
+  try {
+    if (state.step < labels.length - 1) {
+      if (validationNode) validationNode.textContent = '';
+      trackEvent('home_analysis_step_completed', { step: state.step + 1, label: labels[state.step] });
+      state.step += 1;
+      renderStep();
+      return;
+    }
+
+    const allError = validateAllSteps();
+    if (allError) {
+      fail(allError.message, allError.step);
+      return;
+    }
+
     if (validationNode) validationNode.textContent = '';
-    trackEvent('home_analysis_step_completed', { step: state.step + 1, label: STEP_LABELS[state.step] });
-    state.step += 1;
-    renderStep();
-    return;
+    trackEvent('home_analysis_step_completed', { step: stepLabelsForState().length, label: 'Sonuçlar' });
+    await renderResults();
+  } catch (error) {
+    console.warn('housing-wizard-results-failed', error);
+    if (advancingToResults) {
+      fail(
+        'Sonuçlar hazırlanırken bir sorun oluştu. Zorunlu alanları kontrol edip tekrar deneyin.',
+        labels.length - 1
+      );
+    }
+  } finally {
+    setSubmitLoading(nextBtn, false);
   }
-
-  const allError = validateAllSteps();
-  if (allError) {
-    fail(allError.message, allError.step);
-    return;
-  }
-
-  if (validationNode) validationNode.textContent = '';
-  trackEvent('home_analysis_step_completed', { step: STEP_LABELS.length, label: 'Sonuçlar' });
-  await renderResults();
 }
 
 async function getAuthUserId() {
@@ -541,7 +653,7 @@ async function getAuthUserId() {
     const { getSupabaseClient } = await import('../core/supabase.js');
     const client = getSupabaseClient();
     if (!client) return null;
-    const { data } = await client.auth.getUser();
+    const { data } = await withTimeout(client.auth.getUser(), 4000, { data: { user: null } });
     return data?.user?.id || null;
   } catch {
     return null;
@@ -631,6 +743,89 @@ function renderContactBlock() {
     </section>`;
 }
 
+const HOUSING_RESULTS_EMPTY_HTML = `
+  <div class="housing-results-empty-state">
+    <h2>Sonuçlar</h2>
+    <p>Analizi tamamladığınızda konut skoru, maliyet tahmini ve senaryolar burada listelenir.</p>
+  </div>`;
+
+function shouldUseKonutDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('konut');
+}
+
+function buildKonutDecisionCategoryCardViewModels(scenarios, metrics) {
+  return scenarios.map((scenario) =>
+    adaptKonutCard({ scenario, state, metrics })
+  );
+}
+
+function renderKonutDecisionCategoryCardsHtml(scenarios, metrics, selectedId = '') {
+  if (!shouldUseKonutDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(false);
+    return '';
+  }
+
+  syncDecisionCardsFlagToDocument(true);
+  return renderDecisionCategoryCardsGridHtml(
+    buildKonutDecisionCategoryCardViewModels(scenarios, metrics),
+    {
+      selectedId,
+      ariaLabel: 'Konut senaryoları'
+    }
+  );
+}
+
+function highlightKonutDecisionCard(root, scenarioId) {
+  if (!root) return;
+  selectedHousingScenarioId = String(scenarioId || '');
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    const active = card.dataset.option === selectedHousingScenarioId;
+    card.classList.toggle('is-selected', active);
+    card.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function scrollKonutResultsInsight() {
+  const insightRoot = document.querySelector('#housing-results [data-konut-v2-insight-root]');
+  (insightRoot || document.querySelector('#housing-results .konut-v2-root'))?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function scrollKonutAlternativesSection() {
+  document
+    .querySelector('#housing-results .konut-v2-alts')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bindKonutDecisionCardEvents(root) {
+  if (!root || !shouldUseKonutDecisionCategoryCards()) return;
+
+  root.querySelectorAll('.ib-decision-card-select').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      highlightKonutDecisionCard(root, button.dataset.option);
+      scrollKonutResultsInsight();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      scrollKonutAlternativesSection();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      highlightKonutDecisionCard(root, card.dataset.option);
+      scrollKonutResultsInsight();
+    });
+  });
+}
+
 async function renderResults() {
   const results = $('#housing-results');
   const wizard = $('#housing-wizard');
@@ -641,14 +836,10 @@ async function renderResults() {
     const metrics = buildMetrics();
     const scenarios = buildHousingScenarios({ score: metrics.score });
     const priorities = [...state.locationPreferences, ...state.riskPreferences];
-    const ai = await buildHousingAiCommentary({
-      ...state,
-      score: metrics.score,
-      scoreBand: metrics.scoreBand,
-      risk: metrics.risk,
-      ownership: metrics.ownership,
-      priorities
-    });
+    const ai = {
+      text: `Konut karar skorunuz ${metrics.score}/100 (${metrics.scoreBand.label}). Aylık ödeme tahmini ${formatTry(metrics.ownership.monthlyPayment)}; ayrıntılı V2 raporu ve AI özeti aşağıdadır.`,
+      source: 'engine'
+    };
     const attention = buildAttentionItems(metrics);
     const nextStep = buildNextStep(metrics);
     const userId = await getAuthUserId();
@@ -657,6 +848,11 @@ async function renderResults() {
     lastResultPayload = { metrics, ai, scenarios, attention, nextStep };
     resultsRendered = true;
 
+    if (!wizardCompleteFired) {
+      wizardCompleteFired = true;
+      trackEvent('home_wizard_complete', { score: metrics.score, risk: metrics.risk.label });
+      trackAnalysisCompleted('konut', { score: metrics.score, risk: metrics.risk.label });
+    }
     void trackEvent('home_results_view', { score: metrics.score, risk: metrics.risk.label });
 
     if (wizard) wizard.hidden = true;
@@ -760,8 +956,22 @@ async function renderResults() {
       metrics,
       scenarios,
       attention,
-      track: (eventName, meta) => trackEvent(eventName, meta)
+      userId,
+      track: (eventName, meta) => trackEvent(eventName, meta),
+      onRestart: handleHousingRestart,
+      onPartnerCta: (feedbackEl) => handleHousingPartnerCta(metrics, ai.text, feedbackEl)
     });
+
+    if (shouldUseKonutDecisionCategoryCards()) {
+      const cardScenarios = scenarios.slice(0, 4);
+      results.insertAdjacentHTML(
+        'beforeend',
+        renderKonutDecisionCategoryCardsHtml(cardScenarios, metrics, selectedHousingScenarioId)
+      );
+      bindKonutDecisionCardEvents(results);
+    } else {
+      syncDecisionCardsFlagToDocument(false);
+    }
 
     requestAnimationFrame(() => {
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -777,23 +987,83 @@ async function renderResults() {
         <button type="button" class="btn-primary" id="housing-retry-results">Forma dön</button>
       </article>`;
     $('#housing-retry-results')?.addEventListener('click', () => {
-      results.hidden = true;
-      results.innerHTML = '';
+      results.hidden = false;
+      results.innerHTML = HOUSING_RESULTS_EMPTY_HTML;
       if (wizard) wizard.hidden = false;
-      state.step = STEP_LABELS.length - 1;
+      state.step = stepLabelsForState().length - 1;
       renderStep();
     });
   }
 }
 
-function bindResultsEvents(metrics, ai, userId) {
+function handleHousingRestart() {
   const results = $('#housing-results');
   const wizard = $('#housing-wizard');
   const flow = $('#housing-flow');
+  state.step = 0;
+  resultsRendered = false;
+  lastResultPayload = null;
+  wizardCompleteFired = false;
+  leadOpenFired = false;
+  selectedHousingScenarioId = '';
+  syncDecisionCardsFlagToDocument(false);
+  if (wizard) wizard.hidden = false;
+  if (results) {
+    results.hidden = false;
+    results.classList.remove('is-visible');
+    results.innerHTML = HOUSING_RESULTS_EMPTY_HTML;
+  }
+  flow?.classList.remove('has-results');
+  renderStep();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleHousingSaveReport(metrics, aiText, userId, feedbackEl) {
+  if (!userId) {
+    window.location.href = '/profil/?returnTo=/konut/';
+    return;
+  }
+  saveReportLocally(metrics, aiText);
+  const message = 'Rapor profilinize kaydedildi.';
+  if (feedbackEl) {
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = message;
+    feedbackEl.className = 'konut-v2-action-feedback housing-save-ok';
+    return;
+  }
+  const msg = document.createElement('p');
+  msg.className = 'housing-save-ok';
+  msg.textContent = message;
+  $('#housing-save-report')?.insertAdjacentElement('afterend', msg);
+}
+
+async function handleHousingPartnerCta(metrics, aiText, feedbackEl) {
+  maybeFireHomeLeadOpen('partner_cta');
+  state.wantPartnerOffer = true;
+  await submitLead(metrics, aiText);
+  const message = 'Partner talebiniz alındı. Ekibimiz sizinle iletişime geçecektir.';
+  if (feedbackEl) {
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = message;
+    feedbackEl.className = 'konut-v2-action-feedback housing-save-ok';
+    return;
+  }
+  const msg = document.createElement('p');
+  msg.className = 'housing-save-ok';
+  msg.textContent = message;
+  $('#housing-partner-cta')?.insertAdjacentElement('afterend', msg);
+}
+
+function bindResultsEvents(metrics, ai, userId) {
+  const results = $('#housing-results');
 
   results?.querySelectorAll('[data-result-input]').forEach((input) => {
     input.addEventListener('input', () => {
+      maybeFireHomeLeadOpen('lead_form');
       state[input.dataset.resultInput] = input.value;
+    });
+    input.addEventListener('focus', () => {
+      maybeFireHomeLeadOpen('lead_form');
     });
   });
   $('#housing-partner-offer-result')?.addEventListener('change', (e) => {
@@ -801,39 +1071,13 @@ function bindResultsEvents(metrics, ai, userId) {
   });
 
   $('#housing-save-report')?.addEventListener('click', () => {
-    if (!userId) {
-      window.location.href = '/profil/?returnTo=/konut/';
-      return;
-    }
-    saveReportLocally(metrics, ai.text);
-    const msg = document.createElement('p');
-    msg.className = 'housing-save-ok';
-    msg.textContent = 'Rapor profilinize kaydedildi.';
-    $('#housing-save-report')?.insertAdjacentElement('afterend', msg);
+    handleHousingSaveReport(metrics, ai.text, userId);
   });
 
-  $('#housing-restart')?.addEventListener('click', () => {
-    state.step = 0;
-    resultsRendered = false;
-    lastResultPayload = null;
-    if (wizard) wizard.hidden = false;
-    if (results) {
-      results.hidden = true;
-      results.classList.remove('is-visible');
-      results.innerHTML = '';
-    }
-    flow?.classList.remove('has-results');
-    renderStep();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  $('#housing-restart')?.addEventListener('click', handleHousingRestart);
 
   $('#housing-partner-cta')?.addEventListener('click', async () => {
-    state.wantPartnerOffer = true;
-    await submitLead(metrics, ai.text);
-    const msg = document.createElement('p');
-    msg.className = 'housing-save-ok';
-    msg.textContent = 'Partner talebiniz alındı. Ekibimiz sizinle iletişime geçecektir.';
-    $('#housing-partner-cta')?.insertAdjacentElement('afterend', msg);
+    await handleHousingPartnerCta(metrics, ai.text);
   });
 
   $('#housing-submit-lead')?.addEventListener('click', async () => {
@@ -849,29 +1093,20 @@ function bindResultsEvents(metrics, ai, userId) {
 }
 
 function bindHeroCtas() {
-  ['#housing-hero-cta', '#housing-hero-secondary'].forEach((selector) => {
-    $(selector)?.addEventListener('click', () => {
-      $('#housing-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+  $('#housing-hero-cta')?.addEventListener('click', () => {
+    maybeFireHomeAnalysisStart('hero_cta');
+    $('#housing-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-}
-
-function bindHousingNav() {
-  const toggle = document.querySelector('.housing-nav-toggle');
-  const nav = document.getElementById('housing-nav');
-  if (!toggle || !nav) return;
-
-  toggle.addEventListener('click', () => {
-    const open = nav.classList.toggle('is-open');
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  $('#housing-hero-secondary')?.addEventListener('click', () => {
+    maybeFireHomeAnalysisStart('hero_secondary');
+    $('#housing-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
 
 async function init() {
-  bindHousingNav();
+  bootstrapKonutFromAssistantQuery(state, new URLSearchParams(window.location.search));
   bindHeroCtas();
   renderStep();
-  trackEvent('home_analysis_start', {});
   await intake('event', { event_type: 'housing_page_view', metadata: {} });
 }
 

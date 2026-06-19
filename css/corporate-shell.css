@@ -29,6 +29,20 @@
   text-decoration: none;
 }
 
+.corporate-header .logo.ib-corporate-brand,
+.ib-partner-header .logo.ib-corporate-brand {
+  display: inline-flex;
+  align-items: center;
+  font-size: inherit;
+}
+
+.corporate-header .logo.ib-corporate-brand .ib-brand-logo-nav,
+.ib-partner-header .logo.ib-corporate-brand .ib-brand-logo-nav {
+  height: 32px;
+  width: auto;
+  max-width: min(168px, 42vw);
+}
+
 .corporate-header .logo span,
 .ib-partner-header .logo span {
   color: #2563eb;

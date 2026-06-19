@@ -3,17 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
   <title>Partner API &amp; Webhook | isteBul</title>
   <meta name="description" content="isteBul partner API — HMAC webhook, lead payload şeması, retry, failover, callback ve test konsolu.">
   <link rel="stylesheet" href="/css/style.css?v=52">
   <link rel="stylesheet" href="/css/enterprise-polish.css?v=2">
   <link rel="stylesheet" href="/css/award-polish.css?v=1">
+    <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
   <link rel="stylesheet" href="/css/corporate-shell.css?v=1">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=2">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=2">
   <link rel="stylesheet" href="/css/partner-platform.css?v=5">
+  <link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">
 </head>
 <body class="ib-enterprise ib-partner-page ib-partner-docs-page">
   <header class="auto-header corporate-header ib-partner-header">
-    <a class="logo" href="/">isteBul <span>Karar zekâsı</span></a>
+    <a class="logo ib-corporate-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-brand-logo-nav" src="/assets/brand/istebul-logo-nav.svg" alt="" width="120" height="28" decoding="async">
+    </a>
     <nav class="corporate-nav" aria-label="Partner navigasyonu">
       <a href="/partner-olun.html">Partner</a>
       <a href="/partner-guven.html">Güven</a>
@@ -26,8 +39,41 @@
   <main class="ib-partner-docs" id="partner-docs-shell">
     <p>Yükleniyor…</p>
   </main>
+  <footer class="corporate-footer">
+    <div class="corporate-footer__brand">
+      <strong>isteBul</strong>
+      <p>API ve webhook dokümantasyonu — production davranışını yansıtır.</p>
+      <nav class="ib-site-social ib-site-social--footer" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+      <p class="corporate-footer__legal"><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a> · <a href="/cerez-politikasi.html">Çerez politikası</a></p>
+    </div>
+    <nav class="corporate-footer__nav" aria-label="Site bağlantıları">
+      <a href="/hakkimizda.html">Hakkımızda</a>
+      <a href="/metodoloji/">Metodoloji</a>
+      <a href="/veri-kaynaklari/">Veri Kaynakları</a>
+      <a href="/iletisim.html">İletişim</a>
+      <a href="/gizlilik.html">Gizlilik</a>
+      <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a>
+      <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
+      <a href="/cerez-politikasi.html">Çerez politikası</a>
+      <a href="/kullanim-sartlari.html">Kullanım şartları</a>
+      <a href="/partner-olun.html">Partner olun</a>
+      <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
+      <a href="/rehber/tco-rehberi/">TCO rehberi</a>
+      <a href="/karar-asistani/">Ön değerlendirme başlat</a>
+    </nav>
+  </footer>
+
 
   <script src="/env.js" defer></script>
+  <script type="module" src="/js/runtime/site-social-init.js"></script>
   <script type="module" src="/js/corporate/partner-docs.js"></script>
+  <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
+  <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
+  <div class="static-cookie-consent__actions">
+    <button type="button" class="btn btn-primary btn-sm" data-static-cookie-accept>Kabul et</button>
+    <button type="button" class="btn btn-outline btn-sm" data-static-cookie-decline>Reddet</button>
+  </div>
+</div>
+  <script type="module" src="/js/runtime/static-cookie-consent.js"></script>
 </body>
 </html>

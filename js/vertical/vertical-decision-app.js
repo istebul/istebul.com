@@ -1,12 +1,75 @@
+import { withTimeout } from '../core/async-utils.js';
 import { formatTry } from '../tatil/tatil-utils.js';
+import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
+import {
+  mountFinansmanResultsV2,
+  syncCanonicalFinansScores
+} from '../features/finansman/finansman-results-v2.js';
+import { mountSigortaResultsV2, syncCanonicalSigortaScores } from '../features/sigorta/sigorta-results-v2.js';
+import { mountKaskoResultsV2, syncCanonicalKaskoScores } from '../features/kasko/kasko-results-v2.js';
+import { buildEngineResult as buildSigortaEngineResult } from '../features/sigorta/sigorta-engine.js';
+import { buildEngineResult as buildKaskoEngineResult } from '../features/kasko/kasko-engine.js';
+import { adaptSigortaCard } from '../features/decision-cards/adapters/sigorta-adapter.js';
+import { adaptKaskoCard } from '../features/decision-cards/adapters/kasko-adapter.js';
+import { adaptFinansmanCard } from '../features/decision-cards/adapters/finansman-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
+import {
+  trackAnalysisStarted,
+  trackAnalysisCompleted,
+  trackResultsViewed,
+  trackLeadFormOpened,
+  trackLeadSubmitted
+} from '../platform/site-analytics.js';
+import { wt } from './wizard-i18n.js';
+
+const VERTICAL_SITE_CATEGORY = Object.freeze({
+  finans: 'finansman',
+  sigorta: 'sigorta',
+  kasko: 'kasko',
+  tatil: 'tatil',
+  konut: 'konut'
+});
+
+/** @type {Record<string, string>} */
+const TRACKER_STEP_TIMEOUT_MS = 8000;
+const TRACKER_STEP_FIRE_AND_FORGET_MS = 2500;
+
+const DEFAULT_DOM_IDS = {
+  stepProgress: 'vacation-step-progress',
+  aiSummary: 'vacation-ai-summary',
+  wizard: 'vacation-wizard',
+  results: 'vacation-results',
+  flow: 'vacation-flow',
+  heroCta: 'vacation-hero-cta',
+  heroCtaSecondary: 'vacation-hero-cta-secondary',
+  nav: 'vacation-nav',
+  back: 'vacation-back',
+  next: 'vacation-next',
+  confirmSelection: 'vacation-confirm-selection',
+  finalCta: 'vacation-final-cta',
+  changeSelection: 'vacation-change-selection',
+  selectPrimary: 'vacation-select-primary',
+  selectionBar: 'vacation-selection-bar',
+  leadName: 'vacation-lead-name',
+  leadPhone: 'vacation-lead-phone',
+  leadEmail: 'vacation-lead-email'
+};
 
 /**
  * Shared decision wizard + results UI (tatil.css class names).
  * @param {object} config
+ * @param {Record<string, string>} [config.domIds] — page-specific element ids (finans/tatil use defaults)
  */
 export function initDecisionFlow(config) {
+  const dom = { ...DEFAULT_DOM_IDS, ...(config.domIds || {}) };
+  const el = (key) => document.getElementById(dom[key]);
+
   const state = {
     stepIndex: 0,
     selected_option: '',
@@ -16,6 +79,63 @@ export function initDecisionFlow(config) {
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
+  const verticalLabel = config.vertical || 'vertical';
+  const wizardStartSessionKey = `ib_wizard_start:${verticalLabel}`;
+  let wizardCompleteFired = false;
+
+  function hasWizardStartFired() {
+    try {
+      return sessionStorage.getItem(wizardStartSessionKey) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function markWizardStartFired() {
+    try {
+      sessionStorage.setItem(wizardStartSessionKey, '1');
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function maybeFireWizardStart(source = 'interaction') {
+    if (hasWizardStartFired()) return;
+    markWizardStartFired();
+    void Promise.resolve(config.tracker.trackStart?.({ source })).catch(() => {});
+  }
+
+  function clearWizardSubmitLoading(staleBtn) {
+    setSubmitLoading(staleBtn, false);
+    setSubmitLoading(el('next'), false);
+  }
+
+  function fireStepSideEffects(step) {
+    if (!config.onStepComplete) return;
+    void withTimeout(
+      Promise.resolve(config.onStepComplete(state, step)),
+      TRACKER_STEP_FIRE_AND_FORGET_MS
+    ).catch((error) => {
+      console.warn(`${verticalLabel}-step-track-failed`, error);
+    });
+  }
+
+  /** Hide wizard when results are shown (CSS flow-visible uses !important otherwise). */
+  function setWizardVisible(visible) {
+    const mount = el('wizard');
+    if (!mount) return;
+    if (visible) {
+      mount.hidden = false;
+      mount.setAttribute('aria-hidden', 'false');
+      mount.style.removeProperty('display');
+      mount.style.removeProperty('visibility');
+    } else {
+      mount.hidden = true;
+      mount.setAttribute('aria-hidden', 'true');
+      mount.style.setProperty('display', 'none', 'important');
+      mount.style.setProperty('visibility', 'hidden', 'important');
+    }
+  }
 
   function escapeHtml(str) {
     return String(str ?? '')
@@ -25,20 +145,29 @@ export function initDecisionFlow(config) {
       .replace(/"/g, '&quot;');
   }
 
+  function getSteps() {
+    return typeof config.getSteps === 'function' ? config.getSteps(state) : config.steps;
+  }
+
   function currentStep() {
-    return config.steps[state.stepIndex];
+    const steps = getSteps();
+    return steps[state.stepIndex];
   }
 
   function renderProgress() {
-    const el = $('#vacation-step-progress');
-    if (!el) return;
-    el.innerHTML = config.steps
+    const progressEl = el('stepProgress');
+    if (!progressEl) return;
+    const steps = getSteps();
+    progressEl.setAttribute('role', 'list');
+    progressEl.setAttribute('aria-label', wt('common.wizardProgress', 'Analiz adımları'));
+    progressEl.removeAttribute('aria-hidden');
+    progressEl.innerHTML = steps
       .map((step, i) => {
         const active = i === state.stepIndex;
         const done = i < state.stepIndex;
         return `
-      <div class="vacation-progress-item ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}">
-        <span class="vacation-progress-num">${i + 1}</span>
+      <div class="vacation-progress-item ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}" role="listitem" ${active ? 'aria-current="step"' : ''}>
+        <span class="vacation-progress-num" aria-hidden="true">${i + 1}</span>
         <span class="vacation-progress-label">${escapeHtml(step.label)}</span>
       </div>`;
       })
@@ -46,23 +175,29 @@ export function initDecisionFlow(config) {
   }
 
   function renderAiPanel() {
-    const el = $('#vacation-ai-summary');
-    if (!el || !config.getProgress) return;
-    el.innerHTML = config
+    const summaryEl = el('aiSummary');
+    if (!summaryEl || !config.getProgress) return;
+    summaryEl.innerHTML = config
       .getProgress(state)
       .map(
         (row) => `
     <li class="${row.value ? 'is-set' : ''}">
       <span>${escapeHtml(row.key)}</span>
-      <strong>${escapeHtml(row.value || 'Belirtilmedi')}</strong>
+      <strong>${escapeHtml(row.value || wt('common.unspecified', 'Belirtilmedi'))}</strong>
     </li>`
       )
       .join('');
   }
 
-  function renderOptionGrid(field, items, rich = false) {
+  function renderOptionGrid(field, items, rich = false, layout = '') {
+    const layoutClass =
+      layout === 'type'
+        ? 'vacation-option-grid--type'
+        : layout === 'insurance_type'
+          ? 'vacation-option-grid--type'
+          : '';
     return `
-    <div class="vacation-option-grid ${rich ? 'vacation-option-grid--rich' : ''}">
+    <div class="vacation-option-grid ${rich ? 'vacation-option-grid--rich' : ''} ${layoutClass}">
       ${items
         .map((opt) => {
           const isSelected = state[field] === opt.value;
@@ -98,14 +233,19 @@ export function initDecisionFlow(config) {
   function bindWizardEvents() {
     document.querySelectorAll('[data-field]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        maybeFireWizardStart('field_select');
+        const previousValue = state[btn.dataset.field];
         state[btn.dataset.field] = btn.dataset.value;
-        if (config.onFieldChange) config.onFieldChange(state, btn.dataset.field, btn.dataset.value);
+        if (config.onFieldChange) {
+          config.onFieldChange(state, btn.dataset.field, btn.dataset.value, previousValue);
+        }
         renderWizard();
       });
     });
 
     document.querySelectorAll('[data-action="toggle-chip"]').forEach((chip) => {
       chip.addEventListener('click', () => {
+        maybeFireWizardStart('chip_select');
         const field = chip.dataset.field;
         const value = chip.dataset.value;
         const list = state[field] || [];
@@ -117,64 +257,124 @@ export function initDecisionFlow(config) {
       });
     });
 
+    const syncManualField = (input, rawValue) => {
+      const field = input.dataset.manual;
+      const parsed =
+        config.parseManual?.(rawValue) ?? Number(String(rawValue).replace(/\D/g, ''));
+      state[field] = Number.isFinite(parsed) ? parsed : null;
+      if (config.onManualChange) config.onManualChange(state, field, state[field]);
+      refreshNext();
+      renderAiPanel();
+    };
+
     document.querySelectorAll('[data-manual]').forEach((input) => {
       input.addEventListener('input', (e) => {
-        const field = input.dataset.manual;
-        const parsed = config.parseManual?.(e.target.value) ?? Number(String(e.target.value).replace(/\D/g, ''));
-        state[field] = parsed;
-        if (config.onManualChange) config.onManualChange(state, field, parsed);
-        refreshNext();
-        renderAiPanel();
+        maybeFireWizardStart('manual_input');
+        syncManualField(input, e.target.value);
+      });
+      input.addEventListener('change', (e) => {
+        maybeFireWizardStart('manual_input');
+        syncManualField(input, e.target.value);
       });
     });
 
-    $('#vacation-back')?.addEventListener('click', () => {
+    el('back')?.addEventListener('click', () => {
       if (state.stepIndex > 0) {
         state.stepIndex -= 1;
         renderWizard();
       }
     });
 
-    $('#vacation-next')?.addEventListener('click', async () => {
+    el('next')?.addEventListener('click', async () => {
       const step = currentStep();
+      const nextBtn = el('next');
       if (!config.canAdvance(state, step) && step?.id !== 'note') return;
-      if (config.onStepComplete) await config.onStepComplete(state, step);
-      state.stepIndex += 1;
-      if (state.stepIndex >= config.steps.length) {
-        await showResults();
-      } else {
-        renderWizard();
+
+      maybeFireWizardStart('next_click');
+      clearWizardError();
+      setSubmitLoading(nextBtn, true, {
+        busyLabel: wt('common.processing', 'Hazırlanıyor…')
+      });
+
+      const steps = getSteps();
+      const advancingToResults = state.stepIndex >= steps.length - 1;
+
+      try {
+        fireStepSideEffects(step);
+        state.stepIndex += 1;
+        if (state.stepIndex >= steps.length) {
+          showResults();
+        } else {
+          renderWizard();
+        }
+      } catch (error) {
+        console.warn(`${verticalLabel}-wizard-step-failed`, error);
+        if (advancingToResults) {
+          state.stepIndex = Math.max(0, steps.length - 1);
+          setWizardVisible(true);
+          renderWizard();
+        }
+        showWizardError(
+          wt(
+            'common.resultsError',
+            'Sonuçlar hazırlanırken bir sorun oluştu. Lütfen girdilerinizi kontrol edip tekrar deneyin.'
+          )
+        );
+      } finally {
+        clearWizardSubmitLoading(nextBtn);
       }
     });
   }
 
   function refreshNext() {
-    const next = $('#vacation-next');
-    if (next) next.disabled = !config.canAdvance(state, currentStep());
+    const nextBtn = el('next');
+    if (nextBtn) nextBtn.disabled = !config.canAdvance(state, currentStep());
+  }
+
+  function showWizardError(message) {
+    const mount = el('wizard');
+    if (!mount || !message) return;
+    let banner = mount.querySelector('.vacation-wizard-error');
+    if (!banner) {
+      banner = document.createElement('p');
+      banner.className = 'vacation-wizard-error ib-form-banner ib-form-banner--error';
+      banner.setAttribute('role', 'alert');
+      mount.querySelector('.vacation-wizard-card')?.prepend(banner);
+    }
+    banner.textContent = message;
+  }
+
+  function clearWizardError() {
+    el('wizard')?.querySelector('.vacation-wizard-error')?.remove();
   }
 
   function renderWizard() {
-    const mount = $('#vacation-wizard');
+    const mount = el('wizard');
     if (!mount) return;
 
-    if (state.stepIndex >= config.steps.length) {
-      mount.hidden = true;
+    const steps = getSteps();
+    if (state.stepIndex >= steps.length) {
+      setWizardVisible(false);
       return;
     }
 
-    mount.hidden = false;
+    setWizardVisible(true);
     const step = currentStep();
+    const stepMeta =
+      typeof config.getStepMeta === 'function'
+        ? { ...step, ...config.getStepMeta(state, step) }
+        : step;
     const body = config.renderStepBody(step, state, { escapeHtml, renderOptionGrid, renderChipGrid, formatTry });
 
     mount.innerHTML = `
     <div class="vacation-wizard-card">
-      <h2>${escapeHtml(step.title)}</h2>
-      ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
+      <h2>${escapeHtml(stepMeta.title)}</h2>
+      ${stepMeta.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(stepMeta.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
-        ${state.stepIndex > 0 ? '<button type="button" class="btn btn-ghost" id="vacation-back">Geri</button>' : ''}
-        <button type="button" class="btn btn-primary" id="vacation-next" ${config.canAdvance(state, step) ? '' : 'disabled'}>
-          ${state.stepIndex === config.steps.length - 1 ? 'Sonuçları gör' : 'Devam et →'}
+        ${state.stepIndex > 0 ? `<button type="button" class="btn btn-ghost" id="${dom.back}">${escapeHtml(wt('common.back', 'Geri'))}</button>` : ''}
+        <button type="button" class="btn btn-primary" id="${dom.next}" ${config.canAdvance(state, step) ? '' : 'disabled'}>
+          ${state.stepIndex === steps.length - 1 ? escapeHtml(wt('common.showResults', 'Sonuçları gör')) : escapeHtml(wt('common.continue', 'Devam et →'))}
         </button>
       </div>
     </div>`;
@@ -190,26 +390,151 @@ export function initDecisionFlow(config) {
 
   function getDisplayResult() {
     const selected = getSelectedResult();
+    if (config.vertical === 'finans') {
+      return selected || state.results[0] || null;
+    }
     if (state.confirmationStep && selected) return selected;
     return state.results[0] || null;
   }
 
-  async function showResults() {
-    state.results = config.buildResults(state);
-    state.selected_option = '';
+  function showResults() {
+    let built = [];
+    try {
+      built = config.buildResults(state) || [];
+    } catch (error) {
+      console.warn(`${verticalLabel}-build-results-failed`, error);
+      throw error;
+    }
+    if (!built.length) {
+      throw new Error('empty_results');
+    }
+
+    state.results = built;
+    state.selected_option = config.vertical === 'finans' && built[0]?.id ? built[0].id : '';
     state.confirmationStep = false;
-    $('#vacation-wizard') && ($('#vacation-wizard').hidden = true);
+    setWizardVisible(false);
     renderResults();
-    await config.tracker.trackResults({
-      vertical: config.vertical,
-      score: state.results[0]?.score
+
+    try {
+      const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
+      if (!wizardCompleteFired) {
+        wizardCompleteFired = true;
+        trackAnalysisCompleted(siteCategory, { results_count: state.results.length });
+      }
+      trackResultsViewed(siteCategory, { results_count: state.results.length });
+    } catch (error) {
+      console.warn(`${verticalLabel}-results-analytics-failed`, error);
+    }
+
+    void withTimeout(
+      Promise.resolve(
+        config.tracker.trackResults({
+          vertical: config.vertical,
+          score: state.results[0]?.score
+        })
+      ),
+      TRACKER_STEP_FIRE_AND_FORGET_MS
+    ).catch((error) => {
+      console.warn(`${verticalLabel}-results-track-failed`, error);
     });
   }
 
+  function shouldUseDecisionCategoryCards() {
+    return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical(config.vertical);
+  }
+
+  function buildDecisionCategoryCardViewModels() {
+    if (config.vertical === 'finans') {
+      return state.results.map((scenario) =>
+        adaptFinansmanCard({
+          scenario,
+          state
+        })
+      );
+    }
+
+    const engine =
+      config.vertical === 'sigorta'
+        ? buildSigortaEngineResult(state)
+        : buildKaskoEngineResult(state);
+    const adapter = config.vertical === 'sigorta' ? adaptSigortaCard : adaptKaskoCard;
+    return state.results.map((scenario) =>
+      adapter({
+        scenario,
+        engine,
+        state
+      })
+    );
+  }
+
+  function renderScenarioCardsHtml(selectedId) {
+    if (shouldUseDecisionCategoryCards()) {
+      syncDecisionCardsFlagToDocument(true);
+      const viewModels = buildDecisionCategoryCardViewModels();
+      return renderDecisionCategoryCardsGridHtml(viewModels, {
+        selectedId,
+        ariaLabel: config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'),
+        t: wt
+      });
+    }
+
+    syncDecisionCardsFlagToDocument(false);
+    return `
+    <div class="vacation-result-cards" role="list" aria-label="${escapeHtml(config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'))}">
+      ${state.results
+        .map((r) => {
+          const isPicked = selectedId === r.id;
+          const selectLabel = isPicked
+            ? wt('common.selectedOption', 'Seçili senaryo')
+            : wt('common.selectOption', 'Bu seçeneği seç');
+          return `
+        <article class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}" role="listitem" data-option="${escapeHtml(r.id)}" aria-pressed="${isPicked ? 'true' : 'false'}">
+          <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
+          <div class="vacation-result-score" aria-label="${escapeHtml(wt('common.decisionScore', 'Karar skoru'))}">${r.score}<span>/100</span></div>
+          <div class="vacation-result-visual" role="presentation"></div>
+          <h3>${escapeHtml(r.title)}</h3>
+          <p>${escapeHtml(r.description)}</p>
+          <ul class="vacation-result-meta">
+            <li><strong>${escapeHtml(wt('common.estimated', 'Tahmini'))}:</strong> ${escapeHtml(r.estimatedCost)}</li>
+            <li><strong>${escapeHtml(wt('common.suitability', 'Uygunluk'))}:</strong> ${escapeHtml(r.suitability)}</li>
+          </ul>
+          <div class="vacation-result-why"><strong>${escapeHtml(wt('common.whyRecommended', 'Neden önerildi?'))}</strong><p>${escapeHtml(r.why)}</p></div>
+          <div class="vacation-result-pros"><strong>${escapeHtml(wt('common.pros', 'Artılar'))}</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+          <div class="vacation-result-cautions"><strong>${escapeHtml(wt('common.cautions', 'Dikkat'))}</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+          <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}" aria-label="${escapeHtml(selectLabel)}: ${escapeHtml(r.title)}">
+            ${isPicked ? escapeHtml(wt('common.selected', '✓ Seçildi')) : escapeHtml(wt('common.selectOption', 'Bu seçeneği seç'))}
+          </button>
+        </article>`;
+        })
+        .join('')}
+    </div>`;
+  }
+
   function renderResults() {
-    const section = $('#vacation-results');
+    const section = el('results');
     if (!section || !state.results.length) return;
     section.hidden = false;
+
+    if (config.vertical === 'finans') {
+      if (!state.selected_option && state.results[0]?.id) {
+        state.selected_option = state.results[0].id;
+      }
+      syncCanonicalFinansScores(state, state.results, state.selected_option);
+    }
+
+    if (config.vertical === 'sigorta') {
+      if (!state.selected_option && state.results[0]?.id) {
+        state.selected_option = state.results[0].id;
+      }
+      syncCanonicalSigortaScores(state, state.results, state.selected_option);
+    }
+
+    if (config.vertical === 'kasko') {
+      if (!state.selected_option && state.results[0]?.id) {
+        state.selected_option = state.results[0].id;
+      }
+      syncCanonicalKaskoScores(state, state.results, state.selected_option);
+    }
 
     const commentary = config.buildCommentary(state, state.results);
     const summary = config.buildSummary(state, state.results);
@@ -218,8 +543,8 @@ export function initDecisionFlow(config) {
 
     const dashboardHtml = renderPremiumDecisionDashboard({
       category: config.vertical,
-      kicker: config.resultsKicker || 'Karar analizi tamamlandı',
-      title: config.resultsTitle || 'Kişiselleştirilmiş öneriler',
+      kicker: config.resultsKicker || wt('common.resultsKicker', 'Karar analizi tamamlandı'),
+      title: config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'),
       decisionScore: summary.fitScore,
       scoreBand: summary.scoreBand,
       totalCostLabel: summary.totalCostLabel,
@@ -230,72 +555,48 @@ export function initDecisionFlow(config) {
       cautions: primary?.cautions || summary.cautions,
       aiSummary: commentary.summary,
       aiBullets: commentary.bullets,
-      nextStep: summary.nextStep || commentary.nextStep || 'Bir senaryo seçin ve iletişim adımına geçin.',
+      nextStep: summary.nextStep || commentary.nextStep || wt('common.nextStepDefault', 'Bir senaryo seçin ve iletişim adımına geçin.'),
       extraKpis: summary.extraKpis
     });
 
     section.innerHTML = `
     <div class="vacation-results-header">
-      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin teklif taahhüdü değildir.</p>
+      <p>${escapeHtml(wt('common.resultsDisclaimer', 'Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin teklif taahhüdü değildir.'))}</p>
     </div>
     ${dashboardHtml}
-    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
-    <div class="vacation-result-cards">
-      ${state.results
-        .map((r) => {
-          const isPicked = state.selected_option === r.id;
-          return `
-        <article class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}" data-option="${escapeHtml(r.id)}">
-          <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
-          <div class="vacation-result-score">${r.score}<span>/100</span></div>
-          <div class="vacation-result-visual"></div>
-          <h3>${escapeHtml(r.title)}</h3>
-          <p>${escapeHtml(r.description)}</p>
-          <ul class="vacation-result-meta">
-            <li><strong>Tahmini:</strong> ${escapeHtml(r.estimatedCost)}</li>
-            <li><strong>Uygunluk:</strong> ${escapeHtml(r.suitability)}</li>
-          </ul>
-          <div class="vacation-result-why"><strong>Neden önerildi?</strong><p>${escapeHtml(r.why)}</p></div>
-          <div class="vacation-result-pros"><strong>Artılar</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
-          <div class="vacation-result-cautions"><strong>Dikkat</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
-          <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}">
-            ${isPicked ? '✓ Seçildi' : 'Bu seçeneği seç'}
-          </button>
-        </article>`;
-        })
-        .join('')}
-    </div>
+    <p class="vacation-results-top-pick">${escapeHtml(wt('common.topPick', 'Öne çıkan'))}: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+    ${renderScenarioCardsHtml(state.selected_option)}
     ${
       !state.confirmationStep
         ? `
-    <div class="vacation-selection-bar" id="vacation-selection-bar">
+    <div class="vacation-selection-bar" id="${dom.selectionBar}">
       <div class="vacation-selection-copy">
-        <p class="vacation-selection-hint ${selectedCard ? 'hidden' : ''}">Devam etmek için bir senaryo seçin.</p>
-        <p class="vacation-selection-picked ${selectedCard ? '' : 'hidden'}">Seçiminiz: <strong>${selectedCard ? escapeHtml(selectedCard.title) : ''}</strong></p>
+        <p class="vacation-selection-hint ${selectedCard ? 'hidden' : ''}">${escapeHtml(wt('common.pickHint', 'Devam etmek için bir senaryo seçin.'))}</p>
+        <p class="vacation-selection-picked ${selectedCard ? '' : 'hidden'}">${escapeHtml(wt('common.yourPick', 'Seçiminiz'))}: <strong>${selectedCard ? escapeHtml(selectedCard.title) : ''}</strong></p>
       </div>
-      <button type="button" class="btn btn-primary" id="vacation-confirm-selection" ${selectedCard ? '' : 'disabled'}>Seçimi onayla ve devam et</button>
+      <button type="button" class="btn btn-primary" id="${dom.confirmSelection}" ${selectedCard ? '' : 'disabled'}>${escapeHtml(wt('common.confirmSelection', 'Seçimi onayla ve devam et'))}</button>
     </div>`
         : ''
     }
     ${
       state.confirmationStep && selectedCard
         ? `
-    <div class="vacation-final-cta" id="vacation-final-cta">
-      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="vacation-change-selection">← Seçimi değiştir</button>
+    <div class="vacation-final-cta" id="${dom.finalCta}">
+      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="${dom.changeSelection}">${escapeHtml(wt('common.changeSelection', '← Seçimi değiştir'))}</button>
       <div class="vacation-selected-recap">
-        <span class="vacation-selected-recap-label">Onayladığınız senaryo</span>
+        <span class="vacation-selected-recap-label">${escapeHtml(wt('common.confirmedScenario', 'Onayladığınız senaryo'))}</span>
         <h3>${escapeHtml(selectedCard.title)}</h3>
         <p>${escapeHtml(selectedCard.estimatedCost)} · Skor ${selectedCard.score}/100</p>
       </div>
-      <h3 class="vacation-final-heading">İletişim (isteğe bağlı)</h3>
+      <h3 class="vacation-final-heading">${escapeHtml(wt('common.contactOptional', 'İletişim (isteğe bağlı)'))}</h3>
       <div class="vacation-lead-form">
         <div class="form-row">
-          <input type="text" id="vacation-lead-name" placeholder="Ad soyad" autocomplete="name">
-          <input type="tel" id="vacation-lead-phone" placeholder="Telefon" autocomplete="tel">
-          <input type="email" id="vacation-lead-email" placeholder="E-posta" autocomplete="email">
+          <input type="text" id="${dom.leadName}" placeholder="${escapeHtml(wt('common.namePlaceholder', 'Ad soyad'))}" autocomplete="name">
+          <input type="tel" id="${dom.leadPhone}" placeholder="${escapeHtml(wt('common.phonePlaceholder', 'Telefon'))}" autocomplete="tel">
+          <input type="email" id="${dom.leadEmail}" placeholder="${escapeHtml(wt('common.emailPlaceholder', 'E-posta'))}" autocomplete="email">
         </div>
       </div>
-      <button type="button" class="btn btn-primary btn-lg" id="vacation-select-primary">Talebi gönder</button>
+      <button type="button" class="btn btn-primary btn-lg" id="${dom.selectPrimary}">${escapeHtml(wt('common.sendRequest', 'Talebi gönder'))}</button>
       <p class="vacation-disclaimer">${escapeHtml(config.disclaimer)}</p>
     </div>`
         : ''
@@ -307,7 +608,33 @@ export function initDecisionFlow(config) {
       void mountFinansmanResultsV2(section, {
         state,
         results: state.results,
-        track: (eventName, meta) => config.tracker.track(eventName, meta)
+        selectedOption: state.selected_option || state.results[0]?.id || '',
+        onSelectScenario: (id) => selectOption(id),
+        track: (eventName, meta) => config.tracker.track(eventName, meta),
+        onRestart: restartFinansWizard,
+        onDetailedAnalysis: (leadEls) => openFinansLeadFlow(commentary, leadEls, 'detail'),
+        onPartnerCta: (leadEls) => openFinansLeadFlow(commentary, leadEls, 'partner'),
+        onLeadSubmit: (formData, feedbackEl) => submitFinansLeadFromV2(commentary, formData, feedbackEl)
+      });
+    }
+
+    if (config.vertical === 'sigorta') {
+      void mountSigortaResultsV2(section, {
+        state,
+        results: state.results,
+        selectedOption: state.selected_option,
+        track: (eventName, meta) => config.tracker.track(eventName, meta),
+        onRestart: restartSigortaWizard
+      });
+    }
+
+    if (config.vertical === 'kasko') {
+      void mountKaskoResultsV2(section, {
+        state,
+        results: state.results,
+        selectedOption: state.selected_option,
+        track: (eventName, meta) => config.tracker.track(eventName, meta),
+        onRestart: restartKaskoWizard
       });
     }
 
@@ -320,43 +647,93 @@ export function initDecisionFlow(config) {
     renderResults();
   }
 
-  function bindResultsEvents(commentary) {
-    document.querySelectorAll('.vacation-select-card-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectOption(btn.dataset.option);
-      });
-    });
-    document.querySelectorAll('.vacation-result-card[data-option]').forEach((card) => {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return;
-        selectOption(card.dataset.option);
-      });
-    });
-    $('#vacation-confirm-selection')?.addEventListener('click', async () => {
-      if (!state.selected_option) return;
-      state.confirmationStep = true;
-      await config.tracker.trackConfirm(state.selected_option);
-      renderResults();
-      $('#vacation-final-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    $('#vacation-change-selection')?.addEventListener('click', () => {
-      state.confirmationStep = false;
-      renderResults();
-    });
-    $('#vacation-select-primary')?.addEventListener('click', () => submitLead(commentary));
+  function restartFinansWizard() {
+    state.stepIndex = 0;
+    state.results = [];
+    state.selected_option = '';
+    state.confirmationStep = false;
+    const section = el('results');
+    if (section) {
+      section.hidden = true;
+      section.innerHTML = '';
+    }
+    setWizardVisible(true);
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  async function submitLead(commentary) {
-    if (!state.confirmationStep || !state.selected_option) {
-      $('#vacation-selection-bar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
+  function restartSigortaWizard() {
+    state.stepIndex = 0;
+    state.results = [];
+    state.selected_option = '';
+    state.confirmationStep = false;
+    const section = el('results');
+    if (section) {
+      section.hidden = true;
+      section.innerHTML = '';
     }
+    setWizardVisible(true);
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function restartKaskoWizard() {
+    state.stepIndex = 0;
+    state.results = [];
+    state.selected_option = '';
+    state.confirmationStep = false;
+    const section = el('results');
+    if (section) {
+      section.hidden = true;
+      section.innerHTML = '';
+    }
+    setWizardVisible(true);
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function openFinansLeadFlow(commentary, { leadPanel, leadHint, feedbackEl }, mode = 'detail') {
+    if (!state.selected_option && state.results[0]?.id) {
+      state.selected_option = state.results[0].id;
+    }
+    if (!state.selected_option) return;
+
+    state.confirmationStep = true;
+    try {
+      trackLeadFormOpened(VERTICAL_SITE_CATEGORY.finans || 'finansman');
+    } catch (error) {
+      console.warn(`${verticalLabel}-lead-form-analytics-failed`, error);
+    }
+    void withTimeout(
+      Promise.resolve(config.tracker.trackConfirm(state.selected_option)),
+      TRACKER_STEP_FIRE_AND_FORGET_MS
+    ).catch((error) => {
+      console.warn(`${verticalLabel}-confirm-track-failed`, error);
+    });
+
+    if (leadPanel) leadPanel.hidden = false;
+    if (leadHint) {
+      leadHint.textContent =
+        mode === 'partner'
+          ? 'Size uygun finansman teklifleri için iletişim bilgilerinizi bırakın.'
+          : 'Detaylı analiz ve karşılaştırmalı teklif için iletişim bilgilerinizi bırakın.';
+    }
+    if (feedbackEl) feedbackEl.hidden = true;
+    leadPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function submitFinansLeadFromV2(commentary, formData, feedbackEl) {
+    if (!state.selected_option && state.results[0]?.id) {
+      state.selected_option = state.results[0].id;
+    }
+    if (!state.selected_option) return;
+
+    state.confirmationStep = true;
     const selected = getSelectedResult();
     const payload = {
-      full_name: $('#vacation-lead-name')?.value?.trim() || '',
-      phone: $('#vacation-lead-phone')?.value?.trim() || '',
-      email: $('#vacation-lead-email')?.value?.trim() || '',
+      full_name: formData.fullName || '',
+      phone: formData.phone || '',
+      email: formData.email || '',
       profile: { ...state },
       selected_option: state.selected_option,
       decision_score: selected?.score ?? null,
@@ -365,40 +742,184 @@ export function initDecisionFlow(config) {
     };
     const res = await config.tracker.saveLead(payload);
     if (res.ok) {
+      trackLeadSubmitted(VERTICAL_SITE_CATEGORY.finans || 'finansman', {
+        selected_option: state.selected_option
+      });
+      const message = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun bilgilendirme yapabilir.';
+      if (feedbackEl) {
+        feedbackEl.hidden = false;
+        feedbackEl.textContent = message;
+        feedbackEl.className = 'finansman-v2-action-feedback vacation-toast';
+      } else {
+        const msg = document.createElement('p');
+        msg.className = 'vacation-toast';
+        msg.textContent = message;
+        el('finalCta')?.prepend(msg);
+      }
+    }
+  }
+
+  function scrollToDecisionCompareSection() {
+    const resultsRoot = el('results');
+    if (!resultsRoot) return;
+    const selectors = ['.sigorta-v2-coverage', '.finansman-v2-rate-table', '.tatil-v2-alts'];
+    for (const selector of selectors) {
+      const target = resultsRoot.querySelector(selector);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+  }
+
+  function bindResultsEvents(commentary) {
+    document.querySelectorAll('.vacation-select-card-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectOption(btn.dataset.option);
+      });
+    });
+    document.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        scrollToDecisionCompareSection();
+      });
+    });
+    document.querySelectorAll('.vacation-result-card[data-option], .ib-decision-category-card[data-option]').forEach((card) => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        selectOption(card.dataset.option);
+      });
+    });
+    el('confirmSelection')?.addEventListener('click', async () => {
+      if (!state.selected_option) return;
+      state.confirmationStep = true;
+      trackLeadFormOpened(VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical);
+      await config.tracker.trackConfirm(state.selected_option);
+      renderResults();
+      el('finalCta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    el('changeSelection')?.addEventListener('click', () => {
+      state.confirmationStep = false;
+      renderResults();
+    });
+    el('selectPrimary')?.addEventListener('click', () => submitLead(commentary));
+  }
+
+  async function submitLead(commentary) {
+    if (!state.confirmationStep || !state.selected_option) {
+      el('selectionBar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const selected = getSelectedResult();
+    const payload = {
+      full_name: el('leadName')?.value?.trim() || '',
+      phone: el('leadPhone')?.value?.trim() || '',
+      email: el('leadEmail')?.value?.trim() || '',
+      profile: { ...state },
+      selected_option: state.selected_option,
+      decision_score: selected?.score ?? null,
+      result_summary: selected?.title || '',
+      ai_summary: commentary.summary
+    };
+    const res = await config.tracker.saveLead(payload);
+    if (res.ok) {
+      trackLeadSubmitted(VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical, {
+        selected_option: state.selected_option
+      });
       const msg = document.createElement('p');
       msg.className = 'vacation-toast';
       msg.textContent = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun bilgilendirme yapabilir.';
-      $('#vacation-final-cta')?.prepend(msg);
+      el('finalCta')?.prepend(msg);
     }
   }
 
   function setupMobileNav() {
-    const toggle = $('.vacation-nav-toggle');
-    const nav = $('#vacation-nav');
-    toggle?.addEventListener('click', () => {
-      const open = nav?.classList.toggle('is-open');
+    const navId = dom.nav;
+    const toggle =
+      document.querySelector(`.vacation-nav-toggle[aria-controls="${navId}"]`) ||
+      $('.vacation-nav-toggle');
+    const nav = el('nav');
+    if (!toggle || !nav) return;
+
+    // vertical-locale-shell already binds the same toggle via vertical-product-nav.js
+    if (toggle.dataset.ibNavBound === '1') return;
+
+    const setOpen = (open) => {
+      nav.classList.toggle('is-open', open);
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
+    };
+
+    if (toggle.dataset.ibFlowNavBound !== '1') {
+      toggle.dataset.ibFlowNavBound = '1';
+      toggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        setOpen(!nav.classList.contains('is-open'));
+      });
+      nav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => setOpen(false));
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setOpen(false);
+      });
+    }
+  }
+
+  function scrollToFlow() {
+    el('flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function startWizard() {
+    state.stepIndex = 0;
+    renderWizard();
   }
 
   async function init() {
     document.body.classList.add(config.themeClass || '');
     setupMobileNav();
-    $('#vacation-hero-cta')?.addEventListener('click', () => {
-      document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
-      state.stepIndex = 0;
-      renderWizard();
-    });
-    $('#vacation-hero-cta-secondary')?.addEventListener('click', () => {
-      document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
-    });
-    await config.tracker.trackStart();
+    if (typeof config.bootstrapFromQuery === 'function') {
+      try {
+        config.bootstrapFromQuery(state, new URLSearchParams(window.location.search));
+      } catch {
+        /* optional profile bootstrap */
+      }
+    }
+    if (!config.externalHeroBindings) {
+      el('heroCta')?.addEventListener('click', () => {
+        maybeFireWizardStart('hero_cta');
+        scrollToFlow();
+        startWizard();
+      });
+      el('heroCtaSecondary')?.addEventListener('click', () => {
+        maybeFireWizardStart('hero_secondary');
+        scrollToFlow();
+      });
+    }
     renderWizard();
+    try {
+      await Promise.race([
+        window.__ibI18n?.ready ?? Promise.resolve(),
+        new Promise((resolve) => setTimeout(resolve, 1200))
+      ]);
+      renderWizard();
+    } catch {
+      /* i18n optional — wizard already rendered */
+    }
+    document.addEventListener('ib:locale-changed', () => {
+      renderWizard();
+      if (state.results?.length) renderResults();
+    });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
+  function bootInit() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => void init(), { once: true });
+    } else {
+      void init();
+    }
   }
+
+  bootInit();
+
+  return { scrollToFlow, startWizard, renderWizard, showResults, getState: () => state };
 }

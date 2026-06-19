@@ -10,7 +10,7 @@ const checks = [
   { path: '/auto/', must: ['auto-wizard', 'TCO'] },
   { path: '/api/public-stats', must: ['"mode"', '"metrics"'], json: true },
   { path: '/metodoloji', must: ['Karar altyapısı metodolojisi', 'data-ib-route'], optional: true },
-  { path: '/', must: ['Ücretsiz analiz başlat', 'landing-faq', 'data-ib-route'], optional: true }
+  { path: '/', must: ['Kararını analiz et', 'landing-faq', 'data-ib-route'], optional: true }
 ];
 
 let failed = 0;
@@ -33,6 +33,14 @@ async function run() {
         console.error(`✗ ${path} HTTP ${res.status}`);
         failed += 1;
         continue;
+      }
+      if (json) {
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          console.error(`✗ ${path} Content-Type beklenen application/json, gelen: ${ct || '(yok)'}`);
+          failed += 1;
+          continue;
+        }
       }
       const missing = must.filter((needle) => !body.includes(needle));
       if (json) {

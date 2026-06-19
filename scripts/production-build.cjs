@@ -7,6 +7,8 @@ const crypto = require('crypto');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data', 'docs'];
+/** Internal-only docs — not copied to public dist (orphan HTML / investor exports). */
+const PUBLIC_DOCS_SKIP_PREFIXES = ['docs/investor/export', 'docs/previews', 'docs/site-owner'];
 const copyDataSubdir = (subdir) => {
   const src = path.join(root, 'data', subdir);
   const dest = path.join(dist, 'data', subdir);
@@ -19,22 +21,22 @@ const copyDataSubdir = (subdir) => {
 };
 const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
-const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/admin-partner-ops.css',
+const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'gdpr.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
     'css/admin-internal-dashboards.css',
-    'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
+    'css/admin-ops-ai-assistant.css', 'css/admin-ai-listings.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css', 'admin/ai-listings.html', 'admin/forbidden.html'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
+const { patchSpaShellHtml, loadRouteMeta } = require('./lib/spa-shell-meta.cjs');
+const { injectLocaleShellMeta, loadLocaleIds } = require('./lib/locale-shell-meta.cjs');
+const { injectVerticalFaqs } = require('./lib/seo-vertical-faq.cjs');
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
 const { buildHashedCssAssets } = require('./lib/css-build.cjs');
-const publicEnvKeys = [
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-  'SENTRY_DSN',
-  'LOGROCKET_APP_ID',
-  'GOOGLE_OAUTH_ENABLED'
-];
-
+const runCssBundles = spawnSync(process.execPath, [path.join(root, 'scripts/generate-css-bundles.cjs')], {
+  cwd: root,
+  stdio: 'inherit'
+});
+if (runCssBundles.status !== 0) process.exit(runCssBundles.status || 1);
 const runOpsEmbed = spawnSync(process.execPath, [path.join(root, 'scripts/generate-admin-ops-embed.cjs')], {
   cwd: root,
   stdio: 'inherit'
@@ -65,6 +67,10 @@ const copyFile = (relativePath) => {
 };
 const shouldSkipEntry = (name) => name.startsWith('.') || name === 'Thumbs.db';
 const copyDir = (relativePath) => {
+  const normalized = relativePath.split(path.sep).join('/');
+  if (PUBLIC_DOCS_SKIP_PREFIXES.some((skip) => normalized === skip || normalized.startsWith(`${skip}/`))) {
+    return;
+  }
   const sourceDir = path.join(root, relativePath);
   const targetDir = path.join(dist, relativePath);
   fs.mkdirSync(targetDir, { recursive: true });
@@ -97,6 +103,7 @@ const walk = (dir, callback) => {
 const relative = (filePath) => path.relative(root, filePath).split(path.sep).join('/');
 const assetRefs = new Map();
 const hashContent = (content) => crypto.createHash('sha256').update(content).digest('hex').slice(0, 10);
+const bundleExternals = ['lucide'];
 const withHashName = (relativePath, hash) => {
   const parsed = path.parse(relativePath);
   return path.join(parsed.dir, `${parsed.name}.${hash}${parsed.ext}`).split(path.sep).join('/');
@@ -110,6 +117,24 @@ const rewriteAssetRefs = (html) => {
   return output;
 };
 
+const FONT_ASYNC_MARK = '<!-- perf:async-fonts -->';
+const FONT_ASYNC_SNIPPET = `${FONT_ASYNC_MARK}
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/perf-fonts.css" media="print" data-perf-fonts-async>
+<noscript><link rel="stylesheet" href="/css/perf-fonts.css"></noscript>
+<script src="/js/runtime/perf-fonts-async.js" defer></script>`;
+
+const injectAsyncFonts = (html) => {
+  // After rewriteAssetRefs, href is perf-fonts.<hash>.css — not literal perf-fonts.css
+  if (html.includes(FONT_ASYNC_MARK) || html.includes('data-perf-fonts-async') || html.includes('perf-fonts')) {
+    return html;
+  }
+  if (!html.includes('ib-ds-v4') && !html.includes('vertical-decision.bundle')) {
+    return html;
+  }
+  return html.replace(/<head([^>]*)>/i, `<head$1>\n  ${FONT_ASYNC_SNIPPET}`);
+};
+
 const injectPerformanceHints = (html, appBundleFile) => {
   let output = html;
 
@@ -119,14 +144,22 @@ const injectPerformanceHints = (html, appBundleFile) => {
   );
 
   const styleHashed = assetRefs.get('css/style.css');
+  const homeBundleHashed = assetRefs.get('css/bundles/homepage.bundle.css');
+  const preloadBlocks = [];
   if (styleHashed) {
-    output = output.replace(
-      '<!-- perf:preload-style -->',
-      `<link rel="preload" href="/${styleHashed}" as="style">`
-    );
-  } else {
-    output = output.replace('<!-- perf:preload-style -->', '');
+    preloadBlocks.push(`<link rel="preload" href="/${styleHashed}" as="style">`);
   }
+  if (homeBundleHashed) {
+    preloadBlocks.push(`<link rel="preload" href="/${homeBundleHashed}" as="style">`);
+  }
+  output = output.replace(
+    '<!-- perf:preload-style -->',
+    preloadBlocks[0] || ''
+  );
+  output = output.replace(
+    '<!-- perf:preload-homepage-bundle -->',
+    preloadBlocks[1] || ''
+  );
 
   if (appBundleFile) {
     output = output.replace(
@@ -140,10 +173,12 @@ const injectPerformanceHints = (html, appBundleFile) => {
   return output;
 };
 
-const minifyHtml = (source) => source
-  .replace(/<!--[\s\S]*?-->/g, '')
-  .replace(/>\s+</g, '><')
-  .trim();
+const minifyHtml = (source) =>
+  source
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<\/a>\s*<a\b/gi, '</a> <a')
+    .replace(/>\s+</g, '><')
+    .trim();
 
 staticRoots.forEach(copyDir);
 copyGrowthDataDir();
@@ -155,11 +190,20 @@ if (!fs.existsSync(lucideUmd)) {
 }
 writeFile('assets/lucide.min.js', fs.readFileSync(lucideUmd));
 
-const publicEnv = publicEnvKeys.reduce((env, key) => {
-  env[key] = process.env[key] || '';
-  return env;
-}, {});
-writeFile('env.js', 'window.__env = Object.assign({}, window.__env || {}, ' + JSON.stringify(publicEnv) + ');\n');
+const {
+  buildPublicEnv,
+  isStrictPublicEnvBuild,
+  withCiBuildPublicEnvFallback,
+  assertPublicEnvForBuild,
+  assertProductionAnonKeyNotPlaceholder,
+  formatEnvJs
+} = require('./lib/public-env.cjs');
+
+const publicEnv = withCiBuildPublicEnvFallback(buildPublicEnv(process.env, root), process.env);
+assertPublicEnvForBuild(publicEnv, { strict: isStrictPublicEnvBuild() });
+assertProductionAnonKeyNotPlaceholder(publicEnv, process.env);
+
+writeFile('env.js', formatEnvJs(publicEnv));
 
 const pendingStaticFiles = [];
 staticFiles.forEach((file) => {
@@ -172,6 +216,16 @@ staticFiles.forEach((file) => {
     copyFile(file);
   }
 });
+
+const decisionCategoryCardCssSrc = 'js/features/decision-cards/decision-category-card.css';
+const decisionCategoryCardCssEntry = 'css/decision-category-card.css';
+if (fs.existsSync(path.join(root, decisionCategoryCardCssSrc))) {
+  fs.mkdirSync(path.join(root, 'css'), { recursive: true });
+  fs.copyFileSync(
+    path.join(root, decisionCategoryCardCssSrc),
+    path.join(root, decisionCategoryCardCssEntry)
+  );
+}
 
 buildHashedCssAssets({
   root,
@@ -194,6 +248,7 @@ esbuild.buildSync({
   splitting: true,
   chunkNames: 'chunks/[name]-[hash]',
   entryNames: 'app.bundle-[hash]',
+  external: bundleExternals,
   outdir: path.join(dist, 'js')
 });
 
@@ -203,15 +258,26 @@ if (!appBundleFile) {
 }
 
 pendingStaticFiles.forEach(({ file, source }) => {
-  let html = rewriteAssetRefs(source);
+  let html = injectAsyncFonts(rewriteAssetRefs(source));
   if (file === 'index.html') {
     html = injectRouteBootstrap(html);
+    const bootstrapHash = hashContent(
+      fs.readFileSync(path.join(root, 'js/runtime/route-bootstrap-head.js'), 'utf8')
+    );
+    html = html.replace(
+      '/js/runtime/route-bootstrap-head.js',
+      `/js/runtime/route-bootstrap-head.js?v=${bootstrapHash}`
+    );
     html = injectPremiumPrerender(html);
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
   }
 
   writeFile(file, minifyHtml(html));
+
+  if (file === 'admin-panel.html') {
+    writeFile('admin/index.html', minifyHtml(html));
+  }
 });
 
 esbuild.buildSync({
@@ -252,6 +318,82 @@ partnerCorporateEntries.forEach((entry) => {
   });
 });
 
+const decisionV3Out = path.join(dist, 'js/decision/ai-decision-engine-v3.js');
+ensureDir(decisionV3Out);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/decision/ai-decision-engine-v3.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: decisionV3Out
+});
+
+const verticalLocaleShellOut = path.join(dist, 'js/runtime/vertical-locale-shell.js');
+ensureDir(verticalLocaleShellOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/vertical-locale-shell.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: verticalLocaleShellOut
+});
+
+const siteAnalyticsBootOut = path.join(dist, 'js/runtime/site-analytics-boot.js');
+ensureDir(siteAnalyticsBootOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/site-analytics-boot.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: siteAnalyticsBootOut
+});
+
+const siteSocialInitOut = path.join(dist, 'js/runtime/site-social-init.js');
+ensureDir(siteSocialInitOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/site-social-init.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: siteSocialInitOut
+});
+
+const emitRuntimeScript = (relativePath) => {
+  const src = path.join(root, relativePath);
+  if (!fs.existsSync(src)) return;
+  writeFile(
+    relativePath,
+    esbuild.transformSync(fs.readFileSync(src, 'utf8'), {
+      loader: 'js',
+      minify: true,
+      target: 'es2020'
+    }).code
+  );
+};
+
+[
+  'js/runtime/static-cookie-consent.js',
+  'js/runtime/perf-fonts-async.js',
+  'js/runtime/site-social-deferred-boot.js',
+  'js/runtime/category-guides-deferred-boot.js',
+  'js/decision/decision-v3-mount.js'
+].forEach(emitRuntimeScript);
+
+const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
+writeRouteBootstrapFile(routeBootstrapOut);
+
 const autoDocumentReadySrc = path.join(root, 'js/auto/auto-document-ready.js');
 if (fs.existsSync(autoDocumentReadySrc)) {
   const autoReadyCode = esbuild.transformSync(fs.readFileSync(autoDocumentReadySrc, 'utf8'), {
@@ -276,7 +418,14 @@ const autoCssParts = [
   'css/award-polish.css',
   'css/auto-mobile-results.css',
   'css/auto-results-ux.css',
-  'css/auto-decision-engine-ui.css'
+  'css/auto-decision-engine-ui.css',
+  'css/auto-hero-dashboard-v1.css',
+  'css/auto-shell-unified-v1.css',
+  'css/auto-question-ux.css',
+  'css/enterprise-card-readability.css',
+  'css/auto-final-cta-contrast-v1.css',
+  'css/istebul-design-system-v4.css',
+  'css/istebul-ds-v4-polish.css'
 ];
 const autoCssCombined = autoCssParts
   .filter((rel) => fs.existsSync(path.join(root, rel)))
@@ -338,6 +487,13 @@ if (fs.existsSync(tatilAppSrc)) {
     if (tatilCssHashed) {
       tatilHtml = tatilHtml.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      tatilHtml = tatilHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(tatilHtmlPath, minifyHtml(tatilHtml));
   }
 }
@@ -371,6 +527,7 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   const tatilCssHashed = assetRefs.get('css/tatil.css');
   const themesCssHashed = assetRefs.get('css/vertical-themes.css');
   const finansHeroCssHashed = assetRefs.get('css/finans-hero.css');
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
   if (tatilCssHashed) {
     html = html.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
   }
@@ -379,6 +536,12 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   }
   if (finansHeroCssHashed) {
     html = html.replace(/\/css\/finans-hero(?:\.[a-f0-9]+)?\.css/g, `/${finansHeroCssHashed}`);
+  }
+  if (decisionCardCssHashed) {
+    html = html.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
   }
   fs.writeFileSync(htmlPath, minifyHtml(html));
 }
@@ -389,6 +552,51 @@ bundleVerticalPage(
   'finans-runtime',
   /\/js\/finans\/finans-app\.js/g
 );
+
+// Sigorta — hashed runtime bundle (avoid /js/* immutable cache on fixed sigorta-app.js path)
+bundleVerticalPage(
+  'js/sigorta/sigorta-app.js',
+  'sigorta/index.html',
+  'sigorta-runtime',
+  /\/js\/sigorta\/sigorta-app\.js/g
+);
+
+bundleVerticalPage(
+  'js/kasko/kasko-app.js',
+  'kasko/index.html',
+  'kasko-runtime',
+  /\/js\/kasko\/kasko-app\.js/g
+);
+
+bundleVerticalPage(
+  'js/verticals/listing-analysis/listing-analysis-app.js',
+  'ilan-analizi/index.html',
+  'listing-analysis-runtime',
+  /\/js\/verticals\/listing-analysis\/listing-analysis-app\.js/g
+);
+
+// AI Listings admin CRUD — static HTML only (no _redirects; see cloudflare-redirects-audit)
+bundleVerticalPage(
+  'js/admin/ai-listings-admin.js',
+  'admin/ai-listings.html',
+  'ai-listings-admin-runtime',
+  /\/js\/admin\/ai-listings-admin\.js/g
+);
+
+const aiListingsAdminHtmlPath = path.join(dist, 'admin', 'ai-listings.html');
+if (fs.existsSync(aiListingsAdminHtmlPath)) {
+  const aiListingsAdminHtml = fs.readFileSync(aiListingsAdminHtmlPath, 'utf8');
+  // /admin/listings/ is reserved for CRM deep-link shell (Karar Seçenekleri).
+  writeFile('admin/ai-listings/index.html', aiListingsAdminHtml);
+}
+
+if (fs.existsSync(path.join(root, 'js/sigorta'))) {
+  copyDir('js/sigorta');
+  const bundledSigortaApp = path.join(dist, 'js/sigorta/sigorta-app.js');
+  if (fs.existsSync(bundledSigortaApp)) {
+    fs.unlinkSync(bundledSigortaApp);
+  }
+}
 
 const housingAppSrc = path.join(root, 'js/real-estate/real-estate-app.js');
 if (fs.existsSync(housingAppSrc)) {
@@ -420,6 +628,13 @@ if (fs.existsSync(housingAppSrc)) {
     if (housingCssHashed) {
       housingHtml = housingHtml.replace(/\/css\/real-estate(?:\.[a-f0-9]+)?\.css/g, `/${housingCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      housingHtml = housingHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(housingHtmlPath, minifyHtml(housingHtml));
   }
 }
@@ -439,6 +654,13 @@ if (fs.existsSync(autoHtmlPath)) {
     /\/assets\/auto-runtime\/auto-app(?:\.[a-f0-9]+)?\.js(?:\?v=[^"']+)?/g,
     `/assets/auto-runtime/${autoAppFile}`
   );
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+  if (decisionCardCssHashed) {
+    autoHtml = autoHtml.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
+  }
   fs.writeFileSync(autoHtmlPath, minifyHtml(autoHtml));
 }
 
@@ -456,18 +678,109 @@ writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 
 
 // Create physical SPA route entrypoints to avoid Cloudflare Pages clean-url redirects.
-// App-only SPA shells (SEO hubs /rehber/, /ilanlar/, /karsilastir/ are static HTML from buildSeoPages)
+// App-only SPA shells (SEO hubs /rehber/, /secenekler/, /karsilastir/ are static HTML from buildSeoPages)
 const spaRoutes = ['favoriler', 'gecmis', 'profil', 'ilan-ekle', 'messages'];
+const routeDocumentMeta = loadRouteMeta(root);
 
 spaRoutes.forEach((route) => {
   const routeDir = path.join(dist, route);
   fs.mkdirSync(routeDir, { recursive: true });
-  fs.copyFileSync(path.join(dist, 'index.html'), path.join(routeDir, 'index.html'));
+  let shellHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  shellHtml = patchSpaShellHtml(shellHtml, route, routeDocumentMeta);
+  fs.writeFileSync(path.join(routeDir, 'index.html'), minifyHtml(shellHtml));
 });
 
 const seoResult = buildSeoPages(dist);
-generateSitemap(dist, seoResult);
+
+const blogBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-blog-post-pages.cjs'), dist], {
+  cwd: root,
+  stdio: 'inherit',
+  env: process.env
+});
+if (blogBuild.status !== 0) process.exit(blogBuild.status || 1);
+
+/** Dynamic content list routes — SPA shells (must run after SEO/blog static pass). */
+const dynamicContentSpaRoutes = [
+  'blog',
+  'duyurular',
+  'kampanyalar',
+  'karar-asistani',
+  'secenekler',
+  'karsilastir'
+];
+dynamicContentSpaRoutes.forEach((route) => {
+  const routeDir = path.join(dist, route);
+  fs.mkdirSync(routeDir, { recursive: true });
+  let shellHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  shellHtml = patchSpaShellHtml(shellHtml, route, routeDocumentMeta);
+  fs.writeFileSync(path.join(routeDir, 'index.html'), minifyHtml(shellHtml));
+});
+
+let blogPosts = [];
+const blogManifestPath = path.join(dist, 'blog-posts-manifest.json');
+if (fs.existsSync(blogManifestPath)) {
+  try {
+    blogPosts = JSON.parse(fs.readFileSync(blogManifestPath, 'utf8')).posts || [];
+  } catch {
+    blogPosts = [];
+  }
+}
+
+/** Locale marketing SPA shells (/en/, /de/, …) with document meta */
+loadLocaleIds().forEach((localeId) => {
+  const localeDir = path.join(dist, localeId);
+  fs.mkdirSync(localeDir, { recursive: true });
+  let localeHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  localeHtml = injectLocaleShellMeta(localeHtml, localeId);
+  fs.writeFileSync(path.join(localeDir, 'index.html'), minifyHtml(localeHtml));
+});
+
+/** SEO HTML is written after static pass — rewrite hashed CSS/JS refs */
+const rewriteSeoHtmlAssets = () => {
+  const seoRoots = [
+    'rehber',
+    'karar-asistani',
+    'secenekler',
+    'karsilastir',
+    'metodoloji',
+    'veri-kaynaklari',
+    'planlar',
+    'blog',
+    'duyurular',
+    'kampanyalar',
+    'en',
+    'de',
+    'ar',
+    'it',
+    'fr',
+    'es',
+    'ja',
+    'zh'
+  ];
+  seoRoots.forEach((name) => {
+    const base = path.join(dist, name);
+    if (!fs.existsSync(base)) return;
+    walk(base, (file) => {
+      if (!file.endsWith('.html')) return;
+      let html = fs.readFileSync(file, 'utf8');
+      html = rewriteAssetRefs(html);
+      fs.writeFileSync(file, minifyHtml(html));
+    });
+  });
+  ['hakkimizda.html', 'iletisim.html', 'yardim.html'].forEach((name) => {
+    const file = path.join(dist, name);
+    if (!fs.existsSync(file)) return;
+    let html = rewriteAssetRefs(fs.readFileSync(file, 'utf8'));
+    html = minifyHtml(html);
+    fs.writeFileSync(file, html);
+    fs.writeFileSync(path.join(root, name), html);
+  });
+};
+rewriteSeoHtmlAssets();
+
+generateSitemap(dist, { ...seoResult, blogPosts });
 generateRobots(dist, seoResult.site);
+injectVerticalFaqs(dist);
 
 fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 
@@ -476,6 +789,77 @@ if (fs.existsSync(path.join(root, '_headers'))) {
 }
 
 injectPartnerHtmlFiles(dist);
+
+const { injectSiteSocialIntoHtml } = require('./lib/site-social-footer.cjs');
+let socialInjectCount = 0;
+walk(dist, (file) => {
+  if (!file.endsWith('.html')) return;
+  const before = fs.readFileSync(file, 'utf8');
+  const after = injectSiteSocialIntoHtml(before);
+  if (after === before) return;
+  fs.writeFileSync(file, minifyHtml(after));
+  socialInjectCount += 1;
+});
+if (socialInjectCount > 0) {
+  console.log(`[social] footer hooks added to ${socialInjectCount} HTML file(s)`);
+}
+
+/** Social/cookie injectors may add unhashed /css/* refs — rewrite after all HTML mutations */
+walk(dist, (file) => {
+  if (!file.endsWith('.html')) return;
+  const html = fs.readFileSync(file, 'utf8');
+  const next = rewriteAssetRefs(html);
+  if (next === html) return;
+  fs.writeFileSync(file, minifyHtml(next));
+});
+
+const inlineAudit = spawnSync(process.execPath, [path.join(root, 'scripts/dist-inline-handlers-audit.cjs')], {
+  cwd: root,
+  stdio: 'inherit'
+});
+if (inlineAudit.status !== 0) process.exit(inlineAudit.status || 1);
+
+const {
+  getGoogleSiteVerificationCode,
+  applyGoogleSiteVerificationToHtmlFiles
+} = require('./lib/gsc-verification.cjs');
+const gscCode = getGoogleSiteVerificationCode(process.env);
+if (gscCode) {
+  const gscResult = applyGoogleSiteVerificationToHtmlFiles(dist, { code: gscCode });
+  console.log(
+    `[gsc] google-site-verification meta injected into ${gscResult.injected} HTML file(s)`
+  );
+} else {
+  console.warn(
+    '[gsc] GOOGLE_SITE_VERIFICATION not set — skip Search Console HTML tag (see .github/SECRETS.example.md)'
+  );
+}
+
+const { getAdminDeepLinkSlugs } = require('./lib/admin-deep-links.cjs');
+const {
+  getGa4MeasurementId,
+  applyGa4ConsentHeadToHtmlFiles
+} = require('./lib/ga4-consent-head.cjs');
+const ga4Id = getGa4MeasurementId(process.env, root);
+if (ga4Id) {
+  const ga4Result = applyGa4ConsentHeadToHtmlFiles(dist, { measurementId: ga4Id });
+  console.log(`[ga4] consent-mode head snippet injected into ${ga4Result.injected} HTML file(s)`);
+} else {
+  console.warn('[ga4] GA4_MEASUREMENT_ID not set — skip gtag head (see docs/ZIYARETCI_ANALITIK_KURULUM.md)');
+}
+
+/** Admin deep links — physical shells so /admin/* is not rewritten by /* SPA fallback */
+const adminIndexPath = path.join(dist, 'admin', 'index.html');
+if (fs.existsSync(adminIndexPath)) {
+  const adminShellHtml = fs.readFileSync(adminIndexPath, 'utf8');
+  const adminDeepLinkSlugs = getAdminDeepLinkSlugs();
+  adminDeepLinkSlugs.forEach((slug) => {
+    const routeDir = path.join(dist, 'admin', slug);
+    fs.mkdirSync(routeDir, { recursive: true });
+    fs.writeFileSync(path.join(routeDir, 'index.html'), adminShellHtml);
+  });
+  console.log(`[admin] deep-link shells: ${adminDeepLinkSlugs.length} route(s)`);
+}
 
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');

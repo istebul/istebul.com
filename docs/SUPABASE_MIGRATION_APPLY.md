@@ -37,6 +37,22 @@ WHERE table_schema = 'public'
 
 Expect 5 rows.
 
+## Live data settings (20260620)
+
+```bash
+supabase link --project-ref hjfrcdstbyonmgatgwcc --yes
+supabase db push --yes --include-all
+```
+
+Verify:
+
+```sql
+SELECT key, value FROM public.site_settings
+WHERE key IN ('live_providers_enabled', 'live_finance_feed_url');
+```
+
+Full ops steps: **`docs/OPS_SUPABASE_IYZICO_RUNBOOK.md`**.
+
 ## Backward compatibility
 
 - Old leads without columns: admin drawer parses qual lines from `notes` via `js/admin/lead-qual-fields.js`.

@@ -1,7 +1,9 @@
-# Cloudflare Pages routing — static assets BEFORE SPA fallback.
-# CF applies redirects before static lookup; passthrough rules preserve real MIME types.
+# Cloudflare Pages routing — keep dynamic rules under 100 (CF limit).
+# Static files (/*.html, /auto/index.html, /admin/index.html, …) are served directly.
+# Admin panel: dist/admin/index.html + dist/admin/<slug>/index.html — no _redirects rules.
+# Deep links (/admin/listings, /admin/decision-center, …) are physical build output (before /* SPA fallback).
 
-# --- Static asset passthrough (do not rewrite to index.html) ---
+# --- Static asset passthrough (before SPA fallback) ---
 /css/*       /css/:splat       200
 /js/*        /js/:splat        200
 /assets/*    /assets/:splat    200
@@ -9,70 +11,95 @@
 /fonts/*     /fonts/:splat     200
 /data/*      /data/:splat      200
 /docs/*      /docs/:splat      200
-/env.js      /env.js           200
-/sw.js       /sw.js            200
-/manifest.json /manifest.json  200
-/importmap.json /importmap.json 200
-/robots.txt  /robots.txt       200
-/sitemap.xml /sitemap.xml      200
-/build-manifest.json /build-manifest.json 200
-/offline.html /offline.html   200
-/favicon.ico /favicon.ico     200
 
-# --- Standalone HTML (not SPA shell) ---
-/admin-panel.html /admin-panel.html 200
-/hakkimizda.html /hakkimizda.html 200
-/iletisim.html /iletisim.html 200
-/gizlilik.html /gizlilik.html 200
-/kvkk.html /kvkk.html 200
-/kullanim-sartlari.html /kullanim-sartlari.html 200
-/partner-olun.html /partner-olun.html 200
-/partner-planlar.html /partner-planlar.html 200
-/partner-guven.html /partner-guven.html 200
-/partner-docs.html /partner-docs.html 200
-/partner-onboarding.html /partner-onboarding.html 200
-/partner-basvuru.html /partner-basvuru.html 200
-/partner-closing-kit.html /partner-closing-kit.html 200
-/karar-moat.html /karar-moat.html 200
+# --- Legacy ilanlar URL → seçenekler (karar platformu) ---
+/ilanlar /secenekler/ 301
+/ilanlar/ /secenekler/ 301
 
-# --- Section entry HTML ---
-/auto /auto/index.html 200
-/auto/ /auto/index.html 200
-/metodoloji /metodoloji/index.html 200
-/metodoloji/ /metodoloji/index.html 200
-/konut /konut/index.html 200
-/konut/ /konut/index.html 200
-/tatil /tatil/index.html 200
-/tatil/ /tatil/index.html 200
-/finans /finans/index.html 200
-/finans/ /finans/index.html 200
-/sigorta /sigorta/ 301
-/sigorta/ /sigorta/index.html 200
-/sigorta/* /sigorta/index.html 200
-/kasko /kasko/ 301
-/kasko/ /kasko/index.html 200
-/kasko/* /kasko/index.html 200
+# --- Legacy karar-analizi → canonical karar-asistani ---
+/karar-analizi /karar-asistani/ 301
+/karar-analizi/ /karar-asistani/ 301
 
-# --- Locale shells (marketing SPA) ---
+# --- Legacy account URL ---
+/account.html /profil/ 301
+
+# --- Legacy / junk URLs ---
+/index.php/*  /  410
+/cgi-sys/*    /  410
+/2025/*       /  410
+/category/*   /  301
+
+# --- SEO rehber redirects (301 only; static HTML served from /rehber/) ---
+/rehber/arac-alim-karar-asistani /rehber/arac-alim-karar-asistani/ 301
+/rehber/arac-finansman-secenekleri /rehber/finansman-rehberi/ 301
+/rehber/arac-karsilastirma-rehberi /rehber/arac-karsilastirma-rehberi/ 301
+/rehber/arac-kredisi-hesaplama /rehber/arac-kredisi-hesaplama/ 301
+/rehber/arac-sigortasi-karsilastirma /rehber/arac-sigortasi-karsilastirma/ 301
+/rehber/arac-toplam-sahiplik-maliyeti /rehber/tco-rehberi/ 301
+/rehber/aylik-arac-butcesi-hesaplama /rehber/aylik-arac-butcesi-hesaplama/ 301
+/rehber/elektrikli-arac-alirken /rehber/elektrikli-arac-rehberi/ 301
+/rehber/elektrikli-arac-alirken/ /rehber/elektrikli-arac-rehberi/ 301
+/rehber/arac-finansman-secenekleri/ /rehber/finansman-rehberi/ 301
+/rehber/arac-toplam-sahiplik-maliyeti/ /rehber/tco-rehberi/ 301
+/rehber/ikinci-el-arac-alirken /rehber/ikinci-el-rehberi/ 301
+/rehber/ikinci-el-arac-alirken/ /rehber/ikinci-el-rehberi/ 301
+/rehber/elektrikli-arac-rehberi /rehber/elektrikli-arac-rehberi/ 301
+/rehber/finansman-rehberi /rehber/finansman-rehberi/ 301
+/rehber/tco-rehberi /rehber/tco-rehberi/ 301
+/rehber/ikinci-el-rehberi /rehber/ikinci-el-rehberi/ 301
+/rehber/sifir-arac-mi-ikinci-el-mi /rehber/sifir-arac-mi-ikinci-el-mi/ 301
+/rehber/suv-mi-sedan-mi /rehber/suv-mi-sedan-mi/ 301
+/rehber/ticari-arac-alimi-rehberi /rehber/ticari-arac-alimi-rehberi/ 301
+/rehberler/suv-mi-sedan-mi/ /rehber/suv-mi-sedan-mi/ 301
+/rehberler/elektrikli-arac-rehberi/ /rehber/elektrikli-arac-rehberi/ 301
+/rehberler/finansman-rehberi/ /rehber/finansman-rehberi/ 301
+/rehberler/tco-rehberi/ /rehber/tco-rehberi/ 301
+/rehberler/ikinci-el-arac-rehberi/ /rehber/ikinci-el-rehberi/ 301
+/rehberler/ikinci-el-rehberi/ /rehber/ikinci-el-rehberi/ 301
+/rehberler/* /rehber/:splat/ 301
+/rehber/*     /rehber/:splat/index.html  200
+
+# --- Locale marketing SPA shells ---
 /en /index.html 200
 /en/* /index.html 200
 /de /index.html 200
 /de/* /index.html 200
 /ar /index.html 200
 /ar/* /index.html 200
-/en/auto /auto/index.html 200
-/en/auto/ /auto/index.html 200
-/de/auto /auto/index.html 200
-/de/auto/ /auto/index.html 200
-/ar/auto /auto/index.html 200
-/ar/auto/ /auto/index.html 200
+/it /index.html 200
+/it/* /index.html 200
+/fr /index.html 200
+/fr/* /index.html 200
+/es /index.html 200
+/es/* /index.html 200
+/ja /index.html 200
+/ja/* /index.html 200
+/zh /index.html 200
+/zh/* /index.html 200
 
-# --- App deep-link shells (physical index.html per route) ---
+# --- App deep-link SPA shells ---
 /profil/* /profil/index.html 200
 /favoriler/* /favoriler/index.html 200
 /gecmis/* /gecmis/index.html 200
 /messages/* /messages/index.html 200
 /ilan-ekle/* /ilan-ekle/index.html 200
+
+# --- Blog list hub (SPA shell with route bootstrap; before /* fallback) ---
+/blog /blog/index.html 200
+/blog/ /blog/index.html 200
+
+# --- Blog post static SEO pages ---
+# Physical /blog/:slug/index.html files are served directly when present.
+# Missing slugs fall through to /* SPA fallback below.
+
+# --- Public Decision Center (user-facing Karar Merkezi) ---
+/karar-merkezi /profil/ 301
+/karar-merkezi/ /profil/ 301
+/decision-center /profil/ 301
+/decision-center/ /profil/ 301
+
+# --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
+/api/* /api/:splat 200
 
 # --- SPA fallback (MUST be last) ---
 /* /index.html 200

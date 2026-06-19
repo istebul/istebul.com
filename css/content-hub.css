@@ -190,6 +190,20 @@
   letter-spacing: -0.03em;
 }
 
+.ib-content-cover {
+  margin: 0 0 1rem;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ib-content-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: cover;
+}
+
 .ib-content-empty {
   margin: 0;
   padding: 1rem;

@@ -2,34 +2,124 @@
  * Unified funnel dashboard — Auto, Konut, Tatil, Finans on one admin screen.
  */
 
+export const FUNNEL_METRICS_CUTOVER_NOTE =
+  '5 Haziran 2026 sonrası wizard_start page load\u2019dan kullanıcı etkileşimine taşındı; önceki dönemle karşılaştırmada start oranları şişkin olabilir.';
+
+/** Canonical funnel stage aliases for event → stage resolution. */
+export const FUNNEL_STAGE_ALIASES = Object.freeze({
+  visit: [
+    'auto_page_view',
+    'auto_form_started',
+    'housing_page_view',
+    'home_analysis_start',
+    'vacation_start',
+    'vacation_page_view',
+    'finans_start',
+    'finance_page_view',
+    'finance_funnel_start',
+    'konut_start',
+    'category_page_view',
+    'insurance_page_view',
+    'page_view',
+    'analysis_started'
+  ],
+  complete: [
+    'wizard_complete',
+    'analysis_completed',
+    'auto_wizard_complete',
+    'auto_form_submitted',
+    'auto_results_rendered',
+    'auto_results_view',
+    'home_wizard_complete',
+    'home_results_view',
+    'housing_results_view',
+    'vacation_wizard_complete',
+    'vacation_results_view',
+    'finans_results_view',
+    'finance_results_view',
+    'finance_funnel_complete',
+    'results_viewed',
+    'results_view',
+    'insurance_results_view',
+    'kasko_wizard_complete',
+    'kasko_results_view'
+  ],
+  lead_open: [
+    'lead_form_opened',
+    'auto_modal_open',
+    'insurance_interest',
+    'home_lead_open',
+    'vacation_lead_open'
+  ],
+  lead_submit: [
+    'lead_submitted',
+    'lead_submit',
+    'auto_lead_submit',
+    'finans_lead_submit',
+    'lead_submitted',
+    'vacation_lead_submit',
+    'home_lead_submit',
+    'insurance_lead_submit'
+  ]
+});
+
+/**
+ * Resolve a raw event name to a canonical funnel stage.
+ * @param {string} eventName
+ * @returns {'visit'|'complete'|'lead_open'|'lead_submit'|null}
+ */
+export function resolveFunnelStage(eventName) {
+  const name = String(eventName || '').trim();
+  if (!name) return null;
+  for (const [stage, aliases] of Object.entries(FUNNEL_STAGE_ALIASES)) {
+    if (aliases.includes(name)) return stage;
+  }
+  return null;
+}
+
 const CATEGORY_FUNNELS = Object.freeze([
   {
     id: 'auto',
     label: 'Auto',
     visit: ['auto_page_view', 'auto_form_started'],
-    results: ['auto_results_rendered', 'auto_form_submitted'],
+    results: ['auto_results_rendered', 'auto_form_submitted', 'auto_wizard_complete', 'wizard_complete'],
     lead: ['auto_lead_submit', 'lead_submit']
   },
   {
     id: 'konut',
     label: 'Konut',
     visit: ['housing_page_view', 'home_analysis_start'],
-    results: ['home_results_view'],
+    results: ['home_results_view', 'home_wizard_complete', 'housing_results_view'],
     lead: ['home_lead_submit']
   },
   {
     id: 'tatil',
     label: 'Tatil',
     visit: ['vacation_start', 'vacation_page_view'],
-    results: ['vacation_results_view'],
+    results: ['vacation_results_view', 'vacation_wizard_complete'],
     lead: ['vacation_lead_submit']
   },
   {
     id: 'finans',
     label: 'Finans',
-    visit: ['finans_start', 'finance_page_view', 'finance_funnel_start'],
-    results: ['finans_results_view', 'finance_results_view'],
-    lead: ['finans_lead_submit']
+    visit: ['finans_start', 'finance_page_view', 'finance_funnel_start', 'category_page_view'],
+    results: ['finans_results_view', 'finance_results_view', 'results_viewed', 'finance_funnel_complete'],
+    lead: ['finans_lead_submit', 'lead_submitted']
+  },
+  {
+    id: 'sigorta',
+    label: 'Sigorta',
+    visit: ['insurance_page_view', 'insurance_analysis_started', 'category_page_view'],
+    results: ['insurance_results_view', 'results_viewed'],
+    lead: ['lead_submitted', 'insurance_lead_submit'],
+    lead_open: ['insurance_interest']
+  },
+  {
+    id: 'kasko',
+    label: 'Kasko',
+    visit: ['category_page_view', 'page_view', 'kasko_analysis_started'],
+    results: ['kasko_wizard_complete', 'kasko_results_view'],
+    lead: ['lead_submitted', 'kasko_lead_submit']
   }
 ]);
 
@@ -94,10 +184,11 @@ export function renderUnifiedFunnelDashboard(metrics, escapeHtml) {
 
   return `
     <div class="unified-funnel-dashboard">
+      <p class="text-muted-sm funnel-cutover-note" style="margin:0 0 14px;padding:10px 12px;border-left:3px solid var(--border,#d1d5db);background:var(--surface-muted,#f9fafb)">${esc(FUNNEL_METRICS_CUTOVER_NOTE)}</p>
       <div class="stat-grid" style="margin-bottom:16px">
         <article class="stat-card"><div class="stat-label">En yüksek lead</div><div class="stat-value">${esc(bestLead?.label || '—')}</div><div class="stat-sub">${bestLead?.leads ?? 0} lead</div></article>
         <article class="stat-card"><div class="stat-label">En iyi dönüşüm</div><div class="stat-value">${esc(bestCr?.label || '—')}</div><div class="stat-sub">${esc(bestCr?.overallConversion || '—')}</div></article>
-        <article class="stat-card"><div class="stat-label">Kategori sayısı</div><div class="stat-value">4</div><div class="stat-sub">Auto · Konut · Tatil · Finans</div></article>
+        <article class="stat-card"><div class="stat-label">Kategori sayısı</div><div class="stat-value">${metrics.length}</div><div class="stat-sub">Auto · Konut · Tatil · Finans · Sigorta · Kasko</div></article>
       </div>
       <div class="table-wrap">
         <table class="admin-table">

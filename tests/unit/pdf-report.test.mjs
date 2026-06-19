@@ -85,7 +85,8 @@ test('buildReportHtml does not crash on empty pdfReportData', () => {
   assert.doesNotThrow(() => {
     const html = buildReportHtml();
     assert.match(html, /isteBul/);
-    assert.match(html, /Executive Summary/);
+    assert.match(html, /Yönetici özeti/);
+    assert.match(html, /Karar gerekçeleri/);
   });
 });
 

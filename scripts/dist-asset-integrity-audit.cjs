@@ -4,6 +4,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { assertEnvJsFileContents } = require('./lib/public-env.cjs');
 
 const root = process.cwd();
 const dist = path.join(root, 'dist');
@@ -12,6 +13,27 @@ const errors = [];
 if (!fs.existsSync(dist)) {
   console.error('dist-asset-integrity-audit: dist/ missing — run npm run build first');
   process.exit(1);
+}
+
+const envJsPath = path.join(dist, 'env.js');
+if (!fs.existsSync(envJsPath)) {
+  errors.push('dist/env.js is missing');
+} else {
+  try {
+    assertEnvJsFileContents(fs.readFileSync(envJsPath, 'utf8'), 'dist/env.js');
+  } catch (err) {
+    errors.push(err.message);
+  }
+}
+
+const adminPanelHtml = path.join(dist, 'admin-panel.html');
+if (fs.existsSync(adminPanelHtml)) {
+  const adminHtml = fs.readFileSync(adminPanelHtml, 'utf8');
+  const envIdx = adminHtml.indexOf('/env.js');
+  const adminJsIdx = adminHtml.indexOf('/js/admin-panel.js');
+  if (envIdx === -1 || adminJsIdx === -1 || envIdx > adminJsIdx) {
+    errors.push('admin-panel.html must load /env.js before admin-panel.js');
+  }
 }
 
 const redirectsPath = path.join(dist, '_redirects');

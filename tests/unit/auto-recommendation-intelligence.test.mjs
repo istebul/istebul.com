@@ -35,4 +35,5 @@ test('renderComparisonMatrix outputs table for two vehicles', () => {
   );
   assert.match(html, /ib-auto-compare-table/);
   assert.match(html, /Model A|A/);
+  assert.doesNotMatch(html, /199999999999996/);
 });

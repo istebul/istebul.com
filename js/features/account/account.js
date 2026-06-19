@@ -3,13 +3,25 @@ import { escapeHtml } from '../../core/security.js';
 import config from '../../core/config.js';
 import { enrollBillingHelp } from '../customer/customer-ops-client.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey } from '../../core/storage-keys.js';
-import { renderUserDashboard } from '../profil/user-dashboard.js';
+import { renderAccountHub } from '../../ui/components/account-hub.js';
 import { mapHistoryRecordToResult } from '../../ui/components/user-result-card.js';
+import {
+    buildDashboardV2Data,
+    bindDashboardV2,
+    renderDashboardV2,
+    renderDashboardV2Guest
+} from './dashboard-v2.js';
+import { addAnalysisToCompareSelection, removeCompareSelection } from './dashboard-v2-store.js';
+import { bindPaywallV1 } from '../billing/paywall-v1.js';
+import { resolvePlanTier } from '../billing/pro-features.js';
+import { requestAccountDeletion } from '../auth/account-deletion.js';
+import { resolveRouteSurface } from '../../runtime/route-surface.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
 
 const MAIN_DASHBOARD_TABS = ['overview', 'analyses', 'favorites'];
+const ACCOUNT_HUB_TABS = ['settings', 'security', 'notifications', 'help'];
 
 const SUBSCRIPTION_LABELS = {
     active: { label: 'Aktif', tone: 'success' },
@@ -28,27 +40,50 @@ export class AccountManager {
         this.subscription = null;
         this.loading = false;
         this.app = null;
+        this._openBillingPortal = false;
+        this._profileListingId = '';
     }
 
     handleQueryParams(params = new URLSearchParams()) {
         const subscribed = params.get('subscribed') === 'true';
         const cancelled = params.get('cancelled') === 'true';
         const billingManaged = params.get('billing') === 'managed';
+        const billingPortal = params.get('billing') === 'portal';
+        const paymentSuccess = params.get('payment') === 'success';
+        const paymentFailed = params.get('payment') === 'failed';
         const tab = params.get('tab');
-
-        const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
-        if (tab && allowedTabs.includes(tab)) {
-            this.activeTab = tab;
+        const listing = params.get('listing');
+        if (listing) {
+            this._profileListingId = String(listing).trim();
         }
 
-        if (subscribed) {
+        const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
+        if (tab === 'subscription') {
+            this.activeTab = 'settings';
+        } else if (tab && allowedTabs.includes(tab)) {
+            this.activeTab = tab;
+        } else if (!ACCOUNT_HUB_TABS.includes(this.activeTab) && !MAIN_DASHBOARD_TABS.includes(this.activeTab)) {
+            this.activeTab = 'settings';
+        }
+
+        if (billingPortal) {
+            this._openBillingPortal = true;
+        }
+
+        if (paymentSuccess) {
+            this.ui?.showSuccess?.('Ödeme başarılı. Abonelik/rapor hakkınız güncellendi.');
+            this.activeTab = 'overview';
+        } else if (paymentFailed) {
+            this.ui?.showError?.('Ödeme tamamlanamadı.');
+            this.activeTab = 'overview';
+        } else if (subscribed) {
             this.ui?.showSuccess?.('Ödemeniz alındı. Premium aboneliğiniz birkaç dakika içinde hesabınıza yansır.');
             this.activeTab = 'overview';
         } else if (cancelled) {
             this.ui?.showError?.('Ödeme işlemi iptal edildi. İstediğiniz zaman tekrar deneyebilirsiniz.');
             this.activeTab = 'overview';
         } else if (billingManaged) {
-            this.ui?.showSuccess?.('Stripe abonelik panelinden döndünüz. Kart, fatura veya plan değişiklikleri kısa süre içinde yansır.');
+            this.ui?.showSuccess?.('Abonelik ayarlarınızdan döndünüz. Değişiklikler kısa süre içinde yansır.');
             this.activeTab = 'overview';
             const user = this.auth?.getCurrentUser?.();
             if (user?.email) {
@@ -61,7 +96,7 @@ export class AccountManager {
             }
         }
 
-        if (subscribed || cancelled || billingManaged || tab) {
+        if (subscribed || cancelled || billingManaged || billingPortal || paymentSuccess || paymentFailed || tab) {
             const cleanUrl = `${window.location.pathname}`;
             window.history.replaceState(null, '', cleanUrl);
         }
@@ -72,8 +107,14 @@ export class AccountManager {
         if (!section) return;
 
         const currentUser = user || this.auth?.getCurrentUser?.();
+        const onProfilRoute = resolveRouteSurface(window.location.pathname) === 'profil';
+
         if (!currentUser) {
-            this.renderGuest();
+            if (onProfilRoute) this.renderGuest();
+            return;
+        }
+
+        if (!onProfilRoute) {
             return;
         }
 
@@ -84,6 +125,7 @@ export class AccountManager {
             const profile = await API.getProfile(currentUser.id);
             currentUser.profile = profile;
 
+            let entitlements = [];
             try {
                 this.subscription = await API.getSubscription(currentUser.id);
             } catch (subError) {
@@ -91,7 +133,24 @@ export class AccountManager {
                 this.subscription = null;
             }
 
-            this.renderAccount(currentUser, profile);
+            try {
+                entitlements = await API.getUserEntitlements(currentUser.id);
+                if (typeof window !== 'undefined') {
+                    window.__ibPaymentEntitlements = entitlements;
+                }
+            } catch (entError) {
+                console.warn('Entitlements could not be loaded:', entError);
+            }
+
+            const decisionPlatform =
+                (await this.app?.loadUserDecisionPanelData?.({
+                    listingId: this._profileListingId,
+                    autoSelect: !this._profileListingId
+                })) ??
+                this.app?.getUserDecisionPanelData?.() ??
+                {};
+
+            this.renderAccount(currentUser, profile, entitlements, decisionPlatform);
             this.maybeShowOnboarding(profile);
             if (this.subscription?.status === 'past_due') {
                 enrollBillingHelp({
@@ -118,8 +177,10 @@ export class AccountManager {
         section.querySelectorAll('[data-dashboard-tab]').forEach((btn) => {
             const isActive = btn.dataset.dashboardTab === tabId;
             btn.classList.toggle('is-active', isActive);
-            btn.setAttribute('role', 'tab');
-            btn.setAttribute('aria-selected', String(isActive));
+            if (btn.matches('.account-hub-tab, .ud-nav-item')) {
+                btn.setAttribute('role', 'tab');
+                btn.setAttribute('aria-selected', String(isActive));
+            }
         });
 
         section.querySelectorAll('[data-dashboard-overview]').forEach((el) => {
@@ -140,6 +201,11 @@ export class AccountManager {
             if (isActive) panel.removeAttribute('tabindex');
             else panel.setAttribute('tabindex', '-1');
         });
+
+        if (ACCOUNT_HUB_TABS.includes(tabId)) {
+            const hub = section.querySelector('.account-hub');
+            hub?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
     bindEvents(app) {
@@ -280,9 +346,15 @@ export class AccountManager {
             return;
         }
 
+        const statusEl = form.querySelector('#account-settings-status');
+
         try {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Kaydediliyor...';
+            if (statusEl) {
+                statusEl.textContent = 'Kaydediliyor…';
+                statusEl.classList.remove('is-error');
+            }
 
             const updates = {
                 full_name: form.full_name.value.trim(),
@@ -291,14 +363,19 @@ export class AccountManager {
                 bio: form.bio.value.trim()
             };
 
-            const profile = await app.profil.updateProfile(app.currentUser.id, updates);
+            const profile = await API.updateProfile(app.currentUser.id, updates);
             app.currentUser.profile = profile;
             this.ui?.updateUserUI?.(profile);
             this.ui?.showSuccess?.(config.messages.success.profileUpdated);
+            if (statusEl) statusEl.textContent = 'Profil bilgileriniz kaydedildi.';
             await this.refresh(app.currentUser);
         } catch (error) {
             console.error('Settings save failed:', error);
             this.ui?.showError?.('Profil güncellenemedi. Lütfen tekrar deneyin.');
+            if (statusEl) {
+                statusEl.textContent = 'Kayıt başarısız. Lütfen tekrar deneyin.';
+                statusEl.classList.add('is-error');
+            }
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = original || 'Değişiklikleri kaydet';
@@ -331,8 +408,8 @@ export class AccountManager {
 
         document.getElementById('profil')?.classList.remove('profil-has-dashboard');
 
-        root.innerHTML = `
-            <div class="account-guest">
+        root.innerHTML = renderDashboardV2Guest() + `
+            <div class="account-guest dashboard-v2-legacy-guest hidden" hidden>
                 <div class="account-guest-copy">
                     <span class="account-eyebrow"><i data-lucide="shield-check"></i> Güvenli hesap alanı</span>
                     <h2>Hesabınızı tek yerden yönetin</h2>
@@ -340,7 +417,7 @@ export class AccountManager {
                     <ul class="account-trust-list">
                         <li><i data-lucide="lock"></i> Oturumlar şifreli bağlantı üzerinden korunur</li>
                         <li><i data-lucide="mail-check"></i> E-posta doğrulama ve şifre sıfırlama desteği</li>
-                        <li><i data-lucide="credit-card"></i> Stripe ile güvenli ödeme</li>
+                        <li><i data-lucide="credit-card"></i> Pro erken erişim — ödeme aktivasyonu sonrası bilgilendirme</li>
                     </ul>
                     <div class="account-guest-actions">
                         <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Hesabına gir</button>
@@ -354,7 +431,17 @@ export class AccountManager {
             this.auth?.showRegisterModal?.();
         });
 
+        bindDashboardV2(root.querySelector('[data-dashboard-v2]'), {
+            ui: this.ui,
+            onRefresh: () => this.refresh(this.auth?.getCurrentUser?.())
+        });
+        bindPaywallV1(root);
         this.ui?.loadIcons?.();
+
+        if (this._openBillingPortal) {
+            this._openBillingPortal = false;
+            queueMicrotask(() => this.auth?.showLoginModal?.());
+        }
     }
 
     renderLoading(user) {
@@ -383,24 +470,115 @@ export class AccountManager {
         `;
     }
 
-    renderAccount(user, profile) {
+    renderAccount(user, profile, entitlements = [], decisionPlatform = null) {
         const root = document.getElementById('account-root');
         if (!root) return;
 
         const emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
         const sub = this.subscription;
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
-        const hasPremium = ['active', 'trialing'].includes(sub?.status);
+        const hasPremiumReport = entitlements.some(
+            (e) => e.entitlement_code === 'premium_report' && e.status === 'active'
+        );
+        const { isPro: hasPremium } = resolvePlanTier(user, {
+            profile,
+            subscription: sub,
+            isAuthenticated: true
+        });
+        const membershipLabel = hasPremium
+            ? subMeta.label
+            : hasPremiumReport
+                ? 'Premium rapor'
+                : subMeta.label;
         const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
+        const v2Data = buildDashboardV2Data({
+            user,
+            profile,
+            userId: user.id,
+            history: this.readDecisionHistory(user.id),
+            favorites: this.readFavorites(),
+            hasPremium,
+            membershipLabel,
+            decisionPlatform:
+                decisionPlatform ??
+                this.app?.getUserDecisionPanelData?.() ??
+                {}
+        });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
-        root.innerHTML = renderUserDashboard(dashboardData);
+        const hubTab = ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : 'settings';
+        root.innerHTML = `
+            ${renderDashboardV2(v2Data)}
+            ${renderAccountHub({
+                activeTab: hubTab,
+                profile,
+                emailVerified,
+                notificationPreference: dashboardData.notificationPreference,
+                comparisons: dashboardData.comparisons,
+                recommendations: dashboardData.recommendations,
+                membershipLabel,
+                hasPremium
+            })}`;
+
+        bindDashboardV2(root.querySelector('[data-dashboard-v2]'), {
+            userId: user.id,
+            ui: this.ui,
+            pdfReports: v2Data.pdfReports,
+            store: { addAnalysisToCompareSelection, removeCompareSelection },
+            onRefresh: () => this.refresh(user)
+        });
+
+        bindPaywallV1(root, {
+            onCheckoutError: () => this.ui?.showError?.('Pro ödeme oturumu başlatılamadı.')
+        });
 
         root.querySelector('#account-reset-password')?.addEventListener('click', () => {
             this.auth?.showForgotPasswordForm?.(user.email);
         });
 
-        this.setTab(this.activeTab);
+        root.querySelector('#account-delete-self-serve')?.addEventListener('click', async () => {
+            const confirmed = window.confirm(
+                'Hesabınız ve ilişkili veriler kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?'
+            );
+            if (!confirmed) return;
+
+            const deleteBtn = root.querySelector('#account-delete-self-serve');
+            const statusEl = root.querySelector('#account-delete-status');
+            if (statusEl) {
+                statusEl.textContent = 'Silme işlemi başlatılıyor…';
+                statusEl.classList.remove('is-error');
+            }
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.setAttribute('aria-busy', 'true');
+            }
+
+            const result = await requestAccountDeletion({ confirm: true });
+            if (result.ok) {
+                window.location.href = '/?account_deleted=1';
+                return;
+            }
+
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.removeAttribute('aria-busy');
+            }
+            if (statusEl) {
+                statusEl.textContent = result.error || 'Silme işlemi tamamlanamadı.';
+                statusEl.classList.add('is-error');
+            } else {
+                this.ui?.showError?.(result.error || 'Silme işlemi tamamlanamadı.');
+            }
+        });
+
+        this.setTab(ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : hubTab);
         this.ui?.loadIcons?.();
+
+        if (this._openBillingPortal && this.app?.openBillingPortal) {
+            this._openBillingPortal = false;
+            queueMicrotask(() => {
+                this.app.openBillingPortal();
+            });
+        }
     }
 
     getInitials(profile) {
@@ -455,7 +633,7 @@ export class AccountManager {
             recommendations,
             notificationCount: recommendations.length,
             quickActions: [
-                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/auto/', icon: 'plus-circle' },
+                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/karar-asistani/', icon: 'plus-circle' },
                 { title: 'Karşılaştırma Oluştur', description: 'Seçenekleri karşılaştır', href: '/karsilastir', icon: 'scale' },
                 { title: 'Raporlarımı İndir', description: 'Tüm analiz raporlarını indir', href: '/gecmis', icon: 'download' },
                 { title: 'Favori Listemi Gör', description: 'Kaydettiğiniz tüm öğeleri görüntüleyin', href: '/favoriler', icon: 'heart' }
@@ -496,8 +674,8 @@ export class AccountManager {
             auto: { category: 'Auto', href: '/auto/' },
             konut: { category: 'Konut', href: '/konut/' },
             tatil: { category: 'Tatil', href: '/tatil/' },
-            finans: { category: 'Finansman', href: '/finansman/' },
-            finansman: { category: 'Finansman', href: '/finansman/' }
+            finans: { category: 'Finansman', href: '/finans/' },
+            finansman: { category: 'Finansman', href: '/finans/' }
         };
         const recentRecords = history
             .filter((item) => item?.createdAt)

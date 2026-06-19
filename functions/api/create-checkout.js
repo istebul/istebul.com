@@ -75,7 +75,17 @@ export async function onRequestPost(context) {
     const TRIAL_DAYS = Math.max(0, parseInt(context.env.STRIPE_TRIAL_DAYS || '7', 10) || 0);
 
     if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
-      return corsJsonError(500, API_ERROR_CODES.SERVER_MISCONFIGURED, 'Stripe not configured', origin);
+      return corsJson(
+        {
+          ok: false,
+          code: 'STRIPE_PASSIVE',
+          status: 'global_provider_passive',
+          message:
+            'Bu ödeme kanalı kullanımdan kaldırıldı. Türkiye ödemeleri için iyzico / PayTR kullanın.'
+        },
+        503,
+        origin
+      );
     }
 
     const token = getBearerToken(context.request);

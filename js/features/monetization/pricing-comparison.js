@@ -54,8 +54,8 @@ const COMPARE_PLANS = Object.freeze([
     name: 'Başlangıç',
     priceHint: 'Ücretsiz',
     featured: false,
-    ctaHref: '/auto/',
-    ctaLabel: 'Ücretsiz maliyet analizi',
+    ctaHref: '/karar-asistani/',
+    ctaLabel: 'Ön değerlendirme başlat',
     ctaClass: 'btn btn-outline btn-block'
   },
   {
@@ -63,10 +63,10 @@ const COMPARE_PLANS = Object.freeze([
     tier: 'pro',
     badge: 'En popüler',
     name: 'isteBul Pro',
-    priceHint: '₺299 / ay',
+    priceHint: 'Erken erişim',
     featured: true,
     ctaHref: '/planlar?checkout=pro',
-    ctaLabel: 'Pro’yu dene',
+    ctaLabel: 'Erken erişim talep et',
     ctaClass: 'btn btn-primary btn-block',
     checkoutButton: true
   },
@@ -129,7 +129,7 @@ function renderComparePlanCard(plan) {
       <footer class="revenue-compare-plan-card-foot">
         ${
           plan.checkoutButton
-            ? `<button type="button" class="${plan.ctaClass}" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_compare_pro">${plan.ctaLabel}</button>`
+            ? `<button type="button" class="${plan.ctaClass}" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_compare_pro">Pro'ya geç</button>`
             : `<a href="${plan.ctaHref}" class="${plan.ctaClass}">${plan.ctaLabel}</a>`
         }
       </footer>

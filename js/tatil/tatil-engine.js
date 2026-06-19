@@ -1,4 +1,5 @@
 import { RESULT_BADGES, STEP_OPTIONS, BUDGET_PLANS } from './tatil-config.js';
+import { findPeopleLabel } from './tatil-flow.js';
 import {
   computeTripNights,
   formatTry,
@@ -42,8 +43,8 @@ function labelForGoal(value) {
   return STEP_OPTIONS.goal?.find((o) => o.value === value)?.label || value || '';
 }
 
-function labelForPeople(value) {
-  return STEP_OPTIONS.people?.find((o) => o.value === value)?.label || value || '';
+function labelForPeople(value, vacationGoal) {
+  return findPeopleLabel(value, vacationGoal);
 }
 
 function labelForType(value) {
@@ -110,7 +111,8 @@ function buildCostBreakdown(state, score) {
     food: Math.round(base * 0.14),
     extras: Math.round(base * 0.1),
     children: Math.round(childrenCount * 3200),
-    visaDocs: state.vacation_goal === 'yurtdisi' || state.vacation_goal === 'vizesiz-yurtdisi' ? 4200 : 0,
+    visaDocs:
+      state.vacation_type === 'vizesiz-yurtdisi' || state.vacation_goal === 'vizesiz-yurtdisi' ? 4200 : 0,
     carRental: state.vacation_type === 'doga' || state.vacation_type === 'villa-butik' ? 8500 : 3000
   };
 
@@ -333,7 +335,7 @@ export function buildResultsSummary(state, results = []) {
 
 export function buildAiCommentary(state, results) {
   const goal = labelForGoal(state.vacation_goal);
-  const people = labelForPeople(state.people_type);
+  const people = labelForPeople(state.people_type, state.vacation_goal);
   const vType = labelForType(state.vacation_type);
   const budget = getBudgetDisplay(state);
   const dates = getDateSummary(state);
@@ -414,7 +416,7 @@ export function buildAiCommentary(state, results) {
 
 export function getProgressSummary(state) {
   const budgetVal = getBudgetDisplay(state) || null;
-  let peopleVal = state.people_type ? labelForPeople(state.people_type) : null;
+  let peopleVal = state.people_type ? labelForPeople(state.people_type, state.vacation_goal) : null;
   if (state.people_type === 'cocuklu-aile' && (state.children_count || state.children_ages)) {
     const parts = [];
     if (state.children_count) parts.push(`${state.children_count} çocuk`);

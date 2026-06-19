@@ -8,7 +8,9 @@ import {
   renderReferralSharePanel,
   bindReferralShare
 } from '../features/growth/growth-engine.js';
+import { computePartnerMatchScores } from '../features/partner/partner-match-engine.js';
 import { trackOpsEvent } from '../core/operational-telemetry.js';
+import { postAiProxy } from '../core/ai-proxy-client.js';
 import {
   enrollAutoResultsReady,
   enrollFinanceFollowUp,
@@ -33,18 +35,38 @@ import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
+import { bootAnalyticsMeasurement } from '../runtime/analytics-consent-boot.js';
+import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+import { getAutoPartOptions, getAutoStepCopy, sanitizeWizardStateForUsage } from './auto-flow.js';
+import {
+  HOUSEHOLD_SIZE_OPTIONS,
+  buildAutoSuitabilitySignalText,
+  resolveCityRatioForSync,
+  shouldShowCityRatioField
+} from './auto-wizard-profile.js';
+import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
 import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
-import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
+import { STORAGE_KEYS, readStorageRaw, writeStorageRaw, readStoredJson, writeStoredJson, removeStorageRaw } from '../core/storage-keys.js';
 import { mountAutoResultsV2 } from './auto-results-v2.js';
+import { formatVehicleFuelDisplay, formatVehicleResaleDisplay } from './auto-results-model.js';
+import { adaptAutoCard } from '../features/decision-cards/adapters/auto-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
+import { renderVehicleImageHtml, buildVehicleImageUiPayload } from './vehicle-image.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
 import { getSupabaseClient } from '../core/supabase.js';
 import { formatMoney, formatNumber } from '../core/format.js';
+import { formatScore, formatScoreOutOf100 } from '../features/results/results-engine.js';
 import {
   getOrCreateDecisionSession,
   updateDecisionSession,
@@ -121,7 +143,8 @@ const DECISION_FLOW_STEPS = [
   { key: 'km', label: 'Yıllık Km', field: 'km' },
   { key: 'fuel', label: 'Yakıt Tercihi', field: 'fuel' },
   { key: 'loan', label: 'Kredi Durumu', field: 'loan' },
-  { key: 'priority', label: 'Önceliğiniz', field: 'city_ratio' },
+  { key: 'priority', label: 'Şehir / otoyol dengesi', field: 'city_ratio' },
+  { key: 'vehicle', label: 'Araç seçimi', field: null },
   { key: 'result', label: 'Sonuç', field: null }
 ];
 
@@ -155,6 +178,7 @@ function findWizardOptionLabel(fieldKey, rawValue) {
 
 function getDecisionStepStatuses() {
   const hasResults = Array.isArray(allResults) && allResults.length > 0;
+  const selectedVehicle = readSelectedVehicle();
 
   const steps = DECISION_FLOW_STEPS.map((spec) => {
     if (spec.key === 'result') {
@@ -162,6 +186,15 @@ function getDecisionStepStatuses() {
         ...spec,
         done: hasResults,
         value: hasResults ? 'Analiz hazır' : 'Bekliyor',
+        isCurrent: false
+      };
+    }
+
+    if (spec.key === 'vehicle') {
+      return {
+        ...spec,
+        done: Boolean(selectedVehicle),
+        value: selectedVehicle ? selectedVehicle.name : '—',
         isCurrent: false
       };
     }
@@ -176,12 +209,17 @@ function getDecisionStepStatuses() {
     };
   });
 
+  if (hasResults && selectedVehicle) {
+    steps[8].isCurrent = true;
+    return steps;
+  }
+
   if (hasResults) {
     steps[7].isCurrent = true;
     return steps;
   }
 
-  const firstIncomplete = steps.findIndex((step) => step.key !== 'result' && !step.done);
+  const firstIncomplete = steps.findIndex((step) => !['result', 'vehicle'].includes(step.key) && !step.done);
   const currentIndex = firstIncomplete === -1 ? 7 : firstIncomplete;
   steps[currentIndex].isCurrent = true;
   return steps;
@@ -269,6 +307,7 @@ function renderDecisionDashboard(topResult, formData) {
   if (!topResult) return '';
 
   const score = Number(topResult.score) || 0;
+  const scoreLabel = formatScore(score);
   const fit = getFitLevel(score);
   const risk = getRiskLevel(topResult);
   const costs = buildFiveYearCostBreakdown(topResult);
@@ -291,7 +330,7 @@ function renderDecisionDashboard(topResult, formData) {
       <article class="auto-dash-card auto-dash-score-ring">
         <p class="kicker">Karar skoru</p>
         <div class="auto-dash-gauge" style="--score-pct: ${Math.min(100, Math.max(0, score))}">
-          <strong>${score}<span style="font-size:0.55em;font-weight:600">/100</span></strong>
+          <strong>${escapeHtml(scoreLabel)}<span style="font-size:0.55em;font-weight:600">/100</span></strong>
         </div>
         <div class="auto-dash-badges">
           <span class="auto-dash-badge auto-dash-badge--${fit.tone}">Uygunluk: ${escapeHtml(fit.label)}</span>
@@ -358,33 +397,146 @@ function renderResultsSidebar(topResult, results) {
   `;
 }
 
-function renderCompactRecommendationCard(vehicle, index) {
+function shouldUseDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('auto');
+}
+
+function resolveAutoScenarioKey(vehicle = {}) {
+  return String(vehicle.id || vehicle.catalog_id || vehicle.name || 'unknown');
+}
+
+function buildDecisionCategoryCardViewModels(cardVehicles, formData = {}) {
+  return cardVehicles.map((vehicle) => {
+    const scenarioKey = resolveAutoScenarioKey(vehicle);
+    const baseSuitability = vehicle.confidenceMeta?.label || vehicle.suitability || '';
+    const enriched = {
+      ...vehicle,
+      id: scenarioKey,
+      title: vehicle.name,
+      description: vehicle.reasons?.[0] || vehicle.name || '',
+      fuelDisplay: formatVehicleFuelDisplay(vehicle, formData),
+      resaleDisplay: formatVehicleResaleDisplay(vehicle),
+      suitability: buildAutoSuitabilitySignalText(formData, baseSuitability)
+    };
+    return adaptAutoCard({
+      scenario: enriched,
+      state: formData
+    });
+  });
+}
+
+function renderScenarioCardsHtml(cardVehicles, formData = {}) {
+  const selected = readSelectedVehicle();
+  const selectedId = selected?.id
+    ? String(selected.id)
+    : selected?.name
+      ? String(selected.name)
+      : '';
+
+  if (shouldUseDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(true);
+    const viewModels = buildDecisionCategoryCardViewModels(cardVehicles, formData);
+    return renderDecisionCategoryCardsGridHtml(viewModels, {
+      selectedId,
+      ariaLabel: 'Öne çıkan araç önerileri'
+    });
+  }
+
+  syncDecisionCardsFlagToDocument(false);
+  return `
+    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
+      ${cardVehicles.map((vehicle, index) => renderCompactRecommendationCard(vehicle, index, formData)).join('')}
+    </div>`;
+}
+
+function scrollToAutoCompareSection() {
+  const resultsRoot = document.getElementById('auto-results');
+  const target = resultsRoot?.querySelector('.ib-auto-compare-matrix, .comparison-matrix');
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function selectAutoVehicleFromDecisionCard(optionId, cardVehicles) {
+  const matchOption = (item) => resolveAutoScenarioKey(item) === String(optionId);
+  const vehicle =
+    cardVehicles.find(matchOption) || allResults.find(matchOption);
+  if (!vehicle) return;
+
+  const index = allResults.findIndex(matchOption);
+  writeSelectedVehicle({
+    ...vehicle,
+    id: resolveAutoScenarioKey(vehicle),
+    index: index >= 0 ? index : undefined
+  });
+  trackAutoEvent('auto_vehicle_selected', {
+    vehicle: vehicle.name,
+    index: index >= 0 ? index : null,
+    score: vehicle.score,
+    source: 'decision_card'
+  });
+  captureVehicleRecommendedSelected({
+    vehicle: vehicle.name,
+    interestType: 'vehicle_selected',
+    form: readForm(document.getElementById('auto-form'))
+  });
+
+  renderFilteredAutoResults();
+  mountAutoPartnerNextSteps();
+  renderDecisionStepper();
+
+  const partnerMount = document.getElementById('auto-partner-next-mount');
+  partnerMount?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bindDecisionCardEvents(root, cardVehicles) {
+  if (!root || !shouldUseDecisionCategoryCards()) return;
+
+  root.querySelectorAll('.ib-decision-card-select').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      selectAutoVehicleFromDecisionCard(button.dataset.option, cardVehicles);
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      scrollToAutoCompareSection();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      selectAutoVehicleFromDecisionCard(card.dataset.option, cardVehicles);
+    });
+  });
+}
+
+function renderCompactRecommendationCard(vehicle, index, formData = {}) {
   const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
   const rankClass = index === 0 ? 'auto-rec-rank--best' : index === 1 ? 'auto-rec-rank--good' : 'auto-rec-rank--alt';
   const rankLabel = index === 0 ? 'En uygun' : index === 1 ? 'Çok iyi' : 'İyi';
+  const cardClass = index === 0 ? 'auto-rec-card auto-rec-card--best' : 'auto-rec-card';
   const price = Number(vehicle.price || 0);
   const priceBand = price
     ? `${formatAmount(Math.round(price * 0.97))} – ${formatAmount(Math.round(price * 1.03))}`
     : 'Fiyat bandı tahmini';
-  const fuelNote = vehicle.fuel === 'electric'
-    ? 'Elektrik · düşük işletme'
-    : vehicle.fuel === 'hybrid'
-      ? 'Hibrit · dengeli tüketim'
-      : 'Yıllık yakıt tahmini';
-  const resale = vehicle.costs?.ownership?.depreciation?.residualPct12 != null
-    ? `%${Math.round(Number(vehicle.costs.ownership.depreciation.residualPct12) * 100)} (12 ay)`
-    : 'Segment tahmini';
+  const fuelNote = formatVehicleFuelDisplay(vehicle, formData);
+  const resale = formatVehicleResaleDisplay(vehicle);
   const maintRisk = Number(vehicle.maintenance || 5) >= 7 ? 'Orta' : 'Düşük';
 
   return `
-    <article class="premium-result-card auto-rec-card">
+    <article class="premium-result-card ${cardClass}" role="listitem">
+      <div class="auto-rec-card__media">
+        ${renderVehicleImageHtml(vehicle, escapeHtml, { className: 'auto-rec-card__image', width: 480, height: 270 })}
+      </div>
       <span class="auto-rec-rank ${rankClass}">${escapeHtml(rankLabel)}</span>
       <h3>${escapeHtml(vehicle.name)}</h3>
       <dl class="auto-rec-metrics">
         <div><dt>Fiyat aralığı</dt><dd>${escapeHtml(priceBand)}</dd></div>
         <div><dt>Aylık maliyet</dt><dd>${formatAmount(monthlyImpact)}</dd></div>
         <div><dt>Yakıt</dt><dd>${escapeHtml(fuelNote)}</dd></div>
-        <div><dt>İkinci el</dt><dd>${escapeHtml(resale)}</dd></div>
+        <div><dt>İkinci El Gücü</dt><dd>${escapeHtml(resale)}</dd></div>
         <div><dt>Bakım riski</dt><dd>${escapeHtml(maintRisk)}</dd></div>
       </dl>
       <div class="auto-rec-score">
@@ -392,15 +544,149 @@ function renderCompactRecommendationCard(vehicle, index) {
         <div class="auto-rec-score-bar" role="meter" aria-valuenow="${vehicle.score}" aria-valuemin="0" aria-valuemax="100">
           <i style="width:${Math.min(100, vehicle.score)}%"></i>
         </div>
-        <strong>${vehicle.score}/100</strong>
+        <strong>${escapeHtml(formatScoreOutOf100(vehicle.score))}</strong>
       </div>
       <div class="auto-rec-actions">
-        <button type="button" class="btn primary btn-sm" data-auto-open-detail="${index}">Detaylı Analiz</button>
+        <button type="button" class="btn primary btn-sm" data-auto-open-detail="${index}" aria-label="Detaylı analiz: ${escapeHtml(vehicle.name)}">Detaylı Analiz</button>
         <button type="button" class="btn secondary btn-sm auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" data-track-compare="1">Karşılaştır</button>
         <button type="button" class="btn secondary btn-sm auto-shortlist-btn auto-fav-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" aria-label="Favorilere ekle">♥</button>
       </div>
     </article>
   `;
+}
+
+function readSelectedVehicle() {
+  return readStoredJson(STORAGE_KEYS.AUTO_SELECTED_VEHICLE, null, sessionStorage);
+}
+
+function writeSelectedVehicle(vehicle) {
+  if (!vehicle?.name) {
+    removeStorageRaw(STORAGE_KEYS.AUTO_SELECTED_VEHICLE, sessionStorage);
+    return;
+  }
+  writeStoredJson(
+    STORAGE_KEYS.AUTO_SELECTED_VEHICLE,
+    {
+      name: vehicle.name,
+      id: vehicle.id || vehicle.catalog_id || null,
+      index: Number.isFinite(Number(vehicle.index)) ? Number(vehicle.index) : null,
+      confirmedAt: new Date().toISOString()
+    },
+    sessionStorage
+  );
+}
+
+function clearSelectedVehicle() {
+  removeStorageRaw(STORAGE_KEYS.AUTO_SELECTED_VEHICLE, sessionStorage);
+}
+
+function scrollToVehicleSelection() {
+  document.getElementById('auto-vehicle-selection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showVehicleSelectionRequiredNotice() {
+  scrollToVehicleSelection();
+  const gate = document.getElementById('auto-vehicle-selection');
+  if (!gate) return;
+  gate.classList.add('auto-vehicle-selection--required');
+  gate.setAttribute('aria-invalid', 'true');
+  window.setTimeout(() => {
+    gate.classList.remove('auto-vehicle-selection--required');
+    gate.removeAttribute('aria-invalid');
+  }, 2400);
+}
+
+function formatVehicleTcoBreakdown(vehicle) {
+  const costs = vehicle?.costs || {};
+  const total12 = Number(costs.total || 0);
+  const fuel = Number(costs.fuel || costs.ownership?.annual?.fuel || 0);
+  const insurance = Number(costs.insurance || costs.ownership?.annual?.insurance || 0);
+  const kasko = Number(costs.kasko || costs.ownership?.annual?.kasko || 0);
+  const maintenance = Number(costs.maintenance || costs.ownership?.annual?.maintenance || 0);
+  const parts = [
+    total12 ? `12 ay TCO ≈ ${formatAmount(total12)}` : null,
+    fuel ? `yakıt ${formatAmount(fuel)}` : null,
+    insurance ? `sigorta ${formatAmount(insurance)}` : null,
+    kasko ? `kasko ${formatAmount(kasko)}` : null,
+    maintenance ? `bakım ${formatAmount(maintenance)}` : null
+  ].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '';
+}
+
+function renderVehicleSelectionGate(displayResults) {
+  const selected = readSelectedVehicle();
+  const cards = (displayResults || []).slice(0, 3);
+  if (!cards.length) return '';
+
+  return `
+    <section id="auto-vehicle-selection" class="auto-vehicle-selection" aria-labelledby="auto-vehicle-selection-title">
+      <div class="section-head">
+        <p class="kicker">Son karar turu</p>
+        <h2 id="auto-vehicle-selection-title">Tek bir aracı seçin</h2>
+        <p class="section-subtitle">3 öneriden birini onaylayın; kredi, sigorta veya bayi yönlendirmesi seçtiğiniz modele göre ilerler.</p>
+      </div>
+      <div class="auto-vehicle-selection-grid" role="radiogroup" aria-label="Araç seçimi">
+        ${cards
+          .map((vehicle, index) => {
+            const isSelected = selected?.name === vehicle.name;
+            const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
+            const tcoLine = formatVehicleTcoBreakdown(vehicle);
+            return `
+          <button
+            type="button"
+            class="auto-vehicle-select-card auto-option-card ${isSelected ? 'is-selected' : ''}"
+            data-auto-vehicle-select="${index}"
+            data-vehicle-name="${escapeHtml(vehicle.name)}"
+            role="radio"
+            aria-checked="${isSelected ? 'true' : 'false'}"
+          >
+            <span class="auto-vehicle-select-rank">#${index + 1}</span>
+            <strong>${escapeHtml(vehicle.name)}</strong>
+            <span class="auto-vehicle-select-score">${escapeHtml(formatScoreOutOf100(vehicle.score))} uyum</span>
+            <span class="auto-vehicle-select-cost">~${escapeHtml(formatAmount(monthlyImpact))} / ay</span>
+            ${tcoLine ? `<span class="auto-vehicle-select-tco text-muted-sm">${escapeHtml(tcoLine)}</span>` : ''}
+            <span class="auto-vehicle-select-cta">${isSelected ? '✓ Seçildi' : 'Bu aracı seç'}</span>
+          </button>`;
+          })
+          .join('')}
+      </div>
+      ${
+        selected
+          ? `<p class="auto-vehicle-selection-confirmed">Seçiminiz: <strong>${escapeHtml(selected.name)}</strong> — aşağıdaki yönlendirme adımlarına geçebilirsiniz.</p>`
+          : `<p class="auto-vehicle-selection-hint text-muted-sm">Devam etmek için yukarıdan bir model seçin.</p>`
+      }
+    </section>
+  `;
+}
+
+function bindVehicleSelectionGate(root) {
+  if (!root) return;
+  root.querySelectorAll('[data-auto-vehicle-select]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.getAttribute('data-auto-vehicle-select'));
+      const vehicle = allResults[index] || lastResults[index];
+      if (!vehicle) return;
+
+      writeSelectedVehicle({ ...vehicle, index });
+      trackAutoEvent('auto_vehicle_selected', {
+        vehicle: vehicle.name,
+        index,
+        score: vehicle.score
+      });
+      captureVehicleRecommendedSelected({
+        vehicle: vehicle.name,
+        interestType: 'vehicle_selected',
+        form: readForm(document.getElementById('auto-form'))
+      });
+
+      renderFilteredAutoResults();
+      mountAutoPartnerNextSteps();
+      renderDecisionStepper();
+
+      const partnerMount = document.getElementById('auto-partner-next-mount');
+      partnerMount?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
 }
 
 function mountAutoPartnerNextSteps() {
@@ -413,32 +699,55 @@ function mountAutoPartnerNextSteps() {
     return;
   }
 
+  const selected = readSelectedVehicle();
   mount.hidden = false;
+
+  if (!selected?.name) {
+    mount.innerHTML = `
+      <div class="section-head">
+        <p class="kicker">Sonraki adım</p>
+        <h2>Önce aracınızı seçin</h2>
+        <p class="section-subtitle">Yukarıdaki listeden tek bir model seçerek kredi, sigorta veya bayi yönlendirmesine geçin.</p>
+      </div>
+      <button type="button" class="btn secondary" data-auto-scroll-selection>Araç seçimine git</button>
+    `;
+    mount.querySelector('[data-auto-scroll-selection]')?.addEventListener('click', scrollToVehicleSelection);
+    return;
+  }
+
+  const vehicleName = escapeHtml(selected.name);
   mount.innerHTML = `
     <div class="section-head">
       <p class="kicker">Sonraki adım</p>
-      <h2>Partner akışları</h2>
-      <p class="section-subtitle">İsteğe bağlı yönlendirme — bağlayıcı teklif değildir.</p>
+      <h2>${vehicleName} için yönlendirme</h2>
+      <p class="section-subtitle">Seçiminize göre tek bir partner akışı — bağlayıcı teklif değildir.</p>
     </div>
-    <div class="auto-partner-next">
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="finance">
+    <div class="auto-partner-next auto-partner-next--branch">
+      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="finance" data-vehicle="${vehicleName}" data-branch="credit">
         <strong>Kredi tekliflerini karşılaştır</strong>
-        <span>Örnek senaryo · banka onayı ayrıdır</span>
+        <span>Finansman simülasyonu · banka onayı ayrıdır</span>
       </button>
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="insurance">
+      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="insurance" data-vehicle="${vehicleName}" data-branch="insurance">
         <strong>Sigorta &amp; kasko teklifi</strong>
-        <span>Kuruma göre değişir</span>
+        <span>Seçilen modele göre prim bandı</span>
       </button>
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="report">
-        <strong>Ekspertiz randevusu</strong>
-        <span>Rapor kontrolü önerilir</span>
-      </button>
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(allResults[0]?.name || '')}">
+      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="dealer_match" data-vehicle="${vehicleName}" data-branch="dealer">
         <strong>Bayi / satıcı görüşmesi</strong>
         <span>Uygun eşleşme talebi</span>
       </button>
     </div>
+    <p class="auto-partner-next-change text-muted-sm">
+      <button type="button" class="btn btn-ghost btn-sm" data-auto-change-vehicle>← Farklı araç seç</button>
+    </p>
   `;
+
+  mount.querySelector('[data-auto-change-vehicle]')?.addEventListener('click', () => {
+    clearSelectedVehicle();
+    renderFilteredAutoResults();
+    mountAutoPartnerNextSteps();
+    renderDecisionStepper();
+    scrollToVehicleSelection();
+  });
 }
 
 const ONBOARDING_STARTED_KEY = 'istebul_auto_onboarding_started';
@@ -566,7 +875,7 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
         ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
       </ul>
       <div class="revenue-upgrade-actions">
-        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro erken erişim talep et</a>
         <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz önizlemeyle devam et</button>
       </div>
     </div>
@@ -588,15 +897,16 @@ function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
 
   return `
     <section class="auto-results-guide" aria-label="Sonuçları nasıl okursunuz">
+      <p class="auto-results-guide-kicker">Sonuç rehberi</p>
       <h3>Sonuçlarınızı nasıl yorumlarsınız?</h3>
       <ol class="auto-results-guide-steps">
-        <li><strong>Uyum skoru ${escapeHtml(String(score))}/100</strong> — Bütçe ve kullanımınıza göre sıralama; satın alma garantisi değildir.</li>
-        <li><strong>Yaklaşık aylık yük ${escapeHtml(monthly)}</strong> — 12 aylık TCO’nun parçası; finansman tercihinize göre değişir.</li>
-        <li><strong>Sonraki adım</strong> — Modelleri karşılaştırın; derin rapor için Pro’yu değerlendirin.</li>
+        <li><strong>Uyum skoru ${escapeHtml(formatScoreOutOf100(score))}</strong> — Bütçe ve kullanımınıza göre sıralama göstergesidir; satın alma garantisi değildir.</li>
+        <li><strong>Yaklaşık aylık yük ${escapeHtml(monthly)}</strong> — 12 aylık toplam maliyetin parçasıdır; finansman tercihinize göre değişir.</li>
+        <li><strong>Sonraki adım</strong> — Modelleri karşılaştırın; detaylı rapor için Pro seçeneğini değerlendirin.</li>
       </ol>
       <div class="auto-results-guide-actions">
         <a class="btn secondary" href="/karsilastir/">Karşılaştırma merkezi</a>
-        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>TCO analizini derinleştir (Pro)</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro özelliklerini incele</a>
       </div>
       <p class="auto-results-guide-foot text-muted-sm">Bilgilendirme amaçlıdır. Canlı ilan veya bağlayıcı teklif değildir.</p>
     </section>
@@ -613,10 +923,10 @@ function renderAutoUpgradeStrip(className = '') {
       <div class="revenue-upgrade-copy">
         <span class="revenue-upgrade-kicker">isteBul Pro</span>
         <strong>Tüm sonuçları ve premium raporu açın</strong>
-        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — ilk abonelikte 7 gün ücretsiz deneme.</p>
+        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — pilot erişim sürecinde.</p>
       </div>
       <div class="revenue-upgrade-actions">
-        <a class="btn btn-primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro erken erişim talep et</a>
         <a class="btn btn-outline" href="/planlar">Planları incele</a>
       </div>
     </aside>
@@ -641,7 +951,7 @@ function renderResultsLeaderSummary(topResult, { displayCount, totalCount }) {
         <dl class="auto-results-leader-metrics">
           <div>
             <dt>Uyum skoru</dt>
-            <dd><strong>${escapeHtml(String(topResult.score))}</strong>/100</dd>
+            <dd><strong>${escapeHtml(formatScoreOutOf100(topResult.score))}</strong></dd>
           </div>
           <div>
             <dt>Yaklaşık aylık yük</dt>
@@ -649,8 +959,8 @@ function renderResultsLeaderSummary(topResult, { displayCount, totalCount }) {
           </div>
         </dl>
         <div class="auto-results-leader-cta">
-          <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(topResult.name || 'Araç önerisi')}">
-            Teklif sürecini başlat
+          <button type="button" class="btn primary" data-auto-scroll-selection>
+            Aracınızı seçin
           </button>
           <a class="btn secondary" href="#auto-results-cards">Tüm önerilere in</a>
         </div>
@@ -811,31 +1121,6 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
-function setupAutoMobileNav() {
-  const header = document.querySelector('.auto-header');
-  const toggle = document.querySelector('.auto-nav-toggle');
-  const nav = document.getElementById('auto-nav');
-
-  if (!header || !toggle || !nav) return;
-
-  header.classList.add('nav-enhanced');
-
-  const setOpen = (isOpen) => {
-    header.classList.toggle('is-nav-open', isOpen);
-    toggle.setAttribute('aria-expanded', String(isOpen));
-  };
-
-  toggle.addEventListener('click', () => {
-    setOpen(!header.classList.contains('is-nav-open'));
-  });
-
-  nav.addEventListener('click', (event) => {
-    if (event.target.closest('a')) {
-      setOpen(false);
-    }
-  });
-}
-
 function getCurrentLeadPayload() {
   const autoForm = document.getElementById('auto-form');
   const formPayload = autoForm ? readForm(autoForm) : {};
@@ -882,6 +1167,7 @@ async function callAutoIntake(payload) {
 }
 
 async function trackAutoEvent(eventName, metadata = {}) {
+  mirrorLegacySiteEvent(eventName, { category: 'auto', ...metadata });
   analytics.track(
     eventName,
     {
@@ -929,7 +1215,7 @@ function renderLoading() {
   ];
 
   container.innerHTML = `
-    <div class="ai-loading premium-loading" role="status" aria-live="polite" aria-busy="true">
+    <div class="ai-loading premium-loading auto-pre-result-panel" role="status" aria-live="polite" aria-busy="true">
       <div class="premium-loading-ring" aria-hidden="true">
         <div class="spinner"></div>
       </div>
@@ -985,7 +1271,13 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
         top_match_score: readDecisionSession().topMatchScore ?? null,
         confidence_tier: readDecisionSession().confidenceTier ?? null,
         segment_key: buildSegmentKey(leadPayload)
-      }
+      },
+      partner_match: computePartnerMatchScores({
+        ...leadPayload,
+        purchase_timeline: options.purchaseTimeline || leadPayload.purchase_timeline || '',
+        financing_intent: options.financingIntent || leadPayload.financing_intent || leadPayload.loan || '',
+        urgency: options.urgency || leadPayload.urgency || ''
+      }).slice(0, 3)
     }),
     formData: {
       ...leadPayload,
@@ -998,6 +1290,9 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       marketing_consent: options.marketingConsent ? 'accepted' : '',
       interest_type: interestType,
       vehicle,
+      vehicle_catalog_id: options.vehicleCatalogId || readSelectedVehicle()?.id || '',
+      selection_confirmed_at: options.selectionConfirmedAt || readSelectedVehicle()?.confirmedAt || '',
+      branch_intent: options.branchIntent || '',
       finance_bank: options.financeBank || '',
       finance_loan_amount: options.financeLoanAmount || '',
       finance_term: options.financeTerm || '',
@@ -1017,6 +1312,9 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
 const TURNSTILE_SITE_KEY = '0x4AAAAAADRgIOMcaKMMBndc';
 
 async function getTurnstileToken() {
+  const { loadTurnstileScript } = await import('../runtime/load-turnstile.js');
+  await loadTurnstileScript();
+
   return new Promise((resolve) => {
     if (!window.turnstile || !TURNSTILE_SITE_KEY) {
       resolve('');
@@ -1224,8 +1522,7 @@ function openFinanceCompareModal(vehicleName = '') {
       </div>
     `;
 
-    const closeModal = () => modal.remove();
-    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeFinanceModal);
 
     const loanInput = modal.querySelector('#finance-loan-amount');
     loanInput?.addEventListener('input', (event) => {
@@ -1242,7 +1539,7 @@ function openFinanceCompareModal(vehicleName = '') {
     modal.querySelectorAll('.finance-prequal-btn').forEach((button) => {
       button.addEventListener('click', () => {
         const selectedVehicle = button.getAttribute('data-vehicle') || vehicleName;
-        closeModal();
+        closeFinanceModal();
         window.lastFinanceLeadContext = {
           bank: button.dataset.bank,
           vehicle: selectedVehicle,
@@ -1260,10 +1557,18 @@ function openFinanceCompareModal(vehicleName = '') {
     });
   }
 
+  const closeFinanceModal = () => {
+    modal.remove();
+    if (!document.querySelector('.lead-modal, .revenue-paywall')) {
+      document.body.classList.remove('modal-open');
+    }
+  };
+
   modal.addEventListener('click', (event) => {
-    if (event.target === modal) modal.remove();
+    if (event.target === modal) closeFinanceModal();
   });
 
+  document.body.classList.add('modal-open');
   document.body.appendChild(modal);
   render();
   bindContextualUpsell(modal);
@@ -1282,7 +1587,9 @@ function clearLeadAbandonPending() {
   } catch {}
 }
 
-function openLeadModal(type, vehicle = '') {
+function openLeadModal(type, vehicle = '', leadOptions = {}) {
+  const selected = readSelectedVehicle();
+  vehicle = vehicle || selected?.name || '';
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
   markLeadAbandonPending({ interest_type: type, vehicle });
 
@@ -1330,7 +1637,12 @@ function openLeadModal(type, vehicle = '') {
     success: 'Uzman değerlendirme talebiniz alındı'
   };
 
-  const closeModal = () => modal.remove();
+  const closeModal = () => {
+    modal.remove();
+    if (!document.querySelector('.lead-modal, .revenue-paywall')) {
+      document.body.classList.remove('modal-open');
+    }
+  };
 
   modal.addEventListener('click', (event) => {
     if (event.target === modal) closeModal();
@@ -1492,7 +1804,10 @@ function openLeadModal(type, vehicle = '') {
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
           financeMonthlyPayment: bestFinanceOffer?.monthly || '',
-          financeTotalPayment: bestFinanceOffer?.total || ''
+          financeTotalPayment: bestFinanceOffer?.total || '',
+          branchIntent: leadOptions.branchIntent || '',
+          vehicleCatalogId: leadOptions.vehicleCatalogId || selected?.id || '',
+          selectionConfirmedAt: leadOptions.selectionConfirmedAt || selected?.confirmedAt || ''
         });
 
         renderStep3();
@@ -1607,6 +1922,7 @@ function openLeadModal(type, vehicle = '') {
     document.getElementById('close-error-lead-modal')?.addEventListener('click', closeModal);
   }
 
+  document.body.classList.add('modal-open');
   document.body.appendChild(modal);
   renderLeadForm();
 }
@@ -1686,23 +2002,19 @@ async function fetchAiStructuredCommentary(results, formData = {}, refinement = 
 
   const bundle = buildExplanationBundle(results, formData);
   const prompt = buildCommentaryPrompt(results, formData, bundle, refinement);
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), AI_COMMENTARY_TIMEOUT_MS);
 
   try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, format: 'structured_commentary' }),
-      signal: controller.signal
+    const proxy = await postAiProxy({
+      prompt,
+      format: 'structured_commentary',
+      timeoutMs: AI_COMMENTARY_TIMEOUT_MS
     });
 
-    if (!res.ok) {
+    if (!proxy.ok) {
       return { commentary: deterministic, synthesis: deterministic.executive_summary, source: 'rules', usedAi: false };
     }
 
-    const data = await res.json();
-    const parsed = parseStructuredCommentary(data.result || '');
+    const parsed = parseStructuredCommentary(proxy.data?.result || '');
     const { data: merged, source } = mergeCommentary(parsed, deterministic);
     const synthesis = sanitizeAiNarrative(
       merged.executive_summary || '',
@@ -1722,8 +2034,6 @@ async function fetchAiStructuredCommentary(results, formData = {}, refinement = 
       source: 'rules',
       usedAi: false
     };
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
@@ -1753,34 +2063,6 @@ function readAiCommentaryForLead() {
   } catch {
     return {};
   }
-}
-
-
-const vehicleImages = {
-  '2023 Toyota Corolla Cross Hybrid': '/assets/images/auto/toyota-corolla-cross-hybrid.svg',
-  '2021 Volkswagen Golf 1.0 TSI': '/assets/images/auto/volkswagen-golf-tsi.svg',
-  '2022 Honda Civic Eco': '/assets/images/auto/honda-civic-eco.svg',
-  '2023 Renault Clio Icon': '/assets/images/auto/renault-clio-icon.svg',
-  '2022 Hyundai Tucson 1.6 T-GDI': '/assets/images/auto/hyundai-tucson-tgdi.svg'
-};
-
-function getVehicleImage(name){
-  if (vehicleImages[name]) return vehicleImages[name];
-
-  if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
-  if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
-  if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
-  if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
-  if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
-  if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
-  if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
-  if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
-  if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
-  if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
-  if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
-  if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
-
-  return '';
 }
 
 
@@ -1967,9 +2249,9 @@ function renderResults(results) {
 
     ${rankIntelPanel || ''}
 
-    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards">
-      ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index)).join('')}
-    </div>
+    ${renderScenarioCardsHtml(displayResults.slice(0, 3), formData)}
+
+    ${renderVehicleSelectionGate(displayResults)}
 
     <div class="auto-results-cards-detailed" aria-label="Detaylı model analizleri">
   ` + displayResults.map((vehicle, index) => {
@@ -1985,9 +2267,7 @@ function renderResults(results) {
       <div class="auto-market-media">
         <div class="auto-market-rank">${rankLabel}</div>
         <div class="auto-market-image">
-          ${vehicle.image_url
-            ? `<img src="${escapeHtml(vehicle.image_url)}" alt="${escapeHtml(vehicle.name)}" loading="lazy" decoding="async">`
-            : `<div class="vehicle-placeholder"><span>${escapeHtml(vehicle.brand || vehicle.name.split(' ')[1] || 'Araç')}</span></div>`}
+          ${renderVehicleImageHtml(vehicle, escapeHtml, { className: 'auto-market-image__img', width: 640, height: 360 })}
         </div>
       </div>
 
@@ -2041,7 +2321,7 @@ function renderResults(results) {
 
       <aside class="auto-market-decision">
         <div class="auto-market-score">
-          <strong>${vehicle.score}</strong>
+          <strong>${escapeHtml(formatScore(vehicle.score))}</strong>
           <span>/100 uyum skoru</span>
           <small class="auto-score-hint">Metodolojik sıralama; kesin sonuç değildir</small>
         </div>
@@ -2166,6 +2446,12 @@ function renderResults(results) {
 
   renderDecisionStepper();
   mountAutoPartnerNextSteps();
+  bindVehicleSelectionGate(root);
+  bindDecisionCardEvents(root, displayResults.slice(0, 3));
+
+  root.querySelectorAll('[data-auto-scroll-selection]').forEach((button) => {
+    button.addEventListener('click', scrollToVehicleSelection);
+  });
 
   root.querySelectorAll('[data-auto-open-detail]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -2373,10 +2659,10 @@ document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
 const wizard = document.getElementById('auto-wizard');
 
 const usageOptions = [
-  { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik' },
-  { label: 'Şehir içi', value: 'city', note: 'Yakıt ve park kolaylığı' },
-  { label: 'Uzun yol', value: 'long', note: 'Konfor ve düşük tüketim' },
-  { label: 'İş', value: 'business', note: 'Prestij ve kullanım verimliliği' }
+  { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik önceliği' },
+  { label: 'Şehir içi', value: 'city', note: 'Park kolaylığı ve düşük tüketim' },
+  { label: 'Uzun yol', value: 'long', note: 'Konfor ve sürüş stabilitesi' },
+  { label: 'İş / profesyonel', value: 'business', note: 'Prestij ve verimli kullanım' }
 ];
 
 const bodyOptions = [
@@ -2386,19 +2672,19 @@ const bodyOptions = [
 ];
 
 const fuelOptions = [
-  { label: 'Fark etmez', value: 'any', note: 'En dengeli seçenek' },
-  { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi tasarruf' },
-  { label: 'Elektrikli', value: 'electric', note: 'Düşük kullanım maliyeti' },
-  { label: 'Benzinli', value: 'gasoline', note: 'Geniş servis ağı' },
-  { label: 'Dizel', value: 'diesel', note: 'Uzun yol / yüksek km' }
+  { label: 'Fark etmez', value: 'any', note: 'En dengeli seçenekleri göster' },
+  { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi yakıt tasarrufu' },
+  { label: 'Elektrikli', value: 'electric', note: 'Düşük işletme maliyeti' },
+  { label: 'Benzinli', value: 'gasoline', note: 'Geniş servis ve yakıt ağı' },
+  { label: 'Dizel', value: 'diesel', note: 'Uzun yol ve yüksek km' }
 ];
 
 const kmOptions = [
-  { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım' },
-  { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama kullanım' },
-  { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun kullanım' },
-  { label: '35.000 km+', value: '40000', note: 'Profesyonel kullanım' },
-  { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre' }
+  { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım profili' },
+  { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama yıllık kullanım' },
+  { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun günlük kullanım' },
+  { label: '35.000 km+', value: '40000', note: 'Profesyonel / filo düzeyi' },
+  { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre ile hassas analiz' }
 ];
 
 const kmCustom = {
@@ -2414,29 +2700,32 @@ const WIZARD_MILESTONES = ['Bütçe', 'Araç', 'Bölge', 'Özet'];
 const WIZARD_FIELD_LABELS = {
   budget: 'toplam bütçe',
   usage: 'kullanım amacı',
+  household_size: 'hane büyüklüğü',
   body: 'araç tipi',
   fuel: 'yakıt tercihi',
   km: 'yıllık kilometre',
+  ownership_months: 'sahiplik süresi',
+  city_ratio: 'şehir / otoyol dengesi',
   location: 'şehir',
   loan: 'finansman tercihi'
 };
 
 const wizardSteps = [
   {
-    title: 'Bütçe ve kullanım',
-    description: 'İki hızlı seçimle size uygun segmenti ve maliyet bandını belirliyoruz.',
-    why: 'Bütçe TCO hesabının üst sınırıdır; kullanım amacı ise yakıt ve segment önerisini şekillendirir.',
+    title: 'Bütçe ve kullanım profiliniz',
+    description: 'İki net seçimle size uygun segmenti ve maliyet bandını belirliyoruz.',
+    why: 'Bütçe toplam maliyet simülasyonunun üst sınırıdır; kullanım amacı ise yakıt ve kasa önerisini şekillendirir.',
     parts: [
       {
         key: 'budget',
-        title: 'Toplam araç bütçeniz (yaklaşık)',
-        why: 'Finansman ve toplam maliyet simülasyonunu gerçekçi tutmak için gereklidir.',
+        title: 'Toplam araç bütçeniz ne kadar?',
+        why: 'Gerçekçi finansman ve TCO hesabı için bütçe aralığını bilmemiz gerekir.',
         options: [
-          { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç seviyesi' },
-          { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir güçlü seçenekler' },
-          { label: '1 – 2 milyon TL', value: '1500000', note: 'Dengeli ve geniş pazar' },
-          { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' },
-          { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net bütçe ile daha hassas analiz' }
+          { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç segmenti' },
+          { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir, güçlü seçenekler' },
+          { label: '1 – 2 milyon TL', value: '1500000', note: 'En geniş model ve fiyat aralığı' },
+          { label: '2 milyon TL+', value: '2500000', note: 'Premium ve üst segment' },
+          { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net tutarla daha hassas analiz' }
         ],
         custom: {
           type: 'text',
@@ -2449,70 +2738,78 @@ const wizardSteps = [
       {
         key: 'usage',
         title: 'Aracı en çok nasıl kullanacaksınız?',
-        why: 'Şehir içi, aile veya uzun yol kullanımı yakıt ve kasa tipini değiştirir.',
+        why: 'Kullanım profili; kasa tipi, yakıt ve konfor beklentisini doğrudan etkiler.',
         options: usageOptions
+      },
+      {
+        key: 'household_size',
+        title: 'Kaç kişilik bir hane için araç seçiyorsunuz?',
+        why: 'Yolcu ve bagaj ihtiyacı; kasa tipi ve konfor beklentisini netleştirir (skor değil, karar gerekçesi).',
+        options: HOUSEHOLD_SIZE_OPTIONS
       }
     ]
   },
   {
-    title: 'Araç tipi ve yakıt',
-    description: 'Kasa ve yakıt tercihi yıllık işletme maliyetini doğrudan etkiler.',
-    why: 'Bu iki sinyal, öneri listesindeki modelleri daraltır ve TCO’yu kişiselleştirir.',
+    title: 'Araç tipi ve yakıt tercihi',
+    description: 'Kasa ve yakıt seçiminiz yıllık işletme maliyetini belirler.',
+    why: 'Bu iki tercih, öneri listesini daraltır ve maliyet simülasyonunu kişiselleştirir.',
     parts: [
       {
         key: 'body',
-        title: 'Hangi araç tipi size daha yakın?',
+        title: 'Hangi araç tipi size daha uygun?',
         why: 'SUV, sedan veya hatchback farklı kullanım ve maliyet profilleri sunar.',
         options: bodyOptions
       },
       {
         key: 'fuel',
-        title: 'Yakıt tercihiniz',
-        why: 'Yakıt tipi yıllık enerji maliyetini ve ikinci el değerini etkiler.',
+        title: 'Yakıt tercihiniz nedir?',
+        why: 'Yakıt tipi enerji maliyetini ve ikinci el değerini etkiler.',
         options: fuelOptions
       }
     ]
   },
   {
-    title: 'Kilometre ve bölge',
-    description: 'Km ve şehir bilgisi işletme maliyeti ile partner eşleşmesi için kullanılır.',
-    why: 'Yıllık km bakım/yakıt tahminini belirler; şehir ise size yakın teklif yönlendirmesini iyileştirir.',
+    title: 'Kullanım yoğunluğu ve bölge',
+    description: 'Kilometre ve şehir bilgisi işletme maliyeti ile bölgesel eşleşmeyi iyileştirir.',
+    why: 'Yıllık km bakım/yakıt tahminini belirler; şehir ise size yakın teklif yönlendirmesini güçlendirir.',
     parts: [
       {
         key: 'km',
-        title: 'Yılda yaklaşık kaç km?',
-        why: 'Kilometre, amortisman ve yakıt giderlerinin en güçlü girdilerinden biridir.',
+        block: 'usage-intensity',
+        title: 'Yılda yaklaşık kaç km kullanırsınız?',
+        why: 'Kilometre; amortisman, yakıt ve bakım giderlerinin en güçlü girdilerinden biridir.',
         options: kmOptions,
         custom: kmCustom
       },
       {
-        key: 'city_ratio',
-        title: 'Kullanım dengesi',
-        why: 'Şehir içi / otoyol payı yakıt ve amortisman tahminini kişiselleştirir.',
+        key: 'ownership_months',
+        block: 'usage-intensity',
+        title: 'Aracı ne kadar süre kullanmayı planlıyorsunuz?',
+        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
         options: [
-          { label: 'Ağırlıklı şehir içi', value: '0.85', note: 'Düşük ortalama hız' },
-          { label: 'Dengeli', value: '0.6', note: 'Karma kullanım' },
-          { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol' }
+          { label: '12 ay', value: '12', note: 'Kısa dönem sahiplik' },
+          { label: '24 ay', value: '24', note: 'Orta vadeli plan' },
+          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
+          { label: '48 ay', value: '48', note: 'Uzun vadeli sahiplik' }
         ]
       },
       {
-        key: 'ownership_months',
-        title: 'Sahiplik süresi hedefi',
-        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
+        key: 'city_ratio',
+        title: 'Kullanım dengeniz nasıl?',
+        why: 'Şehir içi / otoyol payı yakıt ve amortisman tahminini kişiselleştirir.',
         options: [
-          { label: '12 ay', value: '12', note: 'Kısa dönem' },
-          { label: '24 ay', value: '24', note: 'Orta dönem' },
-          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
-          { label: '48 ay', value: '48', note: 'Uzun dönem' }
+          { label: 'Ağırlıklı şehir içi', value: '0.85', note: 'Düşük ortalama hız' },
+          { label: 'Dengeli kullanım', value: '0.6', note: 'Şehir + otoyol karışık' },
+          { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol ağırlıklı' }
         ]
       },
       {
         key: 'location',
         title: 'Aracı hangi şehirde arıyorsunuz?',
-        why: 'Partner ve galeri yönlendirmesi bölgesel olarak yapılır; ilçe isteğe bağlıdır.',
+        why: 'Bölgesel eşleşme; size yakın partner ve galeri yönlendirmesini iyileştirir.',
         options: [
-          { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresindeki satıcılar' },
-          { label: 'İstanbul', value: 'İstanbul', note: 'İstanbul Avrupa / Anadolu' },
+          { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresi' },
+          { label: 'İstanbul', value: 'İstanbul', note: 'Avrupa ve Anadolu' },
           { label: 'Ankara', value: 'Ankara', note: 'Ankara ve çevresi' },
           { label: 'Antalya', value: 'Antalya', note: 'Antalya ve çevresi' },
           { label: 'Başka şehir', value: 'custom', note: 'Şehir adını kendim gireceğim' }
@@ -2534,18 +2831,126 @@ const wizardSteps = [
     description: 'Son adım — kredi tercihi aylık yük ve toplam maliyet tablosunu günceller.',
     why: 'Finansman seçimi, ödeme planı ve toplam sahip olma maliyeti görünümünü değiştirir.',
     options: [
-      { label: 'Evet', value: 'yes', note: 'Finansman etkisi dahil edilsin' },
-      { label: 'Hayır', value: 'no', note: 'Peşin alım dengesiyle analiz edilsin' }
+      { label: 'Evet, kredi kullanacağım', value: 'yes', note: 'Finansman etkisi dahil edilsin' },
+      { label: 'Hayır, peşin alım', value: 'no', note: 'Peşin alım dengesiyle analiz edilsin' }
     ]
   }
 ];
 
+const WIZARD_OPTION_ICONS = {
+  budget: {
+    '500000': '💵',
+    '900000': '💰',
+    '1500000': '🏦',
+    '2500000': '✨',
+    custom: '✎'
+  },
+  usage: {
+    family: '👨‍👩‍👧',
+    city: '🏙',
+    long: '🛣',
+    business: '💼'
+  },
+  household_size: {
+    '1': '👤',
+    '2': '👥',
+    '3-4': '👨‍👩‍👧‍👦',
+    '5+': '🏠'
+  },
+  body: {
+    suv: '🚙',
+    sedan: '🚗',
+    hatchback: '🚘'
+  },
+  fuel: {
+    any: '⚡',
+    hybrid: '🔋',
+    electric: '⚡',
+    gasoline: '⛽',
+    diesel: '🛢'
+  },
+  km: {
+    '8000': '📉',
+    '15000': '📊',
+    '28000': '📈',
+    '40000': '🚀',
+    custom: '✎'
+  },
+  city_ratio: {
+    '0.85': '🏙',
+    '0.6': '⚖',
+    '0.25': '🛣'
+  },
+  ownership_months: {
+    '12': '1️⃣',
+    '24': '2️⃣',
+    '36': '3️⃣',
+    '48': '4️⃣'
+  },
+  location: {
+    'İzmir': '📍',
+    'İstanbul': '📍',
+    'Ankara': '📍',
+    'Antalya': '📍',
+    custom: '✎'
+  },
+  loan: {
+    yes: '💳',
+    no: '💵'
+  }
+};
+
+function getWizardOptionIcon(fieldKey, value) {
+  return WIZARD_OPTION_ICONS[fieldKey]?.[value] || '◆';
+}
+
+function isFeaturedWizardOption(fieldKey, value) {
+  return value === 'custom';
+}
+
+function renderWizardOptionButton(fieldKey, option, selected) {
+  const isSelected = selected === option.value;
+  const isFeatured = isFeaturedWizardOption(fieldKey, option.value);
+  const icon = getWizardOptionIcon(fieldKey, option.value);
+
+  return `
+    <button
+      type="button"
+      class="wizard-option auto-option-card ${isSelected ? 'is-selected' : ''} ${isFeatured ? 'auto-option-card--featured' : ''}"
+      data-wizard-value="${escapeHtml(option.value)}"
+      data-wizard-key="${escapeHtml(fieldKey)}"
+      role="radio"
+      aria-checked="${isSelected ? 'true' : 'false'}"
+      aria-label="${escapeHtml(option.label)}"
+    >
+      <span class="auto-option-card__icon" aria-hidden="true">${icon}</span>
+      <span class="auto-option-card__body">
+        <span class="auto-option-card__title">${escapeHtml(option.label)}</span>
+        <span class="auto-option-card__desc">${escapeHtml(option.note)}</span>
+      </span>
+      <span class="auto-option-card__check" aria-hidden="true">${isSelected ? '✓' : ''}</span>
+    </button>
+  `;
+}
+
 const wizardState = {};
 let wizardIndex = 0;
 
+function isWizardPartVisible(part) {
+  if (!part) return true;
+  if (part.key === 'city_ratio' && !shouldShowCityRatioField(wizardState.usage)) return false;
+  if (part.showWhen && !part.showWhen(wizardState)) return false;
+  return true;
+}
+
+function getVisibleWizardParts(step) {
+  if (!Array.isArray(step.parts)) return [];
+  return step.parts.filter((part) => isWizardPartVisible(part));
+}
+
 function getWizardStepKeys(step) {
   if (Array.isArray(step.parts) && step.parts.length) {
-    return step.parts.map((part) => part.key);
+    return getVisibleWizardParts(step).map((part) => part.key);
   }
   return step.key ? [step.key] : [];
 }
@@ -2601,6 +3006,8 @@ function syncWizardToForm() {
       return;
     }
 
+    if (key === 'city_ratio') return;
+
     const input = form.elements[key];
     if (!input) return;
 
@@ -2612,6 +3019,11 @@ function syncWizardToForm() {
 
     input.value = value;
   });
+
+  const cityRatioInput = form.elements.city_ratio;
+  if (cityRatioInput) {
+    cityRatioInput.value = resolveCityRatioForSync(wizardState.usage, wizardState.city_ratio);
+  }
 }
 
 function renderWizardDistrictField() {
@@ -2633,10 +3045,48 @@ function renderWizardDistrictField() {
   `;
 }
 
+function autoPartOptionPool(partKey) {
+  if (partKey === 'body') return bodyOptions;
+  if (partKey === 'fuel') return fuelOptions;
+  if (partKey === 'km') return kmOptions;
+  const cityPart = wizardSteps[2]?.parts?.find((p) => p.key === 'city_ratio');
+  if (partKey === 'city_ratio') return cityPart?.options || [];
+  return [];
+}
+
+function renderGroupedWizardParts(parts) {
+  const groups = [];
+  let currentBlock = null;
+  let currentParts = [];
+
+  parts.forEach((part) => {
+    const block = part.block || null;
+    if (block !== currentBlock) {
+      if (currentParts.length) groups.push({ block: currentBlock, parts: currentParts });
+      currentBlock = block;
+      currentParts = [part];
+      return;
+    }
+    currentParts.push(part);
+  });
+  if (currentParts.length) groups.push({ block: currentBlock, parts: currentParts });
+
+  return groups
+    .map((group) => {
+      const inner = group.parts.map((part) => renderWizardPartOptions(part)).join('');
+      if (!group.block) return inner;
+      return `<div class="auto-wizard-decision-block" data-wizard-block="${escapeHtml(group.block)}">${inner}</div>`;
+    })
+    .join('');
+}
+
 function renderWizardPartOptions(part) {
   const selected = wizardState[part.key];
   const isCustom = selected === 'custom';
   const customValue = wizardState[`${part.key}_custom`] || '';
+  const filteredOptions = ['body', 'fuel', 'km', 'city_ratio'].includes(part.key)
+    ? getAutoPartOptions(part.key, wizardState.usage, part.options)
+    : part.options;
   const customLabel = part.key === 'budget'
     ? 'Net bütçenizi girin'
     : part.key === 'km'
@@ -2646,19 +3096,14 @@ function renderWizardPartOptions(part) {
         : 'Değer girin';
 
   return `
-    <div class="wizard-part" data-wizard-part="${escapeHtml(part.key)}">
-      <h4 class="wizard-part-title">${escapeHtml(part.title)}</h4>
-      ${part.why ? `<p class="wizard-part-why">${escapeHtml(part.why)}</p>` : ''}
-      <div class="wizard-options">
-        ${part.options.map((option) => `
-          <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(part.key)}">
-            ${escapeHtml(option.label)}
-            <small>${escapeHtml(option.note)}</small>
-          </button>
-        `).join('')}
+    <div class="wizard-part auto-wizard-part" data-wizard-part="${escapeHtml(part.key)}">
+      <h4 class="wizard-part-title auto-wizard-part-title" id="auto-wizard-part-${escapeHtml(part.key)}">${escapeHtml(part.title)}</h4>
+      ${part.why ? `<p class="wizard-part-why auto-wizard-part-why">${escapeHtml(part.why)}</p>` : ''}
+      <div class="wizard-options auto-wizard-options" role="radiogroup" aria-labelledby="auto-wizard-part-${escapeHtml(part.key)}">
+        ${filteredOptions.map((option) => renderWizardOptionButton(part.key, option, selected)).join('')}
       </div>
       ${part.custom && isCustom ? `
-        <label class="wizard-custom-input">
+        <label class="wizard-custom-input auto-wizard-custom-input">
           <span>${escapeHtml(customLabel)}</span>
           <div>
             <input
@@ -2686,6 +3131,9 @@ function renderWizard() {
   if (!wizard) return;
 
   const step = wizardSteps[wizardIndex];
+  const stepCopy = getAutoStepCopy(wizardIndex, wizardState.usage);
+  const stepTitle = stepCopy?.title || step.title;
+  const stepDescription = stepCopy?.description || step.description;
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
   const canProceed = wizardStepCanProceed(step);
   const isMulti = Array.isArray(step.parts) && step.parts.length > 0;
@@ -2697,23 +3145,18 @@ function renderWizard() {
   let bodyHtml = '';
 
   if (isMulti) {
-    bodyHtml = step.parts.map((part) => renderWizardPartOptions(part)).join('');
+    bodyHtml = renderGroupedWizardParts(getVisibleWizardParts(step));
   } else {
     const selected = wizardState[step.key];
     const isCustom = selected === 'custom';
     const customValue = wizardState[`${step.key}_custom`] || '';
 
     bodyHtml = `
-      <div class="wizard-options">
-        ${step.options.map((option) => `
-          <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(step.key)}">
-            ${escapeHtml(option.label)}
-            <small>${escapeHtml(option.note)}</small>
-          </button>
-        `).join('')}
+      <div class="wizard-options auto-wizard-options" role="radiogroup" aria-label="${escapeHtml(step.title)}">
+        ${step.options.map((option) => renderWizardOptionButton(step.key, option, selected)).join('')}
       </div>
       ${step.custom && isCustom ? `
-        <label class="wizard-custom-input">
+        <label class="wizard-custom-input auto-wizard-custom-input">
           <span>${step.key === 'budget' ? 'Net bütçenizi girin' : step.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Şehir adını girin'}</span>
           <div>
             <input
@@ -2759,34 +3202,41 @@ function renderWizard() {
 
   wizard.innerHTML = `
     ${onboardingIntro}
-    <div class="wizard-progress">
-      <div class="wizard-progress-text">
-        <span>Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
-        <span class="wizard-progress-motivation">${motivationCopy}</span>
-        <span class="wizard-progress-eta">${escapeHtml(WIZARD_ETA_BY_STEP[wizardIndex] || '~2 dk · 4 kısa adım')}</span>
+    <div class="wizard-progress auto-wizard-progress">
+      <div class="auto-wizard-progress-top">
+        <div class="auto-wizard-progress-meta">
+          <span class="auto-wizard-progress-step">Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
+          <span class="auto-wizard-progress-category">Auto · Araç karar analizi</span>
+        </div>
+        <div class="auto-wizard-progress-side">
+          <span class="wizard-progress-motivation auto-wizard-progress-remaining">${motivationCopy}</span>
+          <span class="wizard-progress-eta auto-wizard-progress-eta">${escapeHtml(WIZARD_ETA_BY_STEP[wizardIndex] || '~2 dk · 4 kısa adım')}</span>
+        </div>
       </div>
-      <div class="wizard-progress-milestones" aria-hidden="true">
+      <div class="wizard-progress-bar auto-wizard-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}" aria-label="Analiz ilerlemesi">
+        <div class="wizard-progress-fill auto-wizard-progress-fill auto-wizard-progress-fill--${wizardIndex + 1}"></div>
+      </div>
+      <div class="auto-wizard-progress-foot">
+        <p class="wizard-progress-percent auto-wizard-progress-percent">${CONVERSION_COPY.auto.wizardProgress(progress)}</p>
+      </div>
+      <div class="wizard-progress-milestones auto-wizard-milestones" role="list" aria-label="Analiz aşamaları">
         ${WIZARD_MILESTONES.map((label, index) => `
-          <span class="wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}">${escapeHtml(label)}</span>
+          <span class="wizard-milestone auto-wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}" role="listitem" ${index === wizardIndex ? 'aria-current="step"' : ''}>${escapeHtml(label)}</span>
         `).join('')}
       </div>
-      <div class="wizard-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}" aria-label="Analiz ilerlemesi">
-        <div class="wizard-progress-fill" style="width:${progress}%"></div>
-      </div>
-      <p class="wizard-progress-percent">${CONVERSION_COPY.auto.wizardProgress(progress)}</p>
     </div>
 
-    <div class="wizard-question">
+    <div class="wizard-question auto-wizard-question">
       <p class="kicker">Karar altyapısı</p>
-      <h3>${escapeHtml(step.title)}</h3>
-      <p>${escapeHtml(step.description)}</p>
-      ${step.why ? `<p class="wizard-step-why">${escapeHtml(step.why)}</p>` : ''}
+      <h3>${escapeHtml(stepTitle)}</h3>
+      <p class="auto-wizard-question-desc">${escapeHtml(stepDescription)}</p>
+      ${step.why ? `<p class="wizard-step-why auto-wizard-step-why">${escapeHtml(step.why)}</p>` : ''}
     </div>
 
     ${bodyHtml}
 
-    <p class="wizard-cro-hint text-muted-sm" data-cro-wizard-hint>Sonraki adım</p>
-    <div class="wizard-actions">
+    <p class="wizard-cro-hint auto-wizard-hint text-muted-sm" data-cro-wizard-hint>Sonraki adım</p>
+    <div class="wizard-actions auto-wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
       <button type="button" class="btn primary" data-wizard-next ${canProceed ? '' : 'disabled'}>
         <span class="growth-exp-label">${wizardIndex === wizardSteps.length - 1 ? CONVERSION_COPY.auto.wizardFinish : CONVERSION_COPY.auto.wizardNext}</span>
@@ -2808,7 +3258,7 @@ function showWizardInlineError(message) {
   let banner = wizard.querySelector('.wizard-inline-error');
   if (!banner) {
     banner = document.createElement('p');
-    banner.className = 'wizard-inline-error';
+    banner.className = 'wizard-inline-error auto-wizard-inline-error';
     banner.setAttribute('role', 'alert');
     wizard.querySelector('.wizard-actions')?.before(banner);
   }
@@ -2896,40 +3346,51 @@ function advanceWizard() {
   form.requestSubmit();
 }
 
+function syncWizardManualFields(event) {
+  const customInput = event.target.closest('[data-wizard-custom]');
+  const districtInput = event.target.closest('[data-wizard-district]');
+  const step = wizardSteps[wizardIndex];
+
+  if (districtInput) {
+    wizardState.district = String(districtInput.value || '').trim().slice(0, 60);
+    syncWizardToForm();
+    return;
+  }
+
+  if (!customInput) return;
+
+  const fieldKey = customInput.dataset.wizardKey || step.key;
+  const fieldDef = getWizardFieldDef(step, fieldKey) || step;
+  const rawValue = String(customInput.value || '');
+  const cleanValue = fieldKey === 'location'
+    ? rawValue.trim().slice(0, fieldDef.custom?.max || 40)
+    : rawValue.replace(/\D/g, '');
+
+  wizardState[`${fieldKey}_custom`] = cleanValue;
+  customInput.value = cleanValue;
+  syncWizardToForm();
+
+  const nextButton = wizard.querySelector('[data-wizard-next]');
+  if (nextButton) {
+    nextButton.disabled = !wizardStepCanProceed(step);
+  }
+}
+
 if (wizard) {
+  bootstrapAutoFromAssistantQuery(wizardState, new URLSearchParams(window.location.search));
+  if (wizardState.usage) {
+    sanitizeWizardStateForUsage(wizardState, {
+      body: bodyOptions,
+      fuel: fuelOptions,
+      km: kmOptions,
+      city_ratio: autoPartOptionPool('city_ratio')
+    });
+  }
   renderWizard();
   trackWizardStepView(0);
 
-  wizard.addEventListener('input', (event) => {
-    const customInput = event.target.closest('[data-wizard-custom]');
-    const districtInput = event.target.closest('[data-wizard-district]');
-
-    const step = wizardSteps[wizardIndex];
-
-    if (districtInput) {
-      wizardState.district = String(districtInput.value || '').trim().slice(0, 60);
-      syncWizardToForm();
-      return;
-    }
-
-    if (!customInput) return;
-
-    const fieldKey = customInput.dataset.wizardKey || step.key;
-    const fieldDef = getWizardFieldDef(step, fieldKey) || step;
-    const rawValue = String(customInput.value || '');
-    const cleanValue = fieldKey === 'location'
-      ? rawValue.trim().slice(0, fieldDef.custom?.max || 40)
-      : rawValue.replace(/\D/g, '');
-
-    wizardState[`${fieldKey}_custom`] = cleanValue;
-    customInput.value = cleanValue;
-    syncWizardToForm();
-
-    const nextButton = wizard.querySelector('[data-wizard-next]');
-    if (nextButton) {
-      nextButton.disabled = !wizardStepCanProceed(step);
-    }
-  });
+  wizard.addEventListener('input', syncWizardManualFields);
+  wizard.addEventListener('change', syncWizardManualFields);
 
   wizard.addEventListener('click', (event) => {
     const option = event.target.closest('.wizard-option');
@@ -2939,7 +3400,19 @@ if (wizard) {
     if (option) {
       const step = wizardSteps[wizardIndex];
       const fieldKey = option.dataset.wizardKey || step.key;
+      const previousUsage = wizardState.usage;
       wizardState[fieldKey] = option.dataset.wizardValue;
+      if (fieldKey === 'usage' && previousUsage !== wizardState.usage) {
+        sanitizeWizardStateForUsage(wizardState, {
+          body: bodyOptions,
+          fuel: fuelOptions,
+          km: kmOptions,
+          city_ratio: autoPartOptionPool('city_ratio')
+        });
+        if (!shouldShowCityRatioField(wizardState.usage)) {
+          delete wizardState.city_ratio;
+        }
+      }
       syncWizardToForm();
       renderWizard();
 
@@ -3008,7 +3481,6 @@ async function checkForNewAutoDeployment() {
   }
 }
 
-setupAutoMobileNav();
 checkForNewAutoDeployment();
 initP4ProductPolish();
 initMobilePremiumUx();
@@ -3017,9 +3489,7 @@ initPerceivedPerformance();
 initBrandConsistency();
 initAutoEntitlements();
 loadAutoRuntimeConfig();
-if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
-  analytics.init();
-}
+void bootAnalyticsMeasurement();
 trackAutoEvent('auto_page_view');
 
 document.addEventListener('click', (event) => {
@@ -3068,6 +3538,7 @@ form.addEventListener('submit', async (event) => {
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
   allResults = [...results];
+  clearSelectedVehicle();
 
   trackAutoEvent('auto_analysis_started', formData);
 
@@ -3110,26 +3581,7 @@ form.addEventListener('submit', async (event) => {
 
       try {
         if (getAppInstance()?.currentUser?.id && results.length) {
-          saveDecisionHistory({
-            id: `auto-${Date.now()}`,
-            categoryId: 'auto',
-            categoryName: 'Araç Karar Analizi',
-            createdAt: new Date().toISOString(),
-            rawAnswers: formData,
-            answers: formData,
-            summary: `${results[0].name} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
-            insight: 'isteBul Auto karar analizi',
-            dataHealth: 'estimated',
-            recommendations: results.map((vehicle) => ({
-              name: vehicle.name,
-              score: vehicle.score,
-              price: vehicle.price || vehicle.costs?.purchase || 0,
-              yearlyCost: vehicle.costs?.annual || 0,
-              financeComparisons: [{
-                monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
-              }]
-            }))
-          });
+          saveDecisionHistory(buildAutoDecisionHistoryPayload(results, formData));
         }
       } catch (_) {}
 
@@ -3212,25 +3664,6 @@ function toggleAutoFavoriteFallback(vehicle){
 }
 
 
-function getAutoFallbackImage(name){
-  name = String(name || '');
-
-  if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
-  if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
-  if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
-  if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
-  if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
-  if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
-  if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
-  if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
-  if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
-  if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
-  if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
-  if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
-
-  return '';
-}
-
 function goToComparisonPage(){
   window.location.assign('/karsilastir');
 }
@@ -3267,6 +3700,8 @@ function addAutoComparisonFallback(vehicle){
 
   const score = Number(vehicle.score || 0);
 
+  const uiImage = buildVehicleImageUiPayload(vehicle);
+
   writeAutoStorage(key, [...items, {
     id: `auto-compare-${vehicle.name}`,
     signature,
@@ -3274,7 +3709,8 @@ function addAutoComparisonFallback(vehicle){
     categoryName: 'Araç Karşılaştırma',
     sourceType: 'isteBul Auto',
     title: vehicle.name,
-    image: getAutoFallbackImage(vehicle.name),
+    image: uiImage.imageUrl,
+    imageTrust: uiImage.imageTrust,
     score,
     confidenceLabel: vehicle.confidenceMeta?.label || '',
     riskLevel: vehicle.confidenceMeta?.label || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir'),
@@ -3392,7 +3828,12 @@ Destek almak istiyorum.`;
 
   const financeCompareBtn = event.target.closest('.finance-compare-trigger');
   if (financeCompareBtn) {
-    openFinanceCompareModal(financeCompareBtn.dataset.vehicle || '');
+    const selected = readSelectedVehicle();
+    if (!selected?.name) {
+      showVehicleSelectionRequiredNotice();
+      return;
+    }
+    openFinanceCompareModal(financeCompareBtn.dataset.vehicle || selected.name);
     return;
   }
 
@@ -3400,7 +3841,18 @@ Destek almak istiyorum.`;
 
   if (interestBtn) {
     const interest = interestBtn.dataset.interest || 'finance';
-    const vehicle = interestBtn.dataset.vehicle || '';
+    const selected = readSelectedVehicle();
+    const requiresSelection =
+      interestBtn.dataset.requiresSelection === '1' ||
+      ['finance', 'finance_review', 'insurance', 'vehicle_offer', 'dealer_match', 'report'].includes(interest);
+
+    if (requiresSelection && !selected?.name && interest !== 'premium_report') {
+      showVehicleSelectionRequiredNotice();
+      return;
+    }
+
+    const vehicle = interestBtn.dataset.vehicle || selected?.name || '';
+    const branchIntent = interestBtn.dataset.branch || '';
 
     if (interest === 'premium_report' && !isProActive()) {
       trackAutoEvent('auto_premium_paywall_view', { interest_type: interest, vehicle });
@@ -3435,7 +3887,8 @@ Destek almak istiyorum.`;
       vehicle_offer: 'auto_vehicle_offer_click',
       premium_report: 'auto_premium_report_click',
       expert_consultation: 'auto_advisor_cta_clicked',
-      dealer_match: 'auto_dealer_cta_clicked'
+      dealer_match: 'auto_dealer_cta_clicked',
+      report: 'auto_expertise_click'
     };
 
     if (eventMap[interest]) {
@@ -3450,7 +3903,11 @@ Destek almak istiyorum.`;
       });
     }
 
-    openLeadModal(interest, vehicle);
+    openLeadModal(interest, vehicle, {
+      branchIntent,
+      vehicleCatalogId: selected?.id || '',
+      selectionConfirmedAt: selected?.confirmedAt || ''
+    });
   }
 });
 
@@ -3502,3 +3959,69 @@ window.addEventListener('pagehide', () => {
     /* ignore */
   }
 });
+
+
+function buildAutoDecisionHistoryPayload(results, formData) {
+  const vehicles = Array.isArray(results) ? results : [];
+  const top = vehicles[0] || {};
+  const topConfidence = top.confidenceMeta && typeof top.confidenceMeta === 'object'
+    ? top.confidenceMeta
+    : null;
+
+  const dataHealth = topConfidence
+    ? {
+        confidenceLabel: topConfidence.label || 'Orta veri güven bandı — teklif doğrulaması önerilir',
+        confidenceScore: Number.isFinite(Number(topConfidence.score)) ? Number(topConfidence.score) : null,
+        tier: topConfidence.tier || null
+      }
+    : {
+        confidenceLabel: 'Tahmini maliyet — teklifte doğrulama önerilir',
+        confidenceScore: null,
+        tier: 'medium'
+      };
+
+  const topName = top.name || 'Seçilen araç';
+  const topHeadline = Array.isArray(top.reasons) && top.reasons[0]
+    ? String(top.reasons[0])
+    : 'isteBul Auto karar analizi';
+
+  return {
+    id: `auto-${Date.now()}`,
+    categoryId: 'auto',
+    categoryName: 'Araç Karar Analizi',
+    createdAt: new Date().toISOString(),
+    source: 'auto',
+    rawAnswers: formData || {},
+    answers: formData || {},
+    summary: `${topName} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
+    insight: { headline: topHeadline },
+    dataHealth,
+    recommendations: vehicles.map((vehicle) => {
+      const score = Number(vehicle.score || 0);
+      const reasonTags = Array.isArray(vehicle.reasons)
+        ? vehicle.reasons.map((reason) => String(reason).trim()).filter(Boolean).slice(0, 3)
+        : [];
+      const decisionTags = reasonTags.length
+        ? reasonTags
+        : [vehicle.fuel, vehicle.body, 'Kural tabanlı'].filter(Boolean).map(String).slice(0, 3);
+      const riskLevel = vehicle.confidenceMeta?.label
+        || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir');
+
+      return {
+        name: vehicle.name,
+        score: vehicle.score,
+        price: vehicle.price || vehicle.costs?.purchase || 0,
+        yearlyCost: vehicle.costs?.annual || 0,
+        riskLevel,
+        decisionTags,
+        scoreNote: Array.isArray(vehicle.reasons) ? vehicle.reasons[0] || null : null,
+        calculationTable: vehicle.costs?.annual
+          ? { totalLabel: '12 aylık TCO' }
+          : undefined,
+        financeComparisons: [{
+          monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
+        }]
+      };
+    })
+  };
+}

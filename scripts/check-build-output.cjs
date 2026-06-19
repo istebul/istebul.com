@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { assertEnvJsFileContents } = require('./lib/public-env.cjs');
 const root = path.resolve(__dirname, '..');
 
 const required = [
@@ -9,10 +10,29 @@ const required = [
   'dist/sw.js',
   'dist/robots.txt',
   'dist/sitemap.xml',
+  'dist/ads.txt',
   'dist/build-manifest.json',
   'dist/rehber/arac-kredisi-hesaplama/index.html',
+  'dist/rehber/tco-rehberi/index.html',
+  'dist/rehber/finansman-rehberi/index.html',
+  'dist/rehber/elektrikli-arac-rehberi/index.html',
+  'dist/rehber/ikinci-el-rehberi/index.html',
   'dist/karar-asistani/index.html',
-  'dist/css/seo-landing.css'
+  'dist/planlar/index.html',
+  'dist/blog/index.html',
+  'dist/duyurular/index.html',
+  'dist/kampanyalar/index.html',
+  'dist/profil/index.html',
+  'dist/en/index.html',
+  'dist/blog-posts-manifest.json',
+  'dist/css/seo-landing.css',
+  'dist/js/runtime/route-bootstrap-head.js',
+  'dist/admin/index.html',
+  'dist/admin/listings/index.html',
+  'dist/admin/ai-listings/index.html',
+  'dist/admin/decision-center/index.html',
+  'dist/admin-panel.html',
+  'dist/js/admin-panel.js'
 ];
 
 let failed = false;
@@ -22,6 +42,15 @@ for (const file of required) {
   if (!fs.existsSync(fullPath) || fs.statSync(fullPath).size === 0) {
     failed = true;
     console.error('Missing build output: ' + file);
+  }
+}
+
+const adsTxtPath = path.join(root, 'dist/ads.txt');
+if (fs.existsSync(adsTxtPath)) {
+  const adsTxt = fs.readFileSync(adsTxtPath, 'utf8');
+  if (!adsTxt.includes('pub-6412697542113702')) {
+    failed = true;
+    console.error('dist/ads.txt must declare AdSense publisher ID pub-6412697542113702');
   }
 }
 
@@ -82,6 +111,37 @@ if (fs.existsSync(autoRuntimeDir)) {
   console.error('Missing build output: dist/assets/auto-runtime/');
 }
 
+const sigortaRuntimeDir = path.join(root, 'dist/assets/sigorta-runtime');
+if (fs.existsSync(sigortaRuntimeDir)) {
+  const hashedSigortaJs = fs
+    .readdirSync(sigortaRuntimeDir)
+    .some((name) => /^sigorta-app\.[a-f0-9]+\.js$/.test(name));
+  if (!hashedSigortaJs) {
+    failed = true;
+    console.error('Missing hashed Sigorta bundle: dist/assets/sigorta-runtime/sigorta-app.[hash].js');
+  }
+} else {
+  failed = true;
+  console.error('Missing build output: dist/assets/sigorta-runtime/');
+}
+
+const sigortaHtmlPath = path.join(root, 'dist/sigorta/index.html');
+if (fs.existsSync(sigortaHtmlPath)) {
+  const sigortaHtml = fs.readFileSync(sigortaHtmlPath, 'utf8');
+  if (!/\/assets\/sigorta-runtime\/sigorta-app\.[a-f0-9]+\.js/.test(sigortaHtml)) {
+    failed = true;
+    console.error('dist/sigorta/index.html must reference hashed sigorta-app bundle');
+  }
+  if (!sigortaHtml.includes('sigorta-wizard-skeleton')) {
+    failed = true;
+    console.error('dist/sigorta/index.html must include wizard skeleton fallback');
+  }
+  if (/\/js\/sigorta\/sigorta-app\.js/.test(sigortaHtml)) {
+    failed = true;
+    console.error('dist/sigorta/index.html must not use immutable /js/sigorta/sigorta-app.js path');
+  }
+}
+
 const autoHtmlPath = path.join(root, 'dist/auto/index.html');
 if (fs.existsSync(autoHtmlPath)) {
   const autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
@@ -108,6 +168,49 @@ if (fs.existsSync(envPath)) {
       console.error('Build env.js exposes forbidden secret key name: ' + secretName);
     }
   });
+  try {
+    assertEnvJsFileContents(envSource, 'dist/env.js');
+  } catch (err) {
+    failed = true;
+    console.error(err.message);
+  }
+} else {
+  failed = true;
+  console.error('Missing build output: dist/env.js');
+}
+
+const adminPanelPath = path.join(root, 'dist/admin-panel.html');
+if (fs.existsSync(adminPanelPath)) {
+  const adminHtml = fs.readFileSync(adminPanelPath, 'utf8');
+  const envIdx = adminHtml.indexOf('/env.js');
+  const adminJsIdx = adminHtml.indexOf('/js/admin-panel.js');
+  if (envIdx === -1 || adminJsIdx === -1 || envIdx > adminJsIdx) {
+    failed = true;
+    console.error('dist/admin-panel.html must load /env.js before admin-panel.js');
+  }
+}
+
+const { assertAdminShellHtml } = require('./lib/admin-deep-links.cjs');
+const adminListingsCrmPath = path.join(root, 'dist/admin/listings/index.html');
+const adminAiListingsPath = path.join(root, 'dist/admin/ai-listings/index.html');
+if (fs.existsSync(adminListingsCrmPath)) {
+  try {
+    assertAdminShellHtml(fs.readFileSync(adminListingsCrmPath, 'utf8'), 'dist/admin/listings/index.html');
+  } catch (err) {
+    failed = true;
+    console.error(String(err?.message || err));
+  }
+}
+if (fs.existsSync(adminAiListingsPath)) {
+  const aiListingsHtml = fs.readFileSync(adminAiListingsPath, 'utf8');
+  if (!aiListingsHtml.includes('ai-listings-admin-root')) {
+    failed = true;
+    console.error('dist/admin/ai-listings/index.html must be AI listings admin shell');
+  }
+  if (aiListingsHtml.includes('/js/admin-panel.js')) {
+    failed = true;
+    console.error('dist/admin/ai-listings/index.html must not be CRM admin-panel shell');
+  }
 }
 
 const indexPath = path.join(root, 'dist/index.html');
@@ -130,6 +233,87 @@ if (fs.existsSync(indexPath)) {
   if (!html.includes('data-ib-route')) {
     failed = true;
     console.error('dist/index.html missing route surface bootstrap');
+  }
+
+  if (!html.includes('/js/runtime/route-bootstrap-head.js')) {
+    failed = true;
+    console.error('dist/index.html must load /js/runtime/route-bootstrap-head.js');
+  }
+}
+
+const routeBootstrapPath = path.join(root, 'dist/js/runtime/route-bootstrap-head.js');
+if (fs.existsSync(routeBootstrapPath)) {
+  const bootstrapSource = fs.readFileSync(routeBootstrapPath, 'utf8');
+  if (!bootstrapSource.includes('Generated by scripts/lib/route-bootstrap.cjs')) {
+    failed = true;
+    console.error('dist/js/runtime/route-bootstrap-head.js is not a valid bootstrap script');
+  }
+  if (bootstrapSource.trimStart().startsWith('<!DOCTYPE') || bootstrapSource.trimStart().startsWith('<html')) {
+    failed = true;
+    console.error('dist/js/runtime/route-bootstrap-head.js looks like HTML fallback, not JavaScript');
+  }
+}
+
+const seoHubChecks = [
+  ['dist/planlar/index.html', 'Planlar ve Fiyatlandırma | isteBul', 'https://www.istebul.com/planlar']
+];
+
+const dynamicContentSpaChecks = [
+  ['dist/blog/index.html', 'data-ib-route="page-blog"', 'Blog | isteBul'],
+  ['dist/duyurular/index.html', 'data-ib-route="page-duyurular"', 'Duyurular | isteBul'],
+  ['dist/kampanyalar/index.html', 'data-ib-route="page-kampanyalar"', 'Kampanyalar | isteBul']
+];
+
+seoHubChecks.forEach(([rel, title, canonical]) => {
+  const full = path.join(root, rel);
+  if (!fs.existsSync(full)) return;
+  const html = fs.readFileSync(full, 'utf8');
+  if (!html.includes(title)) {
+    failed = true;
+    console.error(`${rel} missing title: ${title}`);
+  }
+  if (!html.includes(canonical)) {
+    failed = true;
+    console.error(`${rel} missing canonical: ${canonical}`);
+  }
+  if (!html.includes('class="seo-page"')) {
+    failed = true;
+    console.error(`${rel} must be static seo-page shell`);
+  }
+});
+
+dynamicContentSpaChecks.forEach(([rel, routeAttr, title]) => {
+  const full = path.join(root, rel);
+  if (!fs.existsSync(full)) {
+    failed = true;
+    console.error(`${rel} missing — dynamic content SPA shell required`);
+    return;
+  }
+  const html = fs.readFileSync(full, 'utf8');
+  if (!html.includes(routeAttr)) {
+    failed = true;
+    console.error(`${rel} missing ${routeAttr}`);
+  }
+  if (!html.includes(title)) {
+    failed = true;
+    console.error(`${rel} missing title: ${title}`);
+  }
+  if (html.includes('class="seo-page"')) {
+    failed = true;
+    console.error(`${rel} must be SPA shell, not static seo-page`);
+  }
+});
+
+const profilShellPath = path.join(root, 'dist/profil/index.html');
+if (fs.existsSync(profilShellPath)) {
+  const profilHtml = fs.readFileSync(profilShellPath, 'utf8');
+  if (!profilHtml.includes('data-ib-route="profil"')) {
+    failed = true;
+    console.error('dist/profil/index.html missing data-ib-route="profil"');
+  }
+  if (!profilHtml.includes('Hesabım | isteBul')) {
+    failed = true;
+    console.error('dist/profil/index.html missing account route title');
   }
 }
 

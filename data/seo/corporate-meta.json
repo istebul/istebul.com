@@ -31,6 +31,10 @@
     "title": "KVKK Aydınlatma Metni | isteBul",
     "description": "6698 sayılı KVKK kapsamında isteBul veri sorumlusu aydınlatma metni ve başvuru hakları."
   },
+  "gdpr.html": {
+    "title": "GDPR Privacy Summary | isteBul",
+    "description": "English GDPR privacy summary for EU/EEA visitors. Authoritative Turkish disclosure is the KVKK notice."
+  },
   "kullanim-sartlari.html": {
     "title": "Kullanım Şartları | isteBul",
     "description": "isteBul platformu kullanım şartları ve hizmet koşulları."

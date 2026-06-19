@@ -2,6 +2,7 @@
  * Canonical growth funnel events — consent-gated, session-deduped, channel-enriched.
  */
 import { analytics } from '../../core/analytics.js';
+import { mirrorLegacySiteEvent, trackHomepageView, trackCtaClicked } from '../../platform/site-analytics.js';
 
 /** Lightweight channel resolver (avoids circular import with growth-engine). */
 function resolveGrowthChannel(attribution = {}) {
@@ -95,6 +96,7 @@ export function trackGrowthFunnel(step, properties = {}, options = {}) {
     markSessionDedupe(step, dedupeKey);
   }
 
+  mirrorLegacySiteEvent(step, properties);
   trackPlausibleGoal(step);
 }
 
@@ -121,12 +123,19 @@ export function isAutoPath(pathname = '') {
 
 export function trackLandingVisit() {
   if (!isLandingPath()) return;
+  trackHomepageView();
   trackGrowthFunnel(GROWTH_FUNNEL_EVENTS.LANDING_VISIT, {
     path: typeof window !== 'undefined' ? window.location.pathname : '/'
   }, { dedupeKey: 'home', funnel: 'acquisition' });
 }
 
 export function trackHeroCtaClick(ctaId, properties = {}) {
+  trackCtaClicked({
+    source: properties.placement === 'hero' ? 'hero' : 'hero',
+    category: properties.category || null,
+    cta_id: ctaId,
+    ...properties
+  });
   trackGrowthFunnel(GROWTH_FUNNEL_EVENTS.HERO_CTA_CLICK, {
     cta_id: ctaId,
     ...properties

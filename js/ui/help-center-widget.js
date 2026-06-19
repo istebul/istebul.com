@@ -33,7 +33,7 @@ export function mountHelpCenterWidget(options = {}) {
     </button>
     <div id="ib-help-panel" class="ib-help-panel" data-help-panel hidden role="dialog" aria-label="Yardım merkezi">
       <h3>Yardım merkezi</h3>
-      <p class="text-muted-sm" style="margin:0;font-size:12px">SSS ve yönlendirme — çoğu soru burada çözülür.</p>
+      <p class="text-muted-sm" style="margin:0;font-size:12px">SSS ve yönlendirme — çoğu soru burada çözülür. <a href="/yardim.html">Tüm yardım merkezi →</a></p>
       <input type="search" class="ib-help-search" data-help-search placeholder="Örn: ödeme, analiz, Pro plan…" aria-label="Yardım ara" />
       <div data-help-results></div>
       <p class="ib-help-status" data-help-status hidden></p>

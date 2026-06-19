@@ -462,28 +462,28 @@
   color: #475569;
 }
 
-.ib-how-premium-dark {
+html:not(.ib-ds-v4) .ib-how-premium-dark {
   background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
   color: #e2e8f0;
 }
 
-.ib-how-premium-dark .section-kicker {
+html:not(.ib-ds-v4) .ib-how-premium-dark .section-kicker {
   color: #93c5fd;
 }
 
-.ib-how-premium-dark h2,
-.ib-how-premium-dark h3 {
+html:not(.ib-ds-v4) .ib-how-premium-dark h2,
+html:not(.ib-ds-v4) .ib-how-premium-dark h3 {
   color: #f8fafc;
 }
 
-.ib-how-premium-dark .how-step {
+html:not(.ib-ds-v4) .ib-how-premium-dark .how-step {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 16px;
   padding: 1.25rem;
 }
 
-.ib-how-premium-dark .how-step p {
+html:not(.ib-ds-v4) .ib-how-premium-dark .how-step p {
   color: #94a3b8;
 }
 
@@ -653,7 +653,7 @@
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
 
-.ib-trust-premium-dark {
+html:not(.ib-ds-v4) .ib-trust-premium-dark {
   background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
   border: none;
 }
@@ -754,7 +754,7 @@
   text-align: center;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark {
   background:
     radial-gradient(900px 420px at 85% 0%, rgba(37, 99, 235, 0.22), transparent 60%),
     radial-gradient(700px 380px at 0% 40%, rgba(14, 165, 233, 0.12), transparent 55%),
@@ -762,31 +762,31 @@ body.ib-enterprise #home.ib-hero-premium-dark {
   color: #e2e8f0;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark .hero-eyebrow {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .hero-eyebrow {
   color: #93c5fd;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark .hero-content h1 {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .hero-content h1 {
   color: #f8fafc;
   max-width: none;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark .hero-lead {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .hero-lead {
   color: #cbd5e1;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-cta-hint {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-cta-hint {
   color: #94a3b8;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-btn-ghost {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-btn-ghost {
   border-color: rgba(148, 163, 184, 0.45);
   color: #e2e8f0;
   background: rgba(255, 255, 255, 0.04);
   box-shadow: none;
 }
 
-body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-btn-ghost:hover {
+html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-btn-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(148, 163, 184, 0.65);
   color: #fff;
@@ -990,17 +990,17 @@ body.ib-enterprise #home .ib-dash-pick-link {
 }
 
 /* —— Homepage category showcase (config-driven mount) —— */
-.ib-home-categories-premium {
+html:not(.ib-ds-v4) .ib-home-categories-premium {
   padding: clamp(2.5rem, 5vw, 4rem) 0;
   background: linear-gradient(180deg, #0b1120 0%, #0f172a 48%, #111827 100%);
   color: #e2e8f0;
 }
 
-.ib-home-categories-premium .section-kicker {
+html:not(.ib-ds-v4) .ib-home-categories-premium .section-kicker {
   color: #93c5fd;
 }
 
-.ib-home-categories-premium h2 {
+html:not(.ib-ds-v4) .ib-home-categories-premium h2 {
   color: #f8fafc;
 }
 
@@ -1340,7 +1340,7 @@ body.ib-enterprise #home .ib-dash-pick-link {
   color: #475569;
 }
 
-body.ib-enterprise #home .ib-hero-cta-arrow {
+html:not(.ib-ds-v4) body.ib-enterprise #home .ib-hero-cta-arrow {
   width: 1rem;
   height: 1rem;
   margin-left: 0.15rem;
@@ -1428,9 +1428,9 @@ body.ib-enterprise #home .ib-dash-donut-legend .swatch {
   flex-shrink: 0;
 }
 
-body.ib-enterprise #home .swatch-a { background: #3b82f6; }
-body.ib-enterprise #home .swatch-b { background: #8b5cf6; }
-body.ib-enterprise #home .swatch-c { background: #22d3ee; }
+html:not(.ib-ds-v4) body.ib-enterprise #home .swatch-a { background: #3b82f6; }
+html:not(.ib-ds-v4) body.ib-enterprise #home .swatch-b { background: #8b5cf6; }
+html:not(.ib-ds-v4) body.ib-enterprise #home .swatch-c { background: #22d3ee; }
 
 body.ib-enterprise #home .ib-dash-line-chart {
   display: block;

@@ -1,0 +1,368 @@
+/**
+ * Sonuç ekranları — Güncel Ekonomik Göstergeler (public /api/evds-snapshot).
+ * Ana sayfa EVDS formatlayıcılarını yeniden kullanır.
+ */
+import { escapeHtml } from '../../core/security.js';
+import {
+  formatFxTry,
+  formatPercentTr,
+  formatSeriesDateLabel
+} from '../home/home-economic-indicators.js';
+
+export const RESULTS_ECONOMIC_PRESETS = Object.freeze({
+  finansman: Object.freeze([
+    { key: 'policyRate', label: 'Politika faizi', kind: 'pct', rateKey: 'policyRate', dateKey: 'policyRate' },
+    {
+      key: 'housingLoanRate',
+      label: 'Konut kredisi faizi',
+      kind: 'pct',
+      rateKey: 'housingLoanRate',
+      dateKey: 'housingLoanRate'
+    },
+    { key: 'cpiAnnual', label: 'TÜFE', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' }
+  ]),
+  konut: Object.freeze([
+    {
+      key: 'housingLoanRate',
+      label: 'Konut kredisi faizi',
+      kind: 'pct',
+      rateKey: 'housingLoanRate',
+      dateKey: 'housingLoanRate'
+    },
+    { key: 'cpiAnnual', label: 'TÜFE', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' },
+    { key: 'policyRate', label: 'Politika faizi', kind: 'pct', rateKey: 'policyRate', dateKey: 'policyRate' }
+  ]),
+  auto: Object.freeze([
+    { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' },
+    { key: 'eurTry', label: 'EUR/TRY', kind: 'fx', rateKey: 'eurTry', dateKey: 'eurTry' },
+    { key: 'cpiAnnual', label: 'TÜFE', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' }
+  ]),
+  tatil: Object.freeze([
+    { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' },
+    { key: 'eurTry', label: 'EUR/TRY', kind: 'fx', rateKey: 'eurTry', dateKey: 'eurTry' },
+    { key: 'cpiAnnual', label: 'TÜFE (yıllık)', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' }
+  ]),
+  sigorta: Object.freeze([
+    { key: 'cpiAnnual', label: 'TÜFE', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' },
+    { key: 'policyRate', label: 'Politika faizi', kind: 'pct', rateKey: 'policyRate', dateKey: 'policyRate' },
+    { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' }
+  ])
+});
+
+const CARD_TITLE = 'Güncel Ekonomik Göstergeler';
+const CARD_SUBTITLE = 'TCMB EVDS verileriyle bilgilendirme amaçlıdır.';
+const SOURCE_LABEL = 'TCMB EVDS';
+const FALLBACK_MESSAGE = 'Veri geçici olarak alınamadı';
+
+/** Sonuç ekranları — ana sayfa ile aynı kompakt EVDS kartı. */
+const HOME_LAYOUT_PRESETS = new Set(['auto', 'konut']);
+const MAX_SERIES_AGE_DAYS = 45;
+
+function usesHomeLayout(preset) {
+  return HOME_LAYOUT_PRESETS.has(String(preset || '').trim());
+}
+
+function formatIndicatorValue(kind, value) {
+  return kind === 'fx' ? formatFxTry(value) : formatPercentTr(value);
+}
+
+function parseSeriesDate(value) {
+  const text = String(value || '').trim();
+  if (!text) return null;
+  const monthly = text.match(/^(\d{4})-(\d{1,2})$/);
+  if (monthly) {
+    const year = Number(monthly[1]);
+    const month = Number(monthly[2]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return null;
+    return new Date(year, month - 1, 1);
+  }
+  const daily = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (daily) {
+    const year = Number(daily[1]);
+    const month = Number(daily[2]);
+    const day = Number(daily[3]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    return new Date(year, month - 1, day);
+  }
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function validateSeriesDate(value) {
+  const parsed = parseSeriesDate(value);
+  if (!parsed) return { ok: false, reason: 'missing' };
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (parsed.getTime() > today.getTime()) {
+    return { ok: false, reason: 'future' };
+  }
+  const ageMs = today.getTime() - parsed.getTime();
+  const ageDays = Math.floor(ageMs / 86400000);
+  if (ageDays > MAX_SERIES_AGE_DAYS) {
+    return { ok: false, reason: 'stale', ageDays };
+  }
+  return { ok: true, ageDays };
+}
+
+function formatValidatedSeriesDateLabel(date) {
+  const validation = validateSeriesDate(date);
+  const label = formatSeriesDateLabel(date);
+  if (!validation.ok && validation.reason === 'future') {
+    return `${label} (tarih doğrulanamadı)`;
+  }
+  if (!validation.ok && validation.reason === 'stale') {
+    return `${label} (güncelleniyor)`;
+  }
+  return label;
+}
+
+function renderHomeStyleHead(preset) {
+  const id = `results-economic-title-${String(preset || 'auto')}`;
+  return `
+      <header class="ib-home-economic__head">
+        <div class="ib-home-economic__head-row">
+          <h2 id="${escapeHtml(id)}">${escapeHtml(CARD_TITLE)}</h2>
+          <p class="ib-home-economic__refresh">${escapeHtml(CARD_SUBTITLE)}</p>
+        </div>
+      </header>`;
+}
+
+function renderHomeStyleItems(indicators, rates, seriesDates, { empty = false } = {}) {
+  return indicators
+    .map(({ key, label, kind, rateKey, dateKey }) => {
+      if (empty) {
+        return `
+      <article class="ib-home-economic__item" data-economic-key="${escapeHtml(key)}">
+        <h3 class="ib-home-economic__label">${escapeHtml(label)}</h3>
+        <p class="ib-home-economic__value">—</p>
+        <p class="ib-home-economic__date">—</p>
+      </article>`;
+      }
+      const displayValue = formatIndicatorValue(kind, rates[rateKey]);
+      const displayDate = formatValidatedSeriesDateLabel(seriesDates[dateKey]);
+      return `
+      <article class="ib-home-economic__item" data-economic-key="${escapeHtml(key)}">
+        <h3 class="ib-home-economic__label">${escapeHtml(label)}</h3>
+        <p class="ib-home-economic__value">${escapeHtml(displayValue)}</p>
+        <p class="ib-home-economic__date">${escapeHtml(displayDate)}</p>
+      </article>`;
+    })
+    .join('');
+}
+
+function renderHomeStyleSkeletonItems(count) {
+  return Array.from({ length: count }, () => `
+      <div class="ib-home-economic__item ib-home-economic__item--skeleton" aria-hidden="true">
+        <span class="ib-home-economic__skeleton-label"></span>
+        <span class="ib-home-economic__skeleton-value"></span>
+        <span class="ib-home-economic__skeleton-date"></span>
+      </div>`).join('');
+}
+
+function renderHomeStyleCardHtml(data, preset) {
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  const rates = data?.rates || {};
+  const seriesDates = data?.seriesDates || {};
+
+  return `
+    <section
+      class="ib-home-economic__card"
+      aria-labelledby="results-economic-title-${escapeHtml(preset)}"
+      data-results-economic-card
+      data-results-economic-state="ready"
+      data-results-economic-layout="home"
+    >
+      ${renderHomeStyleHead(preset)}
+      <div class="ib-home-economic__grid">${renderHomeStyleItems(indicators, rates, seriesDates)}</div>
+      <p class="ib-home-economic__meta">Kaynak: ${escapeHtml(SOURCE_LABEL)} · Bilgilendirme amaçlıdır.</p>
+    </section>`;
+}
+
+function renderHomeStyleFallbackHtml(preset) {
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  return `
+    <section
+      class="ib-home-economic__card ib-home-economic__card--fallback"
+      aria-label="${escapeHtml(CARD_TITLE)}"
+      data-results-economic-card
+      data-results-economic-state="fallback"
+      data-results-economic-layout="home"
+    >
+      ${renderHomeStyleHead(preset)}
+      <p class="ib-home-economic__fallback">${escapeHtml(FALLBACK_MESSAGE)}</p>
+      <div class="ib-home-economic__grid">${renderHomeStyleItems(indicators, {}, {}, { empty: true })}</div>
+      <p class="ib-home-economic__meta">Kaynak: ${escapeHtml(SOURCE_LABEL)} · Bilgilendirme amaçlıdır.</p>
+    </section>`;
+}
+
+function renderHomeStyleSkeletonHtml(preset) {
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  return `
+    <section
+      class="ib-home-economic__card"
+      aria-label="${escapeHtml(CARD_TITLE)} yükleniyor"
+      data-results-economic-state="loading"
+      data-results-economic-layout="home"
+    >
+      ${renderHomeStyleHead(preset)}
+      <div class="ib-home-economic__grid">${renderHomeStyleSkeletonItems(indicators.length)}</div>
+      <p class="ib-home-economic__meta">Kaynak: ${escapeHtml(SOURCE_LABEL)} · Bilgilendirme amaçlıdır.</p>
+    </section>`;
+}
+
+function resolvePreset(preset) {
+  const key = String(preset || '').trim();
+  return RESULTS_ECONOMIC_PRESETS[key] || null;
+}
+
+export function hasAnyPresetValue(indicators, rates = {}) {
+  return indicators.some(
+    ({ rateKey }) => rates[rateKey] != null && Number.isFinite(Number(rates[rateKey]))
+  );
+}
+
+export function renderResultsEconomicCardHtml(data, preset) {
+  if (usesHomeLayout(preset)) return renderHomeStyleCardHtml(data, preset);
+
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  const rates = data?.rates || {};
+  const seriesDates = data?.seriesDates || {};
+
+  const items = indicators
+    .map(({ key, label, kind, rateKey, dateKey }) => {
+      const value = rates[rateKey];
+      const date = seriesDates[dateKey];
+      const displayValue = formatIndicatorValue(kind, value);
+      const displayDate = formatValidatedSeriesDateLabel(date);
+
+      return `
+      <article class="ib-results-economic__item" data-economic-key="${escapeHtml(key)}">
+        <h4 class="ib-results-economic__label">${escapeHtml(label)}</h4>
+        <p class="ib-results-economic__value">${escapeHtml(displayValue)}</p>
+        <p class="ib-results-economic__date">${escapeHtml(displayDate)}</p>
+        <p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>
+      </article>`;
+    })
+    .join('');
+
+  return `
+    <section
+      class="ib-results-economic__card"
+      aria-labelledby="results-economic-title-${escapeHtml(preset)}"
+      data-results-economic-card
+      data-results-economic-state="ready"
+    >
+      <header class="ib-results-economic__head">
+        <h3 id="results-economic-title-${escapeHtml(preset)}">${escapeHtml(CARD_TITLE)}</h3>
+        <p class="ib-results-economic__subtitle">${escapeHtml(CARD_SUBTITLE)}</p>
+      </header>
+      <div class="ib-results-economic__grid">${items}</div>
+    </section>`;
+}
+
+export function renderResultsEconomicFallbackHtml(preset) {
+  if (usesHomeLayout(preset)) return renderHomeStyleFallbackHtml(preset);
+
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  const items = indicators
+    .map(
+      ({ key, label }) => `
+      <article class="ib-results-economic__item ib-results-economic__item--empty" data-economic-key="${escapeHtml(key)}">
+        <h4 class="ib-results-economic__label">${escapeHtml(label)}</h4>
+        <p class="ib-results-economic__value">—</p>
+        <p class="ib-results-economic__date">—</p>
+        <p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>
+      </article>`
+    )
+    .join('');
+
+  return `
+    <section
+      class="ib-results-economic__card ib-results-economic__card--fallback"
+      aria-label="${escapeHtml(CARD_TITLE)}"
+      data-results-economic-card
+      data-results-economic-state="fallback"
+    >
+      <header class="ib-results-economic__head">
+        <h3>${escapeHtml(CARD_TITLE)}</h3>
+        <p class="ib-results-economic__subtitle">${escapeHtml(CARD_SUBTITLE)}</p>
+      </header>
+      <p class="ib-results-economic__fallback">${escapeHtml(FALLBACK_MESSAGE)}</p>
+      <div class="ib-results-economic__grid">${items}</div>
+    </section>`;
+}
+
+export function renderResultsEconomicSkeletonHtml(preset) {
+  if (usesHomeLayout(preset)) return renderHomeStyleSkeletonHtml(preset);
+
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  const items = indicators
+    .map(
+      () => `
+      <div class="ib-results-economic__item ib-results-economic__item--skeleton" aria-hidden="true">
+        <span class="ib-results-economic__skeleton-label"></span>
+        <span class="ib-results-economic__skeleton-value"></span>
+        <span class="ib-results-economic__skeleton-date"></span>
+      </div>`
+    )
+    .join('');
+
+  return `
+    <section
+      class="ib-results-economic__card"
+      aria-label="${escapeHtml(CARD_TITLE)} yükleniyor"
+      data-results-economic-state="loading"
+    >
+      <header class="ib-results-economic__head">
+        <h3>${escapeHtml(CARD_TITLE)}</h3>
+        <p class="ib-results-economic__subtitle">${escapeHtml(CARD_SUBTITLE)}</p>
+      </header>
+      <div class="ib-results-economic__grid">${items}</div>
+    </section>`;
+}
+
+/**
+ * @param {HTMLElement | null} root — sonuç v2 kökü ([data-results-economic-mount] içerir)
+ * @param {'finansman'|'konut'|'auto'|'tatil'|'sigorta'} preset
+ */
+export async function hydrateResultsEconomicIndicators(root, preset) {
+  if (!root || !resolvePreset(preset)) return;
+
+  const mount = root.querySelector('[data-results-economic-mount]');
+  if (!mount || mount.querySelector('[data-results-economic-card]')) return;
+
+  mount.hidden = false;
+  mount.setAttribute('aria-busy', 'true');
+  mount.innerHTML = renderResultsEconomicSkeletonHtml(preset);
+
+  try {
+    const res = await fetch('/api/evds-snapshot', { credentials: 'same-origin' });
+    const body = await res.json().catch(() => ({}));
+    const data = body?.data;
+    const indicators = resolvePreset(preset);
+
+    if (!res.ok || !body?.ok || !data || !hasAnyPresetValue(indicators, data.rates)) {
+      mount.innerHTML = renderResultsEconomicFallbackHtml(preset);
+      mount.removeAttribute('aria-busy');
+      return;
+    }
+
+    mount.innerHTML = renderResultsEconomicCardHtml(data, preset);
+    mount.removeAttribute('aria-busy');
+  } catch {
+    mount.innerHTML = renderResultsEconomicFallbackHtml(preset);
+    mount.removeAttribute('aria-busy');
+  }
+}

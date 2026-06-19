@@ -1,4 +1,6 @@
 import {
+  GENERAL_PLATFORM_CTA_HREF,
+  GENERAL_PLATFORM_CTA_LABEL,
   blogPostPath,
   excerptText,
   fetchActiveAnnouncements,
@@ -6,18 +8,31 @@ import {
   fetchPublicCampaigns,
   fetchPublishedPosts,
   formatContentDate,
+  getGuideCategory,
+  GUIDE_CATEGORIES,
+  blogListHref,
+  blogCategoryFromSearch,
   renderContentEmpty
 } from './public-content.js';
 import { escapeHtml } from '../../core/security.js';
+
+function resolveActiveBlogCategory(input = '') {
+  const raw = String(input || '');
+  if (raw.includes('category=') || raw.includes('kategori=') || raw.startsWith('?')) {
+    return blogCategoryFromSearch(raw);
+  }
+  if (!raw) return '';
+  return getGuideCategory(raw)?.id || '';
+}
 
 function renderListCard({ kicker, title, excerpt, meta, href, cta = 'Oku' }) {
   return `
     <article class="ib-content-card">
       ${kicker ? `<span class="ib-content-card-kicker">${escapeHtml(kicker)}</span>` : ''}
-      <h3><a href="${escapeHtml(href)}">${escapeHtml(title)}</a></h3>
+      <h3><a href="${escapeHtml(href)}" data-full-page="1">${escapeHtml(title)}</a></h3>
       ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
       ${meta ? `<p class="ib-content-card-meta text-muted-sm">${escapeHtml(meta)}</p>` : ''}
-      <a class="ib-content-card-link" href="${escapeHtml(href)}">${escapeHtml(cta)} →</a>
+      <a class="ib-content-card-link" href="${escapeHtml(href)}" data-full-page="1">${escapeHtml(cta)} →</a>
     </article>`;
 }
 
@@ -99,7 +114,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
             })
           )
           .join('')
-      : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.')
+      : renderContentEmpty('Henüz duyuru yok. Karar rehberleri /rehber/ adresinde.')
   );
 
   mountPreviewList(
@@ -135,7 +150,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
             })
           )
           .join('')
-      : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.')
+      : renderContentEmpty('Blog yazıları yükleniyor. SEO rehberleri: /rehber/')
   );
 
   window.lucide?.createIcons?.();
@@ -175,7 +190,7 @@ export async function renderCampaignsPage(root = document) {
           <h2>${escapeHtml(item.title)}</h2>
           <p>${escapeHtml(item.summary)}</p>
           ${item.ends_at ? `<p class="ib-content-card-meta text-muted-sm">Geçerlilik: ${escapeHtml(formatContentDate(item.ends_at))}</p>` : ''}
-          <a class="btn btn-primary" href="${escapeHtml(item.cta_href || '/auto/')}">${escapeHtml(item.cta_label || 'Detay')}</a>
+          <a class="btn btn-primary" href="${escapeHtml(item.cta_href || GENERAL_PLATFORM_CTA_HREF)}">${escapeHtml(item.cta_label || 'Detay')}</a>
         </article>`
         )
         .join('')}</div>`
@@ -183,25 +198,48 @@ export async function renderCampaignsPage(root = document) {
   window.lucide?.createIcons?.();
 }
 
-export async function renderBlogPage(root = document) {
+export async function renderBlogPage(root = document, categoryFilter = '') {
   const list = root.querySelector('#page-blog [data-content-list="blog"]');
+  const filterBar = root.querySelector('#page-blog [data-blog-category-filter]');
   if (!list) return;
+
+  const activeCategory = resolveActiveBlogCategory(categoryFilter);
+
+  if (filterBar) {
+    filterBar.innerHTML = `
+      <div class="ib-guides-tabs ib-blog-filter-tabs" role="tablist" aria-label="Blog kategorileri">
+        <a class="ib-guides-tab${activeCategory ? '' : ' is-active'}" href="${escapeHtml(blogListHref())}" data-native-route>Tümü</a>
+        ${GUIDE_CATEGORIES.map(
+          (cat) => `
+          <a
+            class="ib-guides-tab${activeCategory === cat.id ? ' is-active' : ''}"
+            href="${escapeHtml(blogListHref(cat.id))}"
+            data-native-route
+          >${escapeHtml(cat.label)}</a>`
+        ).join('')}
+      </div>`;
+  }
+
   list.innerHTML = '<p class="text-muted-sm">Yükleniyor…</p>';
-  const posts = await fetchPublishedPosts(40);
+  const posts = await fetchPublishedPosts(40, activeCategory);
   list.innerHTML = posts.length
     ? `<div class="ib-content-list-grid">${posts
         .map((post) =>
           renderListCard({
-            kicker: 'Blog',
+            kicker: getGuideCategory(post.category)?.label || 'Blog',
             title: post.title,
-            excerpt: excerptText(post.body, 180),
+            excerpt: post.excerpt || excerptText(post.body, 180),
             meta: formatContentDate(post.created_at),
             href: blogPostPath(post.slug),
             cta: 'Yazıyı oku'
           })
         )
         .join('')}</div>`
-    : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.');
+    : renderContentEmpty(
+        activeCategory
+          ? `${getGuideCategory(activeCategory)?.label || 'Bu kategori'} için henüz yayınlanmış rehber yok. Statik rehberler: /rehber/`
+          : 'Henüz blog yazısı yok. Karar rehberleri /rehber/ adresinde ücretsiz okunabilir.'
+      );
   window.lucide?.createIcons?.();
 }
 
@@ -219,14 +257,21 @@ export async function renderBlogPostPage(root = document, slug) {
 
   document.title = `${post.title} | isteBul Blog`;
 
+  const prose = String(post.body || post.excerpt || '').trim();
+  const proseHtml = prose
+    ? `<div class="ib-content-prose">${escapeHtml(prose).replace(/\n/g, '<br>')}</div>`
+    : renderContentEmpty('Bu yazının metni henüz eklenmemiş. Kısa süre içinde güncellenecektir.');
+
   mount.innerHTML = `
     <article class="ib-content-article">
-      <p class="kicker">Blog · ${escapeHtml(formatContentDate(post.created_at))}</p>
+      <p class="kicker">${escapeHtml(getGuideCategory(post.category)?.label || 'Blog')} · ${escapeHtml(formatContentDate(post.created_at))}</p>
       <h1>${escapeHtml(post.title)}</h1>
-      <div class="ib-content-prose">${escapeHtml(post.body).replace(/\n/g, '<br>')}</div>
+      ${post.cover_image_url ? `<p class="ib-content-cover"><img src="${escapeHtml(post.cover_image_url)}" alt="" loading="lazy" decoding="async"></p>` : ''}
+      ${post.source_label ? `<p class="ib-content-card-meta text-muted-sm">Kaynak: ${post.source_url ? `<a href="${escapeHtml(post.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(post.source_label)}</a>` : escapeHtml(post.source_label)}</p>` : ''}
+      ${proseHtml}
       <p class="ib-prerender-actions">
         <a class="btn btn-outline" href="/blog" data-native-route>← Tüm yazılar</a>
-        <a class="btn btn-primary" href="/auto/" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">Ücretsiz analiz başlat</a>
+        <a class="btn btn-primary" href="${escapeHtml(getGuideCategory(post.category)?.ctaHref || GENERAL_PLATFORM_CTA_HREF)}" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">${escapeHtml(getGuideCategory(post.category)?.ctaLabel || GENERAL_PLATFORM_CTA_LABEL)}</a>
       </p>
     </article>`;
   window.lucide?.createIcons?.();
@@ -243,7 +288,7 @@ export function renderPremiumPageShell({ id, kicker, title, lead, listAttr }) {
       <div data-content-list="${escapeHtml(listAttr)}"><p class="text-muted-sm">Yükleniyor…</p></div>
       <p class="ib-content-page-back">
         <a href="/" data-native-route>← Ana sayfa</a>
-        · <a href="/auto/">Ücretsiz analiz başlat</a>
+        · <a href="/karar-asistani/">Ön değerlendirme başlat</a>
       </p>
     </div>`;
 }

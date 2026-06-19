@@ -3,12 +3,17 @@
  * Designed so a server-side PDF service can reuse buildReportHtml(pdfReportData) later.
  */
 import { escapeHtml } from '../../core/security.js';
+import { formatScoreOutOf100 } from './results-engine.js';
+import { buildPdfInsight, buildProInsight, normalizeInsightInput } from '../ai/ai-insight-engine.js';
+import { recordPdfReportHistory } from '../account/dashboard-v2-store.js';
 
 const CATEGORY_LABELS = {
   auto: 'Araç',
   konut: 'Konut',
   tatil: 'Tatil',
-  finansman: 'Finansman'
+  finansman: 'Finansman',
+  sigorta: 'Sigorta',
+  kasko: 'Kasko'
 };
 
 const DISCLAIMER =
@@ -42,9 +47,7 @@ export function formatReportMoney(value) {
  * @param {string} [label]
  */
 export function formatReportScore(value, label = '') {
-  const n = Number(value);
-  const score = Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n))) : '—';
-  const base = `${score}/100`;
+  const base = formatScoreOutOf100(value);
   return label ? `${base} (${sanitizeReportText(label)})` : base;
 }
 
@@ -57,7 +60,9 @@ export function createReportFilename(category, createdAt) {
     auto: 'arac',
     konut: 'konut',
     tatil: 'tatil',
-    finansman: 'finansman'
+    finansman: 'finansman',
+    sigorta: 'sigorta',
+    kasko: 'kasko'
   };
   const slug = slugMap[String(category || '').toLowerCase()] || 'karar';
   const date = createdAt ? new Date(createdAt) : new Date();
@@ -124,10 +129,46 @@ function buildCostRows(data) {
       { label: 'Toplam geri ödeme', value: formatReportMoney(cost.totalRepayment) },
       { label: 'Tahmini faiz maliyeti', value: formatReportMoney(cost.interestCost) },
       { label: 'Dosya/masraf tahmini', value: formatReportMoney(cost.fileFees) },
+      {
+        label: 'KKDF/BSMV tahmini',
+        value: cost.kkdfBsmvEstimate != null ? `${formatReportMoney(cost.kkdfBsmvEstimate)} (tahmini)` : '—'
+      },
+      {
+        label: 'Sigorta tahmini',
+        value: cost.insuranceEstimate != null ? `${formatReportMoney(cost.insuranceEstimate)} (tahmini)` : '—'
+      },
+      {
+        label: 'Efektif yıllık maliyet',
+        value: cost.effectiveAnnualRate != null ? `~%${cost.effectiveAnnualRate} (tahmini)` : '—'
+      },
       { label: 'İlk 12 ay ödeme yükü', value: formatReportMoney(cost.yearlyLoad) },
       {
         label: 'Gelire göre aylık yük',
         value: cost.incomeLoadPct != null ? `%${cost.incomeLoadPct}` : '—'
+      }
+    ];
+  }
+
+  if (category === 'sigorta') {
+    return [
+      { label: 'Koruma skoru', value: formatReportScore(cost.protectionScore) },
+      { label: 'Teminat yeterliliği', value: formatReportScore(cost.coverageScore) },
+      { label: 'Maliyet verimliliği', value: formatReportScore(cost.costEfficiencyScore) },
+      {
+        label: 'Tahmini yıllık prim bandı',
+        value: cost.yearlyPremium ? sanitizeReportText(cost.yearlyPremium) : '—'
+      }
+    ];
+  }
+
+  if (category === 'kasko') {
+    return [
+      { label: 'Teminat skoru', value: formatReportScore(cost.coverageScore) },
+      { label: 'Onarım riski skoru', value: formatReportScore(cost.repairRiskScore) },
+      { label: 'Prim verimliliği', value: formatReportScore(cost.premiumEfficiencyScore) },
+      {
+        label: 'Tahmini yıllık prim bandı',
+        value: cost.yearlyPremium ? sanitizeReportText(cost.yearlyPremium) : '—'
       }
     ];
   }
@@ -369,6 +410,11 @@ h2 {
   color: #9a3412;
   font-size: 0.86rem;
 }
+.note-banner--warn {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #92400e;
+}
 .disclaimer {
   margin-top: 1.5rem;
   padding-top: 12px;
@@ -389,6 +435,34 @@ li + li { margin-top: 0.25rem; }
 }
 `;
 
+function resolvePdfInsightSections(data) {
+  if (data.pdfInsight && data.pdfInsight.executiveSummary) return data.pdfInsight;
+  const planTier = data.planTier || 'guest';
+  const input = normalizeInsightInput({
+    vertical: data.category,
+    answers: data.profile || {},
+    scores: {
+      decision: data.decisionScore,
+      confidence: data.confidenceScore,
+      overallRisk: data.overallRisk,
+      scoreLabel: data.scoreLabel,
+      factors: data.scoreFactors
+    },
+    costs: data.totalCost,
+    risks: data.riskAnalysis,
+    strengths: data.strengths,
+    weaknesses: data.weaknesses || data.cautions,
+    alternatives: data.alternatives,
+    recommendation: {
+      level: data.recommendationLevel,
+      label: data.recommendationLabel
+    },
+    planTier,
+    locale: 'tr-TR'
+  });
+  return buildPdfInsight(input);
+}
+
 /**
  * @param {object} [pdfReportData]
  */
@@ -397,6 +471,28 @@ export function buildReportHtml(pdfReportData = {}) {
   const category = String(data.category || 'karar').toLowerCase();
   const label = categoryLabel(category);
   const cost = data.totalCost && typeof data.totalCost === 'object' ? data.totalCost : {};
+  const pdfInsight = resolvePdfInsightSections(data);
+  const isProPdf = String(data.planTier || 'guest').toLowerCase() === 'pro';
+  const proInsight = isProPdf ?
+    buildProInsight(
+      normalizeInsightInput({
+        vertical: category,
+        answers: data.profile || {},
+        scores: {
+          decision: data.decisionScore,
+          confidence: data.confidenceScore,
+          overallRisk: data.overallRisk,
+          factors: data.scoreFactors
+        },
+        costs: cost,
+        risks: data.riskAnalysis,
+        alternatives: data.alternatives,
+        planTier: 'pro'
+      })
+    )
+  : null;
+  const executiveText =
+    sanitizeReportText(data.executiveSummary || pdfInsight.executiveSummary || '');
   const estimateNote = cost.isEstimate
     ? sanitizeReportText(cost.estimateNote || 'Bazı tutarlar tahmini model ile hesaplanmıştır; güncel teklif ile doğrulanmalıdır.')
     : '';
@@ -405,6 +501,8 @@ export function buildReportHtml(pdfReportData = {}) {
     Array.isArray(data.weaknesses) && data.weaknesses.length ?
       data.weaknesses
     : Array.isArray(data.cautions) ? data.cautions : [];
+
+  const engineWarnings = Array.isArray(data.warnings) ? data.warnings.filter(Boolean) : [];
 
   const title = `isteBul ${label} Karar Raporu`;
   const filename = createReportFilename(category, data.generatedAt);
@@ -434,6 +532,15 @@ export function buildReportHtml(pdfReportData = {}) {
     <main class="report-body">
       ${estimateNote ? `<p class="note-banner"><strong>Veri notu:</strong> ${estimateNote}</p>` : ''}
 
+      ${
+        engineWarnings.length ?
+          `<section aria-label="Risk uyarıları">
+        <h2>Risk Uyarıları</h2>
+        <div class="note-banner note-banner--warn">${listHtml(engineWarnings)}</div>
+      </section>`
+        : ''
+      }
+
       <section aria-label="Özet skorlar">
         <h2>Özet Skorlar</h2>
         <div class="kpi-row">
@@ -452,10 +559,54 @@ export function buildReportHtml(pdfReportData = {}) {
         </div>
       </section>
 
-      <section aria-label="Executive Summary">
-        <h2>AI Executive Summary</h2>
+      <section aria-label="Yönetici özeti">
+        <h2>Yönetici özeti</h2>
         <div class="exec">
-          <p>${sanitizeReportText(data.executiveSummary || 'Özet henüz oluşturulmadı.')}</p>
+          <p>${executiveText || 'Özet henüz oluşturulmadı.'}</p>
+          ${
+            proInsight ?
+              `<p><strong>Plus:</strong> ${sanitizeReportText(proInsight.criticalReason || '')}</p>`
+            : ''
+          }
+        </div>
+      </section>
+
+      ${
+        isProPdf && proInsight ?
+          `<section aria-label="Kritik riskler">
+        <h2>Kritik riskler</h2>
+        ${listHtml([proInsight.mainRisk, ...(pdfInsight.riskWarnings || [])].filter(Boolean).slice(0, 4))}
+      </section>
+      <section aria-label="Alternatif senaryo">
+        <h2>Alternatif senaryo</h2>
+        <div class="exec"><p>${sanitizeReportText(proInsight.alternativeScenario || '—')}</p></div>
+      </section>
+      <section aria-label="Maliyet kırılımı">
+        <h2>Maliyet kırılımı</h2>
+        <div class="exec"><p>${sanitizeReportText(proInsight.costPressure || pdfInsight.costCommentary || '—')}</p></div>
+      </section>`
+        : ''
+      }
+
+      <section aria-label="Karar gerekçeleri">
+        <h2>Karar gerekçeleri</h2>
+        ${listHtml(pdfInsight.decisionReasons, true)}
+      </section>
+
+      <section aria-label="Risk ve uyarılar">
+        <h2>Risk ve uyarılar</h2>
+        ${listHtml(pdfInsight.riskWarnings)}
+      </section>
+
+      <section aria-label="Önerilen aksiyonlar">
+        <h2>Önerilen aksiyonlar</h2>
+        ${listHtml(pdfInsight.actions, true)}
+      </section>
+
+      <section aria-label="Maliyet yorumu">
+        <h2>Maliyet yorumu</h2>
+        <div class="exec">
+          <p>${sanitizeReportText(pdfInsight.costCommentary || '—')}</p>
         </div>
       </section>
 
@@ -485,8 +636,12 @@ export function buildReportHtml(pdfReportData = {}) {
       </section>
 
       <section aria-label="Sonraki Adımlar">
-        <h2>Sonraki Adımlar</h2>
-        ${listHtml(data.nextSteps, true)}
+        <h2>Sonraki adımlar</h2>
+        ${
+          isProPdf && proInsight?.nextSteps?.length ?
+            listHtml(proInsight.nextSteps, true)
+          : listHtml(data.nextSteps, true)
+        }
       </section>
 
       <p class="disclaimer">${sanitizeReportText(DISCLAIMER)}</p>
@@ -535,6 +690,15 @@ export function downloadDecisionReport(pdfReportData = {}, options = {}) {
         options.onComplete?.();
       };
       setTimeout(trigger, 400);
+      try {
+        const userId =
+          data.userId ||
+          (typeof window !== 'undefined' ? window.app?.currentUser?.id : null) ||
+          null;
+        recordPdfReportHistory({ ...data, filename }, userId);
+      } catch {
+        /* PDF geçmişi kaydı dashboard'u kırmamalı */
+      }
       return { ok: true, method: 'print-dialog', filename };
     }
   } catch {

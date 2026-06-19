@@ -79,6 +79,7 @@
 | Production observability | `docs/PRODUCTION_OBSERVABILITY.md` |
 | **Production resilience / BCP** | `docs/PRODUCTION_RESILIENCE_AUDIT.md` |
 | Resilience runbook (ops) | `docs/RESILIENCE_RUNBOOK.md` |
+| **Supabase Backup/PITR Verification evidence** | `docs/SUPABASE_BACKUP_PITR_VERIFICATION.md` · Pending manual evidence |
 | SQL views (optional) | `supabase/migrations/20260528_investor_metrics_views.sql` |
 
 **Export commands:**

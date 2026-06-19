@@ -1,6 +1,7 @@
 // API utilities
 import { supabase } from './supabase.js';
 import config from './config.js';
+import { postAiProxy } from './ai-proxy-client.js';
 
 export class API {
     static sanitizeSearchTerm(value) {
@@ -131,15 +132,34 @@ export class API {
     static async getSubscription(userId) {
         const { data, error } = await supabase
             .from('subscriptions')
-            .select('status, current_period_start, current_period_end, cancel_at_period_end, stripe_price_id, updated_at')
+            .select(
+                'status, current_period_start, current_period_end, cancel_at_period_end, stripe_price_id, provider, plan_code, updated_at'
+            )
             .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'past_due', 'canceled'])
+            .in('status', ['active', 'trialing', 'past_due', 'canceled', 'cancelled'])
             .order('updated_at', { ascending: false })
             .limit(1)
             .maybeSingle();
 
         if (error) throw error;
         return data;
+    }
+
+    static async getUserEntitlements(userId) {
+        const { data, error } = await supabase
+            .from('user_entitlements')
+            .select('entitlement_code, status, expires_at, created_at, source_order_id')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                return [];
+            }
+            throw error;
+        }
+        return data || [];
     }
 
     // Profile API
@@ -189,102 +209,23 @@ export class API {
         return data || [];
     }
 
-    // Listings API
+    // Listings API (legacy `listings` table — retired for public SPA; use decision-options-api.js)
+    /** @deprecated Public catalog uses ai_listings via js/core/decision-options-api.js */
     static async getListings(options = {}) {
-        const {
-            category,
-            search,
-            province,
-            district,
-            location,
-            minPrice,
-            maxPrice,
-            vehicleBrand,
-            propertyType,
-            vacationType,
-            limit = config.ui.itemsPerPage,
-            offset = 0,
-            userId,
-            status = 'active'
-        } = options;
-
-        let query = supabase
-            .from('listings')
-            .select('*')
-            .eq('status', status)
-            .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1);
-
-        if (category) {
-            query = query.eq('category', category);
-        }
-
-        if (Number.isFinite(Number(minPrice)) && Number(minPrice) > 0) {
-            query = query.gte('price', Number(minPrice));
-        }
-
-        if (Number.isFinite(Number(maxPrice)) && Number(maxPrice) > 0) {
-            query = query.lte('price', Number(maxPrice));
-        }
-
-        const locationTerm = district || province || location;
-        if (locationTerm) {
-            const safeLocation = this.sanitizeSearchTerm(locationTerm);
-            if (safeLocation) {
-                query = query.ilike('location', '%' + safeLocation + '%');
-            }
-        }
-
-        const detailTerm = vehicleBrand || propertyType || vacationType;
-        if (detailTerm) {
-            const safeDetail = this.sanitizeSearchTerm(detailTerm);
-            if (safeDetail) {
-                query = query.or('title.ilike.%' + safeDetail + '%,description.ilike.%' + safeDetail + '%');
-            }
-        }
-
-        if (search) {
-            const safeSearch = this.sanitizeSearchTerm(search);
-            if (safeSearch) {
-                query = query.or(`title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
-            }
-        }
-
-        if (userId) {
-            query = query.eq('user_id', userId);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        return data;
+        console.warn('[isteBul] API.getListings is deprecated for public UI — use loadDecisionOptions()');
+        return [];
     }
 
+    /** @deprecated Use getDecisionOptionById from decision-options-api.js */
     static async getListing(id) {
-        const { data, error } = await supabase
-            .from('listings')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) throw error;
-        return data;
+        console.warn('[isteBul] API.getListing is deprecated — use getDecisionOptionById()');
+        return null;
     }
 
+    /** @deprecated Use submitUserListingToAiEngine via ai-listings-intake */
     static async createListing(listingData) {
-        const safeListingData = this.sanitizeListingUpdates(listingData);
-        if (listingData.user_id) {
-            safeListingData.user_id = listingData.user_id;
-        }
-
-        const { data, error } = await supabase
-            .from('listings')
-            .insert([safeListingData])
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        console.warn('[isteBul] API.createListing is deprecated — use ai-listings-intake edge');
+        throw new Error('Legacy listings table retired — use Karar Merkezi intake');
     }
 
     static async updateListing(id, updates) {
@@ -441,19 +382,24 @@ export class API {
     static async askAI(prompt, context = {}) {
         const { data: { session } } = await supabase.auth.getSession();
 
-        const headers = {
-            'Content-Type': 'application/json'
-        };
+        const headers = {};
 
         if (session?.access_token) {
             headers.Authorization = `Bearer ${session.access_token}`;
         }
 
-        return this.request(config.api.endpoints.aiProxy, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ prompt, context })
+        const proxy = await postAiProxy({
+            prompt,
+            context,
+            headers
         });
+
+        if (!proxy.ok) {
+            console.error(`API request failed: ${config.api.endpoints.aiProxy}`, proxy.error);
+            throw new Error(`HTTP error! status: ${proxy.status}`);
+        }
+
+        return proxy.data;
     }
 }
 

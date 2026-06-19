@@ -620,6 +620,25 @@ body.nav-signed-in .nav-user {
     display: flex !important;
     flex-shrink: 0;
     min-width: 0;
+    position: relative;
+    z-index: 1300;
+    overflow: visible;
+}
+
+body.nav-signed-in .nav-container,
+body.nav-signed-in #main-nav.navbar {
+    overflow: visible;
+}
+
+body.nav-signed-in .nav-controls {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0.45rem;
+    min-width: 0;
+    overflow: visible;
+    position: relative;
+    z-index: 1200;
 }
 
 body.nav-signed-in .nav-container {
@@ -657,14 +676,6 @@ body.nav-signed-in .nav-menu::-webkit-scrollbar {
 body.nav-signed-in .nav-links-group {
     flex-wrap: nowrap;
     flex-shrink: 0;
-}
-
-body.nav-signed-in .nav-controls {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 0.45rem;
-    min-width: 0;
 }
 
 body.nav-signed-in .nav-dashboard-quick {
@@ -726,7 +737,26 @@ body.ib-enterprise.nav-signed-in .nav-menu.show {
     }
 
     body.nav-signed-in .nav-container {
-        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-columns: minmax(0, 1fr) auto auto auto !important;
+    }
+
+    body.nav-signed-in .nav-user {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    body.nav-signed-in .nav-controls {
+        display: flex;
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+        gap: 0.35rem;
+    }
+
+    body.nav-signed-in .nav-toggle {
+        grid-column: 4;
+        grid-row: 1;
     }
 
     body.nav-signed-in .nav-menu {

@@ -64,8 +64,8 @@ export function renderOpsAiAssistantPage(brief, escapeHtml, ui = {}) {
 
     <div class="ib-ops-ai-toolbar">
       <button type="button" class="btn btn-primary btn-sm" id="ops-ai-request-narration">AI özet üret (Groq)</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Ops Command Center</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="dashboard-ceo">CEO Dashboard</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="dashboard-ceo">CEO Özeti</button>
     </div>
 
     ${aiBlock}

@@ -1,6 +1,6 @@
 # Compliance Readiness Audit — KVKK / GDPR
 
-**Tarih:** 2026-05-23  
+**Tarih:** 2026-06-01 (güncellendi)  
 **Kapsam:** isteBul web uygulaması (TR odaklı, global expansion hazırlığı)  
 **Amaç:** Hukuki riskleri azaltmak — mevcut kontroller, boşluklar, öncelikli aksiyonlar.
 
@@ -14,15 +14,15 @@
 
 | Alan | Hazırlık | Skor (1–5) |
 |------|----------|------------|
-| KVKK aydınlatma | Kısmi — sayfa var, eksik zorunlu unsurlar | 2 |
+| KVKK aydınlatma | İyi — `/kvkk.html` + anchor’lar, veri sorumlusu, retention tablosu | 4 |
 | GDPR (AB kullanıcı) | Düşük — EN metin / SCC yok | 1 |
-| Cookie consent | Orta — banner + analytics gate | 3 |
+| Cookie consent | İyi — ana SPA + kurumsal statik banner, kategori tablosu | 4 |
 | Privacy policy | Kısmi | 2 |
 | Terms | Kısmi — disclaimer var, B2C eksik | 2 |
 | Lead consent | Orta — UI checkbox + server doğrulama (bu PR) | 3 |
 | Marketing consent | Zayıf → iyileştirme (checkbox + local only) | 2 |
 | Data retention | Dokümante (schedule); otomasyon yok | 2 |
-| User deletion | Manuel runbook; self-service yok | 2 |
+| User deletion | Profil → KVKK silme talebi (mailto); otomasyon yok | 3 |
 | Subprocessors | `SUBPROCESSORS.md` | 3 |
 
 **Genel verdict:** **Pilot / launch TR için temel farkındalık var**; ölçek ve AB trafiği öncesi **hukuk review + DPA + tam aydınlatma + silme SLA** şart.

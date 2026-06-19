@@ -12,10 +12,19 @@ import {
   riskLevelToTone,
   safeTrackEvent
 } from '../results/results-engine.js';
-import { downloadDecisionReport } from '../results/pdf-report.js';
+import { gatePdfDownload } from '../billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../billing/paywall-v1.js';
+import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  markInsightSummaryUnavailable,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
+  renderRiskAnalysisHtml,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
 import { mountResultsV3 } from '../results/results-v3-ui.js';
@@ -69,6 +78,21 @@ export function computeConfidenceScoreLegacy(state = {}) {
  */
 export function computeDecisionScore(state = {}, metrics = {}) {
   return buildDecisionIntelligenceResult('konut', state, metrics).decisionScore;
+}
+
+/**
+ * metrics.score ve scoreBand'ı V3 decisionScore ile senkronize eder (canonical kaynak).
+ * @param {object} state
+ * @param {object} metrics — yerinde güncellenir
+ * @param {(score: number) => object} [scoreBandFn]
+ */
+export function syncCanonicalDecisionScore(state, metrics, scoreBandFn) {
+  const decisionScore = computeDecisionScore(state, metrics);
+  metrics.score = decisionScore;
+  if (typeof scoreBandFn === 'function') {
+    metrics.scoreBand = scoreBandFn(decisionScore);
+  }
+  return decisionScore;
 }
 
 function computeDecisionScoreLegacy(state = {}, metrics = {}) {
@@ -209,7 +233,8 @@ export function buildTotalCostView(state = {}, metrics = {}) {
   const loanNeed = safeNumber(o.principal) || Math.max(homePrice - down, 0);
   const monthly = safeNumber(o.monthlyPayment);
   const titleFees = safeNumber(o.titleFees) || Math.round(homePrice * 0.045);
-  const duesMonthly = safeNumber(state.duesExpectation || state.dues);
+  const duesMonthly =
+    safeNumber(state.dues) || safeNumber(state.duesExpectation) || safeNumber(o.duesMonthly);
   const yearlyLoad = monthly * 12 + duesMonthly * 12;
   const firstYear = homePrice * 0.02 + titleFees + yearlyLoad + down * 0.05;
 
@@ -287,6 +312,73 @@ export function buildAlternatives(scenarios = []) {
   return [...fromScenarios, ...defaults].slice(0, 3);
 }
 
+function normalizeAlternatives(alternatives = [], scenarios = []) {
+  return (alternatives || []).map((alt, index) => {
+    const scenario = scenarios[index] || {};
+    const fromEffects = [scenario.monthlyEffect, scenario.riskEffect, scenario.totalEffect]
+      .filter(Boolean)
+      .join(' · ');
+    const description =
+      String(alt.description || '').trim() ||
+      fromEffects ||
+      'Alternatif senaryo — profilinize göre değerlendirin.';
+    return {
+      ...alt,
+      description,
+      meta: alt.meta || (scenario.score != null ? `${scenario.score}/100` : alt.meta || '')
+    };
+  });
+}
+
+export function renderKonutWarningsHtml(warnings = [], esc = escapeHtml) {
+  const items = (warnings || []).filter(Boolean);
+  if (!items.length) return '';
+  return `
+    <section class="konut-v2-warnings" aria-label="Risk uyarıları">
+      <h3>Risk Uyarıları</h3>
+      <ul class="konut-v2-warnings__list">
+        ${items.map((w) => `<li>${esc(w)}</li>`).join('')}
+      </ul>
+    </section>`;
+}
+
+/**
+ * Partner CTA metni — satın alma profilinde fırsat, diğerlerinde danışman/partner.
+ */
+export function resolveKonutPartnerCtaLabel(state = {}) {
+  const purpose = String(state.purchasePurpose || '');
+  if (purpose.includes('Yatırım') || purpose.includes('Kiralamak')) {
+    return 'Danışman/partner teklifi al';
+  }
+  return 'Bana uygun konut fırsatlarını göster';
+}
+
+/**
+ * V2 sonuç aksiyon çubuğu (legacy .housing-result-actions karşılığı).
+ */
+export function renderKonutActionsBarHtml({ userId = null, state = {}, esc = escapeHtml } = {}) {
+  const partnerLabel = resolveKonutPartnerCtaLabel(state);
+  const loginHint = userId
+    ? ''
+    : `<p class="konut-v2-login-hint"><a href="/profil/?returnTo=/konut/">Giriş yapın</a> — raporunuzu profilinizde saklayın.</p>`;
+
+  return `
+    <div class="konut-v2-actions" aria-label="Sonuç aksiyonları">
+      <button type="button" class="btn secondary konut-v2-pdf" data-konut-v2-pdf>
+        PDF olarak kaydet
+      </button>
+      <button type="button" class="btn secondary konut-v2-restart" data-konut-v2-restart>
+        Tekrar analiz yap
+      </button>
+      <button type="button" class="btn secondary konut-v2-partner" data-konut-v2-partner>
+        ${esc(partnerLabel)}
+      </button>
+      ${loginHint}
+      <p class="konut-v2-action-feedback" data-konut-v2-action-feedback hidden></p>
+      <p class="konut-v2-pdf-hint" data-konut-v2-pdf-hint hidden></p>
+    </div>`;
+}
+
 function buildNextSteps(state = {}, metrics = {}, riskAnalysis = []) {
   const highRisks = riskAnalysis.filter((r) => r.level === 'yüksek').map((r) => r.key);
   const steps = [
@@ -310,62 +402,6 @@ function buildNextSteps(state = {}, metrics = {}, riskAnalysis = []) {
   return steps.slice(0, 6);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const tone =
-    ctx.decisionScore >= 70 && ctx.overallRisk !== 'Yüksek'
-      ? 'mantıklı'
-      : ctx.decisionScore >= 55
-        ? 'koşullu olarak değerlendirilebilir'
-        : 'riskli';
-
-  return [
-    `${ctx.locationLabel} için konut kararınız, bütçe (${ctx.budgetLabel}), ${ctx.homeType || 'konut tipi'} ve ${ctx.purpose || 'kullanım amacı'} birlikte değerlendirildiğinde ${tone} görünmektedir.`,
-    `Karar skorunuz ${ctx.decisionScore}/100 (${ctx.scoreLabel}); güven skorunuz ${ctx.confidenceScore}/100. Genel risk seviyesi: ${ctx.overallRisk}.`,
-    ctx.strengths?.[0] ? `Güçlü yön: ${ctx.strengths[0]}` : 'Lokasyon ve bütçe uyumu kararın ana dayanağıdır.',
-    ctx.weaknesses?.[0] ? `Kritik dikkat noktası: ${ctx.weaknesses[0]}` : 'Tapu, ekspertiz ve finansman koşulları nihai kararı belirler.',
-    ctx.decisionScore < 55 || ctx.overallRisk === 'Yüksek'
-      ? 'Bu aşamada beklemek veya alternatif segment/lokasyon senaryolarını karşılaştırmak daha güvenli olabilir.'
-      : 'Şartlar uygunsa ekspertiz ve kredi ön onayı sonrası teklif aşamasına geçilebilir.',
-    'Bu özet bilgilendirme amaçlıdır; bağlayıcı değerlendirme veya satın alma taahhüdü değildir.'
-  ].join(' ');
-}
-
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel konut/karar danismani gibi Turkce 4-6 cumle yaz.',
-    'Sorular: Bu konut karari mantikli mi? Hangi sartlarda alinmali? Ne zaman beklenmeli? En kritik dikkat noktasi ne?',
-    'Kesin tavsiye verme; tahmini analiz dili.',
-    `Lokasyon: ${ctx.locationLabel}`,
-    `Butce: ${ctx.budgetLabel}`,
-    `Karar skoru: ${ctx.decisionScore}/100`,
-    `Guven: ${ctx.confidenceScore}/100`,
-    `Risk: ${ctx.overallRisk}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Zayif: ${(ctx.weaknesses || []).slice(0, 2).join('; ')}`
-  ].join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'konut-decision-results-v2' } }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
 /**
  * Tam result payload (PDF ve ileride API için).
  */
@@ -373,16 +409,24 @@ export function buildKonutResultsV2Payload({
   state = {},
   metrics = {},
   scenarios = [],
-  attention = []
+  attention = [],
+  evdsRates = null
 }) {
-  const intel = buildDecisionIntelligenceResult('konut', state, metrics, { scenarios, attention });
+  const intel = buildDecisionIntelligenceResult('konut', state, metrics, {
+    scenarios,
+    attention
+  });
+  const evdsRiskLayer = buildEvdsRiskLayer('konut', evdsRates || {});
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
   const riskAnalysis = intel.riskAnalysis;
   const totalCost = buildTotalCostView(state, metrics);
   const strengths = buildStrengths(state, metrics);
   const weaknesses = buildWeaknesses(attention, metrics);
-  const alternatives = intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios);
+  const alternatives = normalizeAlternatives(
+    intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios),
+    scenarios
+  );
   const nextSteps = intel.nextSteps;
   const overallRisk = intel.overallRisk;
 
@@ -391,8 +435,23 @@ export function buildKonutResultsV2Payload({
     ? formatTryAmount(state.totalBudget)
     : 'Belirtilmedi';
 
+  const { planTier } = getResultsPlanContext();
+  const insightInput = buildInsightInputFromIntelligence('konut', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses,
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
+    costs: {
+      budget: state.totalBudget,
+      monthlyPayment: totalCost.monthlyPayment,
+      duesMonthly: totalCost.duesMonthly,
+      dti: metrics.dti
+    }
+  });
+
   const pdfReportData = buildPdfReportData({
     category: 'konut',
+    planTier,
     location: locationLabel,
     decisionScore,
     scoreLabel: intel.scoreLabel,
@@ -437,8 +496,18 @@ export function buildKonutResultsV2Payload({
     locationLabel,
     budgetLabel,
     homeType: state.homeType || '—',
-    purpose: state.purchasePurpose || '—'
+    purpose: state.purchasePurpose || '—',
+    primaryTitle: `${state.homeType || 'Konut'} · ${locationLabel}`,
+    primaryImageUrl: '/assets/images/demo/kadikoy-daire.svg',
+    planTier,
+    insightInput,
+    insight: buildDecisionInsight(insightInput),
+    evdsRiskLayer
   };
+}
+
+function isKonutRentalPurpose(purpose = '') {
+  return String(purpose || '').includes('Kiralamak');
 }
 
 function renderKonutResultsV2Html(model) {
@@ -447,24 +516,77 @@ function renderKonutResultsV2Html(model) {
   const costNote = cost.isEstimate
     ? `<p class="konut-v2-estimate-note">${esc(cost.estimateNote || 'Tahmini model')}</p>`
     : '';
+  const isRental = isKonutRentalPurpose(model.purpose);
+
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'housing',
+    title: isRental ? 'Konut Kiralama Öneriniz' : 'Konut Alım Öneriniz',
+    subtitle: isRental
+      ? 'Profilinize göre en uygun kiralama senaryosu belirlendi.'
+      : 'Profilinize göre en uygun konut senaryosu belirlendi.',
+    recommendation: {
+      kicker: isRental ? 'Önerilen Kiralık' : 'Önerilen Konut',
+      title: model.primaryTitle || `${model.homeType || 'Konut'} · ${model.locationLabel || 'Seçilen bölge'}`,
+      subtitle: model.purpose !== '—' ? model.purpose : '',
+      badge: model.recommendationLabel || 'En Uygun',
+      badgeTone: 'success',
+      imageUrl: model.primaryImageUrl || '/assets/images/demo/kadikoy-daire.svg',
+      imageAlt: model.primaryTitle || 'Konut önerisi'
+    },
+    specs: isRental
+      ? [
+          { label: 'Aylık kira bütçesi', value: model.budgetLabel || '—' },
+          { label: 'Konut tipi', value: model.homeType || '—' },
+          { label: 'Lokasyon', value: model.locationLabel || '—' },
+          { label: 'Aidat (aylık tahmini)', value: formatTryAmount(cost.duesMonthly) },
+          { label: 'İlk yıl toplam yük', value: formatTryAmount(cost.yearlyLoad) },
+          { label: 'Genel risk', value: model.overallRisk || '—' }
+        ]
+      : [
+          { label: 'Bütçe', value: model.budgetLabel || '—' },
+          { label: 'Aylık ödeme', value: formatTryAmount(cost.monthlyPayment) },
+          { label: 'Peşinat', value: formatTryAmount(cost.downPayment) },
+          { label: 'Kredi ihtiyacı', value: formatTryAmount(cost.loanNeed) },
+          { label: 'İlk yıl toplam', value: formatTryAmount(cost.firstYearTotal) },
+          { label: 'Genel risk', value: model.overallRisk || '—' }
+        ],
+    score: model.decisionScore,
+    scoreLabel: model.scoreLabel || 'Uygunluk Skoru',
+    scoreTone: scoreToneFromLabel(model.scoreLabel),
+    evdsMountClass: 'konut-v2-evds-mount ib-results-economic--home'
+  });
+
+  const heroBadgesHtml = `
+    <div class="konut-v2-hero-badges" aria-label="Skor özeti">
+      <span class="konut-v2-hero-badge konut-v2-hero-badge--score">
+        Karar Skoru <strong>${esc(String(model.decisionScore))}/100</strong>
+      </span>
+      <span class="konut-v2-hero-badge konut-v2-hero-badge--confidence">
+        Güven <strong>${esc(String(model.confidenceScore))}/100</strong>
+      </span>
+    </div>`;
 
   return `
-    <section class="konut-v2-panel" aria-label="Konut Decision Results V2">
-      <header class="konut-v2-hero">
-        <p class="konut-v2-kicker">AI destekli konut karar analizi</p>
-        <h2 class="konut-v2-title">Konut karar raporu</h2>
-        <p class="konut-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
-        ${model.recommendationLabel ? `<p class="konut-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
+    <section class="konut-v2-panel" aria-label="Konut karar raporu özeti">
+      <div class="konut-v2-hero-wrap">
+        ${heroHtml}
+        ${heroBadgesHtml}
+      </div>
 
-      ${renderScoreFactorsHtml(model.scoreFactors, 'konut-v2')}
+      ${renderKonutWarningsHtml(model.warnings, esc)}
 
-      <div class="konut-v2-kpis">
-        <article class="konut-v2-kpi konut-v2-kpi--score">
-          <span>Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="konut-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
+      <div id="ib-results-detail"></div>
+
+      ${
+        model.scoreFactors?.length
+          ? `<details class="konut-v2-factors-details">
+        <summary>Skor faktörleri (açıklanabilir analiz)</summary>
+        ${renderScoreFactorsHtml(model.scoreFactors, 'konut-v2')}
+      </details>`
+          : ''
+      }
+
+      <div class="konut-v2-kpis konut-v2-kpis--secondary">
         <article class="konut-v2-kpi konut-v2-kpi--confidence">
           <span>Güven Skoru</span>
           <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
@@ -497,24 +619,7 @@ function renderKonutResultsV2Html(model) {
         </dl>
       </section>
 
-      <section class="konut-v2-risks" aria-label="Risk analizi">
-        <h3>Risk Analizi</h3>
-        <div class="konut-v2-risk-grid">
-          ${model.riskAnalysis
-            .map(
-              (r) => `
-            <article class="konut-v2-risk-card">
-              <div class="konut-v2-risk-card-head">
-                <h4>${esc(r.title)}</h4>
-                <span class="konut-v2-risk konut-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
-              </div>
-              <p>${esc(r.description)}</p>
-              <p class="konut-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
-            </article>`
-            )
-            .join('')}
-        </div>
-      </section>
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'konut-v2')}
 
       <div class="konut-v2-grid">
         <article class="konut-v2-block konut-v2-block--pros">
@@ -543,9 +648,13 @@ function renderKonutResultsV2Html(model) {
         </div>
       </section>
 
-      <article class="konut-v2-block konut-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="konut-v2-exec" data-konut-v2-exec>${esc(model.executiveSummary || 'Özet hazırlanıyor…')}</p>
+      <article class="konut-v2-block konut-v2-block--exec" data-konut-v2-insight-root>
+        <h3>Yapay zeka karar yorumu</h3>
+        <p class="konut-v2-exec-text" data-konut-v2-exec-text>${esc(model.executiveSummary || 'Yorum hazırlanıyor…')}</p>
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
         <p class="konut-v2-exec-hint" data-konut-v2-source>${esc(model.summarySourceLabel || '')}</p>
       </article>
 
@@ -554,12 +663,7 @@ function renderKonutResultsV2Html(model) {
         <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       </article>
 
-      <div class="konut-v2-actions">
-        <button type="button" class="btn secondary konut-v2-pdf" data-konut-v2-pdf>
-          Konut karar raporunu indir
-        </button>
-        <p class="konut-v2-pdf-hint" data-konut-v2-pdf-hint hidden></p>
-      </div>
+      ${renderKonutActionsBarHtml({ userId: model.userId, state: model.state || {}, esc })}
     </section>`;
 }
 
@@ -571,6 +675,9 @@ function renderKonutResultsV2Html(model) {
  * @param {Array} [opts.scenarios]
  * @param {string[]} [opts.attention]
  * @param {Function} [opts.track]
+ * @param {string|null} [opts.userId]
+ * @param {Function} [opts.onRestart]
+ * @param {Function} [opts.onPartnerCta]
  */
 export async function mountKonutResultsV2({
   mountNode,
@@ -578,15 +685,27 @@ export async function mountKonutResultsV2({
   metrics,
   scenarios = [],
   attention = [],
-  track
+  track,
+  userId = null,
+  onRestart,
+  onPartnerCta
 }) {
   if (!mountNode || !metrics) return null;
 
   mountNode.querySelector('.konut-v2-root')?.remove();
 
-  const payload = buildKonutResultsV2Payload({ state, metrics, scenarios, attention });
+  const evdsSnapshot = await fetchEvdsRatesForEngine();
+  const payload = buildKonutResultsV2Payload({
+    state,
+    metrics,
+    scenarios,
+    attention,
+    evdsRates: evdsSnapshot?.rates || null
+  });
   const model = {
     ...payload,
+    state,
+    userId,
     executiveSummary: '',
     summarySourceLabel: 'Kaynak: hazırlanıyor'
   };
@@ -595,6 +714,9 @@ export async function mountKonutResultsV2({
   root.className = 'konut-v2-root';
   root.innerHTML = renderKonutResultsV2Html(model);
   mountNode.prepend(root);
+  await hydrateResultsEconomicIndicators(root, 'konut');
+  mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  const afadLayer = await hydrateKonutAfadRiskLayer(root, state);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
@@ -605,6 +727,9 @@ export async function mountKonutResultsV2({
 
   const pdfBtn = root.querySelector('[data-konut-v2-pdf]');
   const pdfHint = root.querySelector('[data-konut-v2-pdf-hint]');
+  const restartBtn = root.querySelector('[data-konut-v2-restart]');
+  const partnerBtn = root.querySelector('[data-konut-v2-partner]');
+  const actionFeedback = root.querySelector('[data-konut-v2-action-feedback]');
 
   pdfBtn?.addEventListener('click', () => {
     safeTrackEvent(track, 'decision_report_print_click', {
@@ -617,32 +742,126 @@ export async function mountKonutResultsV2({
       pdfHint.textContent =
         'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
-    downloadDecisionReport(model.pdfReportData);
+    if (actionFeedback) actionFeedback.hidden = true;
+    gatePdfDownload(model.pdfReportData);
   });
 
-  const summary = await fetchExecutiveSummaryV3(
-    'konut',
-    model.intelligence?.context || {},
-    model.intelligence || {
-      decisionScore: model.decisionScore,
-      confidenceScore: model.confidenceScore,
-      scoreFactors: model.scoreFactors,
-      riskAnalysis: model.riskAnalysis,
-      recommendationLevel: model.recommendationLevel,
-      recommendationLabel: model.recommendationLabel,
-      overallRisk: model.overallRisk,
-      warnings: model.warnings
+  restartBtn?.addEventListener('click', () => {
+    if (typeof onRestart === 'function') {
+      onRestart();
+      return;
     }
-  );
+    document.getElementById('housing-restart')?.click();
+  });
 
-  const execEl = root.querySelector('[data-konut-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
-  const sourceEl = root.querySelector('[data-konut-v2-source]');
-  if (sourceEl) {
-    sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Kural tabanlı danışman'}`;
+  partnerBtn?.addEventListener('click', async () => {
+    if (typeof onPartnerCta === 'function') {
+      await onPartnerCta(actionFeedback);
+      return;
+    }
+    document.getElementById('housing-partner-cta')?.click();
+  });
+
+  try {
+    const summary = await withTimeout(
+      fetchExecutiveSummaryV3(
+        'konut',
+        buildKonutExecutiveSummaryContext(model.intelligence?.context || {}, afadLayer),
+        model.intelligence || {
+          decisionScore: model.decisionScore,
+          confidenceScore: model.confidenceScore,
+          scoreFactors: model.scoreFactors,
+          riskAnalysis: model.riskAnalysis,
+          recommendationLevel: model.recommendationLevel,
+          recommendationLabel: model.recommendationLabel,
+          overallRisk: model.overallRisk,
+          warnings: model.warnings
+        },
+        {
+          planTier: model.planTier,
+          strengths: model.strengths,
+          weaknesses: model.weaknesses,
+          marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
+          costs: model.totalCost,
+          timeoutMs: KONUT_SUMMARY_TIMEOUT_MS
+        }
+      ),
+      KONUT_SUMMARY_TIMEOUT_MS,
+      null
+    );
+
+    if (!summary) {
+      markInsightSummaryUnavailable(root.querySelector('[data-konut-v2-insight-root]'), {
+        execTextSelector: '[data-konut-v2-exec-text]',
+        sourceSelector: '[data-konut-v2-source]',
+        forceExecText: true
+      });
+      return model;
+    }
+
+    if (summary.insight) {
+      model.insight = summary.insight;
+      hydrateInsightBlocks(root.querySelector('[data-konut-v2-insight-root]'), summary.insight);
+    }
+    const execTextEl = root.querySelector('[data-konut-v2-exec-text]');
+    if (execTextEl && summary.text) {
+      execTextEl.textContent = summary.text;
+    }
+    const sourceEl = root.querySelector('[data-konut-v2-source]');
+    if (sourceEl) {
+      sourceEl.textContent =
+        summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
+    }
+    model.executiveSummary = summary.text;
+    model.pdfReportData.executiveSummary = summary.text;
+    if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+  } catch (error) {
+    console.warn('konut-v2-summary-hydrate-failed', error);
   }
-  model.executiveSummary = summary.text;
-  model.pdfReportData.executiveSummary = summary.text;
+
+  void import('../../decision/decision-v3-mount.js')
+    .then(({ mountDecisionEngineV3Overlay }) =>
+      mountDecisionEngineV3Overlay(mountNode, {
+        category: 'konut',
+        formData: state,
+        metrics,
+        extras: {
+          totalCost:
+            model.totalCost?.firstYearTotal ??
+            model.totalCost?.realTotal ??
+            metrics.totalCost ??
+            null,
+          title: 'Konut Kararı'
+        }
+      })
+    )
+    .catch(() => {});
+
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'konut',
+        formData: state,
+        metrics,
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          totalCost:
+            model.totalCost?.firstYearTotal ??
+            model.totalCost?.realTotal ??
+            metrics.totalCost ??
+            null,
+          title: 'Konut Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary,
+          evdsRiskLayer: model.evdsRiskLayer
+        }
+      })
+    )
+    .catch(() => {});
 
   mountResultsV3(mountNode, {
     category: 'konut',

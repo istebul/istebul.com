@@ -20,7 +20,8 @@ const mustExist = [
   'supabase/migrations/20260530_operational_observability.sql',
   'supabase/migrations/20260525_partner_delivery_enterprise.sql',
   'supabase/migrations/20260609_partner_applications_schema_repair.sql',
-  'supabase/migrations/20260610_subscriptions_bootstrap.sql'
+  'supabase/migrations/20260610_subscriptions_bootstrap.sql',
+  'supabase/migrations/20260617_lifecycle_crm_schema_repair.sql'
 ];
 
 for (const rel of mustExist) {
@@ -48,6 +49,18 @@ if (adminQuery.includes('if (!isSchemaMissingError(res.error))')) {
 if (!adminQuery.includes('withAdminFetchTimeout')) {
   fail('admin-query must timeout direct Supabase reads to avoid stuck loading');
 }
+if (!adminQuery.includes('preferDirect')) {
+  fail('admin-query must support preferDirect option');
+}
+if (!adminQuery.includes('fetchAdminRowById')) {
+  fail('admin-query must export fetchAdminRowById');
+}
+if (!adminQuery.includes('collectAdminFallbackNotes')) {
+  fail('admin-query must separate admin-action fallback info from critical warnings');
+}
+if (!adminQuery.includes('renderAdminDataSourceNotices')) {
+  fail('admin-query must render combined warning + info banners');
+}
 
 const repairSql = fs.readFileSync(
   path.join(root, 'supabase/migrations/20260609_partner_applications_schema_repair.sql'),
@@ -66,7 +79,7 @@ const requiredPatterns = [
   'partner_lead_dispatch_logs',
   'operational_events',
   'rollupSeverity24h',
-  'renderAdminWarningBanner'
+  'renderAdminDataSourceNotices'
 ];
 
 for (const pattern of requiredPatterns) {
@@ -102,7 +115,9 @@ for (const table of [
   'operational_events',
   'admin_audit_logs',
   'partner_lead_dispatch_logs',
-  'analytics_events'
+  'analytics_events',
+  'lifecycle_enrollments',
+  'lifecycle_messages'
 ]) {
   if (!adminAction.includes(`"${table}"`)) {
     fail(`admin-action must allow list for ${table}`);

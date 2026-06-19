@@ -1,22 +1,27 @@
 /**
- * Auto Decision Results V2 (Sprint 1)
- * - Mevcut Auto sonuç ekranını bozmaz; üstüne premium karar raporu paneli ekler.
- * - AI proxy varsa kullanır; yoksa deterministic Executive Summary üretir.
- * - innerHTML basılan her içerik escape edilir.
+ * Auto Decision Results V2 — production-ready premium karar asistanı paneli.
+ * Tek kaynak: recommendation.vehicle (topResult).
  */
 import { escapeHtml } from '../core/security.js';
 import {
   buildPdfReportData,
-  buildRiskItem,
-  clampScore,
+  formatScoreOutOf100,
   riskLevelToTone,
   safeTrackEvent
 } from '../features/results/results-engine.js';
-import { downloadDecisionReport } from '../features/results/pdf-report.js';
+import { gatePdfDownload } from '../features/billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../features/billing/paywall-v1.js';
+import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../features/ai/ai-insight-engine.js';
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
-  renderScoreFactorsHtml
+  renderScoreFactorsHtml,
+  renderRiskAnalysisHtml
 } from '../features/results/decision-intelligence-engine.js';
 import { mountResultsV3 } from '../features/results/results-v3-ui.js';
 
@@ -37,69 +42,234 @@ function safeNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function computeConfidenceScore(formData = {}) {
-  const fields = ['budget', 'usage', 'body', 'fuel', 'km', 'loan'];
-  let present = 0;
-  for (const key of fields) {
-    const raw = String(formData[key] ?? '').trim();
-    if (!raw) continue;
-    if (key === 'budget' || key === 'km') {
-      if (safeNumber(raw) > 0) present += 1;
-    } else {
-      present += 1;
-    }
-  }
-  const pct = present / fields.length;
-  const base = 58 + pct * 40;
-  const penalty = (!safeNumber(formData.km) ? 6 : 0) + (String(formData.fuel || '') === 'any' ? 4 : 0);
-  return clamp(Math.round(base - penalty), 30, 98);
+function renderAutoPremiumHero(recommendation, highlights, esc) {
+  const vehicle = recommendation.vehicle;
+  const imageHtml = renderVehicleImageHtml(vehicle, esc, {
+    className: 'auto-v2-hero__image',
+    loading: 'eager',
+    isFirst: true,
+    width: 960,
+    height: 540
+  });
+
+  const highlightHtml = highlights.map((item) => `
+    <li class="auto-v2-hero__highlight${item.ok ? ' auto-v2-hero__highlight--ok' : ''}">
+      <span class="auto-v2-hero__check" aria-hidden="true">${item.ok ? '✓' : '○'}</span>
+      ${esc(item.label)}
+    </li>`).join('');
+
+  return `
+    <header class="auto-v2-hero" id="ib-results-hero">
+      <p class="auto-v2-hero__kicker">🏆 En Uygun Araç</p>
+      <div class="auto-v2-hero__layout">
+        <div class="auto-v2-hero__media">
+          ${imageHtml}
+        </div>
+        <div class="auto-v2-hero__body">
+          <h2 class="auto-v2-hero__title">${esc(vehicle.name)}</h2>
+          <div class="auto-v2-hero__badges">
+            <span class="auto-v2-hero__badge auto-v2-hero__badge--score">
+              Karar Skoru: <strong>${esc(formatScoreOutOf100(recommendation.decisionScore))}</strong>
+            </span>
+            <span class="auto-v2-hero__badge auto-v2-hero__badge--confidence">
+              Güven Seviyesi: <strong>${esc(recommendation.confidenceLabel)}</strong>
+            </span>
+          </div>
+          <ul class="auto-v2-hero__highlights" aria-label="Uyum özeti">
+            ${highlightHtml}
+          </ul>
+          <div class="auto-v2-hero__actions">
+            <button type="button" class="btn primary auto-v2-hero__action" data-auto-v2-print>
+              Tam Rapor
+            </button>
+            <button type="button" class="btn secondary auto-v2-hero__action auto-compare-btn" data-result-index="0" data-vehicle="${esc(vehicle.name)}" data-track-compare="1">
+              Karşılaştır
+            </button>
+            <button type="button" class="btn secondary auto-v2-hero__action" data-auto-v2-expert>
+              Uzmanla Görüş
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="auto-v2-hero__summary" hidden data-auto-v2-summary-slot>${esc(recommendation.aiSummary || '')}</p>
+    </header>`;
 }
 
-function computeBudgetFit({ budget, vehiclePrice, totalCost }) {
-  const b = Math.max(safeNumber(budget), 1);
-  const price = Math.max(safeNumber(vehiclePrice), 0);
-  const tco = Math.max(safeNumber(totalCost), 0);
-  const ratio = price ? price / b : tco ? tco / b : 0.9;
-
-  // 0.85–1.05 aralığı ideal; üzeri baskı.
-  const fit = 100 - Math.max(0, (ratio - 0.9) * 140);
-  return clamp(Math.round(fit), 20, 99);
+function renderHeroMetrics(recommendation, esc) {
+  return `
+    <div class="auto-v2-hero-metrics" aria-label="Karar metrikleri">
+      <article class="auto-v2-hero-metric">
+        <span>Yıllık Yakıt</span>
+        <strong>${esc(recommendation.annualFuelCost ? formatTryAmount(recommendation.annualFuelCost) : '—')}</strong>
+      </article>
+      <article class="auto-v2-hero-metric">
+        <span>${esc(recommendation.ownershipHorizonLabel || '5 Yıl Net Maliyet')}</span>
+        <strong>${esc(recommendation.fiveYearOwnership ? formatTryAmount(recommendation.fiveYearOwnership) : '—')}</strong>
+      </article>
+      <article class="auto-v2-hero-metric">
+        <span>Güven</span>
+        <strong>${esc(recommendation.confidenceLabel)}</strong>
+        <small>${esc(formatScoreOutOf100(recommendation.confidenceScore))}</small>
+      </article>
+    </div>`;
 }
 
-function computeUsageFit(formData = {}, topResult = {}) {
-  const usage = String(formData.usage || '').trim();
-  const fuel = String(topResult.fuel || formData.fuel || '').trim();
-  const km = safeNumber(formData.km);
+function renderRankingCommentarySection(sections, esc) {
+  if (!sections.length) return '';
 
-  let score = 74;
-  if (usage === 'city' && fuel === 'electric') score += 10;
-  if (usage === 'long' && (fuel === 'diesel' || fuel === 'hybrid')) score += 7;
-  if (usage === 'family' && String(topResult.body || formData.body || '') === 'suv') score += 4;
-  if (km >= 28000 && fuel === 'electric') score -= 6; // şarj altyapısı / menzil hassasiyeti
-  return clamp(Math.round(score), 35, 95);
+  return `
+    <section class="auto-v2-ranking" aria-label="Sıralama gerekçesi">
+      <h3>Karar sıralaması</h3>
+      <div class="auto-v2-ranking-grid">
+        ${sections.map((section) => `
+          <article class="auto-v2-ranking-card">
+            <h4>${esc(section.title)}</h4>
+            <p>${esc(section.text)}</p>
+            ${section.bullets?.length ? `
+              <ul class="auto-v2-ranking-bullets">
+                ${section.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}
+              </ul>` : ''}
+          </article>
+        `).join('')}
+      </div>
+    </section>`;
 }
 
-function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
-  const b = Math.max(safeNumber(budget), 1);
-  const tco = Math.max(safeNumber(totalCost), 0);
-  const pressure = tco ? tco / b : 0.9;
-
-  if (pressure > 1.05 || riskItems.length >= 3) return { label: 'Yüksek', score: 74 };
-  if (pressure > 0.88 || riskItems.length >= 1) return { label: 'Orta', score: 48 };
-  return { label: 'Düşük', score: 28 };
+function renderWhyRecommendedSection(cards, esc) {
+  return `
+    <section class="auto-v2-why" aria-label="Neden önerildi">
+      <h3>Neden önerildi?</h3>
+      <div class="auto-v2-why-grid">
+        ${cards.map((card) => `
+          <article class="auto-v2-why-card">
+            <span class="auto-v2-why-card__icon" aria-hidden="true">${esc(card.icon)}</span>
+            <div class="auto-v2-why-card__head">
+              <h4>${esc(card.title)}</h4>
+              <span class="auto-v2-why-card__score">${esc(scoreBandLabel(card.score))}</span>
+            </div>
+            <p>${esc(card.text)}</p>
+          </article>
+        `).join('')}
+      </div>
+    </section>`;
 }
 
-function computeDecisionScore({ budgetFit, usageFit, costFit, altFit, riskScore }) {
-  const score = budgetFit * 0.26 + usageFit * 0.18 + costFit * 0.2 + altFit * 0.16 + (100 - riskScore) * 0.2;
-  return clampScore(Math.round(score));
+function renderAlternativesSection(alternatives, esc) {
+  if (!alternatives.length) return '';
+
+  return `
+    <section class="auto-v2-alts" aria-label="Alternatif araçlar">
+      <h3>Alternatif Araçlar</h3>
+      <div class="auto-v2-alt-grid">
+        ${alternatives.map((alt, idx) => {
+          const v = alt.vehicle;
+          const imageHtml = renderVehicleImageHtml(v, esc, {
+            className: 'auto-v2-alt-card__image',
+            width: 480,
+            height: 270
+          });
+          return `
+            <article class="auto-v2-alt-card">
+              <div class="auto-v2-alt-card__media">${imageHtml}</div>
+              <div class="auto-v2-alt-card__body">
+                <div class="auto-v2-alt-card__head">
+                  <span class="auto-v2-alt-card__rank">#${idx + 2}</span>
+                  <h4>${esc(v.name)}</h4>
+                </div>
+                <dl class="auto-v2-alt-metrics">
+                  <div>
+                    <dt>Skor</dt>
+                    <dd>${esc(formatScoreOutOf100(alt.score))}</dd>
+                  </div>
+                  <div>
+                    <dt>Aylık maliyet</dt>
+                    <dd>${esc(alt.monthlyCost ? formatTryAmount(alt.monthlyCost) : '—')}</dd>
+                  </div>
+                  <div>
+                    <dt>Yakıt</dt>
+                    <dd>${esc(alt.fuelDisplay || '—')}</dd>
+                  </div>
+                  <div>
+                    <dt>İkinci el</dt>
+                    <dd>${esc(alt.resaleDisplay || '—')}</dd>
+                  </div>
+                </dl>
+                <div class="auto-v2-alt-pros">
+                  <strong>Artıları</strong>
+                  <ul>${alt.pros.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+                </div>
+              </div>
+            </article>`;
+        }).join('')}
+      </div>
+    </section>`;
 }
 
-function buildAlternatives(results = []) {
-  return results.slice(1, 4).map((r, idx) => ({
-    title: r?.name || `Alternatif ${idx + 1}`,
-    score: safeNumber(r?.score),
-    reason: String((r?.reasons || [])[0] || '').trim()
-  }));
+function renderAutoResultsV2Html(model) {
+  const esc = escapeHtml;
+  const rec = model.recommendation;
+  const batch = beginVehicleImageRenderBatch();
+
+  const html = `
+    <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
+      ${renderAutoPremiumHero(rec, model.heroHighlights, esc)}
+      ${renderHeroMetrics(rec, esc)}
+
+      <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
+
+      <div id="ib-results-detail"></div>
+
+      ${renderWhyRecommendedSection(model.whyRecommended, esc)}
+
+      ${
+        model.scoreFactors?.length
+          ? `<details class="auto-v2-factors-details">
+        <summary>Skor faktörleri (açıklanabilir analiz)</summary>
+        ${renderScoreFactorsHtml(model.scoreFactors, 'auto-v2')}
+      </details>`
+          : ''
+      }
+
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'auto-v2')}
+
+      <div class="auto-v2-grid">
+        <article class="auto-v2-block auto-v2-block--pros">
+          <h3>Güçlü Yönler</h3>
+          <ul>${model.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+        </article>
+        <article class="auto-v2-block auto-v2-block--cautions">
+          <h3>Dikkat Edilecekler</h3>
+          <ul>${model.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+        </article>
+      </div>
+
+      ${renderAlternativesSection(model.alternatives, esc)}
+
+      <article class="auto-v2-block auto-v2-block--exec" data-auto-v2-insight-root>
+        <h3>Yapay zeka karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
+        ${renderRankingCommentarySection(model.rankingCommentary, esc)}
+        <p class="auto-v2-exec-hint" data-auto-v2-source>${esc(model.summarySourceLabel)}</p>
+      </article>
+
+      <article class="auto-v2-block auto-v2-block--next">
+        <h3>Sonraki Adımlar</h3>
+        <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+      </article>
+
+      <div class="auto-v2-actions">
+        <button type="button" class="btn secondary auto-v2-print" data-auto-v2-print-secondary>
+          Araç karar raporunu indir
+        </button>
+      </div>
+    </section>
+  `;
+
+  endVehicleImageRenderBatch(batch);
+  return html;
 }
 
 function buildNextSteps({ riskLevel, budgetFit }) {
@@ -116,146 +286,46 @@ function buildNextSteps({ riskLevel, budgetFit }) {
   return steps.slice(0, 3);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const usageLabel = {
-    family: 'aile',
-    city: 'şehir içi',
-    long: 'uzun yol',
-    business: 'iş'
-  }[ctx.usage] || 'karma';
-
-  const tone = ctx.riskLevel === 'Yüksek' ? 'daha riskli' : ctx.riskLevel === 'Orta' ? 'dengeli ancak dikkat gerektiren' : 'mantıklı';
-  const why1 = `Kullanım amacınız (${usageLabel}), bütçe aralığınız ve toplam maliyet beklentiniz birlikte değerlendirildiğinde bu tercih ${tone} görünmektedir.`;
-  const why2 = `Karar skorunuz ${ctx.decisionScore}/100 ve güven skorunuz ${ctx.confidenceScore}/100; risk seviyesi ${ctx.riskLevel} olarak işaretlendi.`;
-  const why3 = ctx.strengths?.length
-    ? `Güçlü yönler tarafında öne çıkan nokta: ${ctx.strengths[0]}.`
-    : 'Toplam sahip olma maliyeti ve kullanım uyumu, bu kararın ana belirleyicileridir.';
-  const why4 = ctx.cautions?.length
-    ? `Dikkat edilmesi gereken başlık: ${ctx.cautions[0]}.`
-    : 'Bakım, sigorta ve ikinci el değer kaybı gibi kalemler nihai kararı etkileyebilir.';
-  const why5 = 'Son adımda, teklif/finansman senaryosunu gerçek oranlarla doğrulayıp alternatifleri yan yana karşılaştırmanız önerilir.';
-  return [why1, why2, why3, why4, why5].join(' ');
+function computeBudgetFit({ budget, vehiclePrice, totalCost }) {
+  const b = Math.max(safeNumber(budget), 1);
+  const price = Math.max(safeNumber(vehiclePrice), 0);
+  const tco = Math.max(safeNumber(totalCost), 0);
+  const ratio = price ? price / b : tco ? tco / b : 0.9;
+  const fit = 100 - Math.max(0, (ratio - 0.9) * 140);
+  return clamp(Math.round(fit), 20, 99);
 }
 
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel otomotiv karar danismani gibi Turkce 4-6 cumle yaz.',
-    'Kesin tavsiye verme; tahmini analiz dili kullan.',
-    'Soruya cevap ver: Bu arac karari neden mantikli veya neden riskli?',
-    `Kullanim: ${ctx.usage}`,
-    `Butce: ${ctx.budgetLabel}`,
-    `Toplam maliyet: ${ctx.totalCostLabel}`,
-    `Karar skoru: ${ctx.decisionScore}/100`,
-    `Guven skoru: ${ctx.confidenceScore}/100`,
-    `Risk: ${ctx.riskLevel}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Dikkat: ${(ctx.cautions || []).slice(0, 2).join('; ')}`
-  ].join('\n');
+function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
+  const b = Math.max(safeNumber(budget), 1);
+  const tco = Math.max(safeNumber(totalCost), 0);
+  const pressure = tco ? tco / b : 0.9;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'auto-decision-results-v2' } }),
-      signal: controller.signal
+  if (pressure > 1.05 || riskItems.length >= 3) return { label: 'Yüksek', score: 74 };
+  if (pressure > 0.88 || riskItems.length >= 1) return { label: 'Orta', score: 48 };
+  return { label: 'Düşük', score: 28 };
+}
+
+function wireHeroActions(root, model, track) {
+  const printHandler = () => {
+    safeTrackEvent(track, 'decision_report_print_click', { score: model.decisionScore });
+    gatePdfDownload(model.pdfReportData);
+  };
+
+  root.querySelector('[data-auto-v2-print]')?.addEventListener('click', printHandler);
+  root.querySelector('[data-auto-v2-print-secondary]')?.addEventListener('click', printHandler);
+
+  root.querySelector('[data-auto-v2-expert]')?.addEventListener('click', () => {
+    const insightRoot = root.querySelector('[data-auto-v2-insight-root]');
+    insightRoot?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    safeTrackEvent(track, 'auto_expert_commentary_open', {
+      vehicle: model.recommendation.vehicle.name
     });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 900), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
-function renderAutoResultsV2Html(model) {
-  const esc = escapeHtml;
-  return `
-    <section class="auto-v2-panel" aria-label="Decision Results V2 premium rapor">
-      <header class="auto-v2-hero">
-        <p class="auto-v2-kicker">Decision Results V2 · Premium AI Karar Raporu</p>
-        <h2 class="auto-v2-title">Auto karar raporu</h2>
-        ${model.recommendationLabel ? `<p class="auto-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
-
-      ${renderScoreFactorsHtml(model.scoreFactors, 'auto-v2')}
-
-      <div class="auto-v2-kpis">
-        <article class="auto-v2-kpi auto-v2-kpi--score">
-          <span>Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
-        <article class="auto-v2-kpi auto-v2-kpi--confidence">
-          <span>Güven Skoru</span>
-          <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
-          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.confidenceScore))}%"></span></div>
-        </article>
-        <article class="auto-v2-kpi auto-v2-kpi--risk">
-          <span>Risk Seviyesi</span>
-          <strong><span class="auto-v2-risk auto-v2-risk--${esc(model.riskTone)}">${esc(model.riskLevel)}</span></strong>
-        </article>
-        <article class="auto-v2-kpi auto-v2-kpi--cost">
-          <span>Toplam Maliyet Özeti</span>
-          <strong>${esc(model.totalCostLabel)}</strong>
-          <small>${esc(model.costHint)}</small>
-        </article>
-      </div>
-
-      <div class="auto-v2-grid">
-        <article class="auto-v2-block auto-v2-block--pros">
-          <h3>Güçlü Yönler</h3>
-          <ul>${model.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
-        </article>
-        <article class="auto-v2-block auto-v2-block--cautions">
-          <h3>Dikkat Edilecekler</h3>
-          <ul>${model.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
-        </article>
-      </div>
-
-      <section class="auto-v2-alts" aria-label="3 Alternatif Öneri">
-        <h3>3 Alternatif Öneri</h3>
-        <div class="auto-v2-alt-grid">
-          ${model.alternatives.map((a) => `
-            <article class="auto-v2-alt-card">
-              <h4>${esc(a.title)}</h4>
-              <p>${esc(a.reason || 'Alternatif senaryo: skor/maliyet dengesi için değerlendirin.')}</p>
-              <span class="auto-v2-alt-meta">${esc(String(a.score || '—'))}/100</span>
-            </article>
-          `).join('')}
-        </div>
-      </section>
-
-      <article class="auto-v2-block auto-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="auto-v2-exec" data-auto-v2-exec>${esc(model.executiveSummary || 'Executive Summary hazırlanıyor…')}</p>
-        <p class="auto-v2-exec-hint" data-auto-v2-source>${esc(model.summarySourceLabel)}</p>
-      </article>
-
-      <article class="auto-v2-block auto-v2-block--next">
-        <h3>Sonraki Adımlar</h3>
-        <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
-      </article>
-
-      <div class="auto-v2-actions">
-        <button type="button" class="btn secondary auto-v2-print" data-auto-v2-print>
-          Araç karar raporunu indir
-        </button>
-      </div>
-    </section>
-  `;
+  });
 }
 
 export async function mountAutoResultsV2({ mountNode, topResult, results, formData, track }) {
   if (!mountNode || !topResult) return null;
 
-  // Idempotent mount
   const existing = mountNode.querySelector('.auto-v2-root');
   if (existing) existing.remove();
 
@@ -264,13 +334,6 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   const vehiclePrice = safeNumber(topResult?.price);
 
   const budgetFit = computeBudgetFit({ budget, vehiclePrice, totalCost });
-  const usageFit = computeUsageFit(formData, topResult);
-  const costFit = clamp(Math.round(100 - Math.max(0, (totalCost - budget) / Math.max(budget, 1) * 90)), 20, 99);
-  const alternatives = buildAlternatives(results);
-  const altFit = alternatives.length
-    ? clamp(Math.round(alternatives.reduce((sum, a) => sum + (safeNumber(a.score) || 60), 0) / alternatives.length), 30, 98)
-    : 62;
-
   const strengths = (topResult?.reasons || []).slice(0, 4).filter(Boolean);
   const cautions = (topResult?.risks || []).slice(0, 4).filter(Boolean);
   if (!strengths.length) strengths.push('Kriterlerinize göre güçlü segment uyumu');
@@ -278,28 +341,44 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   const risk = computeRiskLevel({ budget, totalCost, riskItems: cautions });
 
+  const evdsSnapshot = await fetchEvdsRatesForEngine();
+  const evdsRates = evdsSnapshot?.rates || null;
+  const evdsRiskLayer = buildEvdsRiskLayer('auto', evdsRates);
+
   const intel = buildDecisionIntelligenceResult(
     'auto',
     formData,
     { topResult, budget, totalCost },
     { topResult, results, budget, totalCost, cautions }
   );
-  const decisionScore = intel.decisionScore;
-  const confidenceScore = intel.confidenceScore;
 
-  const altCards =
-    intel.alternatives.length ?
-      intel.alternatives.map((a) => ({ title: a.title, score: 0, reason: a.description }))
-    : alternatives.length ?
-      alternatives
-    : [{ title: 'Alternatif bulunamadı', score: 0, reason: '' }];
+  const recommendation = buildRecommendationPayload(topResult, formData, results, intel);
+  const whyRecommended = buildWhyRecommendedCards(recommendation, formData);
+  const alternatives = buildVehicleAlternatives(results, topResult, formData);
+  const heroHighlights = buildHeroHighlights(recommendation);
+  const rankingCommentary = buildRankingCommentary(results, formData);
+
+  const { planTier } = getResultsPlanContext();
+
+  const insightInput = buildInsightInputFromIntelligence('auto', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses: cautions,
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
+    costs: { budget, tco12: totalCost, vehiclePrice }
+  });
 
   const model = {
-    decisionScore,
-    confidenceScore: confidenceScore || computeConfidenceScore(formData),
+    recommendation,
+    whyRecommended,
+    heroHighlights,
+    rankingCommentary,
+    decisionScore: intel.decisionScore,
+    confidenceScore: intel.confidenceScore,
     riskLevel: intel.overallRisk || risk.label,
     riskTone: riskLevelToTone(intel.overallRisk || risk.label),
     scoreFactors: intel.scoreFactors,
+    riskAnalysis: intel.riskAnalysis,
     warnings: intel.warnings,
     recommendationLevel: intel.recommendationLevel,
     recommendationLabel: intel.recommendationLabel,
@@ -308,26 +387,30 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     costHint: totalCost && budget ? `Bütçe ${formatTryAmount(budget)} · 12 ay TCO` : '12 ay TCO (tahmini)',
     strengths,
     cautions,
-    alternatives: altCards,
+    alternatives,
     executiveSummary: intel.executiveSummary,
+    insight: buildDecisionInsight(insightInput),
+    insightInput,
+    planTier,
     summarySourceLabel: 'Kaynak: hazırlanıyor',
     nextSteps: intel.nextSteps.length ? intel.nextSteps : buildNextSteps({ riskLevel: risk.label, budgetFit }),
     usage: String(formData?.usage || ''),
     budgetLabel: budget ? formatTryAmount(budget) : '—',
-    totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—'
+    evdsRiskLayer
   };
 
   model.pdfReportData = buildPdfReportData({
     category: 'auto',
-    decisionScore,
+    planTier,
+    decisionScore: intel.decisionScore,
     confidenceScore: model.confidenceScore,
     overallRisk: model.riskLevel,
     strengths: model.strengths,
     cautions: model.cautions,
-    alternatives: altCards.map((a) => ({
-      title: a.title,
-      description: a.reason || '',
-      meta: a.score ? `${a.score}/100` : ''
+    alternatives: alternatives.map((a) => ({
+      title: a.vehicle.name,
+      description: a.whySecond,
+      meta: formatScoreOutOf100(a.score)
     })),
     riskAnalysis: intel.riskAnalysis,
     scoreFactors: intel.scoreFactors,
@@ -350,27 +433,98 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   root.innerHTML = renderAutoResultsV2Html(model);
   mountNode.prepend(root);
 
+  bindVehicleImageFallbacks(root);
+  reportVehicleImageLoading(root);
+
+  wireHeroActions(root, model, track);
+
+  await hydrateResultsEconomicIndicators(root, 'auto');
+  mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  mountKararMahkemesiInResultsDetail(root, { intel, formData, topResult });
+
   safeTrackEvent(track, 'decision_result_v2_view', {
-    score: decisionScore,
+    score: intel.decisionScore,
     confidence: model.confidenceScore,
-    risk: model.riskLevel
+    risk: model.riskLevel,
+    vehicle: recommendation.vehicle.name
   });
 
-  root.querySelector('[data-auto-v2-print]')?.addEventListener('click', () => {
-    safeTrackEvent(track, 'decision_report_print_click', { score: decisionScore });
-    downloadDecisionReport(model.pdfReportData);
+  const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses: cautions,
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
+    costs: { budget, tco12: totalCost, vehiclePrice }
   });
 
-  // Executive Summary (AI proxy + fallback)
-  const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel);
+  if (summary.text) {
+    recommendation.aiSummary = summary.text;
+    const summaryEl = root.querySelector('[data-auto-v2-summary-slot]');
+    if (summaryEl) {
+      summaryEl.textContent = String(summary.text);
+      summaryEl.hidden = false;
+      summaryEl.removeAttribute('hidden');
+    }
+  }
 
-  const execEl = root.querySelector('[data-auto-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
+  if (summary.insight) {
+    model.insight = summary.insight;
+    hydrateInsightBlocks(root.querySelector('[data-auto-v2-insight-root]'), summary.insight);
+  }
   const sourceEl = root.querySelector('[data-auto-v2-source]');
-  if (sourceEl) sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Deterministic fallback'}`;
+  if (sourceEl) {
+    sourceEl.textContent =
+      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
+  }
   model.executiveSummary = summary.text;
   model.summarySourceLabel = sourceEl?.textContent || '';
   model.pdfReportData.executiveSummary = summary.text;
+  if (summary.insight) {
+    model.pdfReportData.insightBlocks = summary.insight;
+  }
+
+  void import('../decision/decision-v3-mount.js')
+    .then(({ mountDecisionEngineV3Overlay }) =>
+      mountDecisionEngineV3Overlay(mountNode, {
+        category: 'auto',
+        formData,
+        metrics: { topResult, budget, totalCost },
+        extras: {
+          topResult,
+          results,
+          budget,
+          totalCost,
+          cautions,
+          title: 'Araç Kararı'
+        }
+      })
+    )
+    .catch(() => {});
+
+  void import('../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'auto',
+        formData,
+        metrics: { topResult, budget, totalCost },
+        intelligence: intel,
+        model,
+        extras: {
+          topResult,
+          results,
+          budget,
+          totalCost,
+          cautions,
+          title: 'Araç Kararı',
+          strengths: model.strengths,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary,
+          evdsRiskLayer: model.evdsRiskLayer
+        }
+      })
+    )
+    .catch(() => {});
 
   mountResultsV3(mountNode, {
     category: 'auto',
@@ -382,3 +536,9 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   return model;
 }
 
+export {
+  buildRecommendationPayload,
+  buildVehicleAlternatives,
+  buildWhyRecommendedCards,
+  resolveVehicleImageUrl
+};

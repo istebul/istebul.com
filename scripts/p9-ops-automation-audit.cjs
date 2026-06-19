@@ -66,5 +66,21 @@ for (const token of ['Revenue Ops', 'lifecycle', 'ops-alert-digest', 'Ops Comman
   if (!opsMd.includes(token)) fail(`OPS_AUTOMATION_ROADMAP missing: ${token}`);
 }
 
+/** Faz 4A-1b-3C-2 — Ops Command Center dashboards.highlights ↔ nav labels */
+const opsCommandCenterSource = fs.readFileSync(
+  path.join(root, 'js/features/ops/ops-command-center.js'),
+  'utf8'
+);
+for (const label of ["'Yatırımcı KPI'", "'Observability'", "'Operasyon Komuta Merkezi'"]) {
+  if (!opsCommandCenterSource.includes(label)) {
+    fail(`Faz 4A-1b-3C-2 ops command highlights terminology should include ${label}`);
+  }
+}
+for (const legacy of ["'Executive KPIs'", "'Ops Command Center'"]) {
+  if (opsCommandCenterSource.includes(legacy)) {
+    fail(`Faz 4A-1b-3C-2 ops command highlights terminology should not include legacy ${legacy}`);
+  }
+}
+
 if (failed) process.exit(1);
 console.log('P9 ops automation audit OK');

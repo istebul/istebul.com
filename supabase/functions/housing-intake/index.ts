@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
+import { scheduleVerticalPartnerDispatch } from "../_shared/vertical-partner-dispatch.ts";
 
 const ALLOWED_EVENTS = new Set([
   "housing_page_view",
@@ -8,7 +9,9 @@ const ALLOWED_EVENTS = new Set([
   "housing_scenario_selected",
   "home_analysis_start",
   "home_analysis_step_completed",
+  "home_wizard_complete",
   "home_results_view",
+  "home_lead_open",
   "home_lead_submit",
   "home_report_save",
 ]);
@@ -99,7 +102,19 @@ Deno.serve(async (req) => {
     };
     const { data, error } = await adminClient.from("housing_leads").insert(row).select("id").single();
     if (error) return json({ error: "Lead recording failed" }, 500, origin);
-    return json({ ok: true, id: data?.id }, 200, origin);
+
+    const leadId = data?.id || null;
+    if (leadId) {
+      scheduleVerticalPartnerDispatch(adminClient, {
+        leadTable: "housing_leads",
+        leadId,
+        vertical: "konut",
+        lead: row,
+        trigger: "housing_intake",
+      });
+    }
+
+    return json({ ok: true, id: leadId }, 200, origin);
   }
 
   return json({ error: "Invalid type" }, 400, origin);

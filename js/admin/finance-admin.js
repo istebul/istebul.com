@@ -1,5 +1,5 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
-import { fetchAdminTable, collectAdminWarnings, renderAdminWarningBanner } from './admin-query.js';
+import { fetchAdminTable, renderAdminDataSourceNotices } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
 const FINANCE_SETTING_KEYS = [
@@ -44,7 +44,7 @@ async function loadFinanceLeads(sb, adminAction, toast) {
     direct: () => sb.from('finance_leads').select('*').order('created_at', { ascending: false }).limit(1500)
   });
   if (res.error && !res.data?.length) return renderError(el, res, 'Finans leadleri');
-  const warnings = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const warnings = renderAdminDataSourceNotices([res]);
   const search = (document.getElementById('finance-leads-search')?.value || '').toLowerCase().trim();
   const status = document.getElementById('finance-leads-status-filter')?.value || '';
   const rows = (res.data || []).filter((row) => {
@@ -96,7 +96,7 @@ async function loadFinancePartners(sb) {
     direct: () => sb.from('finance_partners').select('*').order('created_at', { ascending: false }).limit(600)
   });
   if (res.error && !res.data?.length) return renderError(el, res, 'Finans partnerleri');
-  const warnings = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const warnings = renderAdminDataSourceNotices([res]);
   el.innerHTML = `${warnings}<table class="table"><thead><tr><th>Kuruluş</th><th>Ürün tipi</th><th>Tutar aralığı</th><th>Vade aralığı</th><th>Oran aralığı</th><th>Link</th><th>Durum</th></tr></thead><tbody>${
     (res.data || []).map((r) => `<tr>
       <td>${escapeHtml(r.institution_name || '—')}</td>

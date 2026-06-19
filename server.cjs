@@ -19,16 +19,12 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/env.js', (_req, res) => {
-  const publicEnv = {
-    SUPABASE_URL: process.env.SUPABASE_URL || '',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
-    SENTRY_DSN: process.env.SENTRY_DSN || '',
-    LOGROCKET_APP_ID: process.env.LOGROCKET_APP_ID || ''
-  };
+  const { buildPublicEnv, formatEnvJs } = require('./scripts/lib/public-env.cjs');
+  const publicEnv = buildPublicEnv(process.env);
 
   res.type('application/javascript');
   res.set('Cache-Control', 'no-store');
-  res.send(`window.__env = Object.assign({}, window.__env || {}, ${JSON.stringify(publicEnv)});`);
+  res.send(formatEnvJs(publicEnv));
 });
 
 

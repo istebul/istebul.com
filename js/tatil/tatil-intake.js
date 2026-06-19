@@ -1,3 +1,6 @@
+import { analytics } from '../core/analytics.js';
+import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+
 function getEnv() {
   const url = window.__env?.SUPABASE_URL || '';
   const key = window.__env?.SUPABASE_ANON_KEY || '';
@@ -52,6 +55,9 @@ export async function callVacationIntake(payload) {
 }
 
 export function trackVacationEvent(eventType, metadata = {}) {
+  if (analytics.hasConsent()) {
+    mirrorLegacySiteEvent(eventType, { category: 'tatil', ...metadata });
+  }
   return callVacationIntake({
     type: 'event',
     event_type: eventType,

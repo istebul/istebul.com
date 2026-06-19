@@ -3,6 +3,10 @@ import {
   recordPlatformEvent,
   upsertAnalyticsSession,
 } from "../_shared/platform-analytics.ts";
+import {
+  classifyAnalyticsTraffic,
+  extractAttributionFields,
+} from "../_shared/analytics-traffic.ts";
 import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 function corsHeaders(origin: string | null) {
@@ -168,6 +172,9 @@ Deno.serve(async (req) => {
         : {};
 
     try {
+      const traffic = await classifyAnalyticsTraffic(adminClient, req, event);
+      const utmFields = extractAttributionFields(event, sessionMeta);
+
       const result = await recordPlatformEvent(adminClient, {
         event_name: String(event.event_name || ""),
         event_category: event.event_category
@@ -195,14 +202,27 @@ Deno.serve(async (req) => {
         idempotency_key: event.idempotency_key
           ? String(event.idempotency_key)
           : null,
+        is_internal: traffic.is_internal,
+        internal_reason: traffic.internal_reason,
+        traffic_type: traffic.traffic_type,
+        ip_hash: traffic.ip_hash,
+        device_hash: traffic.device_hash,
+        user_agent_hash: traffic.user_agent_hash,
+        ...utmFields,
       });
 
       results.push({ event_name: event.event_name, ...result });
     } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "invalid_event";
       results.push({
         event_name: event.event_name,
         ok: false,
-        error: err instanceof Error ? err.message : "invalid_event",
+        error: message,
       });
     }
   }

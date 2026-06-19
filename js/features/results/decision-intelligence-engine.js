@@ -4,10 +4,17 @@
  */
 import { escapeHtml } from '../../core/security.js';
 import {
+  buildExecutiveSummary,
+  buildInsightInputFromIntelligence,
+  fetchInsightWithProxy,
+  sanitizeInsightText
+} from '../ai/ai-insight-engine.js';
+import {
   buildConfidenceScore,
   buildRiskItem,
   clampScore,
-  resolveScoreLabel
+  resolveScoreLabel,
+  riskLevelToTone
 } from './results-engine.js';
 
 function safeNumber(value) {
@@ -17,7 +24,9 @@ function safeNumber(value) {
 
 function normalizeCategory(category) {
   const c = String(category || '').toLowerCase();
-  if (['auto', 'konut', 'tatil', 'finansman'].includes(c)) return c;
+  if (c === 'sigorta' || c === 'insurance') return 'sigorta';
+  if (c === 'kasko') return 'kasko';
+  if (['auto', 'konut', 'tatil', 'finansman', 'sigorta', 'kasko'].includes(c)) return c;
   return 'konut';
 }
 
@@ -100,6 +109,7 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
     const sqm = safeNumber(state.squareMeters);
     const pricePerSqm = sqm > 0 && budget > 0 ? budget / sqm : null;
     const isInvestment = String(state.purchasePurpose || '').includes('Yatırım');
+    const isRental = String(state.purchasePurpose || '').includes('Kiralamak');
     const liquidity = safeNumber(m.liquidityRisk);
     const eq = safeNumber(m.earthquakeRiskScore);
 
@@ -112,6 +122,7 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
       budget,
       pricePerSqm,
       isInvestment,
+      isRental,
       liquidity,
       earthquakeRisk: eq,
       locationFit: safeNumber(m.locationFit),
@@ -142,7 +153,7 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
       paymentToIncome,
       termMonths: months,
       cashPressure: primary?.metrics?.cashPressure || m.cashPressure,
-      legacyScore: safeNumber(primary?.score) || safeNumber(m.score)
+      legacyScore: 0
     });
 
     if (paymentToIncome > 45) warnings.push('Aylık ödeme/gelir oranı sınırın üzerinde modelleniyor.');
@@ -219,7 +230,7 @@ export function computeDecisionScoreV3(category, context = {}) {
     const dti = safeNumber(context.dti);
     const budgetFit = safeNumber(context.budgetFit) || 65;
     const locationFit = safeNumber(context.locationFit) || 60;
-    const purpose = context.isInvestment ? 72 : 84;
+    const purpose = context.isInvestment ? 72 : context.isRental ? 76 : 84;
 
     score = Math.round(
       budgetFit * 0.22 +
@@ -329,7 +340,7 @@ export function computeDecisionScoreV3(category, context = {}) {
   }
 
   const legacy = safeNumber(context.legacyScore);
-  if (legacy > 0) {
+  if (legacy > 0 && cat !== 'finansman') {
     score = clampScore(Math.round(score * 0.55 + legacy * 0.45));
   }
 
@@ -424,7 +435,14 @@ export function buildRiskAnalysisV3(category, context = {}) {
       ),
       buildRiskItem(
         'dues',
-        safeNumber(context.metrics?.ownership?.dues) > 4000 ? 'orta' : 'düşük',
+        (() => {
+          const duesMonthly =
+            safeNumber(context.formData?.dues) ||
+            safeNumber(context.formData?.duesExpectation) ||
+            safeNumber(context.metrics?.ownership?.duesMonthly) ||
+            safeNumber(context.metrics?.ownership?.annualDues) / 12;
+          return duesMonthly > 4000 ? 'orta' : 'düşük';
+        })(),
         'Aidat ve ek giderler',
         'Aidat ve bakım kalemleri toplam yükü etkiler.',
         'Yıllık aidat ve sigorta maliyetini tabloya ekleyin.'
@@ -598,6 +616,17 @@ export function buildRiskAnalysisV3(category, context = {}) {
 }
 
 /**
+ * Konut senaryo kartları için açıklama metni (monthlyEffect / riskEffect / totalEffect fallback).
+ * @param {object} scenario
+ */
+export function formatKonutAlternativeDescription(scenario = {}) {
+  if (scenario.description) return String(scenario.description).trim();
+  if (scenario.summary) return String(scenario.summary).trim();
+  const parts = [scenario.monthlyEffect, scenario.riskEffect, scenario.totalEffect].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '';
+}
+
+/**
  * @param {'auto'|'konut'|'tatil'|'finansman'} category
  * @param {object} context
  */
@@ -606,11 +635,14 @@ export function buildAlternativesV3(category, context = {}) {
   const fromExtras = context.extras?.scenarios || context.extras?.results;
 
   if (cat === 'konut' && Array.isArray(fromExtras) && fromExtras.length) {
-    return fromExtras.slice(0, 3).map((s) => ({
-      title: s.title || s.name || 'Alternatif',
-      description: s.description || s.summary || '',
-      meta: s.meta || ''
-    }));
+    return fromExtras.slice(0, 3).map((s) => {
+      const description = formatKonutAlternativeDescription(s);
+      return {
+        title: s.title || s.name || 'Alternatif',
+        description: description || 'Alternatif senaryo — profilinize göre değerlendirin.',
+        meta: s.meta || (s.score != null ? `${s.score}/100` : '')
+      };
+    });
   }
 
   if (cat === 'finansman') {
@@ -682,32 +714,22 @@ export function buildExecutiveSummaryFallbackV3(category, context = {}) {
   const confidence = clampScore(
     context.confidenceScore ?? computeConfidenceScoreV3(cat, context)
   );
-  const level = resolveRecommendationLevel(score, {
-    ...context,
-    riskAnalysis: context.riskAnalysis || buildRiskAnalysisV3(cat, context)
-  });
-  const levelLabel = RECOMMENDATION_LABELS[level] || level;
-  const highRisk = (context.riskAnalysis || []).find((r) => r.level === 'yüksek');
-
-  const positive = (context.scoreFactors || []).filter((f) => String(f.impact).startsWith('+'));
-  const negative = (context.scoreFactors || []).filter((f) => String(f.impact).startsWith('-'));
-
-  const parts = [
-    `${categoryLabel(cat)} kararınız için karar skoru ${score}/100, güven skoru ${confidence}/100 olarak modellenmiştir.`,
-    `Genel öneri seviyesi: ${levelLabel}.`,
-    positive.length ?
-      `Olumlu sinyal: ${positive[0].label} — ${positive[0].reason}.`
-    : 'Profil verileri dengeli görünüyor.',
-    negative.length ?
-      `Dikkat: ${negative[0].label} — ${negative[0].reason}.`
-    : 'Belirgin negatif faktör sınırlı.',
-    highRisk ?
-      `En kritik risk başlığı: ${highRisk.title}.`
-    : 'Kritik risk başlığı sınırlı görünüyor.',
-    'Bu özet karar destek amaçlıdır; finansal, hukuki veya yatırım tavsiyesi değildir. Nihai karar öncesi güncel teklif ve sözleşme koşullarını doğrulayın.'
-  ];
-
-  return parts.join(' ');
+  const input = buildInsightInputFromIntelligence(
+    cat,
+    context,
+    {
+      decisionScore: score,
+      confidenceScore: confidence,
+      scoreFactors: context.scoreFactors,
+      riskAnalysis: context.riskAnalysis,
+      recommendationLevel: context.recommendationLevel,
+      recommendationLabel: context.recommendationLabel || RECOMMENDATION_LABELS[context.recommendationLevel],
+      overallRisk: context.overallRisk || overallRiskLabel(context.riskAnalysis),
+      warnings: context.warnings
+    },
+    { planTier: context.planTier || 'guest' }
+  );
+  return buildExecutiveSummary(input);
 }
 
 function categoryLabel(cat) {
@@ -723,6 +745,21 @@ export function buildNextStepsV3(category, context = {}) {
   const level = context.recommendationLevel;
 
   if (cat === 'konut') {
+    const purpose = String(context.formData?.purchasePurpose || '');
+    if (purpose.includes('Kiralamak')) {
+      const rentalSteps = [
+        'Kira sözleşmesi ve yıllık toplam yaşam maliyetini karşılaştırın.',
+        'Depozito ve aidat kalemlerini netleştirin.',
+        'Bölge kira trendini 3 benzer daire ile doğrulayın.',
+        'Ulaşım ve okul/hastane erişimini yerinde kontrol edin.',
+        'Sözleşmedeki yıllık artış ve tahliye koşullarını okuyun.'
+      ];
+      if (level === 'avoid' || level === 'wait') {
+        rentalSteps.unshift('Kira bütçesi ve depozito planını revize etmeden ilerlemeyin.');
+      }
+      return rentalSteps.slice(0, 6);
+    }
+
     const steps = [
       'Bölge emsallerini ve m² fiyat bandını karşılaştırın.',
       'Kredi ön onayı ve faiz senaryolarını tablolaştırın.',
@@ -812,59 +849,28 @@ export function buildDecisionIntelligenceResult(category, formData = {}, metrics
 /**
  * AI executive summary with V3 context; safe fallback.
  */
-export async function fetchExecutiveSummaryV3(category, context = {}, intelligence = {}) {
+export async function fetchExecutiveSummaryV3(category, context = {}, intelligence = {}, options = {}) {
   const cat = normalizeCategory(category);
-  const fallback = buildExecutiveSummaryFallbackV3(cat, {
-    ...context,
-    ...intelligence,
-    decisionScore: intelligence.decisionScore,
-    confidenceScore: intelligence.confidenceScore,
-    scoreFactors: intelligence.scoreFactors,
-    riskAnalysis: intelligence.riskAnalysis,
-    recommendationLevel: intelligence.recommendationLevel
+  const input = buildInsightInputFromIntelligence(cat, context, intelligence, {
+    planTier: options.planTier || context.planTier || 'guest',
+    locale: options.locale || 'tr-TR',
+    strengths: options.strengths,
+    weaknesses: options.weaknesses,
+    marketAssessment: options.marketAssessment || context.marketAssessment || '',
+    costs: options.costs
   });
 
-  const factorsText = (intelligence.scoreFactors || [])
-    .slice(0, 5)
-    .map((f) => `${f.label} (${f.impact}): ${f.reason}`)
-    .join('; ');
+  const result = await fetchInsightWithProxy(input, {
+    executiveOnly: true,
+    skipProxy: options.skipProxy,
+    timeoutMs: options.timeoutMs ?? 10000
+  });
 
-  const prompt = [
-    'Profesyonel karar danismani gibi Turkce 4-6 cumle yaz.',
-    'Kesin finansal/hukuki/yatirim tavsiyesi verme; karar destek dili kullan.',
-    `Kategori: ${categoryLabel(cat)}`,
-    `Karar skoru: ${intelligence.decisionScore}/100`,
-    `Guven: ${intelligence.confidenceScore}/100`,
-    `Oneri seviyesi: ${intelligence.recommendationLabel || intelligence.recommendationLevel}`,
-    `Risk: ${intelligence.overallRisk}`,
-    factorsText ? `Skor faktorleri: ${factorsText}` : '',
-    intelligence.warnings?.length ? `Uyarilar: ${intelligence.warnings.join('; ')}` : ''
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        context: { category: `${cat}-decision-intelligence-v3` }
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
+  return {
+    text: sanitizeInsightText(result.text, 950),
+    source: result.source === 'ai' ? 'ai' : 'fallback',
+    insight: result.insight
+  };
 }
 
 /**
@@ -872,6 +878,40 @@ export async function fetchExecutiveSummaryV3(category, context = {}, intelligen
  * @param {Array<{label,impact,reason}>} scoreFactors
  * @param {string} classPrefix
  */
+/**
+ * @param {Array<{title?: string, level?: string, description?: string, recommendation?: string}>} riskAnalysis
+ * @param {string} classPrefix
+ */
+export function renderRiskAnalysisHtml(riskAnalysis, classPrefix = 'konut-v2') {
+  const risks = Array.isArray(riskAnalysis) ? riskAnalysis : [];
+  if (!risks.length) return '';
+
+  const esc = escapeHtml;
+  return `
+    <section class="${esc(classPrefix)}-risks" aria-label="Risk analizi">
+      <h3>Risk Özeti</h3>
+      <div class="${esc(classPrefix)}-risk-grid">
+        ${risks
+          .map(
+            (r) => `
+          <article class="${esc(classPrefix)}-risk-card">
+            <div class="${esc(classPrefix)}-risk-card-head">
+              <h4>${esc(r.title || r.key || 'Risk')}</h4>
+              <span class="${esc(classPrefix)}-risk ${esc(classPrefix)}-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level || '—')}</span>
+            </div>
+            <p>${esc(r.description || '')}</p>
+            ${
+              r.recommendation
+                ? `<p class="${esc(classPrefix)}-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>`
+                : ''
+            }
+          </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
 export function renderScoreFactorsHtml(scoreFactors, classPrefix = 'konut-v2') {
   const factors = Array.isArray(scoreFactors) ? scoreFactors : [];
   if (!factors.length) return '';

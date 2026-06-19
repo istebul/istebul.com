@@ -9,25 +9,24 @@ const CSS_BUNDLE_ENTRIES = new Set(['css/style.css']);
  * @param {string} css
  * @param {Map<string, string>} assetRefs originalPath -> hashedPath (e.g. css/foo.css -> css/foo.abc.css)
  */
-function rewriteCssImports(css, assetRefs) {
-  return css.replace(
-    /@import\s+(?:url\()?['"](\.\/)?([^'"]+)['"]\)?\s*;?/g,
-    (match, _dot, importFile) => {
-      const normalized = importFile.replace(/^\.\//, '');
-      const candidates = [
-        `css/${normalized}`,
-        normalized.startsWith('css/') ? normalized : null
-      ].filter(Boolean);
+function rewriteCssImports(css, assetRefs, originalPath, root) {
+  const fileDir = path.dirname(path.join(root, originalPath));
 
-      let hashed = null;
-      for (const key of candidates) {
-        if (assetRefs.has(key)) {
-          hashed = assetRefs.get(key);
-          break;
-        }
-      }
+  return css.replace(
+    /@import\s*(?:url\()?['"]([^'"]+)['"]\)?\s*;?/g,
+    (match, importPath) => {
+      if (/^(https?:|data:)/i.test(importPath)) return match;
+
+      const absImport = path.resolve(fileDir, importPath);
+      const relToRoot = path.relative(root, absImport).split(path.sep).join('/');
+      const hashed = assetRefs.get(relToRoot);
       if (!hashed) return match;
-      return `@import "./${path.basename(hashed)}";`;
+
+      const absHashed = path.join(root, hashed);
+      let relImport = path.relative(fileDir, absHashed).split(path.sep).join('/');
+      if (!relImport.startsWith('.')) relImport = `./${relImport}`;
+
+      return `@import '${relImport}';`;
     }
   );
 }
@@ -75,20 +74,47 @@ function buildHashedCssAssets(opts) {
     staged.set(originalPath, code);
   }
 
-  const provisionalRefs = new Map();
+  let refs = new Map();
   for (const [originalPath, code] of staged) {
-    provisionalRefs.set(originalPath, withHashName(originalPath, hashContent(code)));
+    refs.set(originalPath, withHashName(originalPath, hashContent(code)));
   }
 
-  const rewritten = new Map();
-  for (const [originalPath, code] of staged) {
-    const next =
-      CSS_BUNDLE_ENTRIES.has(originalPath) ? code : rewriteCssImports(code, provisionalRefs);
-    rewritten.set(originalPath, next);
+  let rewritten = new Map();
+  let stable = false;
+  const maxIterations = Math.max(4, entries.length);
+
+  for (let iteration = 0; iteration < maxIterations && !stable; iteration++) {
+    rewritten.clear();
+
+    for (const [originalPath, code] of staged) {
+      const next = CSS_BUNDLE_ENTRIES.has(originalPath)
+        ? code
+        : rewriteCssImports(code, refs, originalPath, root);
+      rewritten.set(originalPath, next);
+    }
+
+    const nextRefs = new Map();
+    for (const [originalPath, code] of rewritten) {
+      nextRefs.set(originalPath, withHashName(originalPath, hashContent(code)));
+    }
+
+    stable = true;
+    for (const [originalPath, hashedPath] of nextRefs) {
+      if (refs.get(originalPath) !== hashedPath) {
+        stable = false;
+        break;
+      }
+    }
+
+    refs = nextRefs;
+  }
+
+  if (!stable) {
+    throw new Error('CSS asset hashing did not stabilize — check @import graph');
   }
 
   for (const [originalPath, code] of rewritten) {
-    const hashedPath = withHashName(originalPath, hashContent(code));
+    const hashedPath = refs.get(originalPath);
     assetRefs.set(originalPath, hashedPath);
     writeFile(hashedPath, code);
   }

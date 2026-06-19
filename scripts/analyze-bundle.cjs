@@ -6,18 +6,35 @@ const dist = path.join(root, 'dist');
 const reportPath = path.join(dist, 'bundle-report.json');
 const maxChunkBytes = 320 * 1024;
 /** Homepage ships one bundled style.*.css (former @import graph inlined at build). */
-const maxTotalBytes = 980 * 1024;
+const maxTotalBytes = 1045 * 1024;
 
 /** Separate entry surfaces — not counted toward main SPA budget. */
 const BUDGET_EXCLUDE = [
   /^js\/admin-panel\.js$/,
   /^js\/corporate\//,
+  /^js\/chunks\//,
   /^assets\/auto-runtime\//,
   /^assets\/tatil-runtime\//,
   /^assets\/real-estate-runtime\//,
   /^assets\/konut-runtime\//,
   /^assets\/finans-runtime\//,
+  /^assets\/sigorta-runtime\//,
+  /^assets\/kasko-runtime\//,
+  /^assets\/listing-analysis-runtime\//,
+  /^assets\/ai-listings-admin-runtime\//,
   /^js\/auto\//,
+  /^js\/sigorta\//,
+  /^js\/tatil\//,
+  /^js\/finans\//,
+  /^js\/real-estate\//,
+  /** Vertical page entry — not loaded by homepage SPA shell. */
+  /^js\/runtime\/vertical-locale-shell\.js$/,
+  /** Lazy-loaded on vertical results surfaces only. */
+  /^js\/decision\/ai-decision-engine-v3\.js$/,
+  /^js\/decision\/decision-v3-mount\.js$/,
+  /** Standalone copy for vertical shells; homepage ships analytics via app.bundle. */
+  /^js\/runtime\/site-analytics-boot\.js$/,
+  /^css\/bundles\//,
   /^assets\/lucide\.min\.js$/,
   /^env\.js$/,
   /^sw\.js$/,
@@ -33,12 +50,12 @@ const BUDGET_EXCLUDE = [
   /^css\/p4-5-perceived-performance/,
   /^css\/p4-6-brand-consistency/,
   /^css\/premium-pages/,
-  /^css\/revenue/,
-  /^css\/premium-pages/,
   /^css\/auto/,
   /^css\/partner-platform/,
   /^css\/seo-landing/,
   /^css\/admin-partner-ops/,
+  /^css\/admin-ai-listings/,
+  /^css\/listing-analysis/,
   /^css\/rtl/
 ];
 

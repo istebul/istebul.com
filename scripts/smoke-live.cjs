@@ -15,15 +15,31 @@ const UA =
   'Mozilla/5.0 (compatible; isteBul-production-smoke/1.0; +https://www.istebul.com)';
 
 const liveRoutes = [
-  { path: '/', must: ['data-ib-route', 'Karar analizini başlat'], status: 200 },
+  { path: '/', must: ['data-ib-route', 'Ön değerlendirmeye başla'], status: 200 },
   { path: '/auto/', must: ['auto-wizard', 'TCO'], status: 200 },
-  { path: '/konut/', must: ['vacation-page', 'konut-page', 'Analize başla'], status: 200, optional: true },
-  { path: '/finans/', must: ['vacation-page', 'finans-page', 'Analize başla'], status: 200, optional: true },
-  { path: '/tatil/', must: ['vacation-page', 'Analize başla'], status: 200, optional: true },
-  { path: '/karar-asistani/', must: ['data-ib-route', 'page-karar-analizi'], status: 200, optional: true },
-  { path: '/karsilastir/', must: ['data-ib-route', 'compare'], status: 200, optional: true },
-  { path: '/ilanlar/', must: ['data-ib-route', 'ilanlar'], status: 200, optional: true },
-  { path: '/profil/', must: ['data-ib-route'], status: 200, optional: true },
+  { path: '/konut/', must: ['Konut Karar', 'housing-page', 'housing-flow'], status: 200, optional: true },
+  { path: '/finans/', must: ['Finansman', 'finans-page', 'finans-flow'], status: 200, optional: true },
+  { path: '/tatil/', must: ['Tatil', 'vacation-page', 'vacation-flow'], status: 200, optional: true },
+  {
+    path: '/sigorta/',
+    must: ['sigorta-page', 'sigorta-wizard', 'Sigorta'],
+    status: 200,
+    optional: true
+  },
+  {
+    path: '/kasko/',
+    must: ['kasko-page', 'kasko-wizard', 'Kasko'],
+    status: 200,
+    optional: true
+  },
+  { path: '/karar-asistani/', must: ['Karar merkezi', 'seo-page'], status: 200, optional: true },
+  { path: '/karsilastir/', must: ['Karşılaştır', 'seo-page'], status: 200, optional: true },
+  { path: '/secenekler/', must: ['Seçenek', 'seo-page'], status: 200, optional: true },
+  { path: '/planlar', must: ['Planlar ve fiyatlandırma', 'seo-page'], status: 200, optional: true },
+  { path: '/blog', must: ['Karar rehberleri', 'seo-page'], status: 200, optional: true },
+  { path: '/duyurular', must: ['isteBul duyuruları', 'seo-page'], status: 200, optional: true },
+  { path: '/kampanyalar', must: ['Aktif kampanyalar', 'seo-page'], status: 200, optional: true },
+  { path: '/profil/', must: ['data-ib-route="profil"', 'Hesabım'], status: 200, optional: true },
   { path: '/sitemap.xml', must: ['<urlset', 'www.istebul.com'], status: 200 },
   { path: '/robots.txt', must: ['Sitemap:', 'User-agent'], status: 200 }
 ];

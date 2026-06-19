@@ -1,6 +1,12 @@
 'use strict';
 
 const { escapeHtml, absoluteUrl } = require('./seo.cjs');
+const { FAVICON_HEAD, CORPORATE_BRAND_LOGO } = require('./favicon-head.cjs');
+const {
+  renderSiteSocialFooterNav,
+  renderSiteSocialBootScripts
+} = require('./site-social-footer.cjs');
+const { renderCorporateFooter, renderKvkkApplyCta } = require('./legal-footer.cjs');
 
 function renderCorporateNav(activePath) {
   const items = [
@@ -23,29 +29,13 @@ function renderCorporateNav(activePath) {
     })
     .join('\n      ');
   return `<header class="auto-header corporate-header">
-    <a class="logo" href="/">isteBul</a>
+    ${CORPORATE_BRAND_LOGO}
     <nav class="corporate-nav" aria-label="Ana navigasyon">
       ${links}
     </nav>
   </header>`;
 }
 
-function renderCorporateFooter() {
-  return `<footer class="corporate-footer">
-    <div>
-      <strong>isteBul</strong>
-      <p>Karar zekâsı platformu — ilan sitesi değil, karar motoru.</p>
-    </div>
-    <nav>
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/metodoloji/">Metodoloji</a>
-      <a href="/iletisim.html">İletişim</a>
-      <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
-      <a href="/partner-olun.html">Partner olun</a>
-    </nav>
-  </footer>`;
-}
 
 function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   const canonical = absoluteUrl(site.baseUrl, canonicalPath);
@@ -60,6 +50,7 @@ function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="${escapeHtml(canonical)}">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  ${FAVICON_HEAD}
   <meta property="og:locale" content="${escapeHtml(site.locale)}">
   <meta property="og:site_name" content="${escapeHtml(site.siteName)}">
   <meta property="og:title" content="${escapeHtml(title)}">
@@ -70,7 +61,10 @@ function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
-  <link rel="stylesheet" href="/css/auto.css?v=4">
+  <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
+  <link rel="stylesheet" href="/css/corporate-shell.css?v=1">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=2">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=2">
   <link rel="stylesheet" href="/css/corporate-pages.css?v=1">${ld}`;
 }
 
@@ -116,6 +110,7 @@ function renderAboutPage(site, page, controller) {
     <p class="corporate-note text-muted-sm">Veri sorumlusu: ${escapeHtml(c.contactPerson)} · <a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a> · <a href="/kvkk.html">KVKK aydınlatma</a></p>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }
@@ -168,6 +163,7 @@ function renderMethodologyPage(site, page) {
     <p class="corporate-disclaimer">Analiz ve skorlar bilgilendirme amaçlıdır; finansal tavsiye veya getiri taahhüdü değildir.</p>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }
@@ -233,6 +229,7 @@ function renderVerticalPage(site, vertical, controllerEmail) {
     <p class="corporate-disclaimer">Bu dikey henüz pilot hazırlığındadır. Tam analiz akışı için şimdilik <a href="/auto/">isteBul Auto</a> kullanılabilir.</p>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }
@@ -259,10 +256,15 @@ function renderKvkkPage(site, controller, retention) {
 </head>
 <body>
   ${renderCorporateNav('/kvkk.html')}
-  <main class="section legal-page corporate-page">
+  <main class="section legal-page corporate-page" id="ziyaretci-aydinlatma">
     <p class="kicker">KVKK</p>
     <h1>Kişisel Verilerin Korunması Aydınlatma Metni</h1>
     <p class="lead">6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) kapsamında, veri sorumlusu sıfatıyla kişisel verilerinizin işlenmesine ilişkin bilgilendirme metnidir.</p>
+
+    <section class="auto-methodology premium-methodology" id="kvkk-bilgilendirme">
+      <div><h3>Kişisel Verilerin Korunması Kanunu hakkında bilgilendirme</h3></div>
+      <p>6698 sayılı Kanun, kişisel verilerin işlenmesinde veri sorumlularına şeffaflık ve ilgili kişi hakları yükümlülüğü getirir. isteBul olarak web sitesi ziyaretçileri, kayıtlı kullanıcılar ve iş ortakları için aşağıdaki aydınlatma metni geçerlidir.</p>
+    </section>
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Veri sorumlusu</h3></div>
@@ -321,6 +323,7 @@ function renderKvkkPage(site, controller, retention) {
     </section>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }

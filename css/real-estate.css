@@ -11,9 +11,15 @@
 * { box-sizing: border-box; }
 body.housing-page {
   margin: 0;
+  overflow-x: clip;
+  max-width: 100%;
   background: radial-gradient(circle at top right, #0f1e48, var(--housing-bg) 46%);
   color: var(--housing-text);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+html:has(body.housing-page) {
+  overflow-x: clip;
 }
 .housing-container { width: min(1200px, calc(100% - 32px)); margin: 0 auto; }
 .housing-header {
@@ -77,6 +83,11 @@ body.housing-page {
   color: var(--housing-accent-2);
 }
 
+.housing-locale-footer {
+  padding: 1rem 0 1.5rem;
+  border-top: 1px solid var(--housing-border);
+}
+
 .housing-hero { padding: 42px 0; }
 .housing-hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: stretch; }
 .glass-card {
@@ -112,15 +123,42 @@ body.housing-page {
 .housing-step-card { padding: 20px; }
 .housing-step-card h2 { margin: 0 0 14px; font-size: 1.2rem; }
 
+.housing-assistant-prefill-hint {
+  margin: 0 0 14px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.06);
+  color: #1e3a8a;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
 .housing-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .housing-option-card, .housing-chip {
   min-height: 44px; border-radius: 12px; border: 1px solid var(--housing-border); background: rgba(7, 14, 33, .86); color: var(--housing-text); cursor: pointer; padding: 12px; text-align: left;
 }
-.housing-option-card.is-selected, .housing-chip.is-selected { border-color: rgba(53, 209, 255, .9); background: rgba(53, 209, 255, .16); }
+.housing-option-card.is-selected, .housing-chip.is-selected { border-color: rgba(53, 209, 255, .9); background: rgba(53, 209, 255, .16); color: var(--housing-text); }
+
+/* Wizard (beyaz adım kartı): koyu chip stili devre dışı — konut-wizard-cards-v1.css ile tamamlanır */
+.housing-step-card .housing-option-card,
+.housing-step-card .housing-chip {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+.housing-step-card .housing-option-card.is-selected,
+.housing-step-card .housing-chip.is-selected {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1e40af;
+}
 .housing-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .housing-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .housing-form-grid--budget { grid-template-columns: 1fr; gap: 12px; }
+.housing-form-span { grid-column: 1 / -1; }
 @media (min-width: 640px) {
   .housing-form-grid--budget { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -225,5 +263,108 @@ body.housing-page {
   #housing-nav a {
     width: 100%;
     padding: 6px 0;
+  }
+}
+
+/* Konut sonuç V2 — koyu sayfa üzerinde her zaman okunaklı (bundle/import önbelleğinden bağımsız) */
+body.housing-page #housing-results .konut-v2-root,
+body.housing-page #housing-results .konut-v2-panel {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+body.housing-page #housing-results .konut-v2-kicker,
+body.housing-page #housing-results .konut-v2-band,
+body.housing-page #housing-results .konut-v2-exec-hint,
+body.housing-page #housing-results .konut-v2-pdf-hint,
+body.housing-page #housing-results .konut-v2-kpi > span,
+body.housing-page #housing-results .konut-v2-kpi strong small,
+body.housing-page #housing-results .konut-v2-kpi--cost small {
+  color: #64748b;
+}
+
+body.housing-page #housing-results .konut-v2-title,
+body.housing-page #housing-results .konut-v2-band strong,
+body.housing-page #housing-results .konut-v2-kpi strong,
+body.housing-page #housing-results .konut-v2-block h3,
+body.housing-page #housing-results .konut-v2-cost-grid h3,
+body.housing-page #housing-results .konut-v2-risks h3,
+body.housing-page #housing-results .konut-v2-alts h3,
+body.housing-page #housing-results .konut-v2-factors-details > summary {
+  color: #0f172a;
+}
+
+body.housing-page #housing-results .konut-v2-band-label,
+body.housing-page #housing-results .konut-v2-rec-level {
+  color: #2563eb;
+}
+
+body.housing-page #housing-results .konut-v2-kpi,
+body.housing-page #housing-results .konut-v2-factors-details,
+body.housing-page #housing-results .konut-v2-block,
+body.housing-page #housing-results .konut-v2-cost-grid,
+body.housing-page #housing-results .konut-v2-risk-card,
+body.housing-page #housing-results .konut-v2-alt-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__card {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__head h2,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__value {
+  color: #0f172a;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__label,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__date,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__meta,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__refresh {
+  color: #64748b;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .ib-premium-dashboard {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+/* Decision Engine V3 / Decision OS — koyu konut sayfasında okunaklı yüzey */
+body.housing-page #housing-results .decision-v3-root,
+body.housing-page #housing-results .decision-v3-mount,
+body.housing-page #housing-results .dos-root,
+body.housing-page #housing-results .decision-os-mount {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(h2, h3, strong) {
+  color: #0f172a !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(p:not(.decision-v3-kicker), li) {
+  color: #334155 !important;
+}
+
+body.housing-page #housing-results .decision-v3-kicker {
+  color: #2563eb !important;
+}
+
+@media (max-width: 390px) {
+  .housing-assistant-prefill-hint {
+    font-size: 0.82rem;
+    padding: 0.65rem 0.75rem;
   }
 }

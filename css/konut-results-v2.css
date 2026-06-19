@@ -1,15 +1,28 @@
 /**
- * Auto Results V2 (Sprint 1) — premium SaaS panel (mobile + dark mode uyumlu).
- * Mevcut Auto premium tasarım diline uyumlu, izole sınıf isimleri.
+ * Konut Results V2 — premium SaaS panel (mobile + dark mode uyumlu).
  */
+@import 'results-economic-indicators.css';
+@import 'home-economic-indicators.css';
+@import 'results-hero-layout.css';
+
+/* V2 aktifken legacy panelleri gizle — tek kaynak V2 hero */
+body.housing-page #housing-results .konut-v2-root ~ .ib-premium-dashboard,
+body.housing-page #housing-results .konut-v2-root ~ .housing-result-grid,
+body.housing-page #housing-results .konut-v2-root ~ .housing-result-actions,
+body.housing-page #housing-results .konut-v2-root ~ .housing-result-contact,
+body.housing-page #housing-results .konut-v2-root ~ .result-disclaimer,
+body.housing-page #housing-results .konut-v2-root ~ .housing-login-hint {
+  display: none !important;
+}
+
 .konut-v2-root {
-  margin: 1.25rem 0 1.75rem;
+  margin: 0.75rem 0 1rem;
 }
 
 .konut-v2-panel {
-  --v2-surface: rgba(255, 255, 255, 0.96);
-  --v2-elev: rgba(248, 250, 252, 0.9);
-  --v2-border: rgba(148, 163, 184, 0.35);
+  --v2-surface: #ffffff;
+  --v2-elev: #f8fafc;
+  --v2-border: rgba(226, 232, 240, 0.95);
   --v2-text: #0f172a;
   --v2-muted: #64748b;
   --v2-accent: var(--primary, #2563eb);
@@ -18,78 +31,147 @@
   --v2-danger: #dc2626;
 
   border: 1px solid var(--v2-border);
-  border-radius: 18px;
-  padding: clamp(1rem, 3vw, 1.5rem);
-  background: radial-gradient(1200px 420px at 15% -10%, rgba(37, 99, 235, 0.12), transparent 55%),
-    radial-gradient(800px 320px at 90% 5%, rgba(99, 102, 241, 0.10), transparent 60%),
-    var(--v2-surface);
+  border-radius: 12px;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  background: var(--v2-surface);
   color: var(--v2-text);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 50px rgba(15, 23, 42, 0.10);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 20px rgba(15, 23, 42, 0.06);
+}
+
+/* Koyu konut sayfasında sonuç kartları her zaman okunaklı */
+body.housing-page #housing-results .konut-v2-root,
+body.housing-page #housing-results .konut-v2-panel {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+body.housing-page #housing-results .konut-v2-kicker,
+body.housing-page #housing-results .konut-v2-band,
+body.housing-page #housing-results .konut-v2-exec-hint,
+body.housing-page #housing-results .konut-v2-pdf-hint,
+body.housing-page #housing-results .konut-v2-kpi > span,
+body.housing-page #housing-results .konut-v2-kpi strong small,
+body.housing-page #housing-results .konut-v2-kpi--cost small {
+  color: #64748b;
+}
+
+body.housing-page #housing-results .konut-v2-kpi,
+body.housing-page #housing-results .konut-v2-factors-details {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+body.housing-page #housing-results .konut-v2-title,
+body.housing-page #housing-results .konut-v2-band strong,
+body.housing-page #housing-results .konut-v2-kpi strong,
+body.housing-page #housing-results .konut-v2-factors-details > summary,
+body.housing-page #housing-results .konut-v2-block h3,
+body.housing-page #housing-results .konut-v2-cost-grid h3,
+body.housing-page #housing-results .konut-v2-risks h3,
+body.housing-page #housing-results .konut-v2-alts h3 {
+  color: #0f172a;
+}
+
+body.housing-page #housing-results .konut-v2-band-label {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+body.housing-page #housing-results .konut-v2-rec-level {
+  color: #1d4ed8;
 }
 
 @media (prefers-color-scheme: dark) {
   .konut-v2-panel {
-    --v2-surface: rgba(15, 23, 42, 0.92);
-    --v2-elev: rgba(30, 41, 59, 0.86);
-    --v2-border: rgba(148, 163, 184, 0.28);
-    --v2-text: #f1f5f9;
-    --v2-muted: #94a3b8;
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+    --v2-surface: #ffffff;
+    --v2-elev: #f8fafc;
+    --v2-border: rgba(148, 163, 184, 0.35);
+    --v2-text: #0f172a;
+    --v2-muted: #64748b;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
   }
 }
 
 .konut-v2-hero {
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
 }
 
 .konut-v2-kicker {
-  margin: 0 0 0.35rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  margin: 0 0 0.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--v2-muted);
+  font-weight: 600;
 }
 
 .konut-v2-title {
   margin: 0;
-  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
-  line-height: 1.2;
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.konut-v2-band {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--v2-muted);
+  font-weight: 600;
+}
+
+.konut-v2-band strong {
+  color: var(--v2-text);
+  font-weight: 800;
 }
 
 .konut-v2-kpis {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 640px) {
   .konut-v2-kpis {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.konut-v2-kpis--secondary {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .konut-v2-kpis--secondary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 .konut-v2-kpi {
   border: 1px solid var(--v2-border);
   background: var(--v2-elev);
-  border-radius: 14px;
-  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.12rem;
 }
 
 .konut-v2-kpi > span {
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--v2-muted);
+  font-weight: 600;
 }
 
 .konut-v2-kpi strong {
-  font-size: 1.18rem;
+  font-size: 0.98rem;
   line-height: 1.2;
+  font-weight: 700;
 }
 
 .konut-v2-kpi strong small {
@@ -104,11 +186,11 @@
 }
 
 .konut-v2-bar {
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(148, 163, 184, 0.22);
   overflow: hidden;
-  margin-top: 0.35rem;
+  margin-top: 0.2rem;
 }
 
 .konut-v2-bar span {
@@ -143,10 +225,222 @@
   color: var(--v2-danger);
 }
 
+.konut-v2-factors-details {
+  margin: 0 0 0.6rem;
+  border: 1px solid var(--v2-border);
+  border-radius: 10px;
+  background: var(--v2-elev);
+}
+
+.konut-v2-factors-details > summary {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--v2-text);
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.konut-v2-factors-details[open] > summary {
+  border-bottom: 1px solid var(--v2-border);
+}
+
+.konut-v2-factors-details .konut-v2-factors {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0.5rem 0.65rem 0.55rem;
+  background: transparent;
+}
+
+.konut-v2-factors-details .konut-v2-factors h3 {
+  display: none;
+}
+
+.konut-v2-evds-mount.ib-results-economic-mount {
+  margin: 0 0 0.6rem;
+}
+
+.konut-v2-evds-mount .ib-home-economic__card {
+  margin: 0;
+  padding: 0.75rem 0.85rem 0.65rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.konut-v2-evds-mount .ib-home-economic__head h2 {
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.konut-v2-evds-mount .ib-home-economic__refresh,
+.konut-v2-evds-mount .ib-home-economic__meta {
+  color: #64748b;
+}
+
+.konut-v2-evds-mount .ib-home-economic__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.konut-v2-evds-mount .ib-home-economic__item {
+  padding: 0.5rem 0.55rem;
+  background: #fff;
+}
+
+.konut-v2-evds-mount .ib-home-economic__label {
+  color: #64748b;
+}
+
+.konut-v2-evds-mount .ib-home-economic__value {
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+.konut-v2-evds-mount .ib-home-economic__date {
+  color: #64748b;
+}
+
+@media (max-width: 520px) {
+  .konut-v2-evds-mount .ib-home-economic__grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+}
+
+/* AFAD deprem aktivite katmanı — bilgilendirme amaçlı (ana skoru değiştirmez) */
+.konut-v2-root .ib-afad-risk-layer {
+  margin: 0 0 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.22);
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.92) 0%, rgba(255, 255, 255, 1) 100%);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.konut-v2-root .ib-afad-risk-layer__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--high {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--medium {
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--low {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--unavailable {
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+}
+
+.konut-v2-root .ib-afad-risk-layer__summary {
+  margin: 0 0 0.55rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.konut-v2-root .ib-afad-risk-layer__bullets {
+  margin: 0 0 0.55rem;
+  padding-left: 1rem;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.konut-v2-root .ib-afad-risk-layer__bullets li + li {
+  margin-top: 0.3rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__indicators {
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__ind-heading {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  color: #64748b;
+}
+
+.konut-v2-root .ib-afad-risk-layer__indicators ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__indicators li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__ind-label {
+  color: #64748b;
+}
+
+.konut-v2-root .ib-afad-risk-layer__attribution {
+  margin: 0 0 0.25rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.konut-v2-root .ib-afad-risk-layer__disclaimer {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+@media (max-width: 520px) {
+  .konut-v2-root .ib-afad-risk-layer {
+    padding: 0.8rem 0.85rem;
+  }
+
+  .konut-v2-root .ib-afad-risk-layer__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .konut-v2-grid {
   display: grid;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
 @media (min-width: 820px) {
@@ -158,24 +452,32 @@
 .konut-v2-block {
   border: 1px solid var(--v2-border);
   background: var(--v2-elev);
-  border-radius: 14px;
-  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
 }
 
 .konut-v2-block h3 {
-  margin: 0 0 0.6rem;
-  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--v2-text);
 }
 
 .konut-v2-block ul,
 .konut-v2-block ol {
   margin: 0;
-  padding-left: 1.15rem;
-  font-size: 0.92rem;
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  color: var(--v2-text);
+}
+
+.konut-v2-block li {
+  color: #475569;
+  line-height: 1.45;
 }
 
 .konut-v2-block li + li {
-  margin-top: 0.35rem;
+  margin-top: 0.2rem;
 }
 
 .konut-v2-alts h3 {
@@ -198,18 +500,13 @@
   border: 1px solid var(--v2-border);
   border-radius: 14px;
   padding: 0.85rem 0.95rem;
-  background: rgba(255, 255, 255, 0.55);
-}
-
-@media (prefers-color-scheme: dark) {
-  .konut-v2-alt-card {
-    background: rgba(15, 23, 42, 0.35);
-  }
+  background: #ffffff;
 }
 
 .konut-v2-alt-card h4 {
   margin: 0 0 0.35rem;
   font-size: 0.9rem;
+  color: var(--v2-text);
 }
 
 .konut-v2-alt-card p {
@@ -244,41 +541,74 @@
   color: var(--v2-muted);
 }
 
-.konut-v2-actions {
+body.housing-page #housing-results .konut-v2-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.65rem;
   margin-top: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.housing-page #housing-results .konut-v2-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  body.housing-page #housing-results .konut-v2-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  body.housing-page #housing-results .konut-v2-actions .btn {
+    width: auto;
+    flex: 0 1 auto;
+  }
+}
+
+.konut-v2-login-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--v2-muted);
+  width: 100%;
+}
+
+.konut-v2-login-hint a {
+  color: var(--v2-accent);
+  font-weight: 600;
+}
+
+.konut-v2-action-feedback {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--v2-success);
+  width: 100%;
 }
 
 @media print {
-  .konut-v2-actions { display: none; }
+  body.housing-page #housing-results .konut-v2-actions { display: none; }
   .konut-v2-panel { box-shadow: none; }
 }
 
 
-.konut-v2-band {
-  margin: 0.35rem 0 0;
-  font-size: 0.92rem;
-  color: var(--v2-muted);
-  font-weight: 600;
-}
-
 .konut-v2-estimate-note {
-  margin: 0 0 1rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  margin: 0 0 0.65rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
   background: rgba(217, 119, 6, 0.12);
   border: 1px solid rgba(217, 119, 6, 0.35);
-  color: var(--v2-text);
+  color: #92400e;
 }
 
 .konut-v2-cost-grid {
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
   border: 1px solid var(--v2-border);
-  border-radius: 14px;
-  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
   background: var(--v2-elev);
 }
 
@@ -394,16 +724,16 @@
 }
 
 .konut-v2-factors {
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
   border: 1px solid var(--v2-border);
-  border-radius: 14px;
-  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
   background: var(--v2-elev);
 }
 
 .konut-v2-factors h3 {
-  margin: 0 0 0.5rem;
-  font-size: 0.92rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
 }
 
 .konut-v2-factor-list {
@@ -415,13 +745,135 @@
 .konut-v2-factor-list li {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.25rem 0.65rem;
-  font-size: 0.85rem;
-  padding: 0.35rem 0;
+  gap: 0.15rem 0.5rem;
+  font-size: 0.76rem;
+  padding: 0.28rem 0;
   border-bottom: 1px dashed var(--v2-border);
+  color: #334155;
+}
+
+.konut-v2-factor-list li strong,
+.konut-v2-factor-list li span:last-child {
+  color: #475569;
 }
 
 .konut-v2-factor-impact {
   font-weight: 800;
   color: var(--v2-accent);
+}
+
+/* Hero premium polish — score/güven rozetleri + hafif glow */
+.konut-v2-hero-wrap {
+  margin-bottom: 0.75rem;
+  padding: 0.65rem;
+  border-radius: 14px;
+  background: radial-gradient(900px 280px at 12% -20%, rgba(124, 58, 237, 0.1), transparent 58%),
+    radial-gradient(640px 220px at 92% 0%, rgba(37, 99, 235, 0.08), transparent 55%),
+    #ffffff;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1), 0 10px 28px rgba(124, 58, 237, 0.07);
+}
+
+.konut-v2-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.konut-v2-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--v2-border);
+  background: var(--v2-elev);
+  color: var(--v2-muted);
+}
+
+.konut-v2-hero-badge strong {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--v2-text);
+}
+
+.konut-v2-hero-badge--score {
+  border-color: rgba(124, 58, 237, 0.28);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.konut-v2-hero-badge--confidence {
+  border-color: rgba(37, 99, 235, 0.28);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.konut-v2-warnings {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(255, 251, 235, 0.92);
+}
+
+.konut-v2-warnings h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+  color: #92400e;
+}
+
+.konut-v2-warnings__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #78350f;
+}
+
+.konut-v2-warnings__list li + li {
+  margin-top: 0.25rem;
+}
+
+/* Mobil — yatay taşma önleme */
+@media (max-width: 768px) {
+  body.housing-page {
+    overflow-x: clip;
+  }
+
+  body.housing-page main,
+  body.housing-page #housing-flow {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.housing-page #housing-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.housing-page #housing-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.housing-page #housing-results .konut-v2-panel,
+  body.housing-page #housing-results .konut-v2-hero-wrap,
+  body.housing-page #housing-results .ib-results-hero-shell,
+  body.housing-page #housing-results .konut-v2-cost-dl,
+  body.housing-page #housing-results .konut-v2-rate-table {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.housing-page #housing-results .konut-v2-hero-badges {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

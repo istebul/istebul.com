@@ -11,6 +11,7 @@ import {
 import { STORAGE_KEYS, readStorageRaw } from './storage-keys.js';
 import { SCALE_LIMITS, dedupeAnalyticsQueue } from './scale-limits.js';
 import { shouldSampleAnalyticsEvent } from './unit-economics.js';
+import { buildTrafficContext } from './analytics-internal.js';
 
 const SESSION_KEY = STORAGE_KEYS.ANALYTICS_SESSION;
 const ANON_KEY = STORAGE_KEYS.ANALYTICS_ANON;
@@ -195,11 +196,12 @@ export class Analytics {
     });
   }
 
-  track(eventName, properties = {}, meta = {}) {
+  async track(eventName, properties = {}, meta = {}) {
     if (!this.hasConsent() && !meta.force) return;
     if (!shouldSampleAnalyticsEvent(eventName)) return;
 
     const attribution = this.getAttribution();
+    const traffic_context = await buildTrafficContext();
     const payload = {
       event_name: eventName,
       event_category: meta.category,
@@ -216,7 +218,15 @@ export class Analytics {
       email: meta.email || properties.email || null,
       phone: meta.phone || properties.phone || null,
       revenue_cents: meta.revenue_cents || properties.revenue_cents || 0,
-      properties,
+      properties: {
+        ...properties,
+        traffic_context,
+        utm_source: attribution.utm_source || null,
+        utm_medium: attribution.utm_medium || null,
+        utm_campaign: attribution.utm_campaign || null,
+        referrer: attribution.referrer || null,
+        landing_page: attribution.landing_path || this.getPagePath()
+      },
       attribution,
       idempotency_key: meta.idempotency_key || null
     };
@@ -325,10 +335,6 @@ export class Analytics {
     if (!this.queue.length) return;
     if (!this.hasConsent()) return;
 
-    const supabaseUrl = window.__env?.SUPABASE_URL;
-    const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) return;
-
     const batch = this.queue.splice(0, SCALE_LIMITS.analytics.flushBatch);
     const attribution = this.getAttribution();
     const body = JSON.stringify({
@@ -348,19 +354,20 @@ export class Analytics {
       events: batch
     });
 
-    const url = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/analytics-ingest`;
+    const url = '/api/analytics-ingest';
 
     try {
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`
+          'Content-Type': 'application/json'
         },
         body,
         keepalive: Boolean(options.beacon)
       });
+      if (!res.ok) {
+        this.queue.unshift(...batch);
+      }
     } catch {
       this.queue.unshift(...batch);
     }

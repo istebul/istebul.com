@@ -6,6 +6,8 @@
 import { escapeHtml } from '../core/security.js';
 import { formatMoney } from '../core/format.js';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
+import { buildDecisionInsight, normalizeInsightInput } from '../features/ai/ai-insight-engine.js';
+import { getResultsPlanContext } from '../features/billing/paywall-v1.js';
 import { buildExplanationBundle } from '../features/moat/ai-explanation-experience.js';
 
 export const COMMENTARY_SCHEMA_KEYS = [
@@ -92,8 +94,20 @@ export function buildDeterministicDecisionCommentary(results = [], formData = {}
   const confidence_level =
     confidenceTier === 'high' ? 'yüksek' : confidenceTier === 'medium' ? 'orta' : 'düşük';
 
+  const { planTier } = getResultsPlanContext();
+
+  const insightInput = normalizeInsightInput({
+    vertical: 'auto',
+    answers: formData,
+    scores: { decision: leader?.score, overallRisk: leader?.risks?.length >= 2 ? 'Orta' : 'Düşük' },
+    costs: costs ? { budget: formData.budget, tco12: costs.months12 } : {},
+    risks: leader?.risks || [],
+    recommendation: { name: leader?.name },
+    planTier
+  });
+  const autoInsight = buildDecisionInsight(insightInput);
   const executive_summary = leader
-    ? `${leader.name} profil uyumunda öne çıkıyor (${leader.score}/100 kural skoru). Karar; tek fiyat etiketi değil, 12–36 aylık toplam yük ve kullanım amacınızla birlikte okunmalıdır.`
+    ? autoInsight.summary
     : 'Profil girdilerine göre referans modeller sıralandı; bağlayıcı satın alma önerisi değildir.';
 
   const profile_fit = bundle.profileSummary || 'Profil özeti sınırlı — sonuçları teklif doğrulaması ile okuyun.';
@@ -269,7 +283,7 @@ export function renderStructuredCommentaryPanel(commentary, options = {}) {
 
   const stateLabel =
     state === 'loading'
-      ? 'AI yorumu hazırlanıyor…'
+      ? 'Karar yorumu oluşturuluyor…'
       : state === 'error'
         ? 'AI yorumu üretilemedi — kural tabanlı analiz gösteriliyor'
         : state === 'fallback'
@@ -339,7 +353,7 @@ export function hydrateStructuredCommentary(root, commentary, options = {}) {
   if (status) {
     status.textContent =
       options.state === 'loading'
-        ? 'AI yorumu hazırlanıyor…'
+        ? 'Karar yorumu oluşturuluyor…'
         : options.state === 'error'
           ? 'AI yorumu üretilemedi — kural tabanlı analiz'
           : options.state === 'fallback'

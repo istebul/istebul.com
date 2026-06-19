@@ -113,7 +113,17 @@ export class AuthManager {
         }
 
         if (modalHeader) {
-            modalHeader.textContent = getAuthModalTitle(type, options.intent === 'checkout');
+            const titleKey =
+                options.intent === 'checkout'
+                    ? type === 'register'
+                        ? 'auth.checkoutRegisterTitle'
+                        : 'auth.checkoutLoginTitle'
+                    : type === 'login'
+                      ? 'auth.loginTitle'
+                      : 'auth.registerTitle';
+            modalHeader.dataset.i18n = titleKey;
+            modalHeader.textContent =
+                window.__ibI18n?.t(titleKey) || getAuthModalTitle(type, options.intent === 'checkout');
         }
 
         const intentBanner = options.intent === 'checkout'
@@ -124,6 +134,7 @@ export class AuthManager {
             : '';
 
         modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
+        window.__ibI18n?.applyTranslations?.();
         modal.classList.add('auth-modal', 'auth-modal-premium');
         document.body.classList.add('modal-open');
 
@@ -163,11 +174,11 @@ export class AuthManager {
             <p class="auth-trust-line">Oturum bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
             <form id="login-form" data-enterprise-form novalidate>
                 <div class="form-group">
-                    <label for="email">E-posta</label>
+                    <label for="email" data-i18n="auth.email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Şifre</label>
+                    <label for="password" data-i18n="auth.password">Şifre</label>
                     <div class="password-field">
                         <input type="password" id="password" name="password" autocomplete="current-password" required>
                         <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
@@ -177,8 +188,8 @@ export class AuthManager {
             </form>
             ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Şifrenizi mi unuttunuz? <button type="button" class="auth-inline-link" id="forgot-password">Sıfırlayın</button></p>
-                <p>Hesabınız yok mu? <button type="button" class="auth-inline-link" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</button></p>
+                <p><span data-i18n="auth.forgotPrompt">Şifrenizi mi unuttunuz?</span> <button type="button" class="auth-inline-link" id="forgot-password" data-i18n="auth.resetPassword">Sıfırlayın</button></p>
+                <p><span data-i18n="auth.noAccount">Hesabınız yok mu?</span> <button type="button" class="auth-inline-link" id="switch-to-register" data-i18n="auth.switchToRegister">${CONVERSION_COPY.auth.switchToRegister}</button></p>
             </div>
         `;
     }
@@ -225,15 +236,15 @@ export class AuthManager {
             <p class="auth-trust-line">Kayıt bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
             <form id="register-form" data-enterprise-form>
                 <div class="form-group">
-                    <label for="full-name">Ad Soyad</label>
+                    <label for="full-name" data-i18n="auth.fullName">Ad Soyad</label>
                     <input type="text" id="full-name" name="full-name" autocomplete="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">E-posta</label>
+                    <label for="email" data-i18n="auth.email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Şifre</label>
+                    <label for="password" data-i18n="auth.password">Şifre</label>
                     <div class="password-field">
                         <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
                         <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
@@ -257,7 +268,7 @@ export class AuthManager {
             </form>
             ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Zaten hesabınız var mı? <button type="button" class="auth-inline-link" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</button></p>
+                <p><span data-i18n="auth.haveAccount">Zaten hesabınız var mı?</span> <button type="button" class="auth-inline-link" id="switch-to-login" data-i18n="auth.switchToLogin">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }

@@ -2,7 +2,9 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   isSchemaMissingError,
-  PARTNER_APPLICATIONS_BASE_SELECT
+  PARTNER_APPLICATIONS_BASE_SELECT,
+  collectAdminWarnings,
+  collectAdminFallbackNotes
 } from '../../js/admin/admin-query.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -40,5 +42,33 @@ describe('admin-query', () => {
   it('base partner applications select excludes partner_endpoint_id', () => {
     assert.equal(PARTNER_APPLICATIONS_BASE_SELECT.includes('partner_endpoint_id'), false);
     assert.equal(PARTNER_APPLICATIONS_BASE_SELECT.includes('company_name'), true);
+  });
+
+  it('treats admin-action fallback as info note, not critical warning', () => {
+    const batch = [
+      {
+        table: 'subscriptions',
+        source: 'admin-action',
+        directError: 'permission denied',
+        data: [{ status: 'active' }]
+      }
+    ];
+    assert.equal(collectAdminWarnings(batch).length, 0);
+    assert.equal(collectAdminFallbackNotes(batch).length, 1);
+    assert.match(collectAdminFallbackNotes(batch)[0], /admin-action/);
+  });
+
+  it('warns when lifecycle tables missing and no rows loaded', () => {
+    const batch = [
+      {
+        table: 'lifecycle_enrollments',
+        source: 'admin-action',
+        schemaMissing: true,
+        directError: 'Could not find the table in schema cache',
+        data: []
+      }
+    ];
+    assert.equal(collectAdminWarnings(batch).length, 1);
+    assert.equal(collectAdminFallbackNotes(batch).length, 0);
   });
 });

@@ -1,0 +1,238 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+const {
+  normalizeAutoUsage,
+  normalizeAutoBody,
+  normalizeTatilGoal,
+  buildAssistantInsightInput,
+  buildVerticalContinueHref
+} = await import('../../js/features/assistant/assistant-category-bridge.js');
+
+test('normalizeAutoUsage maps assistant enums to vertical', () => {
+  assert.equal(normalizeAutoUsage('longRoad'), 'long');
+  assert.equal(normalizeAutoUsage('prestige'), 'business');
+  assert.equal(normalizeAutoUsage('city'), 'city');
+});
+
+test('normalizeAutoBody maps mpv to suv', () => {
+  assert.equal(normalizeAutoBody('mpv'), 'suv');
+  assert.equal(normalizeAutoBody('sedan'), 'sedan');
+});
+
+test('normalizeTatilGoal maps vacation types', () => {
+  assert.equal(normalizeTatilGoal('familyResort'), 'deniz');
+  assert.equal(normalizeTatilGoal('culture'), 'kultur');
+  assert.equal(normalizeTatilGoal('luxury'), 'luks-resort');
+});
+
+test('bootstrapTatilFromAssistantQuery applies goal budget and travelers', async () => {
+  const { bootstrapTatilFromAssistantQuery } = await import(
+    '../../js/features/assistant/assistant-vertical-bootstrap.js'
+  );
+  const state = { vacation_goal: '', budget_range: '', travelers_count: '', people_type: '' };
+  bootstrapTatilFromAssistantQuery(
+    state,
+    new URLSearchParams('goal=culture&budget=95000&travelers=couple&priority=premium')
+  );
+  assert.equal(state.vacation_goal, 'kultur');
+  assert.equal(state.budget_range, 'manuel');
+  assert.equal(state.budget_total, 95000);
+  assert.equal(state.people_type, 'cift');
+  assert.equal(state.travelers_count, '2');
+  assert.equal(state.comfort_expectation, 'luks');
+});
+
+test('buildAssistantInsightInput enriches finansman costs', () => {
+  const input = buildAssistantInsightInput(
+    'finansman',
+    { name: 'Finansman' },
+    {
+      name: 'Dengeli vade',
+      score: 82,
+      price: 500000,
+      financeComparisons: [{ monthlyPayment: 18500, term: 36 }]
+    },
+    { purpose: 'arac', term: '36', budget: '500000' },
+    []
+  );
+  assert.equal(input.vertical, 'finansman');
+  assert.equal(input.costs.monthlyPayment, 18500);
+  assert.equal(input.answers.term_months, '36');
+});
+
+test('bootstrapAutoFromAssistantQuery applies usage budget fuel and body', async () => {
+  const { bootstrapAutoFromAssistantQuery } = await import(
+    '../../js/features/assistant/assistant-vertical-bootstrap.js'
+  );
+  const state = { budget: '', usage: '', fuel: '', body: '' };
+  bootstrapAutoFromAssistantQuery(
+    state,
+    new URLSearchParams('budget=1800000&usage=longRoad&fuel=hybrid&body=suv')
+  );
+  assert.equal(state.usage, 'long');
+  assert.equal(state.budget, 'custom');
+  assert.equal(state.budget_custom, '1800000');
+  assert.equal(state.fuel, 'hybrid');
+  assert.equal(state.body, 'suv');
+});
+
+test('buildVerticalContinueHref carries finansman query params with purpose-aware term', () => {
+  const href = buildVerticalContinueHref('finansman', {
+    purpose: 'konut',
+    budget: '1200000',
+    term: '60',
+    capacity: '40k',
+    rateSensitivity: 'dusuk'
+  });
+  assert.match(href, /purpose=konut/);
+  assert.match(href, /amount=1200000/);
+  assert.match(href, /term=60/);
+  assert.match(href, /capacity=40k/);
+  assert.match(href, /rate_sensitivity=dusuk/);
+});
+
+test('buildVerticalContinueHref carries kasko deep prefill with fork-gated fields', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'otomobil',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /vehicle=otomobil/);
+  assert.match(href, /year=0-3/);
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /coverage=standard/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+});
+
+test('buildVerticalContinueHref omits numeric budget from kasko href', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'otomobil',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta',
+    budget: '50000'
+  });
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+  assert.doesNotMatch(href, /budget=50000/);
+  assert.doesNotMatch(href, /amount=/);
+});
+
+test('buildVerticalContinueHref omits kasko coverage when vehicle fork rejects mini for suv', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'suv',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'mini',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /vehicle=suv/);
+  assert.match(href, /usage_type=ozel/);
+  assert.doesNotMatch(href, /coverage=mini/);
+  assert.doesNotMatch(href, /coverage=/);
+});
+
+test('buildVerticalContinueHref omits kasko usage when vehicle fork rejects ozel for ticari_arac', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'ticari_arac',
+    vehicle_year_band: '4-10',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /vehicle=ticari_arac/);
+  assert.doesNotMatch(href, /usage_type=ozel/);
+  assert.doesNotMatch(href, /coverage=/);
+});
+
+test('buildVerticalContinueHref omits kasko coverage full for motosiklet fork', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'motosiklet',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'full',
+    risk_perception: 'orta',
+    budget_level: 'dusuk'
+  });
+  assert.match(href, /vehicle=motosiklet/);
+  assert.match(href, /usage_type=ozel/);
+  assert.doesNotMatch(href, /coverage=full/);
+  assert.doesNotMatch(href, /coverage=/);
+});
+
+test('buildVerticalContinueHref carries sigorta arac deep prefill with type gate', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=arac/);
+  assert.match(href, /license_years=3-10/);
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+});
+
+test('buildVerticalContinueHref carries sigorta konut property_role', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'konut',
+    property_role: 'malik',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /property_role=malik/);
+});
+
+test('buildVerticalContinueHref carries sigorta seyahat destination and trip duration', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'seyahat',
+    destination_type: 'schengen',
+    trip_duration: '8-15',
+    risk_perception: 'orta'
+  });
+  assert.match(href, /destination_type=schengen/);
+  assert.match(href, /trip_duration=8-15/);
+});
+
+test('buildVerticalContinueHref omits numeric budget from sigorta href', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    risk_perception: 'orta',
+    budget_level: 'orta',
+    budget: '75000'
+  });
+  assert.doesNotMatch(href, /budget=75000/);
+});
+
+test('buildVerticalContinueHref omits sigorta saglik type-gated deep prefill fields', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'saglik',
+    property_role: 'malik',
+    usage_type: 'ozel',
+    destination_type: 'schengen',
+    trip_duration: '8-15',
+    risk_perception: 'dusuk',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=saglik/);
+  assert.match(href, /risk=dusuk/);
+  assert.match(href, /budget_level=orta/);
+  assert.doesNotMatch(href, /property_role=/);
+  assert.doesNotMatch(href, /usage_type=/);
+  assert.doesNotMatch(href, /destination_type=/);
+  assert.doesNotMatch(href, /trip_duration=/);
+});

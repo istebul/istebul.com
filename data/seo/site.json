@@ -13,11 +13,16 @@
     { "loc": "/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/auto/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/metodoloji/", "priority": "0.9", "changefreq": "monthly" },
+    { "loc": "/veri-kaynaklari/", "priority": "0.75", "changefreq": "monthly" },
+    { "loc": "/rehber/", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/konut/", "priority": "0.75", "changefreq": "weekly" },
     { "loc": "/tatil/", "priority": "0.75", "changefreq": "weekly" },
     { "loc": "/finans/", "priority": "0.75", "changefreq": "weekly" },
     { "loc": "/planlar", "priority": "0.9", "changefreq": "weekly" },
-    { "loc": "/karar-analizi", "priority": "0.85", "changefreq": "weekly" },
+    { "loc": "/karar-asistani/", "priority": "0.85", "changefreq": "weekly" },
+    { "loc": "/secenekler/", "priority": "0.85", "changefreq": "weekly" },
+    { "loc": "/karsilastir/", "priority": "0.85", "changefreq": "weekly" },
+    { "loc": "/cerez-politikasi.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/hakkimizda.html", "priority": "0.5", "changefreq": "monthly" },
     { "loc": "/iletisim.html", "priority": "0.5", "changefreq": "monthly" },
     { "loc": "/partner-olun.html", "priority": "0.65", "changefreq": "monthly" },
@@ -25,9 +30,13 @@
     { "loc": "/partner-docs.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/partner-guven.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/gizlilik.html", "priority": "0.3", "changefreq": "yearly" },
+    { "loc": "/gdpr.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/kvkk.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/kullanim-sartlari.html", "priority": "0.3", "changefreq": "yearly" },
-    { "loc": "/cerez-politikasi.html", "priority": "0.3", "changefreq": "yearly" },
-    { "loc": "/abonelik-iptal.html", "priority": "0.4", "changefreq": "yearly" }
+    { "loc": "/abonelik-iptal.html", "priority": "0.4", "changefreq": "yearly" },
+    { "loc": "/yardim.html", "priority": "0.55", "changefreq": "monthly" },
+    { "loc": "/karar-moat.html", "priority": "0.45", "changefreq": "monthly" },
+    { "loc": "/sigorta/", "priority": "0.85", "changefreq": "weekly" },
+    { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" }
   ]
 }

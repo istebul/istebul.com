@@ -10,14 +10,13 @@ export const ROUTE_DOCUMENT_META = Object.freeze(routeMeta.surfaces);
 
 export const MARKETING_SURFACE_IDS = Object.freeze([
     'home',
+    'home-economic-indicators',
     'how-it-works',
     'home-vertical-focus',
-    'sample-preview',
-    'trust',
+    'home-features-strip',
     'pricing',
     'partner-enterprise',
-    'landing-faq',
-    'home-final-cta'
+    'landing-faq'
 ]);
 
 const PREMIUM_PATHS = Object.freeze({
@@ -45,6 +44,7 @@ export function resolveContentRouteSurface(pathname = '/') {
 }
 
 const APP_PATHS = Object.freeze({
+    '/secenekler': 'ilanlar',
     '/ilanlar': 'ilanlar',
     '/karsilastir': 'compare',
     '/favoriler': 'favoriler',
@@ -64,7 +64,7 @@ const MARKETING_ALIASES = Object.freeze({
 });
 
 const EXTERNAL_REDIRECTS = Object.freeze({
-    '/admin': '/admin-panel.html',
+    '/admin': '/admin/',
   '/araba': '/auto/',
   '/finansman': '/finans/',
     '/partner': '/partner-olun.html',

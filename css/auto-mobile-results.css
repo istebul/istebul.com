@@ -286,4 +286,117 @@
     font-size: 0.88rem;
     padding: 0.85rem 0.95rem;
   }
+
+  /* V2 premium panel — tek sütun, taşma yok */
+  body.ib-auto #auto-results .auto-v2-panel {
+    padding: 0.85rem;
+    overflow: hidden;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-why-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-alt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__layout {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__actions {
+    flex-direction: column;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__action {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.ib-auto #auto-results .auto-v2-ranking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__media {
+    aspect-ratio: 16 / 10;
+  }
+
+  body.ib-auto #auto-results .auto-rec-card__media {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  body.ib-auto .auto-results-cards.auto-rec-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Vehicle selection gate — stack cards, prevent text truncation */
+  body.ib-auto .auto-vehicle-selection {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  body.ib-auto .auto-vehicle-selection-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.65rem;
+  }
+
+  body.ib-auto .auto-vehicle-select-card {
+    width: 100%;
+    min-width: 0;
+    padding: 0.85rem 1rem;
+  }
+
+  body.ib-auto .auto-vehicle-select-card strong {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto .auto-vehicle-select-score,
+  body.ib-auto .auto-vehicle-select-cost {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto .auto-vehicle-select-cta {
+    margin-top: 0.5rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Prevent compact result cards from overlapping on scroll */
+  body.ib-auto #auto-results .premium-result-card.auto-rec-card {
+    position: relative;
+    isolation: isolate;
+    margin-bottom: 0.75rem;
+  }
+
+  body.ib-auto #auto-results .auto-rec-card__media {
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0.65rem;
+  }
+
+  body.ib-auto #auto-results .auto-rec-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  body.ib-auto #auto-results .auto-rec-actions .btn {
+    width: 100%;
+    min-height: var(--ib-touch-lg, 44px);
+    white-space: normal;
+    text-align: center;
+  }
 }

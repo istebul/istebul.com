@@ -1,0 +1,371 @@
+/**
+ * Homepage product cards — enterprise SaaS module (V6 extension)
+ * Scope: #home-vertical-focus.ib-product-cards-enterprise
+ */
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 48%, #f1f5f9 100%);
+  padding: clamp(3rem, 6vw, 4.75rem) 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .section-header {
+  text-align: center;
+  align-items: center;
+  margin-inline: auto;
+  margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .section-kicker {
+  color: #2563eb;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .section-header h2 {
+  font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  max-width: 20ch;
+  margin-inline: auto;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-section-lead-muted {
+  max-width: 46ch;
+  margin-inline: auto;
+  color: #475569;
+  line-height: 1.65;
+  font-size: 1.02rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-category-showcase-grid {
+  display: block;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Unified responsive grid (live + soon cards) */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6-shell--enterprise {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+  margin-top: 0;
+}
+
+@media (min-width: 768px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6-shell--enterprise {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6-shell--enterprise {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* Second row: two coming-soon cards span half width each */
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise.is-soon:nth-last-child(2) {
+    grid-column: 1 / span 2;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise.is-soon:last-child {
+    grid-column: 3 / span 2;
+  }
+}
+
+/* —— Card base —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  height: 100%;
+  padding: 1.35rem 1.25rem 1.2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(203, 213, 225, 0.75);
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 8px 24px rgba(15, 23, 42, 0.05);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise a.ib-cat-v6--enterprise:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow:
+    0 2px 6px rgba(37, 99, 235, 0.06),
+    0 14px 36px rgba(15, 23, 42, 0.08);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise a.ib-cat-v6--enterprise:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+/* Subtle brand accent — unified corporate blue */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise.is-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.25rem;
+  right: 1.25rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  opacity: 0.9;
+}
+
+/* —— Badge —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__badge--ai {
+  align-self: flex-start;
+  margin-bottom: 0.85rem;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid rgba(147, 197, 253, 0.55);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.58rem;
+  border-radius: 999px;
+}
+
+/* —— Inline SVG icons —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin-bottom: 0.95rem;
+  border: 1px solid rgba(191, 219, 254, 0.55);
+  background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__icon [data-lucide] {
+  display: none;
+}
+
+/* Category tints — muted, on-brand */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__icon--konut {
+  color: #0d9488;
+  border-color: rgba(153, 246, 228, 0.7);
+  background: linear-gradient(145deg, #f0fdfa 0%, #ffffff 100%);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__icon--tatil {
+  color: #2563eb;
+  border-color: rgba(191, 219, 254, 0.7);
+  background: linear-gradient(145deg, #eff6ff 0%, #ffffff 100%);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__icon--finansman {
+  color: #4338ca;
+  border-color: rgba(199, 210, 254, 0.75);
+  background: linear-gradient(145deg, #eef2ff 0%, #ffffff 100%);
+}
+
+/* —— Typography —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__title {
+  font-size: 1.0625rem;
+  font-weight: 750;
+  color: #0f172a;
+  line-height: 1.28;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__value {
+  max-width: none;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #64748b;
+  margin-bottom: 1rem;
+  flex: 1 1 auto;
+}
+
+/* —— Dashboard metrics —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__metrics--dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0.65rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  margin-top: auto;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__metric {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0.15rem 0.25rem;
+  min-height: auto;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__metric--score {
+  border-right: 1px solid #e2e8f0;
+  padding-right: 0.65rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__metric-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__metric-hint {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__score-value {
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__score-value span {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: #64748b;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__risk-value {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.15rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__risk--low .ib-cat-v6__risk-value,
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__risk--medium-low .ib-cat-v6__risk-value {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__risk--medium .ib-cat-v6__risk-value {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__risk--high .ib-cat-v6__risk-value {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__risk--neutral .ib-cat-v6__risk-value {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* —— CTA —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__cta {
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: #2563eb;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise a.ib-cat-v6--enterprise:hover .ib-cat-v6__cta {
+  background: #1d4ed8;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.24);
+}
+
+/* —— Coming soon cards —— */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise.is-soon {
+  background: #fafbfc;
+  border: 1px dashed rgba(148, 163, 184, 0.65);
+  box-shadow: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise.is-soon::before {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise.is-soon .ib-cat-v6__icon {
+  color: #64748b;
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__badge--soon {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.58rem;
+  border-radius: 999px;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6__cta--passive {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow: none;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise {
+    min-height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise .ib-cat-v6--enterprise {
+    transition: none;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-enterprise a.ib-cat-v6--enterprise:hover {
+    transform: none;
+  }
+}

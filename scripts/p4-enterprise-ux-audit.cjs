@@ -15,7 +15,7 @@ const mustExist = [
 ];
 
 const mustContain = [
-  ['css/style.css', 'enterprise-ux-system.css'],
+  ['css/style.css', 'final-enterprise-release.css'],
   ['js/features/auth/auth.js', 'bindAuthModalA11y'],
   ['js/features/auth/auth.js', 'showForgotPasswordForm(prefillEmail'],
   ['js/features/auth/auth.js', 'showInlineFormBanner'],

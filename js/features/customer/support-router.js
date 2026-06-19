@@ -95,12 +95,12 @@ export function routeSupportRequest(input = {}) {
   if (intent === 'billing') {
     actions.push({
       type: 'link',
-      href: '/account.html?tab=subscription&billing=portal',
-      label: 'Fatura & abonelik'
+      href: '/profil/?tab=subscription&billing=portal',
+      label: 'Abonelik yardımı'
     });
   }
   if (intent === 'onboarding') {
-    actions.push({ type: 'link', href: '/auto/', label: 'Auto analizine başla' });
+    actions.push({ type: 'link', href: '/karar-asistani/', label: 'Ön değerlendirme başlat' });
   }
   if (intent === 'pro') {
     actions.push({ type: 'link', href: '/planlar?checkout=pro', label: 'Pro planları' });

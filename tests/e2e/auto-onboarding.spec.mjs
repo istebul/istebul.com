@@ -15,16 +15,19 @@ const waitForAutoReady = async (page) => {
 
 /** Tamamlar 4 adımlı sihirbazı ve analiz gönderimini tetikler. */
 const completeAutoWizard = async (page) => {
-  await page.locator('.wizard-option', { hasText: '1 – 2 milyon TL' }).click();
-  await page.locator('.wizard-option', { hasText: 'Aile' }).click();
+  await page.locator('[data-wizard-key="budget"].wizard-option', { hasText: '1 – 2 milyon TL' }).click();
+  await page.locator('[data-wizard-key="usage"].wizard-option', { hasText: 'Aile' }).click();
+  await page.locator('[data-wizard-key="household_size"].wizard-option', { hasText: '3-4 kişi' }).click();
   await page.getByRole('button', { name: /Devam et/i }).click();
 
   await page.locator('.wizard-option', { hasText: 'SUV' }).first().click();
   await page.locator('.wizard-option', { hasText: 'Hibrit' }).click();
   await page.getByRole('button', { name: /Devam et/i }).click();
 
-  await page.locator('.wizard-option', { hasText: '10.000 – 20.000 km' }).click();
-  await page.locator('.wizard-option', { hasText: 'İzmir' }).click();
+  await page.locator('[data-wizard-key="km"].wizard-option', { hasText: '10.000 – 20.000 km' }).click();
+  await page.locator('[data-wizard-key="city_ratio"].wizard-option', { hasText: 'Dengeli kullanım' }).click();
+  await page.locator('[data-wizard-key="ownership_months"].wizard-option', { hasText: '36 ay' }).click();
+  await page.locator('[data-wizard-key="location"].wizard-option', { hasText: 'İzmir' }).click();
   await page.getByRole('button', { name: /Devam et/i }).click();
 
   await page.locator('[data-wizard-key="loan"].wizard-option', { hasText: 'Evet' }).click();
@@ -49,6 +52,14 @@ test.describe('Auto onboarding', () => {
     await expect(page.locator('.auto-social-proof')).toContainText(/~2 dk/i);
   });
 
+  test('wizard shows household_size question on first step', async ({ page }) => {
+    await waitForAutoReady(page);
+
+    await page.locator('[data-wizard-key="usage"].wizard-option', { hasText: 'Aile' }).click();
+    await expect(page.locator('[data-wizard-part="household_size"]')).toBeVisible();
+    await expect(page.locator('[data-wizard-key="household_size"].wizard-option')).toHaveCount(4);
+  });
+
   test('wizard ilerleme ve ETA etiketi', async ({ page }) => {
     await waitForAutoReady(page);
 
@@ -62,7 +73,7 @@ test.describe('Auto onboarding', () => {
     await waitForAutoReady(page);
     await completeAutoWizard(page);
 
-    await expect(page.locator('#auto-results .auto-market-card').first()).toBeVisible({
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible({
       timeout: 20000
     });
     await dismissSoftAuthGateIfVisible(page);

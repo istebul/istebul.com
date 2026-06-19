@@ -1,0 +1,42 @@
+{
+  "suv-mi-sedan-mi": {
+    "whoFor": "Aile kullanıcıları, şehir içi yoğun sürücüler, uzun yol konforu arayanlar ve bagaj hacmine ihtiyaç duyan profiller için yazılmıştır. Çocuk koltuğu, bebek arabası veya hafta sonu bagaj yükü kararınızı SUV yönüne çekerken; düşük yıllık kilometre ve dar park alanı sedan veya kompakt gövdeyi öne çıkarır.",
+    "decisionFactors": "Günlük km, park/garaj ölçüsü, yakıt veya enerji tercihi, güvenlik donanımı, ikinci el likidite ve 36–60 ay TCO projeksiyonu birlikte okunmalıdır. Yalnızca yüksek oturma pozisyonu veya görüş açısı nedeniyle SUV seçmek, işletme maliyetini gereksiz artırabilir.",
+    "costImpact": "Aynı motor sınıfında SUV ağırlığı ve aerodinamik farkı yakıt veya şarj maliyetini yükseltir. Lastik, fren ve sigorta primleri segment yükseldikçe artar. Beş yıllık TCO tablosunda sedan veya station wagon alternatifini mutlaka yan yana koyun.",
+    "risks": "Büyük SUV’lerde manevra, görüş ölü noktası ve otopark uyumsuzluğu günlük stres yaratır. Niş SUV modellerinde ikinci el satış süresi uzayabilir. Kampanya ile uzatılan vade düşük taksit sunsa da toplam faiz yükünü gizleyebilir.",
+    "howIstebulHelps": "isteBul Auto; kullanım tipiniz, bütçe bandınız ve yakıt tercihinize göre kasa uyum skoru ve 12 ay TCO tahmini üretir. Skorlar kural tabanlıdır; AI katmanı yalnızca gerekçeyi açıklar. Karşılaştırma merkezinde ikinci bir gövde tipini aynı varsayımlarla test edebilirsiniz.",
+    "cta": { "href": "/auto/", "label": "Araç analizini başlat" }
+  },
+  "elektrikli-arac-rehberi": {
+    "whoFor": "Günlük şehir içi kullanımı olan, ev veya iş yerinde şarj imkânı bulunan, düşük bakım maliyeti hedefleyen ve menzil planını yönetebilen sürücüler için uygundur. Sık şehirlerarası seyahat veya şarj altyapısı sınırlı bölgelerde hibrit veya dizel alternatifleri de değerlendirmek gerekir.",
+    "decisionFactors": "WLTP menzilinin gerçek kullanımda %15–30 bandında düşebileceğini varsayın. Batarya garantisi (yıl/km), SOH raporu, DC şarj hızı ve kış ısıtma yükü kararın merkezinde olmalıdır. Benzinli eşdeğer ile 5 yıllık TCO kıyaslaması şarttır.",
+    "costImpact": "Enerji birim maliyeti benzinli araçtan düşük olabilir; ancak satın alma fiyatı, kasko ve batarya dışı elektronik onarımlar toplam yükü belirler. Ev tipi wallbox kurulum maliyetini ilk yıl bütçesine ekleyin.",
+    "risks": "Şarj istasyonu yoğunluğu rotanıza göre değişir. Hızlı şarjda batarya ısınması ve yazılım güncellemeleri ikinci el değerini etkiler. Ağır hasarlı batarya onarımı yüksek maliyetli olabilir; Tramer ve ekspertiz şarttır.",
+    "howIstebulHelps": "isteBul Auto; yıllık km, şehir içi oranı ve enerji tercihinizi kullanarak elektrikli segment uyumunu ve tahmini işletme maliyetini modeller. Sonuçlar bilgilendirme amaçlıdır; bağlayıcı satış veya şarj altyapısı taahhüdü içermez.",
+    "cta": { "href": "/auto/", "label": "Araç analizini başlat" }
+  },
+  "finansman-rehberi": {
+    "whoFor": "Taşıt veya ihtiyaç kredisi ile araç almayı planlayan, nakit akışını korumak isteyen ancak toplam geri ödeme yükünü kontrol altında tutmak isteyen kullanıcılar için hazırlanmıştır. Peşin alım gücü yüksek profillerde finansman yerine TCO optimizasyonu önceliklidir.",
+    "decisionFactors": "Gelir istikrarı, mevcut borçlar, peşinat oranı, vade, efektif yıllık maliyet (EYM) ve erken kapama koşulları birlikte değerlendirilmelidir. Yalnızca aylık taksite odaklanmak toplam faizi gizler.",
+    "costImpact": "Uzun vade aylık yükü düşürür; toplam faiz ve dosya masrafları artar. Kampanya faizleri süreli olabilir — süre sonrası oranı senaryoya ekleyin. Sigorta ve kasko zorunlulukları toplam nakit çıkışını büyütür.",
+    "risks": "Aylık ödeme/gelir oranının sürdürülebilir üst sınırı aşılması temerrüt riskini artırır. Değişken faiz veya döviz bağlantılı ürünler öngörülebilirliği düşürür. Sözleşmedeki gizli masraf kalemlerini satır satır kontrol edin.",
+    "howIstebulHelps": "isteBul Finansman analizi; gelir, mevcut borç, vade ve tahmini aylık ödemeyi bir arada okuyarak ödeme güvenliği skoru üretir. Skorlar deterministiktir; banka onayı ayrı bir adımdır.",
+    "cta": { "href": "/finans/", "label": "Finansman analizini başlat" }
+  },
+  "tco-rehberi": {
+    "whoFor": "Satın alma fiyatına değil gerçek sahip olma maliyetine göre karar vermek isteyen her profil için geçerlidir. Sıfır veya ikinci el, binek veya ticari kullanım fark etmeksizin TCO tablosu aynı disiplini gerektirir.",
+    "decisionFactors": "Satın alma fiyatı, finansman maliyeti, MTV ve harçlar, kasko/trafik, yakıt veya enerji, periyodik bakım, lastik ve değer kaybı kalemleri tek tabloda toplanmalıdır. Yıllık kilometre varsayımı en hassas girdidir.",
+    "costImpact": "Düşük etiket fiyatlı ancak yüksek sigorta primli veya hızlı değer kaybeden modeller uzun vadede pahalı çıkabilir. Elektrikli araçlarda enerji birim maliyeti avantajı menzil ve şarj planıyla birlikte okunmalıdır.",
+    "risks": "Eksik kalem (örneğin otopark, köprü-otoyol, beklenmedik onarım) TCO’yu olduğundan düşük gösterir. Kampanyalı taksit sunumları toplam yükü maskeleyebilir. İkinci el değer tahmini piyasa dalgalanmasına açıktır.",
+    "howIstebulHelps": "isteBul; Auto’da segment bazlı 12 ay TCO ve Finansman’da ödeme yükü simülasyonunu ayrı akışlarda sunar. Aynı bütçe varsayımlarıyla iki kategoriyi yan yana değerlendirebilirsiniz.",
+    "cta": { "href": "/auto/", "label": "Araç TCO analizini başlat", "secondary": { "href": "/finans/", "label": "Finansman analizini başlat" } }
+  },
+  "ikinci-el-rehberi": {
+    "whoFor": "Bütçe optimizasyonu hedefleyen, 2–5 yıl kullanıp yeniden satmayı planlayan ve ekspertiz sürecine zaman ayırabilen alıcılar için uygundur. Garanti kapsamlı yetkili satıcı kanalı riski düşürür; özel satıcıda due diligence şarttır.",
+    "decisionFactors": "Kilometre, servis geçmişi, Tramer/hasar kaydı, motor-şanzıman sağlığı, boya-değişen parça, lastik durumu ve piyasa emsal fiyatı birlikte okunmalıdır. Düşük km her zaman üstün seçenek değildir.",
+    "costImpact": "Alım fiyatına ekspertiz, noter, ilk bakım ve olası onarım rezervi eklenmelidir. Likiditesi düşük modellerde satış süresi uzar; bu da elde tutma maliyetini artırır.",
+    "risks": "Gizli hasar, çekilmiş airbag, kilometre düşürme ve eksik bakım kayıtları en sık risklerdir. Aceleci pazarlık veya ekspertizsiz kapora ödemesi geri dönüşü zor hatalara yol açar.",
+    "howIstebulHelps": "isteBul Auto; bütçe, kullanım ve segment tercihinize göre ikinci el bandında uyum skoru ve işletme maliyeti tahmini üretir. Ekspertiz ve Tramer teyidi nihai adımda sizin sorumluluğunuzdadır.",
+    "cta": { "href": "/auto/", "label": "Araç analizini başlat" }
+  }
+}

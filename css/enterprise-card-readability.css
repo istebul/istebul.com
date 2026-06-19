@@ -1,0 +1,558 @@
+/**
+ * Enterprise card readability — WCAG-friendly text on light card surfaces site-wide.
+ * Loaded last on marketing shells and vertical decision pages.
+ */
+
+:root {
+  --ib-card-ink: #0f172a;
+  --ib-card-body: #334155;
+  --ib-card-muted: #475569;
+  --ib-card-label: #64748b;
+  --ib-card-surface: #ffffff;
+  --ib-card-elevated: #f8fafc;
+  --ib-card-border: rgba(148, 163, 184, 0.32);
+}
+
+/* —— Decision results V2 panels (Auto, Konut, Tatil, Finansman) —— */
+[class*='-v2-panel'] {
+  --v2-surface: var(--ib-card-surface);
+  --v2-elev: var(--ib-card-elevated);
+  --v2-text: var(--ib-card-ink);
+  --v2-muted: var(--ib-card-label);
+  color: var(--ib-card-ink);
+}
+
+[class*='-v2-panel'] h2,
+[class*='-v2-panel'] h3,
+[class*='-v2-panel'] h4,
+[class*='-v2-block'] h3,
+[class*='-v2-block'] h4,
+[class*='-v2-alt-card'] h4,
+[class*='-v2-factors'] h3,
+[class*='-v2-title'] {
+  color: var(--ib-card-ink);
+}
+
+[class*='-v2-kicker'] {
+  color: var(--ib-card-label);
+}
+
+[class*='-v2-block'],
+[class*='-v2-kpi'],
+[class*='-v2-alt-card'],
+[class*='-v2-factors'] {
+  background: var(--ib-card-elevated);
+  color: var(--ib-card-body);
+}
+
+[class*='-v2-block'] ul,
+[class*='-v2-block'] ol,
+[class*='-v2-block'] li,
+[class*='-v2-block'] p,
+[class*='-v2-block--exec'] p,
+[class*='-v2-exec'],
+[class*='-v2-factor-list'] li,
+[class*='-v2-factor-list'] li span,
+[class*='-v2-factor-list'] li strong {
+  color: var(--ib-card-body);
+}
+
+[class*='-v2-kpi'] > span,
+[class*='-v2-exec-hint'],
+[class*='-v2-alt-card'] p,
+[class*='-v2-kpi'] strong small,
+[class*='-v2-kpi--cost'] small {
+  color: var(--ib-card-muted);
+}
+
+[class*='-v2-kpi'] strong,
+[class*='-v2-alt-meta'],
+[class*='-v2-rec-level'],
+[class*='-v2-factor-impact'] {
+  color: var(--ib-card-ink);
+}
+
+[class*='-v2-alt-meta'] {
+  color: #1d4ed8;
+}
+
+[class*='-v2-alt-card'] {
+  background: var(--ib-card-surface);
+}
+
+[class*='-v2-block--exec'] {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), var(--ib-card-elevated));
+}
+
+/* OS dark mode: keep corporate light cards on vertical marketing pages */
+@media (prefers-color-scheme: dark) {
+  [class*='-v2-panel'] {
+    --v2-surface: var(--ib-card-surface);
+    --v2-elev: var(--ib-card-elevated);
+    --v2-text: var(--ib-card-ink);
+    --v2-muted: var(--ib-card-label);
+    color: var(--ib-card-ink);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+  }
+
+  [class*='-v2-block'],
+  [class*='-v2-kpi'],
+  [class*='-v2-alt-card'],
+  [class*='-v2-factors'] {
+    background: var(--ib-card-elevated);
+    color: var(--ib-card-body);
+  }
+
+  [class*='-v2-alt-card'] {
+    background: var(--ib-card-surface);
+  }
+}
+
+/* —— Auto results area —— */
+body.ib-auto #auto-results .auto-v2-root,
+body.ib-auto #auto-results .auto-v2-panel {
+  color: var(--ib-card-ink);
+}
+
+body.ib-auto #auto-results .analysis-box,
+body.ib-auto #auto-results .risk-box,
+body.ib-auto #auto-results .cost,
+body.ib-auto #auto-results .monthly-impact,
+body.ib-auto #auto-results .auto-finance-note,
+body.ib-auto #auto-results .ib-ai-synthesis-card,
+body.ib-auto #auto-results .ib-ai-panel,
+body.ib-auto #auto-results .ib-ai-tradeoff-card,
+body.ib-auto #auto-results .ib-ai-rationale-card,
+body.ib-auto #auto-results .ib-decision-insight-card,
+body.ib-auto #auto-results .auto-results-leader-highlight,
+body.ib-auto #auto-results .auto-side-card,
+body.ib-auto #auto-results .ib-auto-results-meta-grid li,
+body.ib-auto #auto-results .ib-ownership-breakdown-grid li,
+body.ib-auto #auto-results .ib-how-calculated-grid li {
+  color: var(--ib-card-body);
+}
+
+body.ib-auto #auto-results .analysis-box strong,
+body.ib-auto #auto-results .risk-box strong,
+body.ib-auto #auto-results .ib-ai-reasoning-list strong,
+body.ib-auto #auto-results .ib-ai-finance-metrics b,
+body.ib-auto #auto-results .ib-ai-tradeoff-card strong,
+body.ib-auto #auto-results .ib-decision-insight-card h4,
+body.ib-auto #auto-results .auto-results-leader-name,
+body.ib-auto #auto-results .auto-results-leader-metrics dd,
+body.ib-auto #auto-results .auto-side-card h4 {
+  color: var(--ib-card-ink);
+}
+
+body.ib-auto #auto-results .analysis-box li,
+body.ib-auto #auto-results .risk-box li,
+body.ib-auto #auto-results .ib-ai-reasoning-list li,
+body.ib-auto #auto-results .ib-ai-rationale-card ul,
+body.ib-auto #auto-results .ib-decision-insight-card p {
+  color: var(--ib-card-muted);
+}
+
+body.ib-auto #auto-results .auto-results-guide,
+body.ib-auto #auto-results .auto-results-guide-steps,
+body.ib-auto #auto-results .auto-results-guide-steps li {
+  color: var(--ib-card-body);
+}
+
+body.ib-auto #auto-results .auto-results-guide h3 {
+  color: var(--ib-card-ink);
+}
+
+/* —— Unified marketing / product cards —— */
+.card,
+.ib-example-card,
+.ib-category-showcase,
+.ib-tco-lens-card,
+.how-step,
+.billing-v1-plan-card,
+.comparison-card,
+.listing-card,
+.revenue-paywall-card,
+.partner-enterprise-card,
+.ib-sample-preview-panel,
+.ib-faq-item,
+.ib-home-auto-bridge-panel,
+.dashboard-v2-card:not(.dashboard-v2-card--dark),
+.premium-result-card,
+.auto-market-card,
+.conversion-result-card,
+.auto-results-leader,
+.auto-results-leader-highlight,
+.auto-filter-toolbar,
+.wizard-option.auto-option-card,
+.auto-wizard-progress,
+.auto-wizard-question,
+.auto-results-guide {
+  color: var(--ib-card-ink);
+}
+
+.card p,
+.card li,
+.ib-example-card p,
+.how-step p,
+.comparison-card p,
+.listing-card p,
+.partner-enterprise-features li,
+.ib-sample-preview-panel p,
+.ib-faq-panel,
+.ib-home-auto-bridge-steps,
+.auto-results-guide-steps li {
+  color: var(--ib-card-body);
+}
+
+.card h3,
+.card h4,
+.how-step h3,
+.comparison-card h3,
+.listing-card h3,
+.ib-faq-trigger {
+  color: var(--ib-card-ink);
+}
+
+/* Theme toggle dark: light-surface cards keep dark text */
+:root[data-theme='dark'] .card,
+:root[data-theme='dark'] [class*='-v2-panel'],
+:root[data-theme='dark'] [class*='-v2-block'],
+:root[data-theme='dark'] [class*='-v2-kpi'],
+:root[data-theme='dark'] [class*='-v2-alt-card'],
+:root[data-theme='dark'] .premium-result-card,
+:root[data-theme='dark'] .auto-market-card,
+:root[data-theme='dark'] .conversion-result-card,
+:root[data-theme='dark'] .ib-ai-panel,
+:root[data-theme='dark'] .ib-ai-synthesis-card,
+:root[data-theme='dark'] .ib-decision-insight-card,
+:root[data-theme='dark'] .billing-v1-plan-card,
+:root[data-theme='dark'] .comparison-card,
+:root[data-theme='dark'] .listing-card,
+:root[data-theme='dark'] .dashboard-v2-card:not(.dashboard-v2-card--dark) {
+  color: var(--ib-card-ink);
+}
+
+:root[data-theme='dark'] .card p,
+:root[data-theme='dark'] .card li,
+:root[data-theme='dark'] [class*='-v2-block'] li,
+:root[data-theme='dark'] [class*='-v2-alt-card'] p,
+:root[data-theme='dark'] .premium-result-card p,
+:root[data-theme='dark'] .premium-result-card li,
+:root[data-theme='dark'] .analysis-box li,
+:root[data-theme='dark'] .risk-box li {
+  color: var(--ib-card-body);
+}
+
+:root[data-theme='dark'] .card h3,
+:root[data-theme='dark'] [class*='-v2-block'] h3,
+:root[data-theme='dark'] [class*='-v2-alt-card'] h4 {
+  color: var(--ib-card-ink);
+}
+
+/* Intentionally dark sections keep light text (do not use inherit on .final-cta-card — breaks on dark card) */
+.auto-results-trust-banner,
+.ib-trust-rail--auto,
+.auto-market-score {
+  color: inherit;
+}
+
+.auto-results-trust-banner h3,
+.auto-results-trust-banner p {
+  color: inherit;
+}
+
+body.ib-auto .final-cta-card {
+  color: #fff;
+}
+
+body.ib-auto .final-cta-card h2,
+body.ib-auto .final-cta-card .kicker {
+  color: #f8fafc;
+}
+
+body.ib-auto .final-cta-card p {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+body.ib-auto .final-cta-card .text-cta {
+  color: rgba(226, 232, 240, 0.88);
+}
+
+@media (max-width: 720px) {
+  [class*='-v2-block'] ul,
+  [class*='-v2-block'] ol,
+  [class*='-v2-block'] li {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ib-card-body: #1e293b;
+    --ib-card-muted: #334155;
+  }
+
+  [class*='-v2-block'],
+  [class*='-v2-kpi'],
+  [class*='-v2-alt-card'] {
+    border-color: rgba(15, 23, 42, 0.22);
+  }
+}
+
+/* —— Dark page shell + light decision surfaces (Konut, Tatil, Finans, …) —— */
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard {
+  color: var(--ib-card-ink);
+  background: var(--ib-card-surface);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-dashboard__kicker {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-dashboard__title,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-block h3,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-block h3,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-block h3 {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-block ul,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-block--next p,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-ai-lead,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-ai-bullets,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-block ul,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-block--next p,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-ai-lead,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-block ul,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-block--next p,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-ai-lead {
+  color: var(--ib-card-body);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi span,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi strong small,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi small {
+  color: var(--ib-card-muted);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi strong {
+  color: var(--ib-card-ink);
+}
+
+/* Konut: wizard + canlı önizleme — beyaz kart (glass-card koyu kabuk kuralının üstüne) */
+html.ib-ds-v4 body.housing-page .glass-card.housing-side-panel,
+html.ib-ds-v4 body.housing-page .housing-step-card {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border: 1px solid var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel h3,
+html.ib-ds-v4 body.housing-page #housing-live-preview strong {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel ul,
+html.ib-ds-v4 body.housing-page .housing-side-panel p,
+html.ib-ds-v4 body.housing-page .housing-side-notes,
+html.ib-ds-v4 body.housing-page .housing-preview-ai,
+html.ib-ds-v4 body.housing-page .housing-preview-note,
+html.ib-ds-v4 body.housing-page .housing-preview-score span {
+  color: var(--ib-card-body);
+}
+
+html.ib-ds-v4 body.housing-page .housing-preview-score strong {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel ul strong {
+  color: var(--ib-card-muted);
+}
+
+/* Konut: sonuç kartları — açık yüzey (profil özeti dahil) */
+html.ib-ds-v4 body.housing-page .result-card,
+html.ib-ds-v4 body.housing-page .scenario-card {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page .result-card h3,
+html.ib-ds-v4 body.housing-page .result-card h4,
+html.ib-ds-v4 body.housing-page .scenario-card h4 {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .result-card p,
+html.ib-ds-v4 body.housing-page .result-list li,
+html.ib-ds-v4 body.housing-page .result-disclaimer,
+html.ib-ds-v4 body.housing-page .scenario-card p,
+html.ib-ds-v4 body.housing-page .scenario-card ul {
+  color: var(--ib-card-body);
+}
+
+html.ib-ds-v4 body.housing-page .housing-profile-dl dt {
+  color: var(--ib-card-muted);
+}
+
+html.ib-ds-v4 body.housing-page .housing-profile-dl dd {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .result-card--metric span {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page .result-card--metric strong {
+  color: var(--ib-card-ink);
+}
+
+/* Konut V2 — koyu body rengini devralmasın (KPI + EVDS) */
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-root,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-panel {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-factors-details,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-block,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-cost-grid,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-risk-card,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-alt-card {
+  background: var(--ib-card-elevated);
+  color: var(--ib-card-body);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi > span,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kicker,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-exec-hint {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi strong,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-title,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band strong {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__card,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__item {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__label,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__date,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__meta,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__refresh {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__head h2,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__value {
+  color: var(--ib-card-ink);
+}
+
+/* Tatil: açık sihirbaz / sonuç kartları (koyu body metnini devralmasın) */
+html.ib-ds-v4 body.vacation-page .vacation-wizard-card,
+html.ib-ds-v4 body.vacation-page .vacation-result-card,
+html.ib-ds-v4 body.vacation-page .vacation-selected-recap {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-wizard-card p,
+html.ib-ds-v4 body.vacation-page .vacation-wizard-card label,
+html.ib-ds-v4 body.vacation-page .vacation-result-card p,
+html.ib-ds-v4 body.vacation-page .vacation-selected-recap p {
+  color: var(--ib-card-body);
+}
+
+@media (prefers-color-scheme: dark) {
+  html.ib-ds-v4 body.housing-page .ib-premium-dashboard,
+  html.ib-ds-v4 body.housing-page .glass-card.housing-side-panel,
+  html.ib-ds-v4 body.housing-page .housing-step-card,
+  html.ib-ds-v4 body.housing-page .result-card,
+  html.ib-ds-v4 body.housing-page #housing-results .konut-v2-panel,
+  html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi,
+  html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__card,
+  html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
+  html.ib-ds-v4 body.vacation-page .vacation-wizard-card {
+    color: var(--ib-card-ink);
+    background: var(--ib-card-surface);
+  }
+}
+
+/* —— Shared AI insight blocks (all vertical result panels) —— */
+.ib-insight-blocks {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.ib-insight-blocks__title {
+  margin: 0.35rem 0 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ib-card-muted, var(--ib-card-label, #64748b));
+}
+
+.ib-insight-blocks__title:first-child {
+  margin-top: 0;
+}
+
+.ib-insight-blocks__text,
+.ib-insight-blocks__fallback,
+.ib-insight-blocks__disclaimer {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  white-space: normal;
+  overflow: visible;
+  max-height: none;
+  -webkit-line-clamp: unset;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ib-insight-blocks__fallback {
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: var(--ib-card-body, #334155);
+}
+
+.ib-insight-blocks__fallback[hidden] {
+  display: none !important;
+}
+
+[class*='-v2-block--exec'] .ib-insight-blocks,
+[class*='-v2-block--exec'] .konut-v2-exec-text,
+[class*='-v2-block--exec'] .auto-v2-exec,
+[class*='-v2-exec-text'] {
+  overflow: visible;
+  max-height: none;
+  -webkit-line-clamp: unset;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .ib-insight-blocks,
+  [class*='-v2-block--exec'] {
+    overflow: visible;
+    max-height: none;
+  }
+}

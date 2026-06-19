@@ -1,0 +1,327 @@
+/**
+ * Pure Auto results model builders (testable, no side effects).
+ */
+import { buildRecommendationIntelligence } from './recommendation-intelligence.js';
+import { buildWhyNotRanked, buildWhyNumberOne } from '../engines/decision-consultant.js';
+import { toRecommendationVehicle } from './vehicle-image.js';
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function safeNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function computeAnnualFuelCost(vehicle) {
+  const annual = vehicle?.costs?.ownership?.annual;
+  if (annual?.fuel != null) return safeNumber(annual.fuel);
+  return safeNumber(vehicle?.costs?.fuel);
+}
+
+function formatTryAmount(value) {
+  const amount = safeNumber(value);
+  if (!amount) return '';
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+function computeFuelConsumptionLabel(vehicle, formData = {}) {
+  const profile = vehicle?.costProfile;
+  if (!profile) return '';
+
+  const km = safeNumber(formData?.km) || 15000;
+  const cityRatio = safeNumber(formData?.city_ratio);
+  const ratio = Number.isFinite(cityRatio) ? cityRatio : 0.6;
+  const fuelCity = safeNumber(profile.fuel_city);
+  const fuelHighway = safeNumber(profile.fuel_highway) || fuelCity;
+
+  if (vehicle?.fuel === 'electric') return '';
+
+  const average = fuelCity * ratio + fuelHighway * (1 - ratio);
+  if (!average) return '';
+
+  return `${average.toFixed(1)} L/100km`;
+}
+
+/**
+ * Compact card fuel metric — always a value, never a field label.
+ * @param {object} vehicle
+ * @param {object} [formData]
+ */
+export function formatVehicleFuelDisplay(vehicle, formData = {}) {
+  const annualFuel = computeAnnualFuelCost(vehicle);
+  if (annualFuel > 0) {
+    return `${formatTryAmount(annualFuel)} / yıl`;
+  }
+
+  const consumption = computeFuelConsumptionLabel(vehicle, formData);
+  if (consumption) return consumption;
+
+  if (vehicle?.fuel === 'electric') return 'Elektrik · düşük işletme';
+  if (vehicle?.fuel === 'hybrid') return 'Hibrit · dengeli tüketim';
+
+  return '—';
+}
+
+/**
+ * Compact card second-hand strength metric.
+ * @param {object} vehicle
+ */
+export function formatVehicleResaleDisplay(vehicle) {
+  const resaleRating = safeNumber(vehicle?.resale);
+  const residual = vehicle?.costs?.ownership?.depreciation?.residualPct12;
+
+  if (residual != null) {
+    const pct = Math.round(safeNumber(residual) * 100);
+    const label = pct >= 82 ? 'Yüksek' : pct >= 74 ? 'Güçlü talep' : 'Orta';
+    return `${label} · %${pct}`;
+  }
+
+  if (resaleRating > 0) {
+    const score = (resaleRating).toFixed(1);
+    const label = resaleRating >= 8.5 ? 'Yüksek' : resaleRating >= 7.5 ? 'Güçlü talep' : 'Orta';
+    return `${label} · ${score}/10`;
+  }
+
+  return 'Orta · segment ort.';
+}
+
+function computeOwnershipHorizonSummary(vehicle, formData = {}) {
+  const own = vehicle?.costs?.ownership;
+  if (!own) {
+    return { net: 0, gross: 0, years: 5, label: '5 Yıl Net Maliyet' };
+  }
+
+  const annual = own.annual || {};
+  const months = clamp(Number(formData?.ownership_months || own.totals?.horizonMonths || 60), 12, 60);
+  const years = months / 12;
+  const annualCash = safeNumber(
+    annual.allInTotal ||
+      annual.operatingTotal ||
+      annual.fuel +
+        annual.insurance +
+        annual.kasko +
+        annual.maintenance +
+        annual.inspection +
+        annual.tires +
+        annual.mtv +
+        annual.financing
+  );
+  const registration = safeNumber(own.oneTime?.registrationFees);
+  const purchase = safeNumber(own.purchaseCost || vehicle.price);
+  const dep = own.depreciation || {};
+  const residualPct = safeNumber(dep.residualPct12 || 0.78);
+  const residualValue = Math.round(purchase * Math.pow(residualPct, years));
+
+  const gross = Math.round(annualCash * years + registration + purchase);
+  const net = Math.round(annualCash * years + registration + purchase - residualValue);
+  const roundedYears = Math.round(years);
+
+  return {
+    net,
+    gross,
+    years: roundedYears,
+    label: `${roundedYears} Yıl Net Maliyet`
+  };
+}
+
+function confidenceTierLabel(vehicle, fallbackScore = 0) {
+  const meta = vehicle?.confidenceMeta;
+  if (meta?.label) return meta.label;
+  const score = safeNumber(meta?.score ?? vehicle?.confidence ?? fallbackScore);
+  if (score >= 80) return 'Yüksek';
+  if (score >= 60) return 'Orta';
+  return 'Düşük';
+}
+
+export function buildRecommendationPayload(topResult, formData, results, intel) {
+  const vehicle = toRecommendationVehicle(topResult);
+  const intelScores = topResult?.recommendationIntelligence
+    || buildRecommendationIntelligence(topResult, formData, { alternatives: results, rank: 0, leader: topResult });
+  const ownership = computeOwnershipHorizonSummary(topResult, formData);
+
+  return {
+    vehicle,
+    decisionScore: intel.decisionScore,
+    confidenceLabel: confidenceTierLabel(topResult, intel.confidenceScore),
+    confidenceScore: intel.confidenceScore,
+    annualFuelCost: computeAnnualFuelCost(topResult),
+    fiveYearOwnership: ownership.net,
+    ownershipHorizonLabel: ownership.label,
+    ownershipGrossTotal: ownership.gross,
+    aiSummary: intel.executiveSummary || (topResult?.reasons || [])[0] || '',
+    intelligence: intelScores,
+    recommendationLabel: intel.recommendationLabel || 'En Uygun'
+  };
+}
+
+function scoreBandLabel(score) {
+  if (score >= 80) return 'Güçlü';
+  if (score >= 65) return 'İyi';
+  if (score >= 50) return 'Orta';
+  return 'Zayıf';
+}
+
+export function buildWhyRecommendedCards(recommendation, formData) {
+  const vehicle = recommendation.vehicle;
+  const intel = recommendation.intelligence || {};
+  const usage = String(formData?.usage || '');
+
+  return [
+    {
+      icon: '⛽',
+      title: 'Yakıt ekonomisi',
+      score: intel.operatingCostScore ?? 70,
+      text: (() => {
+        const annualFuel = computeAnnualFuelCost(recommendation.vehicle);
+        if (annualFuel > 0) {
+          return `Tahmini yıllık yakıt/enerji: ${formatTryAmount(annualFuel)}.`;
+        }
+        if (vehicle.fuel === 'electric') return 'Elektrikli segment — düşük işletme maliyeti profili.';
+        if (vehicle.fuel === 'hybrid') return 'Hibrit motor — şehir içi tüketimde verimli profil.';
+        return 'Yakıt maliyeti profilinize göre segment ortalamasıyla uyumlu.';
+      })()
+    },
+    {
+      icon: '💰',
+      title: 'Bütçe uyumu',
+      score: intel.budgetFitScore ?? 70,
+      text: intel.budgetFitScore >= 75
+        ? 'Referans fiyat bandı bütçe hedefinize yakın.'
+        : 'Bütçe baskısı var — finansman ve alternatif teklifleri karşılaştırın.'
+    },
+    {
+      icon: '🛣️',
+      title: 'Kullanım senaryosu uyumu',
+      score: clamp(Math.round((Number(vehicle[usage] || vehicle.city || 7) / 10) * 100), 40, 95),
+      text: usage === 'family'
+        ? 'Aile ve bagaj ihtiyacına uygun segment profili.'
+        : usage === 'long'
+          ? 'Uzun yol konforu ve işletme dengesi değerlendirildi.'
+          : 'Şehir içi kullanım profiline uygun segment seçimi.'
+    },
+    {
+      icon: '📈',
+      title: 'İkinci el değeri',
+      score: intel.resaleScore ?? clamp(Math.round((Number(vehicle.resale || 6) / 10) * 85 + 10), 25, 92),
+      text: intel.resaleScore >= 75
+        ? 'Likidite sinyalleri segment ortalamasının üzerinde.'
+        : 'İkinci el değeri segment ortalamasına yakın — sahiplik süresi önemli.'
+    },
+    {
+      icon: '🛡️',
+      title: 'Güvenlik avantajı',
+      score: intel.reliabilityScore ?? clamp(Math.round((Number(vehicle.maintenance || 6) / 10) * 90 + 8), 30, 95),
+      text: 'Bakım güvenilirliği ve segment dayanıklılığı profilinize dahil edildi.'
+    }
+  ];
+}
+
+function computeMonthlyCost(vehicle) {
+  const months12 = safeNumber(vehicle?.costs?.ownership?.totals?.months12 || vehicle?.costs?.total);
+  return months12 > 0 ? Math.round(months12 / 12) : 0;
+}
+
+export function buildVehicleAlternatives(results = [], leader, formData) {
+  return results.slice(1, 4).map((vehicle, idx) => {
+    const rank = idx + 2;
+    const whyNot = buildWhyNotRanked(vehicle, rank, leader, formData);
+    const pros = (vehicle.reasons || []).slice(0, 2).filter(Boolean);
+    if (whyNot?.strengths?.length) {
+      pros.push(...whyNot.strengths.slice(0, 1));
+    }
+
+    return {
+      vehicle: toRecommendationVehicle(vehicle),
+      score: safeNumber(vehicle.score),
+      monthlyCost: computeMonthlyCost(vehicle),
+      fuelDisplay: formatVehicleFuelDisplay(vehicle, formData),
+      resaleDisplay: formatVehicleResaleDisplay(vehicle),
+      pros: pros.length ? pros : ['Profilinize uygun alternatif segment'],
+      whySecond: whyNot?.summary
+        || vehicle.recommendationIntelligence?.whyNotAlternatives
+        || 'Birincil öneriye göre toplam uyum skoru daha düşük.'
+    };
+  });
+}
+
+/**
+ * Rule-based ranking commentary from existing score data (no new AI/API).
+ * @param {object[]} results
+ * @param {object} [formData]
+ */
+export function buildRankingCommentary(results = [], formData = {}) {
+  const list = (Array.isArray(results) ? results : []).slice(0, 3);
+  const leader = list[0];
+  if (!leader) return [];
+
+  const runnerUp = list[1] || null;
+  const whyFirst = buildWhyNumberOne(leader, runnerUp, formData);
+  const sections = [];
+
+  if (whyFirst) {
+    sections.push({
+      key: 'rank-1',
+      title: 'Neden birinci sırada?',
+      text: whyFirst.summary,
+      bullets: whyFirst.advantages?.slice(0, 3) || []
+    });
+  }
+
+  list.slice(1).forEach((vehicle, idx) => {
+    const rank = idx + 2;
+    const whyNot = buildWhyNotRanked(vehicle, rank, leader, formData);
+    const title = rank === 2
+      ? 'Neden ikinci sıradaki araç seçilmedi?'
+      : 'Neden üçüncü sıradaki araç geride kaldı?';
+
+    sections.push({
+      key: `rank-${rank}`,
+      title,
+      text: whyNot?.summary
+        || `${vehicle.name} toplam uyum skorunda ${leader.name} gerisinde kaldı.`,
+      bullets: [
+        ...(whyNot?.gaps || []).slice(0, 2),
+        ...(whyNot?.strengths || []).slice(0, 1)
+      ].filter(Boolean)
+    });
+  });
+
+  return sections;
+}
+
+/**
+ * Hero highlight bullets derived from recommendation intelligence scores.
+ * @param {object} recommendation
+ */
+export function buildHeroHighlights(recommendation) {
+  const intel = recommendation?.intelligence || {};
+  const items = [
+    {
+      label: 'Bütçe uyumu',
+      ok: (intel.budgetFitScore ?? 0) >= 60
+    },
+    {
+      label: 'TCO avantajı',
+      ok:
+        (intel.operatingCostScore ?? 0) >= 60 ||
+        safeNumber(recommendation?.fiveYearOwnership) > 0
+    },
+    {
+      label: 'Segment uyumu',
+      ok: (intel.resaleScore ?? 0) >= 55
+    },
+    {
+      label: 'Kullanım profili uyumu',
+      ok: (intel.reliabilityScore ?? 0) >= 55
+    }
+  ];
+  return items;
+}
+
+export { scoreBandLabel };

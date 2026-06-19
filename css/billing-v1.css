@@ -1,0 +1,231 @@
+/* Billing V1 + Paywall V1 */
+
+/* Ana sayfa #pricing — 3 kart; dar 2 sütun teaser grid’ine sıkışmasın */
+#pricing .ib-pricing-home-teaser:has(.billing-v1-pricing-grid) {
+  display: block;
+  max-width: min(1120px, 100%);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.billing-v1-pricing-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1.25rem 0;
+  width: 100%;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .billing-v1-pricing-grid {
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .billing-v1-pricing-grid {
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    align-items: stretch;
+  }
+}
+
+.billing-v1-plan-card,
+.billing-v1-plan-card h3,
+.billing-v1-plan-card .billing-v1-plan-kicker,
+.billing-v1-plan-card .billing-v1-plan-name,
+.billing-v1-plan-card .billing-v1-plan-desc,
+.billing-v1-plan-card .billing-v1-plan-price {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.billing-v1-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1.35rem 1.4rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--border-color, #334155) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-color, #fff) 96%, transparent);
+  min-height: 22rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+#pricing .billing-v1-plan-card {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.billing-v1-plan-card--pro {
+  border-color: color-mix(in srgb, var(--primary-color, #3b82f6) 45%, transparent);
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.12);
+}
+
+.billing-v1-plan-kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.billing-v1-plan-kicker--pro {
+  color: var(--primary-color, #2563eb);
+}
+
+.billing-v1-trial {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.billing-v1-plan-name {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.25;
+  font-weight: 700;
+  white-space: normal;
+}
+
+.billing-v1-plan-price {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.billing-v1-plan-price small {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+}
+
+.billing-v1-plan-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted, #475569);
+  flex: 1;
+}
+
+#pricing .billing-v1-plan-desc {
+  color: #475569;
+}
+
+.billing-v1-plan-features {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.billing-v1-plan-card .btn-block {
+  margin-top: auto;
+}
+
+/* Paywall */
+
+.paywall-v1 {
+  border-radius: 0.85rem;
+  border: 1px dashed color-mix(in srgb, var(--primary-color, #3b82f6) 40%, transparent);
+  background: color-mix(in srgb, var(--primary-color, #3b82f6) 8%, var(--surface-color, #0f172a));
+  padding: 1rem 1.1rem;
+  margin: 0.75rem 0;
+}
+
+.paywall-v1--compact {
+  padding: 0.75rem 0.85rem;
+}
+
+.paywall-v1.is-dismissed {
+  display: none;
+}
+
+.paywall-v1-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.paywall-v1-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.paywall-v1-body {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-muted, #cbd5e1);
+}
+
+.paywall-v1-list {
+  margin: 0 0 0.65rem;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+}
+
+.paywall-v1-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.paywall-v1-lock {
+  margin-bottom: 0.35rem;
+  opacity: 0.85;
+}
+
+.paywall-v1-gate {
+  position: relative;
+}
+
+.paywall-v1-gate-preview {
+  opacity: 0.35;
+  pointer-events: none;
+  max-height: 8rem;
+  overflow: hidden;
+  filter: blur(2px);
+}
+
+.paywall-v1-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, #64748b 30%, transparent);
+  color: #e2e8f0;
+}
+
+.paywall-v1-badge--active {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+}
+
+.dashboard-v2-pro-locked .dashboard-v2-table-wrap {
+  opacity: 0.5;
+  pointer-events: none;
+}

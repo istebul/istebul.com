@@ -2,6 +2,8 @@
 
 **Canonical admin:** `admin-panel.html` + `js/admin-panel.js` (CMS, CRM, partners, analytics).
 
+Nav/page contract: see [docs/ADMIN_NAV_CONTRACT.md](../docs/ADMIN_NAV_CONTRACT.md) — `ADMIN_PAGE_IDS`, `NAV_LABELS`, Karar terminology.
+
 | File | Status |
 |------|--------|
 | `js/admin-panel.js` | **Production** |

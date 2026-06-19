@@ -1,0 +1,73 @@
+.paytr-iframe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.paytr-iframe-card {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: min(90dvh, 90vh);
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2);
+}
+
+.paytr-iframe-card iframe {
+  width: 100%;
+  min-height: min(80dvh, 640px);
+  border: 0;
+}
+
+.paytr-iframe-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.admin-payment-providers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.admin-payment-provider-card {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.admin-payment-provider-card--configured {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.admin-payment-provider-card--passive {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.admin-payment-section {
+  margin-top: 1.25rem;
+}
+
+.admin-payment-note {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.88rem;
+}

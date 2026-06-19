@@ -76,7 +76,7 @@ test('sanitizeAiNarrative strips risky financial claims', () => {
 
 test('buildMethodologyPanel documents limits', () => {
   const panel = buildMethodologyPanel();
-  assert.equal(panel.title, 'Karar metodolojisi');
+  assert.equal(panel.title, 'Karar altyapısı metodolojisi');
   assert.ok(panel.steps.length >= 3);
   assert.ok(panel.limits.some((l) => /canlı ilan/i.test(l)));
 });

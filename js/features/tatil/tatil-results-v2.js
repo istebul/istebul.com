@@ -14,7 +14,14 @@ import {
   riskLevelToTone,
   safeTrackEvent
 } from '../results/results-engine.js';
-import { downloadDecisionReport } from '../results/pdf-report.js';
+import { gatePdfDownload } from '../billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../billing/paywall-v1.js';
+import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
@@ -216,6 +223,7 @@ export function buildTotalCostView(state = {}, primaryResult = null) {
     reserve,
     perPerson,
     totalBudget,
+    realTotal,
     budgetFitPct,
     travelers,
     nights: safeNumber(state.trip_nights) || primaryResult?.costs?.nights || null
@@ -426,63 +434,6 @@ function buildNextSteps(state, riskAnalysis) {
   return steps.slice(0, 6);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const tone =
-    ctx.decisionScore >= 70 && ctx.overallRisk !== 'Yüksek'
-      ? 'mantıklı'
-      : ctx.decisionScore >= 55
-        ? 'koşullu olarak değerlendirilebilir'
-        : 'riskli';
-
-  return [
-    `${ctx.goalLabel || 'Tatil'} planınız ${tone} görünüyor; karar skoru ${ctx.decisionScore}/100 (${ctx.scoreLabel}).`,
-    `Toplam tatil bütçesi yaklaşık ${ctx.totalLabel}; güven skoru ${ctx.confidenceScore}/100.`,
-    ctx.overallRisk === 'Yüksek' || ctx.decisionScore < 55
-      ? 'Bu aşamada tarihi veya destinasyonu değiştirmek veya planı ertelemek daha güvenli olabilir.'
-      : 'Şartlar uygunsa yazılı teklif ve iptal koşulları netleştikten sonra rezervasyon yapılabilir.',
-    ctx.criticalRisk
-      ? `En kritik risk: ${ctx.criticalRisk}.`
-      : 'En kritik kontrol: sezon yoğunluğu ve iptal koşulları.',
-    'Mutlaka kontrol edin: konaklama yorumları, ulaşım bağlantıları, çocuk uygunluğu ve gizli masraflar.',
-    'Bu özet bilgilendirme amaçlıdır; bağlayıcı rezervasyon veya seyahat tavsiyesi değildir.'
-  ].join(' ');
-}
-
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel seyahat danismani gibi Turkce 4-6 cumle yaz.',
-    'Sorular: Plan mantikli mi? Hangi sartlarda alinmali? Ne zaman ertelenmeli? En kritik risk? Ne kontrol edilmeli?',
-    'Kesin tavsiye verme; tahmini analiz.',
-    `Hedef: ${ctx.goalLabel}`,
-    `Karar: ${ctx.decisionScore}/100`,
-    `Risk: ${ctx.overallRisk}`,
-    `Butce: ${ctx.totalLabel}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Zayif: ${(ctx.weaknesses || []).slice(0, 2).join('; ')}`
-  ].join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'tatil-decision-results-v2' } }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
 /**
  * Tam result payload.
  */
@@ -496,12 +447,26 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
   const overallRisk = intel.overallRisk;
   const strengths = buildStrengths(state, primary, cost);
   const weaknesses = buildWeaknesses(state, primary, cost);
-  const alternatives = intel.alternatives;
+  const localAlternatives = (results || []).slice(1, 3).map((item) => ({
+    title: item.title || 'Alternatif rota',
+    description: item.description || item.summary || 'Profilinize uygun alternatif tatil senaryosu.',
+    meta: item.score != null ? `${item.score}/100` : formatTryAmount(item.costs?.realTotal || item.costs?.totalBudget)
+  }));
+  const alternatives = localAlternatives.length ? localAlternatives : intel.alternatives;
   const nextSteps = intel.nextSteps;
   const criticalRisk = riskAnalysis.find((r) => r.level === 'yüksek')?.title || '';
 
+  const { planTier } = getResultsPlanContext();
+  const insightInput = buildInsightInputFromIntelligence('tatil', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses,
+    costs: { totalBudget: cost.totalBudget, realTotal: cost.realTotal }
+  });
+
   const pdfReportData = buildPdfReportData({
     category: 'tatil',
+    planTier,
     goal: optionLabel('goal', state.vacation_goal),
     decisionScore,
     scoreLabel: intel.scoreLabel,
@@ -546,8 +511,15 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     intelligence: intel,
     pdfReportData,
     goalLabel: optionLabel('goal', state.vacation_goal),
+    typeLabel: optionLabel('type', state.vacation_type),
+    primaryTitle: primary?.title || optionLabel('goal', state.vacation_goal),
+    primarySubtitle: primary?.description || '',
+    primaryImageUrl: primary?.image_url || '/assets/images/demo/lara-resort.svg',
     totalLabel: formatTryAmount(cost.totalBudget),
-    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || ''
+    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
+    planTier,
+    insightInput,
+    insight: buildDecisionInsight(insightInput)
   };
 }
 
@@ -558,23 +530,41 @@ function renderTatilResultsV2Html(model) {
     ? `<p class="tatil-v2-estimate-note">${esc(cost.estimateNote)}</p>`
     : '';
 
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'travel',
+    title: 'Tatil Planı Öneriniz',
+    subtitle: 'Profilinize göre en uygun tatil senaryosu belirlendi.',
+    recommendation: {
+      kicker: 'Önerilen rota',
+      title: model.primaryTitle || model.goalLabel || 'Tatil paketi',
+      subtitle: model.primarySubtitle || model.typeLabel || '',
+      badge: model.recommendationLabel || 'En uygun',
+      badgeTone: 'success',
+      imageUrl: model.primaryImageUrl || '/assets/images/demo/lara-resort.svg'
+    },
+    specs: [
+      { label: 'Toplam bütçe', value: formatTryAmount(cost.totalBudget) },
+      { label: 'Kişi başı', value: formatTryAmount(cost.perPerson) },
+      { label: 'Konaklama', value: formatTryAmount(cost.accommodation) },
+      { label: 'Ulaşım', value: formatTryAmount(cost.transport) },
+      { label: 'Aktivite/rezerv', value: formatTryAmount((cost.activities || 0) + (cost.reserve || 0)) },
+      { label: 'Genel risk', value: model.overallRisk || '—' }
+    ],
+    score: model.decisionScore,
+    scoreLabel: model.scoreLabel || 'Tatil karar skoru',
+    scoreTone: scoreToneFromLabel(model.scoreLabel),
+    evdsMountClass: 'tatil-v2-evds-mount ib-results-economic--compact'
+  });
+
   return `
     <section class="tatil-v2-panel" aria-label="Tatil Decision Results V2">
-      <header class="tatil-v2-hero">
-        <p class="tatil-v2-kicker">AI destekli tatil karar analizi</p>
-        <h2 class="tatil-v2-title">Tatil karar raporu</h2>
-        <p class="tatil-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
-        ${model.recommendationLabel ? `<p class="tatil-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
+      ${heroHtml}
+
+      <div id="ib-results-detail"></div>
 
       ${renderScoreFactorsHtml(model.scoreFactors, 'tatil-v2')}
 
-      <div class="tatil-v2-kpis">
-        <article class="tatil-v2-kpi tatil-v2-kpi--score">
-          <span>Tatil Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="tatil-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
+      <div class="tatil-v2-kpis tatil-v2-kpis--secondary">
         <article class="tatil-v2-kpi tatil-v2-kpi--confidence">
           <span>Güven Skoru</span>
           <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
@@ -585,9 +575,9 @@ function renderTatilResultsV2Html(model) {
           <strong><span class="tatil-v2-risk tatil-v2-risk--${esc(model.riskTone)}">${esc(model.overallRisk)}</span></strong>
         </article>
         <article class="tatil-v2-kpi tatil-v2-kpi--cost">
-          <span>Toplam tatil bütçesi</span>
-          <strong>${esc(formatTryAmount(cost.totalBudget))}</strong>
-          <small>Kişi başı ${esc(formatTryAmount(cost.perPerson))}</small>
+          <span>Bütçe uyumu</span>
+          <strong>${cost.budgetFitPct != null ? esc(`%${cost.budgetFitPct}`) : '—'}</strong>
+          <small>Toplam ${esc(formatTryAmount(cost.totalBudget))}</small>
         </article>
       </div>
 
@@ -653,9 +643,12 @@ function renderTatilResultsV2Html(model) {
         </div>
       </section>
 
-      <article class="tatil-v2-block tatil-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="tatil-v2-exec" data-tatil-v2-exec>${esc(model.executiveSummary || 'Özet hazırlanıyor…')}</p>
+      <article class="tatil-v2-block tatil-v2-block--exec" data-tatil-v2-insight-root>
+        <h3>Yapay zeka karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
         <p class="tatil-v2-exec-hint" data-tatil-v2-source></p>
       </article>
 
@@ -698,6 +691,8 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   root.innerHTML = renderTatilResultsV2Html(model);
   mountNode.prepend(root);
 
+  await hydrateResultsEconomicIndicators(root, 'tatil');
+
   safeTrackEvent(track, 'travel_result_v2_view', {
     category: 'tatil',
     score: model.decisionScore,
@@ -716,19 +711,49 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
       hint.textContent =
         'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
-    downloadDecisionReport(model.pdfReportData);
+    gatePdfDownload(model.pdfReportData);
   });
 
-  const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model);
+  const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model, {
+    planTier: model.planTier,
+    strengths: model.strengths,
+    weaknesses: model.weaknesses,
+    costs: model.totalCost
+  });
 
-  const execEl = root.querySelector('[data-tatil-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
+  if (summary.insight) {
+    model.insight = summary.insight;
+    hydrateInsightBlocks(root.querySelector('[data-tatil-v2-insight-root]'), summary.insight);
+  }
   const sourceEl = root.querySelector('[data-tatil-v2-source]');
   if (sourceEl) {
-    sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Kural tabanlı danışman'}`;
+    sourceEl.textContent =
+      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'tatil',
+        formData: state,
+        metrics: { totalCost: model.totalCost?.totalBudget ?? model.totalCost?.realTotal ?? null },
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          totalCost: model.totalCost?.totalBudget ?? model.totalCost?.realTotal ?? null,
+          title: 'Tatil Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary
+        }
+      })
+    )
+    .catch(() => {});
 
   mountResultsV3(mountNode, {
     category: 'tatil',

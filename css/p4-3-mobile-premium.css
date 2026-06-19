@@ -266,6 +266,8 @@ html {
 
   body.ib-auto .premium-lead-modal {
     max-height: min(92dvh, 92vh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   body.ib-auto .premium-lead-modal form .btn {

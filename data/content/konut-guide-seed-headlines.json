@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "category": "konut",
+  "editorialNote": "Karar rehberi — ilan sitesi değil. Her yazı sonunda /konut/ CTA ile bitmeli.",
+  "headlines": [
+    {
+      "slug": "2026-konut-kredisi-aylik-taksit",
+      "title": "2026 konut kredisi faizleri — aylık taksit nasıl hesaplanır?",
+      "excerpt": "Peşinat, vade ve faiz senaryolarında aylık yük tablosu — bilgilendirme amaçlı, banka teklifi değildir.",
+      "cover_image_url": "/assets/images/demo/kadikoy-daire.svg",
+      "source_label": "BDDK / TCMB özeti",
+      "is_featured": true
+    },
+    {
+      "slug": "tapu-harci-masraflar-2026",
+      "title": "Tapu harcı ve masraflar 2026 — alıcı kontrol listesi",
+      "excerpt": "Harç, danışmanlık ve taşınma kalemlerinin toplam bütçeye etkisi; sürpriz maliyetleri önleme.",
+      "cover_image_url": "/assets/images/demo/kadikoy-daire.svg",
+      "source_label": "Tapu ve Kadastro"
+    },
+    {
+      "slug": "kira-mi-satin-alma-mi-2026",
+      "title": "Kira mı satın alma mı? 2026 karar çerçevesi",
+      "excerpt": "Aylık kira ile mortgage yükünü aynı bütçede kıyaslama — nakit akışı ve risk.",
+      "cover_image_url": "/assets/images/demo/kadikoy-daire.svg",
+      "source_label": "isteBul Konut metodoloji"
+    },
+    {
+      "slug": "istanbul-ilce-secimi-maliyet",
+      "title": "İstanbul'da ilçe seçimi: ulaşım ve yaşam maliyeti",
+      "excerpt": "Ulaşım süresi, aidat ve fiyat bandı — konut karar skoruna nasıl yansır.",
+      "cover_image_url": "/assets/images/demo/kadikoy-daire.svg",
+      "source_label": "TÜİK / yerel veri"
+    },
+    {
+      "slug": "konut-alirken-gizli-maliyetler",
+      "title": "Konut alırken gizli maliyetler (aidat, depozito, taşınma)",
+      "excerpt": "Liste fiyatı dışında ilk 12 ayda çıkan kalemler — toplam sahip olma maliyeti görünümü.",
+      "cover_image_url": "/assets/images/demo/kadikoy-daire.svg",
+      "source_label": "isteBul Konut"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import {
   enrollRevenueLifecycleFlow,
   resolveUserContact
 } from './_shared/revenue-ops-enroll.js';
+import { syncProfileFromSubscription } from '../_shared/sync-profile-subscription.js';
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -137,6 +138,8 @@ const upsertSubscription = async (supabase, subscription, fallbackUserId = null)
   if (error) {
     throw error;
   }
+
+  await syncProfileFromSubscription(supabase, subscription, fallbackUserId);
 };
 
 export async function onRequestPost(context) {

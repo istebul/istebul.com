@@ -1,5 +1,14 @@
 /**
  * Admin panel navigation — every sidebar page maps to a refresh handler.
+ *
+ * Nav contract (Faz 4A-1a):
+ * - ADMIN_PAGE_IDS is the single source of truth for in-panel pages + deep-link slugs.
+ * - Sidebar targets in admin-panel.html must match this list exactly.
+ * - "Karar" terminology:
+ *   - listings → Karar Seçenekleri (classic CRM / listings table CRUD)
+ *   - /admin/ai-listings/ → AI İlan Yönetimi (external admin-only link; AI engine workspace)
+ *   - ops-ai-assistant ← /admin/decision-center alias (Ops AI karar motoru)
+ *   - Public Karar Merkezi lives at /profil/ (not an admin page id)
  */
 
 import { syncAdminHeaderTitle } from './admin-shell.js';
@@ -15,10 +24,13 @@ export const ADMIN_PAGE_IDS = [
   'announcements',
   'campaigns',
   'faqs',
+  'home-news',
   'blog',
+  'linkedin-ops-assistant',
   'listings',
   'users',
   'auto-leads',
+  'vertical-leads',
   'vacation-analytics',
   'vacation-leads',
   'vacation-scenarios',
@@ -31,8 +43,11 @@ export const ADMIN_PAGE_IDS = [
   'housing-partners',
   'housing-scoring',
   'finance-leads',
+  'sigorta-leads',
+  'kasko-leads',
   'finance-partners',
   'finance-scoring',
+  'unified-funnel',
   'auto-analytics',
   'platform-analytics',
   'dashboard-ceo',
@@ -56,8 +71,43 @@ export const ADMIN_PAGE_IDS = [
   'acquisition-exit',
   'partner-endpoints',
   'partner-applications',
-  'partner-dispatch-logs'
+  'partner-dispatch-logs',
+  'payments'
 ];
+
+/** URL slug → sidebar page id (e.g. /admin/decision-center → ops-ai-assistant) */
+export const ADMIN_PATH_ALIASES = Object.freeze({
+  'decision-center': 'ops-ai-assistant',
+  'linkedin-ops': 'linkedin-ops-assistant',
+  'linkedin-ops-assistant': 'linkedin-ops-assistant'
+});
+
+/**
+ * @param {string} [pathname]
+ * @returns {string | null}
+ */
+export function resolveAdminPageFromPath(pathname = '/') {
+  const match = String(pathname).match(/^\/admin\/([^/]+)\/?$/);
+  if (!match) return null;
+  const slug = decodeURIComponent(match[1]);
+  return ADMIN_PATH_ALIASES[slug] || slug;
+}
+
+/**
+ * Open the admin page matching the current URL path (/admin/listings, …).
+ * @returns {boolean}
+ */
+export function bootAdminPageFromUrl() {
+  const pageId = resolveAdminPageFromPath(window.location.pathname);
+  if (!pageId) return false;
+  const nav = document.querySelector(`[data-page-target="${pageId}"]`);
+  if (!nav) {
+    console.warn('[admin] no nav target for path page:', pageId);
+    return false;
+  }
+  showAdminPage(pageId, nav);
+  return true;
+}
 
 /**
  * @param {Record<string, () => void | Promise<void>>} handlers

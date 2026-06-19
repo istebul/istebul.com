@@ -4,6 +4,7 @@
 import { getExternalRedirect, stripPathname } from './route-surface.js';
 
 const AUTO_PATH_PREFIX = '/auto';
+const REHBER_PREFIX = '/rehber';
 
 /** Paths without .html that should still leave the SPA shell. */
 const STATIC_ALIASES = Object.freeze({
@@ -15,6 +16,7 @@ const STATIC_ALIASES = Object.freeze({
   '/hakkimizda': '/hakkimizda.html',
   '/iletisim': '/iletisim.html',
   '/metodoloji': '/metodoloji/',
+  '/veri-kaynaklari': '/veri-kaynaklari/',
   '/araba': '/auto/',
   '/konut': '/konut/',
   '/tatil': '/tatil/',
@@ -42,6 +44,10 @@ export function resolveFullPageNavigation(href) {
   const stripped = stripPathname(pathname);
 
   if (stripped === AUTO_PATH_PREFIX || stripped.startsWith(`${AUTO_PATH_PREFIX}/`)) {
+    return pathname.endsWith('/') ? pathname : `${pathname.replace(/\/$/, '')}/`;
+  }
+
+  if (stripped === REHBER_PREFIX || stripped.startsWith(`${REHBER_PREFIX}/`)) {
     return pathname.endsWith('/') ? pathname : `${pathname.replace(/\/$/, '')}/`;
   }
 

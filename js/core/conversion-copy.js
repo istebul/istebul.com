@@ -11,14 +11,14 @@ export const CONVERSION_COPY = Object.freeze({
     autoCta: BRAND_VOICE.cta.primaryAuto
   },
   mobileNav: {
-    login: 'Giriş Yap',
-    register: 'Analizini kaydet ve devam et'
+    login: 'Üye Girişi',
+    register: 'Üye Ol'
   },
   auth: {
     loginTitle: 'Hesabına gir',
     registerTitle: 'Analizini kaydet ve devam et',
-    checkoutLoginTitle: 'Pro ödemesine giriş yapın',
-    checkoutRegisterTitle: 'Pro için hesabınızı oluşturun',
+    checkoutLoginTitle: 'Pro erken erişim için giriş yapın',
+    checkoutRegisterTitle: 'Pro erken erişim için hesabınızı oluşturun',
     loginSubmit: 'Devam et',
     registerSubmit: 'Analizini kaydet ve devam et',
     loginBusy: 'Girişiniz doğrulanıyor…',
@@ -27,8 +27,8 @@ export const CONVERSION_COPY = Object.freeze({
     switchToRegister: 'Hesap oluştur',
     switchToLogin: 'Zaten hesabım var',
     loginFailed: 'Giriş tamamlanamadı. E-posta ve şifrenizi kontrol edip tekrar deneyin.',
-    successCheckoutLogin: 'Giriş tamam. Güvenli ödeme sayfasına yönlendiriliyorsunuz…',
-    successCheckoutRegister: 'Hesabınız hazır. Ödeme sayfasına yönlendiriliyorsunuz…',
+    successCheckoutLogin: 'Giriş tamam. Pro erken erişim adımına yönlendiriliyorsunuz…',
+    successCheckoutRegister: 'Hesabınız hazır. Pro erken erişim adımına yönlendiriliyorsunuz…',
     successRegister: 'Hoş geldiniz — karar geçmişiniz hesabınıza bağlandı.',
     successRegisterVerify:
       'Hesabınız oluşturuldu. E-posta doğrulaması gerekiyorsa gelen kutunuzu kontrol edin.',
@@ -36,10 +36,10 @@ export const CONVERSION_COPY = Object.freeze({
       'Hesabınız hazır. Doğrulama gerekiyorsa e-postanızı kontrol edin — Pro adımınız kayıtlı kalır.',
     successReset: 'Sıfırlama bağlantısı e-postanıza gönderildi. Gelen kutusu ve spam klasörünü kontrol edin.',
     checkoutIntentBanner:
-      'Pro ödeme adımı — 7 gün ücretsiz deneme · Stripe ile güvenli ödeme · İstediğiniz zaman iptal. Kart bilgileri sunucularımızda tutulmaz.'
+      'Pro erken erişim — ödeme sağlayıcı aktivasyonu sonrası bilgilendirme. Kart bilgileri sunucularımızda tutulmaz.'
   },
   checkout: {
-    buttonLoading: 'Güvenli ödeme sayfası hazırlanıyor…',
+    buttonLoading: 'Pro erken erişim adımı hazırlanıyor…',
     sessionRequired: 'Ödemeye devam etmek için giriş yapın — seçtiğiniz plan kayıtlı kalır.',
     failed: 'Ödeme sayfası açılamadı. Bağlantı veya kart bilgisi sorunu olabilir; kısa süre sonra tekrar deneyin.',
     billingPortalRequired: 'Abonelik yönetimi için giriş yapmanız gerekiyor.'

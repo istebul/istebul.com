@@ -46,7 +46,6 @@ const isImageRequest = (request) =>
 
 const shouldBypassCache = (pathname) =>
   pathname === '/env.js' ||
-  pathname.startsWith('/.netlify/functions/') ||
   pathname.startsWith('/api/') ||
   pathname.startsWith('/functions/');
 

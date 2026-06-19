@@ -1,4 +1,12 @@
-import { VACATION_STEPS, STEP_OPTIONS, BUDGET_PLANS, DEFAULT_SETTINGS } from './tatil-config.js';
+import { STEP_OPTIONS, BUDGET_PLANS, DEFAULT_SETTINGS } from './tatil-config.js';
+import {
+  getVacationFlowSteps,
+  getStepMeta,
+  getOptionsForStep,
+  applyGoalFlowDefaults,
+  resetFieldsOnGoalChange,
+  shouldShowChildrenFields
+} from './tatil-flow.js';
 import {
   trackVacationEvent,
   saveVacationLead,
@@ -15,6 +23,19 @@ import {
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountTatilResultsV2 } from '../features/tatil/tatil-results-v2.js';
+import { adaptTatilCard } from '../features/decision-cards/adapters/tatil-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
+import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
+import {
+  trackAnalysisCompleted,
+  trackLeadFormOpened,
+  trackLeadSubmitted
+} from '../platform/site-analytics.js';
 
 const state = {
   stepIndex: 0,
@@ -46,6 +67,39 @@ const state = {
   scenarios: []
 };
 
+let wizardCompleteFired = false;
+let leadOpenFired = false;
+const VACATION_START_KEY = 'ib_vacation_start';
+
+function hasVacationStartFired() {
+  try {
+    return sessionStorage.getItem(VACATION_START_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markVacationStartFired() {
+  try {
+    sessionStorage.setItem(VACATION_START_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
+
+function maybeFireVacationStart(source = 'interaction') {
+  if (hasVacationStartFired()) return;
+  markVacationStartFired();
+  void trackVacationEvent('vacation_start', { source });
+}
+
+function maybeFireVacationLeadOpen(source = 'interaction') {
+  if (leadOpenFired) return;
+  leadOpenFired = true;
+  void trackVacationEvent('vacation_lead_open', { source });
+  trackLeadFormOpened('tatil', { source });
+}
+
 function $(sel, root = document) {
   return root.querySelector(sel);
 }
@@ -58,14 +112,19 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function activeSteps() {
+  return getVacationFlowSteps(state.vacation_goal);
+}
+
 function currentStep() {
-  return VACATION_STEPS[state.stepIndex];
+  return activeSteps()[state.stepIndex];
 }
 
 function canAdvance() {
   const step = currentStep();
   if (!step) return false;
   if (step.id === 'goal') return Boolean(state.vacation_goal);
+  if (step.id === 'type') return Boolean(state.vacation_type);
   if (step.id === 'budget') {
     if (!state.budget_range) return false;
     if (state.budget_range === 'manuel') return Boolean(state.budget_total || state.budget_per_person || state.budget_manual);
@@ -73,7 +132,7 @@ function canAdvance() {
   }
   if (step.id === 'people') {
     if (!state.people_type || !state.travelers_count) return false;
-    if (state.people_type === 'cocuklu-aile') {
+    if (shouldShowChildrenFields(state)) {
       return Boolean(state.children_count || state.children_ages?.trim());
     }
     return true;
@@ -98,7 +157,7 @@ function canAdvance() {
 function renderProgress() {
   const el = $('#vacation-step-progress');
   if (!el) return;
-  el.innerHTML = VACATION_STEPS.map((step, i) => {
+  el.innerHTML = activeSteps().map((step, i) => {
     const active = i === state.stepIndex;
     const done = i < state.stepIndex;
     return `
@@ -180,8 +239,9 @@ function renderBudgetStep() {
 }
 
 function renderPeopleStep() {
+  const peopleOptions = getOptionsForStep('people', state.vacation_goal);
   const childFields =
-    state.people_type === 'cocuklu-aile'
+    shouldShowChildrenFields(state)
       ? `
     <div class="vacation-children-fields">
       <label class="vacation-field">
@@ -201,7 +261,7 @@ function renderPeopleStep() {
 
   return `
     <div class="vacation-option-grid vacation-option-grid--rich">
-      ${STEP_OPTIONS.people
+      ${peopleOptions
         .map((opt) => {
           const isSelected = state.people_type === opt.value;
           return `
@@ -224,9 +284,10 @@ function renderPeopleStep() {
 }
 
 function renderExpectationsStep() {
+  const chips = getOptionsForStep('expectations', state.vacation_goal);
   return `
     <div class="vacation-chip-grid">
-      ${STEP_OPTIONS.expectations
+      ${chips
         .map((item) => {
           const selected = state.expectations.includes(item);
           return `
@@ -245,9 +306,10 @@ function renderExpectationsStep() {
 }
 
 function renderTypeStep() {
+  const typeOptions = getOptionsForStep('type', state.vacation_goal);
   return `
     <div class="vacation-option-grid vacation-option-grid--rich vacation-option-grid--type">
-      ${STEP_OPTIONS.type
+      ${typeOptions
         .map((opt) => {
           const isSelected = state.vacation_type === opt.value;
           return `
@@ -304,10 +366,12 @@ function renderDateStep() {
 }
 
 function renderPreferencesStep() {
+  const transportOptions = getOptionsForStep('transport', state.vacation_goal);
+  const comfortOptions = getOptionsForStep('comfort', state.vacation_goal);
   return `
     <p class="vacation-step-subtitle">Ulaşım tercihi</p>
     <div class="vacation-option-grid vacation-option-grid--rich">
-      ${STEP_OPTIONS.transport
+      ${transportOptions
         .map((opt) => {
           const isSelected = state.transport_preference === opt.value;
           return `
@@ -321,7 +385,7 @@ function renderPreferencesStep() {
     </div>
     <p class="vacation-step-subtitle">Konfor beklentisi</p>
     <div class="vacation-option-grid vacation-option-grid--rich">
-      ${STEP_OPTIONS.comfort
+      ${comfortOptions
         .map((opt) => {
           const isSelected = state.comfort_expectation === opt.value;
           return `
@@ -339,7 +403,8 @@ function renderWizard() {
   const mount = $('#vacation-wizard');
   if (!mount) return;
 
-  if (state.stepIndex >= VACATION_STEPS.length) {
+  const steps = activeSteps();
+  if (state.stepIndex >= steps.length) {
     mount.hidden = true;
     renderResults();
     return;
@@ -347,11 +412,15 @@ function renderWizard() {
 
   mount.hidden = false;
   const step = currentStep();
+  const stepMeta = getStepMeta(step.id, state.vacation_goal);
   let body = '';
 
   if (step.id === 'goal') body = renderGoalCards();
   else if (step.id === 'budget') body = renderBudgetStep();
-  else if (step.id === 'people') body = renderPeopleStep();
+  else if (step.id === 'people') {
+    applyGoalFlowDefaults(state, state.vacation_goal);
+    body = renderPeopleStep();
+  }
   else if (step.id === 'type') body = renderTypeStep();
   else if (step.id === 'date') body = renderDateStep();
   else if (step.id === 'preferences') body = renderPreferencesStep();
@@ -365,8 +434,8 @@ function renderWizard() {
 
   mount.innerHTML = `
     <div class="vacation-wizard-card">
-      <h2>${escapeHtml(step.title)}</h2>
-      ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
+      <h2>${escapeHtml(stepMeta.title)}</h2>
+      ${stepMeta.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(stepMeta.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
         ${state.stepIndex > 0 ? '<button type="button" class="btn btn-ghost" id="vacation-back">Geri</button>' : ''}
@@ -416,20 +485,31 @@ function refreshNextButton() {
 function bindWizardEvents() {
   document.querySelectorAll('[data-field]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      maybeFireVacationStart('field_select');
       const field = btn.dataset.field;
       const value = btn.dataset.value;
-      state[field] = value;
       if (field === 'vacation_goal') {
-        state.vacation_type = value;
+        const previousGoal = state.vacation_goal;
+        state.vacation_goal = value;
+        resetFieldsOnGoalChange(state, previousGoal, value);
+        const steps = getVacationFlowSteps(value);
+        if (state.stepIndex >= steps.length) {
+          state.stepIndex = Math.max(0, steps.length - 1);
+        }
+      } else {
+        state[field] = value;
       }
       if (field === 'budget_range' && value !== 'manuel') {
         state.budget_manual = null;
         state.budget_total = null;
         state.budget_per_person = null;
       }
-      if (field === 'people_type' && value !== 'cocuklu-aile') {
+      if (field === 'people_type' && value !== 'cocuklu-aile' && state.vacation_goal !== 'cocuklu-aile') {
         state.children_count = '';
         state.children_ages = '';
+      }
+      if (field === 'people_type') {
+        applyGoalFlowDefaults(state, state.vacation_goal);
       }
       renderWizard();
     });
@@ -437,6 +517,7 @@ function bindWizardEvents() {
 
   const manualInput = $('#vacation-budget-manual');
   manualInput?.addEventListener('input', (e) => {
+    maybeFireVacationStart('manual_input');
     state.budget_total = parseManualBudget(e.target.value);
     state.budget_manual = state.budget_total;
     e.target.value = state.budget_total ? formatTry(state.budget_total) : '';
@@ -533,6 +614,7 @@ function bindWizardEvents() {
 
   $('#vacation-next')?.addEventListener('click', async () => {
     if (!canAdvance() && currentStep()?.id !== 'note') return;
+    maybeFireVacationStart('next_click');
     const step = currentStep();
     if (step?.id === 'note') {
       state.user_note = $('#vacation-user-note')?.value?.trim() || '';
@@ -543,7 +625,7 @@ function bindWizardEvents() {
       step_index: state.stepIndex
     });
     state.stepIndex += 1;
-    if (state.stepIndex >= VACATION_STEPS.length) {
+    if (state.stepIndex >= activeSteps().length) {
       showResults();
     } else {
       renderWizard();
@@ -569,62 +651,53 @@ async function showResults() {
   state.confirmationStep = false;
   renderWizard();
   renderResults();
+  if (!wizardCompleteFired) {
+    wizardCompleteFired = true;
+    await trackVacationEvent('vacation_wizard_complete', {
+      budget_range: state.budget_range,
+      vacation_goal: state.vacation_goal
+    });
+    trackAnalysisCompleted('tatil', {
+      budget_range: state.budget_range,
+      vacation_goal: state.vacation_goal
+    });
+  }
   await trackVacationEvent('vacation_results_view', {
     budget_range: state.budget_range,
     vacation_goal: state.vacation_goal
   });
 }
 
-function renderResults() {
-  const section = $('#vacation-results');
-  if (!section || !state.results.length) return;
-  section.hidden = false;
+function shouldUseDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('tatil');
+}
 
-  const commentary = buildAiCommentary(state, state.results);
-  const summary = buildResultsSummary(state, state.results);
-  const primary = getDisplayResult();
-  const selectedCard = getSelectedResult();
-  const costLabelMap = {
-    accommodation: 'Konaklama',
-    transport: 'Ulaşım / uçuş',
-    transfer: 'Transfer',
-    food: 'Yemek',
-    extras: 'Ekstra harcama',
-    children: 'Çocuk maliyeti',
-    visaDocs: 'Vize / evrak',
-    carRental: 'Araç kiralama'
-  };
-  const disclaimer =
-    state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
-  const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
+function buildDecisionCategoryCardViewModels() {
+  return state.results.map((scenario) =>
+    adaptTatilCard({
+      scenario,
+      state
+    })
+  );
+}
 
-  const dashboardHtml = renderPremiumDecisionDashboard({
-    category: 'tatil',
-    kicker: 'Tatil analizi tamamlandı',
-    title: 'Kişiselleştirilmiş tatil önerileri',
-    decisionScore: summary.fitScore,
-    scoreBand: summary.scoreBand,
-    totalCostLabel: summary.totalCostLabel,
-    riskLabel: summary.seasonRisk,
-    riskDetail: primary?.scores?.risk,
-    advantages: primary?.pros || [],
-    cautions: primary?.cautions || [],
-    aiSummary: commentary.summary,
-    aiBullets: commentary.bullets,
-    nextStep: summary.nextStep || 'Bir destinasyon seçin ve sezon yoğunluğunu tekrar kontrol edin.'
-  });
+function renderScenarioCardsHtml(selectedId) {
+  if (shouldUseDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(true);
+    const viewModels = buildDecisionCategoryCardViewModels();
+    return renderDecisionCategoryCardsGridHtml(viewModels, {
+      selectedId,
+      ariaLabel: 'Tatil seçenekleri'
+    });
+  }
 
-  section.innerHTML = `
-    <div class="vacation-results-header">
-      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
-    </div>
-    ${dashboardHtml}
-    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+  syncDecisionCardsFlagToDocument(false);
+  return `
     <div class="vacation-result-cards" role="list" aria-label="Tatil seçenekleri">
       ${state.results
         .map(
           (r) => {
-            const isPicked = state.selected_option === r.id;
+            const isPicked = selectedId === r.id;
             return `
         <article
           class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}"
@@ -672,7 +745,64 @@ function renderResults() {
           }
         )
         .join('')}
+    </div>`;
+}
+
+function scrollToDecisionCompareSection() {
+  const resultsRoot = $('#vacation-results');
+  if (!resultsRoot) return;
+  const target = resultsRoot.querySelector('.tatil-v2-alts');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function renderResults() {
+  const section = $('#vacation-results');
+  if (!section || !state.results.length) return;
+  section.hidden = false;
+
+  const commentary = buildAiCommentary(state, state.results);
+  const summary = buildResultsSummary(state, state.results);
+  const primary = getDisplayResult();
+  const selectedCard = getSelectedResult();
+  const costLabelMap = {
+    accommodation: 'Konaklama',
+    transport: 'Ulaşım / uçuş',
+    transfer: 'Transfer',
+    food: 'Yemek',
+    extras: 'Ekstra harcama',
+    children: 'Çocuk maliyeti',
+    visaDocs: 'Vize / evrak',
+    carRental: 'Araç kiralama'
+  };
+  const disclaimer =
+    state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
+  const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
+
+  const dashboardHtml = renderPremiumDecisionDashboard({
+    category: 'tatil',
+    kicker: 'Tatil analizi tamamlandı',
+    title: 'Kişiselleştirilmiş tatil önerileri',
+    decisionScore: summary.fitScore,
+    scoreBand: summary.scoreBand,
+    totalCostLabel: summary.totalCostLabel,
+    riskLabel: summary.seasonRisk,
+    riskDetail: primary?.scores?.risk,
+    advantages: primary?.pros || [],
+    cautions: primary?.cautions || [],
+    aiSummary: commentary.summary,
+    aiBullets: commentary.bullets,
+    nextStep: summary.nextStep || 'Bir destinasyon seçin ve sezon yoğunluğunu tekrar kontrol edin.'
+  });
+
+  section.innerHTML = `
+    <div class="vacation-results-header">
+      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
     </div>
+    ${dashboardHtml}
+    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+    ${renderScenarioCardsHtml(state.selected_option)}
 
     ${
       !state.confirmationStep
@@ -814,7 +944,14 @@ function bindResultsEvents(commentary) {
     });
   });
 
-  document.querySelectorAll('.vacation-result-card[data-option]').forEach((card) => {
+  document.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollToDecisionCompareSection();
+    });
+  });
+
+  document.querySelectorAll('.vacation-result-card[data-option], .ib-decision-category-card[data-option]').forEach((card) => {
     card.addEventListener('click', (e) => {
       if (e.target.closest('button')) return;
       selectVacationOption(card.dataset.option);
@@ -824,6 +961,7 @@ function bindResultsEvents(commentary) {
   $('#vacation-confirm-selection')?.addEventListener('click', () => {
     if (!state.selected_option) return;
     state.confirmationStep = true;
+    maybeFireVacationLeadOpen('confirm_selection');
     trackVacationEvent('vacation_selection_confirmed', { option: state.selected_option });
     renderResults();
     $('#vacation-final-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -839,6 +977,7 @@ function bindResultsEvents(commentary) {
   $('#vacation-alt-economic')?.addEventListener('click', () => regenerateVariant('economic'));
   $('#vacation-alt-comfort')?.addEventListener('click', () => regenerateVariant('comfort'));
   $('#vacation-partner-cta')?.addEventListener('click', () => {
+    maybeFireVacationLeadOpen('partner_cta');
     trackVacationEvent('vacation_partner_cta_click');
     submitLead('partner', commentary);
     window.location.href = '/iletisim.html?dikey=tatil&kaynak=partner-teklif';
@@ -861,7 +1000,7 @@ function regenerateVariant(mode) {
 
 function buildLeadNote() {
   const parts = [state.user_note].filter(Boolean);
-  if (state.people_type === 'cocuklu-aile') {
+  if (shouldShowChildrenFields(state)) {
     const c = [];
     if (state.children_count) c.push(`çocuk sayısı: ${state.children_count}`);
     if (state.children_ages) c.push(`yaşlar: ${state.children_ages}`);
@@ -923,6 +1062,8 @@ async function submitLead(source, commentary) {
     msg.className = 'vacation-toast';
     msg.textContent = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun seçenekleri paylaşabilir.';
     $('#vacation-final-cta')?.prepend(msg);
+    trackVacationEvent('vacation_lead_submit', { source, selected_option: selected });
+    trackLeadSubmitted('tatil', { source, selected_option: selected });
     trackVacationEvent('vacation_option_selected', { source, saved: true });
   } else if (!full_name && !phone && !email) {
     alert('İletişim bilgisi paylaşırsanız size özel teklif hazırlayabiliriz. İsterseniz yine de devam edebilirsiniz.');
@@ -941,6 +1082,7 @@ function setupMobileNav() {
 }
 
 function scrollToWizard() {
+  maybeFireVacationStart('hero_cta');
   document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
   state.stepIndex = 0;
   renderWizard();
@@ -960,6 +1102,11 @@ async function init() {
   }
 
   if (scenarios.length) state.scenarios = scenarios;
+
+  bootstrapTatilFromAssistantQuery(state, new URLSearchParams(window.location.search));
+  if (state.vacation_goal) {
+    applyGoalFlowDefaults(state);
+  }
 
   setupMobileNav();
   renderProgress();
