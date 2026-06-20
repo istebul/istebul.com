@@ -214,13 +214,15 @@ function buildCeoSummary(ctx) {
     lines.push(`Wizard tamamlama ${conversions.wizardCompletionPct}% · Checkout CR ${conversions.checkoutConversionPct ?? '—'}%.`);
   }
   if (partnerQuality.avgLeadScore != null) {
-    lines.push(`Ortalama lead skoru ${partnerQuality.avgLeadScore} · partner win rate ${partnerQuality.partnerWinRatePct ?? '—'}%.`);
+    lines.push(
+      `Ortalama lead skoru ${partnerQuality.avgLeadScore} · partner kazanma oranı ${partnerQuality.partnerWinRatePct ?? '—'}%.`
+    );
   }
   lines.push(
-    `Retention dönüş ${retention.returnVisits} · churn sinyali (cancel at period end) ${subscription.cancelAtPeriodEnd}.`
+    `Geri dönüş ${retention.returnVisits} · kayıp sinyali (dönem sonu iptal) ${subscription.cancelAtPeriodEnd}.`
   );
   if (funnel.northStar.landingToPaidPct != null) {
-    lines.push(`Landing→paid ${funnel.northStar.landingToPaidPct}% (north star).`);
+    lines.push(`İniş→ücretli ${funnel.northStar.landingToPaidPct}% (kuzey yıldızı).`);
   }
   return lines;
 }

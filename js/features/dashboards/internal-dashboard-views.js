@@ -2,6 +2,107 @@
  * P14 — HTML renderers for internal company dashboards.
  */
 
+/**
+ * P14 — HTML renderers for internal company dashboards.
+ */
+
+const FUNNEL_STEP_LABEL_TR = Object.freeze({
+  landing_visit: 'İniş',
+  hero_cta_click: 'Hero CTA',
+  auto_start: 'Auto başlangıç',
+  wizard_complete: 'Wizard tamamlama',
+  results_view: 'Sonuçlar',
+  lead_submit: 'Lead',
+  pricing_view: 'Fiyatlandırma',
+  checkout_start: 'Checkout başlangıç',
+  checkout_complete: 'Checkout tamamlandı',
+  paid_conversion: 'Ücretli dönüşüm'
+});
+
+const FUNNEL_STEP_LABEL_FALLBACK_TR = Object.freeze({
+  Landing: 'İniş',
+  'Hero CTA': 'Hero CTA',
+  'Auto start': 'Auto başlangıç',
+  'Wizard complete': 'Wizard tamamlama',
+  Results: 'Sonuçlar',
+  Lead: 'Lead',
+  Pricing: 'Fiyatlandırma',
+  'Checkout start': 'Checkout başlangıç',
+  'Checkout complete': 'Checkout tamamlandı',
+  'Paid conversion': 'Ücretli dönüşüm'
+});
+
+const INTERNAL_HEALTH_TR = Object.freeze({
+  healthy: 'sağlıklı',
+  warning: 'uyarı',
+  warn: 'uyarı',
+  critical: 'kritik',
+  error: 'hata',
+  ok: 'tamam'
+});
+
+const INTERNAL_SEVERITY_TR = Object.freeze({
+  critical: 'Kritik',
+  error: 'Hata',
+  warning: 'Uyarı',
+  info: 'Bilgi'
+});
+
+const INTERNAL_ALERT_MESSAGE_TR = Object.freeze({
+  'Conversion crash — funnel CR dropped sharply vs prior 24h. Check CRO, landing, and auto wizard.':
+    'Dönüşüm çöküşü — huni CR önceki 24 saate göre keskin düştü. CRO, landing ve auto wizard’ı kontrol edin.',
+  'Checkout failures elevated — review Stripe checkout, payment errors, and abandon recovery.':
+    'Checkout hataları yükseldi — Stripe checkout, ödeme hataları ve terk kurtarmayı inceleyin.',
+  'Stripe webhook failures detected — verify signature secret, endpoint uptime, and Cloudflare worker logs.':
+    'Stripe webhook hataları tespit edildi — imza secret, uç nokta çalışma süresi ve Cloudflare worker loglarını doğrulayın.',
+  'Partner dispatch failures elevated — run partner-retry and check endpoint health.':
+    'Partner teslimat hataları yükseldi — partner-retry çalıştırın ve uç nokta sağlığını kontrol edin.',
+  'Unusual churn signal — multiple cancel-at-period-end or churn event spike. Trigger retention outreach.':
+    'Olağandışı churn sinyali — birden fazla dönem sonu iptali veya churn artışı. Elde tutma iletişimini tetikleyin.',
+  'Lead volume anomaly — lead submits dropped vs prior 24h. Check acquisition, SEO, and form health.':
+    'Lead hacmi anomalisi — lead gönderimleri önceki 24 saate göre düştü. Edinim, SEO ve form sağlığını kontrol edin.',
+  'Analytics volume anomaly — event ingest may be broken or traffic collapsed. Check analytics-ingest and CDN.':
+    'Analitik hacim anomalisi — olay alımı bozulmuş veya trafik çökmüş olabilir. analytics-ingest ve CDN’i kontrol edin.',
+  'Partner webhook/dispatch failures elevated — run partner-retry workflow.':
+    'Partner webhook/teslimat hataları yükseldi — partner-retry iş akışını çalıştırın.',
+  'Lead dispatch success rate below 70% — check partner endpoints and HMAC secrets.':
+    'Lead teslimat başarı oranı %70 altında — partner uç noktalarını ve HMAC secret’larını kontrol edin.'
+});
+
+function formatFunnelStepLabel(step) {
+  const key = String(step?.key || '').toLowerCase();
+  if (key && FUNNEL_STEP_LABEL_TR[key]) return FUNNEL_STEP_LABEL_TR[key];
+  const label = String(step?.label || step || '');
+  return FUNNEL_STEP_LABEL_FALLBACK_TR[label] || label;
+}
+
+function formatInternalHealthLabel(value) {
+  const key = String(value || '').toLowerCase();
+  return INTERNAL_HEALTH_TR[key] || value;
+}
+
+function formatInternalSeverityLabel(value) {
+  const key = String(value || '').toLowerCase();
+  return INTERNAL_SEVERITY_TR[key] || value;
+}
+
+function formatInternalAlertMessage(message) {
+  return INTERNAL_ALERT_MESSAGE_TR[message] || message;
+}
+
+function formatCeoSummaryLine(line) {
+  let out = String(line || '');
+  const phrases = [
+    ['partner win rate', 'partner kazanma oranı'],
+    ['Landing→paid', 'İniş→ücretli'],
+    ['(north star)', '(kuzey yıldızı)']
+  ];
+  for (const [from, to] of phrases) {
+    out = out.replace(from, to);
+  }
+  return out;
+}
+
 function fmtPct(v) {
   return v == null ? '—' : `${v}%`;
 }
@@ -60,12 +161,15 @@ function renderCeoDashboard(ctx, escapeHtml) {
 
     <div class="ib-dash-health ${healthClass(ceo.overallHealth)}">
       <p class="ib-dash-kicker">CEO sağlığı</p>
-      <strong>${escapeHtml(ceo.overallHealth)}</strong>
+      <strong>${escapeHtml(formatInternalHealthLabel(ceo.overallHealth))}</strong>
       <span class="text-muted-sm"> · ${ceo.alerts.triggeredCount} erken müdahale uyarısı</span>
       ${
         ceo.alerts.triggered.length
           ? `<ul class="ib-dash-alert-list">${ceo.alerts.triggered
-              .map((a) => `<li><strong>${escapeHtml(a.severity)}</strong> — ${escapeHtml(a.message)}</li>`)
+              .map(
+                (a) =>
+                  `<li><strong>${escapeHtml(formatInternalSeverityLabel(a.severity))}</strong> — ${escapeHtml(formatInternalAlertMessage(a.message))}</li>`
+              )
               .join('')}</ul>`
           : '<p class="text-muted-sm" style="margin:8px 0 0">Pencerede CEO eşik uyarısı yok.</p>'
       }
@@ -73,7 +177,7 @@ function renderCeoDashboard(ctx, escapeHtml) {
 
     <div class="ib-dash-section">
       <h3>CEO özeti</h3>
-      <ul class="ib-dash-alert-list">${ex.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ul>
+      <ul class="ib-dash-alert-list">${ex.ceoSummary.map((line) => `<li>${escapeHtml(formatCeoSummaryLine(line))}</li>`).join('')}</ul>
     </div>
 
     ${renderStatGrid(
@@ -103,7 +207,7 @@ function renderGrowthDashboard(ctx, escapeHtml) {
   const funnelHtml = g.funnel7d.steps
     .map(
       (s) =>
-        `<span class="ib-dash-funnel-step">${escapeHtml(s.label)}: <strong>${s.count}</strong>${s.stepCrPct != null ? ` (${s.stepCrPct}%)` : ''}</span>`
+        `<span class="ib-dash-funnel-step">${escapeHtml(formatFunnelStepLabel(s))}: <strong>${s.count}</strong>${s.stepCrPct != null ? ` (${s.stepCrPct}%)` : ''}</span>`
     )
     .join('<span aria-hidden="true"> → </span>');
 
@@ -125,12 +229,12 @@ function renderGrowthDashboard(ctx, escapeHtml) {
 
     ${renderStatGrid(
       [
-        { label: 'Nitelikli leadler (7g)', value: ns.qualifiedLeads, sub: `landing→lead ${ns.landingToLeadPct ?? '—'}%` },
+        { label: 'Nitelikli leadler (7g)', value: ns.qualifiedLeads, sub: `iniş→lead ${ns.landingToLeadPct ?? '—'}%` },
         { label: 'Ücretli (7g)', value: ns.paidConversions, sub: `checkout CR ${ns.checkoutCrPct ?? '—'}%` },
-        { label: 'Deney gösterimleri', value: g.experiments.exposures, sub: `${g.experiments.conversions} conversions` },
-        { label: 'Ücretli tıklama yakalama', value: g.paid.clickCapture, sub: `${g.paid.conversionSignals} signals` },
-        { label: 'Geri dönüş ziyaretleri', value: g.retention.returnVisits, sub: `${g.retention.engagementEvents} engagement` },
-        { label: 'Lifecycle kayıtları', value: g.retention.lifecycleEnrolls, sub: `recovery ${g.retention.recoveryRatePct ?? '—'}%` }
+        { label: 'Deney gösterimleri', value: g.experiments.exposures, sub: `${g.experiments.conversions} dönüşüm` },
+        { label: 'Ücretli tıklama yakalama', value: g.paid.clickCapture, sub: `${g.paid.conversionSignals} sinyal` },
+        { label: 'Geri dönüş ziyaretleri', value: g.retention.returnVisits, sub: `${g.retention.engagementEvents} etkileşim` },
+        { label: 'Lifecycle kayıtları', value: g.retention.lifecycleEnrolls, sub: `geri kazanım ${g.retention.recoveryRatePct ?? '—'}%` }
       ],
       escapeHtml
     )}
@@ -174,10 +278,10 @@ function renderRevenueDashboard(ctx, escapeHtml) {
     ${renderStatGrid(
       [
         { label: 'MRR', value: `${r.mrrTry.toLocaleString('tr-TR')} ₺`, sub: `ARR ${r.arrTry.toLocaleString('tr-TR')} ₺` },
-        { label: 'ARPU', value: `${r.arpuTry.toLocaleString('tr-TR')} ₺`, sub: `${r.churn.activeSubscriptions} billable` },
-        { label: 'İlişkilendirilen gelir', value: `${r.attributedRevenueTry.toLocaleString('tr-TR')} ₺`, sub: 'analytics attributed' },
+        { label: 'ARPU', value: `${r.arpuTry.toLocaleString('tr-TR')} ₺`, sub: `${r.churn.activeSubscriptions} faturalanabilir` },
+        { label: 'İlişkilendirilen gelir', value: `${r.attributedRevenueTry.toLocaleString('tr-TR')} ₺`, sub: 'analitik ilişkilendirme' },
         { label: 'Checkout CR', value: fmtPct(r.conversions.checkoutConversionPct), sub: `${c.checkoutComplete} / ${c.checkoutStart}` },
-        { label: 'Checkout terk', value: sig.checkoutAbandon, sub: 'recovery flow enrolled' },
+        { label: 'Checkout terk', value: sig.checkoutAbandon, sub: 'kurtarma akışı kayıtlı' },
         { label: 'Ödeme başarısız olayları', value: sig.failedPaymentEvents, sub: 'failed_payment_recovery' }
       ],
       escapeHtml
@@ -187,9 +291,9 @@ function renderRevenueDashboard(ctx, escapeHtml) {
       <h3>Lead pipeline (monetizasyon)</h3>
       ${renderStatGrid(
         [
-          { label: 'Pipeline estimated', value: `${r.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺` },
-          { label: 'Pipeline realized', value: `${r.pipeline.actualTry.toLocaleString('tr-TR')} ₺` },
-          { label: 'Win rate', value: fmtPct(r.pipeline.winRatePct) }
+          { label: 'Tahmini pipeline', value: `${r.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺` },
+          { label: 'Gerçekleşen pipeline', value: `${r.pipeline.actualTry.toLocaleString('tr-TR')} ₺` },
+          { label: 'Kazanma oranı', value: fmtPct(r.pipeline.winRatePct) }
         ],
         escapeHtml
       )}
@@ -207,23 +311,23 @@ function renderPartnerOpsDashboard(ctx, escapeHtml) {
   const ex = ctx.executive.partnerLeadQuality;
 
   return `
-    <p class="ib-dash-muted">Partner delivery ops · 24h dispatch health · <code>npm run partner:ops:run</code></p>
+    <p class="ib-dash-muted">Partner teslimat ops · 24s teslimat sağlığı · <code>npm run partner:ops:run</code></p>
 
     <div class="ib-dash-health ${healthClass(p.overallHealth)}">
       <p class="ib-dash-kicker">Partner ops sağlığı</p>
-      <strong>${escapeHtml(p.overallHealth)}</strong>
+      <strong>${escapeHtml(formatInternalHealthLabel(p.overallHealth))}</strong>
       · SLA p95 ${Math.round((p.sla?.actualP95Ms ?? 0) / 1000)}s
-      ${p.sla?.breached ? ' <span class="badge badge-yellow">SLA breach</span>' : ''}
+      ${p.sla?.breached ? ' <span class="badge badge-yellow">SLA ihlali</span>' : ''}
     </div>
 
     ${renderStatGrid(
       [
-        { label: 'Teslimat başarısı (24s)', value: `${p.dispatchMonitoring?.successRatePct24h ?? '—'}%`, sub: `${p.dispatchMonitoring?.attempts24h ?? 0} attempts` },
-        { label: 'Şimdi yeniden denenecekler', value: p.retryAutomation?.retryDueNow ?? 0, sub: `failed ${p.retryAutomation?.dispatch_failed ?? 0}` },
-        { label: 'Sağlıksız uç noktalar', value: p.webhookHealth?.unhealthyCount ?? 0, sub: `circuit ${p.webhookHealth?.circuitOpenCount ?? 0}` },
-        { label: 'Inactive partners', value: p.webhookHealth?.inactiveEndpointCount ?? 0, sub: '7d no success' },
-        { label: 'CRM dispatch rate', value: fmtPct(ex.dispatchRatePct), sub: `${ex.totalLeads} leads` },
-        { label: 'Partner win rate', value: fmtPct(ex.partnerWinRatePct), sub: `avg score ${ex.avgLeadScore ?? '—'}` }
+        { label: 'Teslimat başarısı (24s)', value: `${p.dispatchMonitoring?.successRatePct24h ?? '—'}%`, sub: `${p.dispatchMonitoring?.attempts24h ?? 0} deneme` },
+        { label: 'Şimdi yeniden denenecekler', value: p.retryAutomation?.retryDueNow ?? 0, sub: `başarısız ${p.retryAutomation?.dispatch_failed ?? 0}` },
+        { label: 'Sağlıksız uç noktalar', value: p.webhookHealth?.unhealthyCount ?? 0, sub: `devre ${p.webhookHealth?.circuitOpenCount ?? 0}` },
+        { label: 'Pasif partnerler', value: p.webhookHealth?.inactiveEndpointCount ?? 0, sub: '7g başarı yok' },
+        { label: 'CRM teslimat oranı', value: fmtPct(ex.dispatchRatePct), sub: `${ex.totalLeads} lead` },
+        { label: 'Partner kazanma oranı', value: fmtPct(ex.partnerWinRatePct), sub: `ort. skor ${ex.avgLeadScore ?? '—'}` }
       ],
       escapeHtml
     )}
@@ -231,7 +335,7 @@ function renderPartnerOpsDashboard(ctx, escapeHtml) {
     ${
       p.alerts?.triggered?.length
         ? `<div class="ib-dash-section"><h3>Partner uyarıları</h3><ul class="ib-dash-alert-list">${p.alerts.triggered
-            .map((a) => `<li>${escapeHtml(a.message)}</li>`)
+            .map((a) => `<li>${escapeHtml(formatInternalAlertMessage(a.message))}</li>`)
             .join('')}</ul></div>`
         : ''
     }
@@ -264,11 +368,11 @@ function renderSupportDashboard(ctx, escapeHtml) {
     ${renderStatGrid(
       [
         { label: 'SSS makaleleri (CMS)', value: s.faqCount ?? '—', sub: 'admin SSS + faq-knowledge' },
-        { label: 'Lifecycle kayıt (7g)', value: s.enrollments7d, sub: `${s.activeEnrollments} active` },
-        { label: 'Başarısız mesajlar', value: s.failedMessages, sub: 'verify lifecycle-cron' },
+        { label: 'Lifecycle kayıt (7g)', value: s.enrollments7d, sub: `${s.activeEnrollments} aktif` },
+        { label: 'Başarısız mesajlar', value: s.failedMessages, sub: 'lifecycle-cron doğrula' },
         { label: 'Destek sinyalleri', value: s.supportEvents, sub: 'help_widget, escalation' },
-        { label: 'Recovery rate', value: fmtPct(ctx.growth.retention.recoveryRatePct), sub: 'retention proxy' },
-        { label: 'Lifecycle enrolls (30d)', value: ctx.executive.retention.lifecycleEnrolls, sub: 'all flows' }
+        { label: 'Geri kazanım oranı', value: fmtPct(ctx.growth.retention.recoveryRatePct), sub: 'elde tutma vekili' },
+        { label: 'Lifecycle kayıtları (30g)', value: ctx.executive.retention.lifecycleEnrolls, sub: 'tüm akışlar' }
       ],
       escapeHtml
     )}
@@ -278,7 +382,7 @@ function renderSupportDashboard(ctx, escapeHtml) {
       <div class="ib-dash-table-wrap">
         <table class="table">
           <thead><tr><th>Kimlik</th><th>Ad</th><th>İşleyici / akış</th></tr></thead>
-          <tbody>${flowRows || '<tr><td colspan="3" class="empty">Load support-workflows.json</td></tr>'}</tbody>
+          <tbody>${flowRows || '<tr><td colspan="3" class="empty">Destek iş akışları yüklenemedi</td></tr>'}</tbody>
         </table>
       </div>
     </div>
