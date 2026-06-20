@@ -132,6 +132,6 @@ export async function loadPaymentsAdminPage() {
     </div>
     <p class="text-muted admin-payment-note">Secret değerleri burada gösterilmez. Yapılandırma: Supabase Edge Function Secrets (<code>docs/payments-env.md</code>).</p>
     ${sections}
-    <p class="text-muted-sm">TODO: partner_id ↔ auth eşlemesi netleşince partner self-serve kontör satın alma paneli açılacak.</p>
+    <p class="text-muted-sm">Partner self-servis kontör satın alma paneli, partner hesap eşlemesi tamamlandığında açılacak.</p>
   `;
 }
