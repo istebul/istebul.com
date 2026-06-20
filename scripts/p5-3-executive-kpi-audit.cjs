@@ -40,7 +40,12 @@ const admin = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
 if (!admin.includes('loadExecutiveKpis') || !admin.includes('buildExecutiveDashboard')) {
   fail('admin-panel must load executive CEO dashboard');
 }
-if (!admin.includes('Wizard completion') || !admin.includes('ARPU')) {
+const executiveKpiBlock =
+  admin.match(/async function loadExecutiveKpis\(\)[\s\S]*?^async function/m)?.[0] ?? '';
+if (!executiveKpiBlock.length) {
+  fail('loadExecutiveKpis block must exist in admin-panel');
+}
+if (!executiveKpiBlock.includes('Wizard tamamlama') || !executiveKpiBlock.includes('ARPU')) {
   fail('admin executive UI must show wizard + ARPU KPIs');
 }
 
