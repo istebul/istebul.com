@@ -632,6 +632,149 @@ async function loadOperationalHealth() {
   `;
 }
 
+const OPS_DOMAIN_LABEL_TR = Object.freeze({
+  'Revenue Ops': 'Gelir operasyonları',
+  'Customer Ops': 'Müşteri operasyonları',
+  'Partner Ops': 'Partner operasyonları',
+  'Analytics Automation': 'Analitik otomasyonu',
+  'Lifecycle Automation': 'Yaşam döngüsü otomasyonu',
+  'Operational Alerts': 'Operasyonel uyarılar',
+  'AI Decision Ops': 'AI karar operasyonları',
+  'Internal Dashboards': 'İç paneller',
+  Observability: 'Gözlemlenebilirlik'
+});
+
+const OPS_HIGHLIGHT_PHRASE_TR = Object.freeze([
+  ['Pipeline realized', 'Gerçekleşen pipeline'],
+  ['Lifecycle enrolls', 'Lifecycle kayıtları'],
+  ['Deterministic scoring live', 'Deterministik skorlama aktif'],
+  ['AI proxy pressure signals', 'AI proxy baskı sinyali'],
+  ['Triggered rules', 'Tetiklenen kural'],
+  ['Failed messages', 'Başarısız mesaj'],
+  ['Enrollments 7d', '7g kayıt'],
+  ['Events sampled', 'Örneklenen olay'],
+  ['Recovery rate', 'Kurtarma oranı'],
+  ['Return visits', 'Geri dönüş'],
+  ['Unhealthy EP', 'Sağlıksız uç nokta'],
+  ['Retry due', 'Yeniden deneme bekleyen'],
+  ['Active subs', 'Aktif abonelik'],
+  ['Funnel CR', 'Huni CR'],
+  ['Dispatch', 'Teslimat'],
+  ['Critical', 'Kritik'],
+  ['Errors', 'Hatalar']
+]);
+
+const OPS_HEALTH_STATUS_TR = Object.freeze({
+  healthy: 'sağlıklı',
+  warning: 'uyarı',
+  critical: 'kritik',
+  error: 'hata',
+  ok: 'tamam',
+  green: 'yeşil',
+  yellow: 'sarı',
+  red: 'kırmızı'
+});
+
+const OPS_SEVERITY_TR = Object.freeze({
+  critical: 'Kritik',
+  error: 'Hata',
+  warning: 'Uyarı',
+  info: 'Bilgi'
+});
+
+const OPS_DOMAIN_VALUE_TR = Object.freeze({
+  revenue: 'Gelir',
+  customer: 'Müşteri',
+  partner: 'Partner',
+  operations: 'Operasyon',
+  analytics: 'Analitik',
+  lifecycle: 'Yaşam döngüsü',
+  observability: 'Gözlemlenebilirlik',
+  ai: 'AI',
+  dashboard: 'Panel',
+  conversion: 'Dönüşüm',
+  growth: 'Büyüme'
+});
+
+const OPS_ALERT_MESSAGE_TR = Object.freeze({
+  'Critical operational events in last 24h — check Observability and Stripe/partner webhooks.':
+    'Son 24 saatte kritik operasyonel olaylar — Gözlemlenebilirlik ve Stripe/partner webhook’larını kontrol edin.',
+  'Error event spike (≥10/24h) — review ops_health rollup.':
+    'Hata olayı artışı (≥10/24s) — ops_health özetini inceleyin.',
+  'Partner webhook/dispatch failures elevated — run partner-retry workflow.':
+    'Partner webhook/teslimat hataları yükseldi — partner-retry iş akışını çalıştırın.',
+  'Lead dispatch success rate below 70% — check partner endpoints and HMAC secrets.':
+    'Lead teslimat başarı oranı %70 altında — partner uç noktalarını ve HMAC secret’larını kontrol edin.',
+  'Partner dispatch p95 latency exceeds 15m SLA — review endpoint latency and circuit breakers.':
+    'Partner teslimat p95 gecikmesi 15 dk SLA’yı aşıyor — uç nokta gecikmesi ve devre kesicileri inceleyin.',
+  'Large dispatch_failed retry backlog — confirm partner-retry workflow is running.':
+    'Büyük dispatch_failed yeniden deneme birikimi — partner-retry iş akışının çalıştığını doğrulayın.',
+  'Partner endpoint marked unhealthy — verify webhook URL and HMAC secret.':
+    'Partner uç noktası sağlıksız işaretlendi — webhook URL ve HMAC secret’ı doğrulayın.',
+  'Partner circuit breaker open — failover or manual endpoint reset required.':
+    'Partner devre kesici açık — failover veya manuel uç nokta sıfırlaması gerekli.',
+  'Active partner endpoint(s) with no successful dispatch in 7d — partner inactivity.':
+    '7 günde başarılı teslimat olmayan aktif partner uç noktası — partner hareketsizliği.',
+  'Multiple leads reached dispatch_dead after max retries — manual partner ops required.':
+    'Birden fazla lead maksimum denemeden sonra dispatch_dead durumuna ulaştı — manuel partner ops gerekli.',
+  'Multiple subscriptions set to cancel at period end — retention outreach.':
+    'Birden fazla abonelik dönem sonunda iptal için işaretlendi — elde tutma iletişimi.',
+  'Checkout abandon volume high — confirm lifecycle checkout_abandon_recovery enrollments.':
+    'Checkout terk hacmi yüksek — lifecycle checkout_abandon_recovery kayıtlarını doğrulayın.',
+  'Lifecycle message failures — verify email provider and lifecycle-cron.':
+    'Lifecycle mesaj hataları — e-posta sağlayıcısı ve lifecycle-cron’u doğrulayın.',
+  'Analytics export hit row cap — warehouse upgrade recommended for Series A diligence.':
+    'Analitik dışa aktarımı satır limitine ulaştı — Series A incelemesi için depo yükseltmesi önerilir.',
+  'AI proxy rate-limit pressure — review Groq quota and session caps.':
+    'AI proxy rate-limit baskısı — Groq kotası ve oturum limitlerini inceleyin.',
+  'Conversion crash — funnel CR dropped sharply vs prior 24h. Check CRO, landing, and auto wizard.':
+    'Dönüşüm çöküşü — huni CR önceki 24 saate göre keskin düştü. CRO, landing ve auto wizard’ı kontrol edin.',
+  'Checkout failures elevated — review Stripe checkout, payment errors, and abandon recovery.':
+    'Checkout hataları yükseldi — Stripe checkout, ödeme hataları ve terk kurtarmayı inceleyin.',
+  'Stripe webhook failures detected — verify signature secret, endpoint uptime, and Cloudflare worker logs.':
+    'Stripe webhook hataları tespit edildi — imza secret, uç nokta çalışma süresi ve Cloudflare worker loglarını doğrulayın.',
+  'Partner dispatch failures elevated — run partner-retry and check endpoint health.':
+    'Partner teslimat hataları yükseldi — partner-retry çalıştırın ve uç nokta sağlığını kontrol edin.',
+  'Unusual churn signal — multiple cancel-at-period-end or churn event spike. Trigger retention outreach.':
+    'Olağandışı churn sinyali — birden fazla dönem sonu iptali veya churn artışı. Elde tutma iletişimini tetikleyin.',
+  'Lead volume anomaly — lead submits dropped vs prior 24h. Check acquisition, SEO, and form health.':
+    'Lead hacmi anomalisi — lead gönderimleri önceki 24 saate göre düştü. Edinim, SEO ve form sağlığını kontrol edin.',
+  'Analytics volume anomaly — event ingest may be broken or traffic collapsed. Check analytics-ingest and CDN.':
+    'Analitik hacim anomalisi — olay alımı bozulmuş veya trafik çökmüş olabilir. analytics-ingest ve CDN’i kontrol edin.'
+});
+
+function formatOpsDomainLabel(label) {
+  return OPS_DOMAIN_LABEL_TR[label] || label;
+}
+
+function formatOpsHighlightLine(line) {
+  let out = String(line || '');
+  for (const [from, to] of OPS_HIGHLIGHT_PHRASE_TR) {
+    out = out.replace(from, to);
+  }
+  if (out === 'Observability') return OPS_DOMAIN_LABEL_TR.Observability;
+  return out;
+}
+
+function formatOpsHealthLabel(value) {
+  const key = String(value || '').toLowerCase();
+  return OPS_HEALTH_STATUS_TR[key] || value;
+}
+
+function formatOpsSeverityLabel(value) {
+  const key = String(value || '').toLowerCase();
+  return OPS_SEVERITY_TR[key] || value;
+}
+
+function formatOpsDomainValue(value) {
+  const key = String(value || '').toLowerCase();
+  return OPS_DOMAIN_VALUE_TR[key] || value;
+}
+
+function formatOpsAlertMessage(message) {
+  return OPS_ALERT_MESSAGE_TR[message] || message;
+}
+
 async function loadOpsCommandCenter() {
   const el = document.getElementById('ops-command-center-root');
   if (!el) return;
@@ -863,7 +1006,7 @@ async function loadOpsCommandCenter() {
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${healthColor}">
-      <strong>Genel: ${escapeHtml(center.overallHealth)}</strong>
+      <strong>Genel: ${escapeHtml(formatOpsHealthLabel(center.overallHealth))}</strong>
       <span class="text-muted-sm"> · ${center.alerts.triggeredCount} uyarı kuralı tetiklendi</span>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
@@ -876,10 +1019,10 @@ async function loadOpsCommandCenter() {
         .map(
           (d) => `
         <div class="stat-card">
-          <div class="stat-label">${escapeHtml(d.label)}</div>
-          <div class="stat-value" style="font-size:14px">${escapeHtml(d.status)}</div>
+          <div class="stat-label">${escapeHtml(formatOpsDomainLabel(d.label))}</div>
+          <div class="stat-value" style="font-size:14px">${escapeHtml(formatOpsHealthLabel(d.status))}</div>
           <ul class="text-muted-sm" style="margin:8px 0 0;padding-left:16px;font-size:12px">
-            ${d.highlights.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}
+            ${d.highlights.map((h) => `<li>${escapeHtml(formatOpsHighlightLine(h))}</li>`).join('')}
           </ul>
         </div>`
         )
@@ -889,7 +1032,7 @@ async function loadOpsCommandCenter() {
     <div style="height:18px"></div>
     <h3 style="margin:0 0 12px">P13 CEO uyarıları (erken müdahale)</h3>
     <div class="stat-card" style="margin-bottom:12px;padding:12px 14px;border-left:4px solid ${ceoSnap.overallHealth === 'critical' ? 'var(--danger)' : ceoSnap.overallHealth === 'healthy' ? 'var(--success)' : 'var(--warning)'}">
-      <strong>CEO sağlığı: ${escapeHtml(ceoSnap.overallHealth)}</strong>
+      <strong>CEO sağlığı: ${escapeHtml(formatOpsHealthLabel(ceoSnap.overallHealth))}</strong>
       <span class="text-muted-sm"> · ${ceoSnap.alerts.triggeredCount} kural · saatlik <code>ceo-alerts.yml</code></span>
     </div>
     <div class="stat-grid">
@@ -917,7 +1060,7 @@ async function loadOpsCommandCenter() {
     ${
       ceoSnap.alerts.triggered.length
         ? `<ul style="margin:12px 0 0;padding-left:18px;font-size:13px">${ceoSnap.alerts.triggered
-            .map((a) => `<li><strong>${escapeHtml(a.severity)}</strong> — ${escapeHtml(a.message)}</li>`)
+            .map((a) => `<li><strong>${escapeHtml(formatOpsSeverityLabel(a.severity))}</strong> — ${escapeHtml(formatOpsAlertMessage(a.message))}</li>`)
             .join('')}</ul>`
         : '<p class="text-muted-sm" style="margin:12px 0 0">Pencerede CEO eşik uyarısı yok.</p>'
     }
@@ -958,9 +1101,9 @@ async function loadOpsCommandCenter() {
             .map(
               (a) => `
             <tr>
-              <td><span class="badge ${a.severity === 'critical' ? 'badge-red' : 'badge-yellow'}">${escapeHtml(a.severity)}</span></td>
-              <td>${escapeHtml(a.domain)}</td>
-              <td>${escapeHtml(a.message)}</td>
+              <td><span class="badge ${a.severity === 'critical' ? 'badge-red' : 'badge-yellow'}">${escapeHtml(formatOpsSeverityLabel(a.severity))}</span></td>
+              <td>${escapeHtml(formatOpsDomainValue(a.domain))}</td>
+              <td>${escapeHtml(formatOpsAlertMessage(a.message))}</td>
               <td><code>${escapeHtml(a.metric)}</code></td>
               <td>${escapeHtml(String(a.value))}</td>
             </tr>`
@@ -1645,11 +1788,11 @@ async function loadExecutiveKpis() {
     <div style="height:18px"></div>
     <h3 style="margin:0 0 12px">Partner lead kalitesi</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Leads (CRM)</div><div class="stat-value">${dash.partnerLeadQuality.totalLeads}</div></div>
-      <div class="stat-card"><div class="stat-label">Avg lead score</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} yüksek niyet (≥70)</div></div>
-      <div class="stat-card"><div class="stat-label">Dispatch success</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.dispatchRatePct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Partner win rate</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.partnerWinRatePct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Pipeline realized</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">tahmini ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Leadler (CRM)</div><div class="stat-value">${dash.partnerLeadQuality.totalLeads}</div></div>
+      <div class="stat-card"><div class="stat-label">Ortalama lead skoru</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} yüksek niyet (≥70)</div></div>
+      <div class="stat-card"><div class="stat-label">Teslimat başarısı</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.dispatchRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner kazanma oranı</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.partnerWinRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Gerçekleşen pipeline</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">tahmini ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
     </div>
 
     <div style="height:18px"></div>
