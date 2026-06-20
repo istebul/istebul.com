@@ -47,39 +47,39 @@ export function renderCategoryDominanceCenter(snapshot, escapeHtml) {
 
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P23 Category Dominance · <code>npm run metrics:category:dominance</code> ·
-      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Strategy playbook</a>
+      P23 Kategori hakimiyeti · <code>npm run metrics:category:dominance</code> ·
+      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Strateji oyun planı</a>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${scoreColor}">
-      <strong>Category ownership: ${snapshot.categoryOwnershipPct}%</strong>
-      <span class="text-muted-sm"> · avg moat ${snapshot.avgMoatStrengthPct}% · ${esc(snapshot.categoryDefinition?.tagline)}</span>
+      <strong>Kategori sahipliği: ${snapshot.categoryOwnershipPct}%</strong>
+      <span class="text-muted-sm"> · ort. hendek ${snapshot.avgMoatStrengthPct}% · ${esc(snapshot.categoryDefinition?.tagline)}</span>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(snapshot.executiveSummary || []).map((line) => `<li>${esc(line)}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Competitor landscape</h3>
+    <h3 style="margin:0 0 12px">Rakip ortamı</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>Competitor</th><th>Archetype</th><th>Threat</th><th>Wedge</th><th>isteBul counter</th></tr></thead>
+        <thead><tr><th>Rakip</th><th>Arketip</th><th>Tehdit</th><th>Kama</th><th>isteBul karşı hamle</th></tr></thead>
         <tbody>${compRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Six moat plans</h3>
+    <h3 style="margin:0 0 12px">Altı hendek planı</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>Moat</th><th>Status</th><th>Score</th><th>Lead play</th><th>Blocker</th></tr></thead>
+        <thead><tr><th>Hendek</th><th>Durum</th><th>Skor</th><th>Öncelikli hamle</th><th>Engel</th></tr></thead>
         <tbody>${moatRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Dominance phases</h3>
+    <h3 style="margin:0 0 12px">Hakimiyet fazları</h3>
     <ul style="margin:0 0 12px;padding-left:18px;font-size:13px;line-height:1.55">${phaseList}</ul>
 
     <p class="text-muted-sm" style="margin:0;font-size:12px">
-      Flywheel: ${esc((snapshot.flywheel?.steps || []).join(' → '))}
+      Uç değirmen: ${esc((snapshot.flywheel?.steps || []).join(' → '))}
     </p>
   `;
 }

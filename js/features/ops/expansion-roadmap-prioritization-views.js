@@ -23,7 +23,7 @@ export function renderExpansionPrioritizationCenter(snapshot, escapeHtml) {
     <tr>
       <td>${cat.rank}</td>
       <td><strong>${esc(cat.displayName)}</strong></td>
-      <td>Wave ${cat.wave}</td>
+      <td>Dalga ${cat.wave}</td>
       <td><strong>${cat.compositeScore}%</strong></td>
       <td>${scores.monetization}</td>
       <td>${scores.data_availability}</td>
@@ -42,8 +42,8 @@ export function renderExpansionPrioritizationCenter(snapshot, escapeHtml) {
 
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P25 Expansion prioritization · <code>npm run metrics:expansion:prioritization</code> ·
-      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Full roadmap</a>
+      P25 Genişleme önceliklendirme · <code>npm run metrics:expansion:prioritization</code> ·
+      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Tam yol haritası</a>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid var(--success)">
@@ -55,28 +55,28 @@ export function renderExpansionPrioritizationCenter(snapshot, escapeHtml) {
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Prioritization criteria</h3>
+    <h3 style="margin:0 0 12px">Önceliklendirme kriterleri</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>Criterion</th><th>Weight</th><th>Description</th></tr></thead>
+        <thead><tr><th>Kriter</th><th>Ağırlık</th><th>Açıklama</th></tr></thead>
         <tbody>${criteriaRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Seven categories (scored)</h3>
+    <h3 style="margin:0 0 12px">Yedi kategori (puanlı)</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
         <thead>
           <tr>
-            <th>#</th><th>Category</th><th>Wave</th><th>Composite</th>
-            <th>Mon.</th><th>Data</th><th>Pain</th><th>Repeat</th><th>AI</th><th>Partner</th><th>Why</th>
+            <th>#</th><th>Kategori</th><th>Dalga</th><th>Bileşik</th>
+            <th>Gelir</th><th>Veri</th><th>Acı</th><th>Tekrar</th><th>AI</th><th>Partner</th><th>Neden</th>
           </tr>
         </thead>
         <tbody>${catRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Recommended sequence</h3>
+    <h3 style="margin:0 0 12px">Önerilen sıra</h3>
     <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.55">${sequence}</ul>
   `;
 }
