@@ -53,7 +53,7 @@ if (!platform.includes('paid_landing_view') || !platform.includes('paid_capi_dis
 }
 
 const admin = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
-if (!admin.includes('Paid platforms (P5.1)')) fail('admin needs paid platform table');
+if (!admin.includes('Ücretli platformlar (P5.1)')) fail('admin needs paid platform table');
 
 const capiPayloads = fs.readFileSync(
   path.join(root, 'functions/api/_shared/paid-capi-payloads.js'),
