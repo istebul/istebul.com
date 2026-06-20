@@ -2,6 +2,42 @@
  * P17 — Admin HTML for unit economics model.
  */
 
+const UNIT_ECONOMICS_SOURCE_TR = Object.freeze({
+  live: 'canlı',
+  assumption: 'varsayım',
+  observed: 'gözlemlenen',
+  modeled: 'model',
+  target: 'hedef',
+  planning: 'planlama'
+});
+
+function formatUnitEconomicsSource(source) {
+  const key = String(source || '').toLowerCase();
+  return UNIT_ECONOMICS_SOURCE_TR[key] || source;
+}
+
+function formatUnitEconomicsHealthMessage(message) {
+  const raw = String(message || '');
+  let out = raw
+    .replace(
+      /^LTV\/CAC (.+) below target (.+)$/,
+      'LTV/CAC $1 hedef $2 altında'
+    )
+    .replace(
+      /^Payback (.+)mo exceeds target (.+)mo$/,
+      'Geri ödeme $1 ay hedef $2 ay üzerinde'
+    )
+    .replace(
+      /^Gross margin (.+)% below target band$/,
+      'Brüt marj $1% hedef bandının altında'
+    )
+    .replace(
+      /^CAC uses planning target — import data\/growth\/paid-spend\.json for live CAC$/,
+      'CAC planlama hedefi kullanıyor — canlı CAC için data/growth/paid-spend.json içe aktarın'
+    );
+  return out;
+}
+
 /**
  * @param {ReturnType<import('./unit-economics-model.js').buildUnitEconomicsModel>} model
  * @param {(s: string) => string} escapeHtml
@@ -14,7 +50,7 @@ export function renderUnitEconomicsPanel(model, escapeHtml) {
 
   const healthHtml =
     model.health?.length ?
-      `<ul class="ib-ue-health">${model.health.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}</ul>`
+      `<ul class="ib-ue-health">${model.health.map((h) => `<li>${escapeHtml(formatUnitEconomicsHealthMessage(h))}</li>`).join('')}</ul>`
       : '<p class="text-muted-sm">Tüm hedef oranlar planlama bandında.</p>';
 
   return `
@@ -26,7 +62,7 @@ export function renderUnitEconomicsPanel(model, escapeHtml) {
       </p>
 
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${fmtTry(model.arpu.try)}</div><div class="stat-sub">${escapeHtml(model.arpu.source)}</div></div>
+        <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${fmtTry(model.arpu.try)}</div><div class="stat-sub">${escapeHtml(formatUnitEconomicsSource(model.arpu.source))}</div></div>
         <div class="stat-card"><div class="stat-label">CAC</div><div class="stat-value">${fmtTry(model.cac.try)}</div><div class="stat-sub">${model.cac.newPaidUsers} ücretli · harcama ${fmtTry(model.cac.marketingSpendTry)}</div></div>
         <div class="stat-card"><div class="stat-label">LTV</div><div class="stat-value">${fmtTry(model.ltv.try)}</div><div class="stat-sub">${fmtMo(model.ltv.lifetimeMonths)} ömür · churn ${model.ltv.monthlyChurnPct != null ? (model.ltv.monthlyChurnPct * 100).toFixed(1) : '—'}%/ay</div></div>
         <div class="stat-card"><div class="stat-label">Payback</div><div class="stat-value">${fmtMo(model.payback.months)}</div><div class="stat-sub">hedef ≤ ${model.payback.targetMonthsMax} ay</div></div>
@@ -39,7 +75,7 @@ export function renderUnitEconomicsPanel(model, escapeHtml) {
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-label">Partner marjı</div><div class="stat-value">${fmtPct(model.partnerMargin?.grossMarginPct)}</div><div class="stat-sub">gerçekleşme ${fmtPct(model.partnerMargin?.realizationPct)}</div></div>
         <div class="stat-card"><div class="stat-label">AI maliyeti / Pro kullanıcı</div><div class="stat-value">${fmtTry(model.aiCost.aiCostPerProUserTry)}</div><div class="stat-sub">${model.aiCost.aiCallsPerProUserMonth} çağrı/ay</div></div>
-        <div class="stat-card"><div class="stat-label">Destek maliyeti / kullanıcı</div><div class="stat-value">${fmtTry(model.supportCost.supportCostPerUserTry)}</div><div class="stat-sub">${escapeHtml(model.supportCost.source)}</div></div>
+        <div class="stat-card"><div class="stat-label">Destek maliyeti / kullanıcı</div><div class="stat-value">${fmtTry(model.supportCost.supportCostPerUserTry)}</div><div class="stat-sub">${escapeHtml(formatUnitEconomicsSource(model.supportCost.source))}</div></div>
         <div class="stat-card"><div class="stat-label">Maliyet / ücretli</div><div class="stat-value">${fmtTry(model.conversionEconomics.costPerPaidTry)}</div><div class="stat-sub">Gelir/ücretli ${fmtTry(model.conversionEconomics.revenuePerPaidTry)}</div></div>
       </div>
 

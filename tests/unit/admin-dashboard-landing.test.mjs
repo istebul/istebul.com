@@ -261,3 +261,74 @@ test('TR-2b-2 unit economics view copy uses Turkish labels', () => {
   assert.doesNotMatch(views, />Gross margin</);
   assert.doesNotMatch(views, />Conversion economics</);
 });
+
+test('TR-2b-3 loadOpsCommandCenter display mapping helpers localize dynamic ops copy', () => {
+  const panel = read('js/admin-panel.js');
+  const helperBlock =
+    panel.match(/const OPS_DOMAIN_LABEL_TR[\s\S]*?function formatOpsAlertMessage\(message\)[\s\S]*?\n\}/)?.[0] ??
+    '';
+  assert.ok(helperBlock.length > 0, 'ops display mapping helpers exist');
+  assert.match(helperBlock, /'Revenue Ops': 'Gelir operasyonları'/);
+  assert.match(helperBlock, /'Customer Ops': 'Müşteri operasyonları'/);
+  assert.match(helperBlock, /'Partner Ops': 'Partner operasyonları'/);
+  assert.match(helperBlock, /'Analytics Automation': 'Analitik otomasyonu'/);
+  assert.match(helperBlock, /'Lifecycle Automation': 'Yaşam döngüsü otomasyonu'/);
+  assert.match(helperBlock, /'Operational Alerts': 'Operasyonel uyarılar'/);
+  assert.match(helperBlock, /Observability: 'Gözlemlenebilirlik'/);
+  assert.match(helperBlock, /healthy: 'sağlıklı'/);
+  assert.match(helperBlock, /critical: 'Kritik'/);
+  assert.match(helperBlock, /error: 'Hata'/);
+  assert.match(helperBlock, /warning: 'Uyarı'/);
+  assert.match(helperBlock, /info: 'Bilgi'/);
+  assert.match(helperBlock, /'Active subs', 'Aktif abonelik'/);
+  assert.match(helperBlock, /'Failed messages', 'Başarısız mesaj'/);
+
+  const opsBlock =
+    panel.match(/async function loadOpsCommandCenter\(\)[\s\S]*?^async function loadStartupOperatingCenter/m)?.[0] ??
+    '';
+  assert.match(opsBlock, /formatOpsDomainLabel\(d\.label\)/);
+  assert.match(opsBlock, /formatOpsHighlightLine\(h\)/);
+  assert.match(opsBlock, /formatOpsHealthLabel\(center\.overallHealth\)/);
+  assert.match(opsBlock, /formatOpsSeverityLabel\(a\.severity\)/);
+  assert.match(opsBlock, /formatOpsAlertMessage\(a\.message\)/);
+  assert.match(opsBlock, /formatOpsDomainValue\(a\.domain\)/);
+  assert.doesNotMatch(opsBlock, /escapeHtml\(d\.label\)/);
+  assert.doesNotMatch(opsBlock, /escapeHtml\(center\.overallHealth\)/);
+  assert.doesNotMatch(opsBlock, /escapeHtml\(a\.severity\)/);
+  assert.doesNotMatch(opsBlock, /escapeHtml\(a\.message\)/);
+});
+
+test('TR-2b-3 loadExecutiveKpis partner KPI labels use Turkish display copy', () => {
+  const panel = read('js/admin-panel.js');
+  const block = panel.match(/async function loadExecutiveKpis\(\)[\s\S]*?^async function/m)?.[0] ?? '';
+  assert.match(block, />Ortalama lead skoru</);
+  assert.match(block, />Teslimat başarısı</);
+  assert.match(block, />Partner kazanma oranı</);
+  assert.match(block, />Leadler \(CRM\)</);
+  assert.match(block, />Gerçekleşen pipeline</);
+  assert.match(block, />Wizard tamamlama</);
+  assert.match(block, />ARPU</);
+  assert.doesNotMatch(block, />Avg lead score</);
+  assert.doesNotMatch(block, />Dispatch success</);
+  assert.doesNotMatch(block, />Partner win rate</);
+  assert.doesNotMatch(block, />Pipeline realized</);
+});
+
+test('TR-2b-3 unit economics views map health and source display copy', () => {
+  const views = read('js/features/investor/unit-economics-views.js');
+  const renderBlock = views.match(/export function renderUnitEconomicsPanel[\s\S]*/)?.[0] ?? '';
+  assert.match(views, /formatUnitEconomicsHealthMessage/);
+  assert.match(views, /formatUnitEconomicsSource/);
+  assert.match(views, /live: 'canlı'/);
+  assert.match(views, /assumption: 'varsayım'/);
+  assert.match(views, /observed: 'gözlemlenen'/);
+  assert.match(views, /modeled: 'model'/);
+  assert.match(views, /CAC planlama hedefi kullanıyor/);
+  assert.match(views, /Brüt marj \$1% hedef bandının altında/);
+  assert.match(views, /Geri ödeme \$1 ay hedef \$2 ay üzerinde/);
+  assert.match(renderBlock, /formatUnitEconomicsSource\(model\.arpu\.source\)/);
+  assert.match(renderBlock, /formatUnitEconomicsHealthMessage\(h\)/);
+  assert.doesNotMatch(renderBlock, /escapeHtml\(model\.arpu\.source\)/);
+  assert.doesNotMatch(renderBlock, /escapeHtml\(model\.supportCost\.source\)/);
+  assert.doesNotMatch(renderBlock, /<li>\$\{escapeHtml\(h\)\}<\/li>/);
+});
