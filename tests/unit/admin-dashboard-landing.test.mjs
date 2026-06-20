@@ -184,3 +184,32 @@ test('payments admin page does not expose raw TODO text', () => {
   assert.doesNotMatch(payments, /TODO:/);
   assert.match(payments, /Partner self-servis kontör satın alma paneli/);
 });
+
+test('loadExecutiveKpis investor metrics copy uses TR-2b labels', () => {
+  const panel = read('js/admin-panel.js');
+  const block = panel.match(/async function loadExecutiveKpis\(\)[\s\S]*?^async function/m)?.[0] ?? '';
+  assert.ok(block.length > 0, 'loadExecutiveKpis block exists');
+  assert.match(block, />Trafik &amp; gelir</);
+  assert.match(block, />Sayfa görüntüleme</);
+  assert.match(block, />Auto başlangıçları</);
+  assert.match(block, />İlişkilendirilen gelir</);
+  assert.match(block, />Kayıp sinyali</);
+  assert.match(block, /dönem sonunda iptal/);
+  assert.match(block, />Dönüşüm oranları</);
+  assert.match(block, />Wizard tamamlama</);
+  assert.match(block, />Ücretli dönüşüm</);
+  assert.match(block, />Elde tutma</);
+  assert.match(block, />Geri dönüş ziyaretleri</);
+  assert.match(block, />Lifecycle kayıtları</);
+  assert.match(block, />Partner lead kalitesi</);
+  assert.match(block, /yüksek niyet \(≥70\)/);
+  assert.match(block, /<th>Adım<\/th><th>Olaylar<\/th><th>Adım CR<\/th>/);
+  assert.match(block, />En iyi edinim kanalları</);
+  assert.match(block, /<th>Kanal<\/th><th>Leadler<\/th><th>Ücretli<\/th><th>Gelir ₺<\/th>/);
+  assert.match(block, />Anlık görüntü JSON \(board export\)/);
+  assert.doesNotMatch(block, />Traffic &amp; revenue</);
+  assert.doesNotMatch(block, />Conversion rates</);
+  assert.doesNotMatch(block, />Churn signal</);
+  assert.doesNotMatch(block, />Top acquisition channels</);
+  assert.doesNotMatch(block, />Snapshot JSON \(board export\)/);
+});
