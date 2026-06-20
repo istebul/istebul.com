@@ -213,3 +213,51 @@ test('loadExecutiveKpis investor metrics copy uses TR-2b labels', () => {
   assert.doesNotMatch(block, />Top acquisition channels</);
   assert.doesNotMatch(block, />Snapshot JSON \(board export\)/);
 });
+
+test('TR-2b-2 platform analytics and ops command shell copy uses Turkish labels', () => {
+  const panel = read('js/admin-panel.js');
+  const growthBlock =
+    panel.match(/function renderGrowthCommandCenter\([\s\S]*?^async function/m)?.[0] ?? '';
+  assert.ok(growthBlock.length > 0, 'renderGrowthCommandCenter block exists');
+  assert.match(growthBlock, />Büyüme komuta merkezi</);
+  assert.match(growthBlock, />Ücretli platformlar \(P5\.1\)</);
+  assert.match(growthBlock, />Edinim kanalları \(lead\)</);
+  assert.doesNotMatch(growthBlock, />Growth Command Center</);
+  assert.doesNotMatch(growthBlock, />Acquisition channels \(leads\)</);
+
+  const platformBlock =
+    panel.match(/async function loadPlatformAnalytics\([\s\S]*?^function bindPlatformAnalyticsToolbar/m)?.[0] ??
+    '';
+  assert.ok(platformBlock.length > 0, 'loadPlatformAnalytics block exists');
+  assert.match(platformBlock, />Yönetici büyüme hunisi \(kanal bazlı\)</);
+  assert.match(platformBlock, />Dönüşüm özeti</);
+  assert.match(platformBlock, />Auto huni düşüşü</);
+  assert.match(platformBlock, />Partner edinimi \(P2\)</);
+  assert.match(platformBlock, />Büyüme motoru \(P1\)</);
+  assert.match(platformBlock, />Gelir ilişkilendirme \(UTM\)</);
+  assert.match(platformBlock, />Admin CRM sonuçları</);
+  assert.doesNotMatch(platformBlock, />Executive growth funnel \(kanal bazlı\)</);
+  assert.doesNotMatch(platformBlock, />Auto funnel drop-off</);
+
+  const opsBlock =
+    panel.match(/async function loadOpsCommandCenter\(\)[\s\S]*?^async function loadStartupOperatingCenter/m)?.[0] ??
+    '';
+  assert.ok(opsBlock.length > 0, 'loadOpsCommandCenter block exists');
+  assert.match(opsBlock, />Otomasyon alanları</);
+  assert.match(opsBlock, />P13 CEO uyarıları \(erken müdahale\)</);
+  assert.match(opsBlock, />CEO sağlığı:/);
+  assert.match(opsBlock, />Tetiklenen uyarılar</);
+  assert.match(opsBlock, />Runbook'lar</);
+  assert.doesNotMatch(opsBlock, />Automation domains</);
+  assert.doesNotMatch(opsBlock, />Triggered alerts</);
+});
+
+test('TR-2b-2 unit economics view copy uses Turkish labels', () => {
+  const views = read('js/features/investor/unit-economics-views.js');
+  assert.match(views, />Birim ekonomisi \(yatırımcı modeli\)</);
+  assert.match(views, />Brüt marj</);
+  assert.match(views, />Dönüşüm ekonomisi</);
+  assert.doesNotMatch(views, />Unit economics \(yatırımcı modeli\)</);
+  assert.doesNotMatch(views, />Gross margin</);
+  assert.doesNotMatch(views, />Conversion economics</);
+});
