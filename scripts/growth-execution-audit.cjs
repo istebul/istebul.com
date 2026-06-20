@@ -47,7 +47,7 @@ const analytics = fs.readFileSync(path.join(root, 'js/core/analytics.js'), 'utf8
 if (!analytics.includes('msclkid')) fail('analytics must capture msclkid');
 
 const admin = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
-if (!admin.includes('Growth Command Center')) fail('admin must render Growth Command Center');
+if (!admin.includes('Büyüme komuta merkezi')) fail('admin must render Büyüme komuta merkezi');
 
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!index.includes('data-hero-cta-primary')) fail('homepage hero must expose experiment selector');

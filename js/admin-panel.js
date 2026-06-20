@@ -863,14 +863,14 @@ async function loadOpsCommandCenter() {
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${healthColor}">
-      <strong>Overall: ${escapeHtml(center.overallHealth)}</strong>
-      <span class="text-muted-sm"> · ${center.alerts.triggeredCount} alert rule(s) triggered</span>
+      <strong>Genel: ${escapeHtml(center.overallHealth)}</strong>
+      <span class="text-muted-sm"> · ${center.alerts.triggeredCount} uyarı kuralı tetiklendi</span>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Automation domains</h3>
+    <h3 style="margin:0 0 12px">Otomasyon alanları</h3>
     <div class="stat-grid">
       ${center.domains
         .map(
@@ -887,31 +887,31 @@ async function loadOpsCommandCenter() {
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">P13 CEO alerts (early intervention)</h3>
+    <h3 style="margin:0 0 12px">P13 CEO uyarıları (erken müdahale)</h3>
     <div class="stat-card" style="margin-bottom:12px;padding:12px 14px;border-left:4px solid ${ceoSnap.overallHealth === 'critical' ? 'var(--danger)' : ceoSnap.overallHealth === 'healthy' ? 'var(--success)' : 'var(--warning)'}">
-      <strong>CEO health: ${escapeHtml(ceoSnap.overallHealth)}</strong>
-      <span class="text-muted-sm"> · ${ceoSnap.alerts.triggeredCount} rule(s) · hourly <code>ceo-alerts.yml</code></span>
+      <strong>CEO sağlığı: ${escapeHtml(ceoSnap.overallHealth)}</strong>
+      <span class="text-muted-sm"> · ${ceoSnap.alerts.triggeredCount} kural · saatlik <code>ceo-alerts.yml</code></span>
     </div>
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Funnel CR</div>
+        <div class="stat-label">Huni CR</div>
         <div class="stat-value">${ceoSnap.metrics.conversion.funnelCrPct24h ?? '—'}%</div>
-        <div class="text-muted-sm">Δ prior ${ceoSnap.metrics.conversion.funnelDropPct ?? 0}%</div>
+        <div class="text-muted-sm">Önceki döneme göre Δ ${ceoSnap.metrics.conversion.funnelDropPct ?? 0}%</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Checkout</div>
-        <div class="stat-value">${ceoSnap.metrics.checkout.failureCount24h ?? 0} issues</div>
-        <div class="text-muted-sm">Stripe WH fails ${ceoSnap.metrics.stripe.webhookFailCount24h ?? 0}</div>
+        <div class="stat-value">${ceoSnap.metrics.checkout.failureCount24h ?? 0} sorun</div>
+        <div class="text-muted-sm">Stripe webhook hataları ${ceoSnap.metrics.stripe.webhookFailCount24h ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Leads 24h</div>
+        <div class="stat-label">Leadler 24s</div>
         <div class="stat-value">${ceoSnap.metrics.leads.leads24h ?? 0}</div>
-        <div class="text-muted-sm">prior ${ceoSnap.metrics.leads.leadsPrior24h ?? 0}</div>
+        <div class="text-muted-sm">önceki ${ceoSnap.metrics.leads.leadsPrior24h ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Analytics vol</div>
+        <div class="stat-label">Analitik hacim</div>
         <div class="stat-value">${ceoSnap.metrics.analytics.events24h ?? 0}</div>
-        <div class="text-muted-sm">drop ${ceoSnap.metrics.analytics.volumeDropPct ?? 0}%</div>
+        <div class="text-muted-sm">düşüş ${ceoSnap.metrics.analytics.volumeDropPct ?? 0}%</div>
       </div>
     </div>
     ${
@@ -919,40 +919,40 @@ async function loadOpsCommandCenter() {
         ? `<ul style="margin:12px 0 0;padding-left:18px;font-size:13px">${ceoSnap.alerts.triggered
             .map((a) => `<li><strong>${escapeHtml(a.severity)}</strong> — ${escapeHtml(a.message)}</li>`)
             .join('')}</ul>`
-        : '<p class="text-muted-sm" style="margin:12px 0 0">No CEO threshold alerts in current window.</p>'
+        : '<p class="text-muted-sm" style="margin:12px 0 0">Pencerede CEO eşik uyarısı yok.</p>'
     }
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">P12 Partner delivery ops (24h)</h3>
+    <h3 style="margin:0 0 12px">P12 Partner teslimat ops (24s)</h3>
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Dispatch success</div>
+        <div class="stat-label">Teslimat başarısı</div>
         <div class="stat-value">${escapeHtml(String(p12.dispatchMonitoring?.successRatePct24h ?? '—'))}%</div>
-        <div class="text-muted-sm">${p12.dispatchMonitoring?.attempts24h ?? 0} attempts · p95 ${Math.round((p12.dispatchMonitoring?.p95DurationMs ?? 0) / 1000)}s</div>
+        <div class="text-muted-sm">${p12.dispatchMonitoring?.attempts24h ?? 0} deneme · p95 ${Math.round((p12.dispatchMonitoring?.p95DurationMs ?? 0) / 1000)}s</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">SLA (&lt;15m p95)</div>
-        <div class="stat-value">${p12.sla?.breached ? '⚠️ Breach' : '✓ OK'}</div>
+        <div class="stat-value">${p12.sla?.breached ? '⚠️ İhlal' : '✓ Tamam'}</div>
         <div class="text-muted-sm">target ${Math.round((p12.sla?.targetP95Ms ?? 900000) / 60000)}m</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Retry queue</div>
-        <div class="stat-value">${p12.retryAutomation?.retryDueNow ?? 0} due</div>
-        <div class="text-muted-sm">failed ${p12.retryAutomation?.dispatch_failed ?? 0} · dead ${p12.retryAutomation?.dispatch_dead ?? 0}</div>
+        <div class="stat-label">Yeniden deneme kuyruğu</div>
+        <div class="stat-value">${p12.retryAutomation?.retryDueNow ?? 0} bekleyen</div>
+        <div class="text-muted-sm">başarısız ${p12.retryAutomation?.dispatch_failed ?? 0} · dead ${p12.retryAutomation?.dispatch_dead ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Webhook health</div>
-        <div class="stat-value">${p12.webhookHealth?.unhealthyCount ?? 0} unhealthy</div>
-        <div class="text-muted-sm">circuit ${p12.webhookHealth?.circuitOpenCount ?? 0} · inactive ${p12.webhookHealth?.inactiveEndpointCount ?? 0}</div>
+        <div class="stat-label">Webhook sağlığı</div>
+        <div class="stat-value">${p12.webhookHealth?.unhealthyCount ?? 0} sağlıksız</div>
+        <div class="text-muted-sm">devre ${p12.webhookHealth?.circuitOpenCount ?? 0} · pasif ${p12.webhookHealth?.inactiveEndpointCount ?? 0}</div>
       </div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Triggered alerts</h3>
+    <h3 style="margin:0 0 12px">Tetiklenen uyarılar</h3>
     ${
       center.alerts.triggered.length
         ? `<table class="table">
-        <thead><tr><th>Severity</th><th>Domain</th><th>Message</th><th>Metric</th><th>Value</th></tr></thead>
+        <thead><tr><th>Şiddet</th><th>Alan</th><th>Mesaj</th><th>Metrik</th><th>Değer</th></tr></thead>
         <tbody>
           ${center.alerts.triggered
             .map(
@@ -968,11 +968,11 @@ async function loadOpsCommandCenter() {
             .join('')}
         </tbody>
       </table>`
-        : '<p class="empty">No threshold alerts in current window.</p>'
+        : '<p class="empty">Pencerede eşik uyarısı yok.</p>'
     }
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Runbooks</h3>
+    <h3 style="margin:0 0 12px">Runbook'lar</h3>
     <ul style="font-size:13px;line-height:1.6">
       ${center.runbooks
         .map((r) => `<li><code>${escapeHtml(r.path)}</code> — ${escapeHtml(r.label)}</li>`)
@@ -2863,20 +2863,20 @@ function renderGrowthCommandCenter(rows) {
 
   return `
     <div class="growth-command-center" style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border,#e5e7eb)">
-      <h3 style="margin:0 0 8px 0">Growth Command Center</h3>
-      <p class="text-muted" style="margin:0 0 14px;font-size:13px">North star: qualified leads → paid conversion. Export: <code>npm run metrics:growth</code> · <code>npm run metrics:growth:command</code></p>
+      <h3 style="margin:0 0 8px 0">Büyüme komuta merkezi</h3>
+      <p class="text-muted" style="margin:0 0 14px;font-size:13px">Kuzey yıldızı: nitelikli lead → ücretli dönüşüm. Export: <code>npm run metrics:growth</code> · <code>npm run metrics:growth:command</code></p>
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-label">Leads (north star)</div><div class="stat-value">${ns.qualifiedLeads}</div><div class="stat-sub">${ns.landingToLeadPct ?? '—'}% landing→lead</div></div>
-        <div class="stat-card"><div class="stat-label">Paid conversions</div><div class="stat-value">${ns.paidConversions}</div><div class="stat-sub">${ns.landingToPaidPct ?? '—'}% landing→paid</div></div>
-        <div class="stat-card"><div class="stat-label">Checkout CR</div><div class="stat-value">${ns.checkoutCrPct ?? '—'}%</div><div class="stat-sub">${ns.checkoutComplete} / ${ns.checkoutStart} starts</div></div>
-        <div class="stat-card"><div class="stat-label">Retention returns</div><div class="stat-value">${retention.returnVisits}</div><div class="stat-sub">${retention.recoveryRatePct ?? '—'}% abandon recovery</div></div>
-        <div class="stat-card"><div class="stat-label">Paid click capture</div><div class="stat-value">${paidClicks}</div><div class="stat-sub">${paidSignals} conversion signals</div></div>
-        <div class="stat-card"><div class="stat-label">Experiments</div><div class="stat-value">${experimentExposures}</div><div class="stat-sub">${experimentConversions} conversions · ${experimentExposures ? conversionPct(experimentConversions, experimentExposures) : '—'}</div></div>
+        <div class="stat-card"><div class="stat-label">Leadler (kuzey yıldızı)</div><div class="stat-value">${ns.qualifiedLeads}</div><div class="stat-sub">${ns.landingToLeadPct ?? '—'}% landing→lead</div></div>
+        <div class="stat-card"><div class="stat-label">Ücretli dönüşümler</div><div class="stat-value">${ns.paidConversions}</div><div class="stat-sub">${ns.landingToPaidPct ?? '—'}% landing→paid</div></div>
+        <div class="stat-card"><div class="stat-label">Checkout CR</div><div class="stat-value">${ns.checkoutCrPct ?? '—'}%</div><div class="stat-sub">${ns.checkoutComplete} / ${ns.checkoutStart} başlangıç</div></div>
+        <div class="stat-card"><div class="stat-label">Geri dönüş ziyaretleri</div><div class="stat-value">${retention.returnVisits}</div><div class="stat-sub">${retention.recoveryRatePct ?? '—'}% terk geri kazanımı</div></div>
+        <div class="stat-card"><div class="stat-label">Ücretli tıklama yakalama</div><div class="stat-value">${paidClicks}</div><div class="stat-sub">${paidSignals} dönüşüm sinyali</div></div>
+        <div class="stat-card"><div class="stat-label">Deneyler</div><div class="stat-value">${experimentExposures}</div><div class="stat-sub">${experimentConversions} dönüşüm · ${experimentExposures ? conversionPct(experimentConversions, experimentExposures) : '—'}</div></div>
       </div>
       <div style="height:14px"></div>
-      <h4 style="margin:0 0 10px 0;font-size:14px">Paid platforms (P5.1)</h4>
+      <h4 style="margin:0 0 10px 0;font-size:14px">Ücretli platformlar (P5.1)</h4>
       <table class="table" style="margin-bottom:16px">
-        <thead><tr><th>Platform</th><th>Clicks</th><th>Landings</th><th>Leads</th><th>Checkout</th><th>Paid</th><th>Lead CR</th></tr></thead>
+        <thead><tr><th>Platform</th><th>Tıklama</th><th>İniş</th><th>Leadler</th><th>Checkout</th><th>Ücretli</th><th>Lead CR</th></tr></thead>
         <tbody>
           ${paidPlatforms.length ? paidPlatforms.map((p) => `
             <tr>
@@ -2891,9 +2891,9 @@ function renderGrowthCommandCenter(rows) {
           `).join('') : '<tr><td colspan="7">Henüz paid platform verisi yok — UTM + click ID ile trafik bekleniyor.</td></tr>'}
         </tbody>
       </table>
-      <h4 style="margin:0 0 10px 0;font-size:14px">Acquisition channels (leads)</h4>
+      <h4 style="margin:0 0 10px 0;font-size:14px">Edinim kanalları (lead)</h4>
       <table class="table">
-        <thead><tr><th>Channel</th><th>Leads</th><th>Checkouts</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
+        <thead><tr><th>Kanal</th><th>Leadler</th><th>Checkout</th><th>Ücretli</th><th>Gelir ₺</th></tr></thead>
         <tbody>
           ${channels.slice(0, 8).map((ch) => `
             <tr>
@@ -3064,9 +3064,9 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     ['wizard_complete', 'Wizard tamam'],
     ['results_view', 'Sonuç görüntüleme'],
     ['lead_submit', 'Lead gönderimi'],
-    ['pricing_view', 'Pricing görüntüleme'],
+    ['pricing_view', 'Fiyatlandırma görüntüleme'],
     ['checkout_start', 'Checkout başlangıç'],
-    ['checkout_complete', 'Checkout tamam'],
+    ['checkout_complete', 'Checkout tamamlandı'],
     ['paid_conversion', 'Ücretli dönüşüm']
   ];
 
@@ -3101,7 +3101,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     <div style="height:24px"></div>
     ${windowNote}
     ${renderGrowthCommandCenter(kpiRows)}
-    <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
+    <h3 style="margin:0 0 14px 0;">Yönetici büyüme hunisi (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
     <table class="table">
       <thead><tr><th>Adım</th><th>Olay</th><th>Önceki adıma CR</th></tr></thead>
@@ -3131,21 +3131,21 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Conversion özeti</h3>
+    <h3 style="margin:0 0 14px 0;">Dönüşüm özeti</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${pageViews}</div></div>
-      <div class="stat-card"><div class="stat-label">CTA clicks</div><div class="stat-value">${ctaClicks}</div><div class="stat-sub">${conversionPct(ctaClicks, pageViews)}</div></div>
-      <div class="stat-card"><div class="stat-label">Auth conversion</div><div class="stat-value">${authLoginOk + authRegisterOk}</div><div class="stat-sub">${conversionPct(authLoginOk + authRegisterOk, authModal)}</div></div>
-      <div class="stat-card"><div class="stat-label">Signup</div><div class="stat-value">${authRegisterOk}</div><div class="stat-sub">${conversionPct(authRegisterOk, authModal)}</div></div>
+      <div class="stat-card"><div class="stat-label">Sayfa görüntüleme</div><div class="stat-value">${pageViews}</div></div>
+      <div class="stat-card"><div class="stat-label">CTA tıklamaları</div><div class="stat-value">${ctaClicks}</div><div class="stat-sub">${conversionPct(ctaClicks, pageViews)}</div></div>
+      <div class="stat-card"><div class="stat-label">Kimlik doğrulama dönüşümü</div><div class="stat-value">${authLoginOk + authRegisterOk}</div><div class="stat-sub">${conversionPct(authLoginOk + authRegisterOk, authModal)}</div></div>
+      <div class="stat-card"><div class="stat-label">Kayıt</div><div class="stat-value">${authRegisterOk}</div><div class="stat-sub">${conversionPct(authRegisterOk, authModal)}</div></div>
       <div class="stat-card"><div class="stat-label">Checkout</div><div class="stat-value">${checkoutCompleted}</div><div class="stat-sub">${conversionPct(checkoutCompleted, checkoutStarted)}</div></div>
-      <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value">${paidConversions}</div><div class="stat-sub">${conversionPct(paidConversions, checkoutStarted)}</div></div>
-      <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${leadSubmit}</div><div class="stat-sub">${conversionPct(leadSubmit, pageViews)}</div></div>
-      <div class="stat-card"><div class="stat-label">Partner dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
-      <div class="stat-card"><div class="stat-label">Finance funnel</div><div class="stat-value">${financeStart}</div></div>
+      <div class="stat-card"><div class="stat-label">Ücretli dönüşüm</div><div class="stat-value">${paidConversions}</div><div class="stat-sub">${conversionPct(paidConversions, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead dönüşümü</div><div class="stat-value">${leadSubmit}</div><div class="stat-sub">${conversionPct(leadSubmit, pageViews)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner teslimatı OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
+      <div class="stat-card"><div class="stat-label">Finans hunisi</div><div class="stat-value">${financeStart}</div></div>
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Auto funnel drop-off</h3>
+    <h3 style="margin:0 0 14px 0;">Auto huni düşüşü</h3>
     <table class="table">
       <thead><tr><th>Adım</th><th>Olay</th><th>Düşüş</th><th>Adım CR</th></tr></thead>
       <tbody>
@@ -3161,30 +3161,30 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     </table>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Partner acquisition (P2)</h3>
+    <h3 style="margin:0 0 14px 0;">Partner edinimi (P2)</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Partner landing</div><div class="stat-value">${partnerLanding}</div></div>
-      <div class="stat-card"><div class="stat-label">Applications</div><div class="stat-value">${partnerApply}</div><div class="stat-sub">${conversionPct(partnerApply, partnerLanding)}</div></div>
-      <div class="stat-card"><div class="stat-label">Onboarding views</div><div class="stat-value">${partnerOnboarding}</div><div class="stat-sub">${conversionPct(partnerOnboarding, partnerApply)}</div></div>
-      <div class="stat-card"><div class="stat-label">Webhook drafts</div><div class="stat-value">${partnerWebhookDraft}</div></div>
-      <div class="stat-card"><div class="stat-label">Dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner iniş</div><div class="stat-value">${partnerLanding}</div></div>
+      <div class="stat-card"><div class="stat-label">Başvurular</div><div class="stat-value">${partnerApply}</div><div class="stat-sub">${conversionPct(partnerApply, partnerLanding)}</div></div>
+      <div class="stat-card"><div class="stat-label">Onboarding görüntüleme</div><div class="stat-value">${partnerOnboarding}</div><div class="stat-sub">${conversionPct(partnerOnboarding, partnerApply)}</div></div>
+      <div class="stat-card"><div class="stat-label">Webhook taslakları</div><div class="stat-value">${partnerWebhookDraft}</div></div>
+      <div class="stat-card"><div class="stat-label">Teslimat OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Growth engine (P1)</h3>
+    <h3 style="margin:0 0 14px 0;">Büyüme motoru (P1)</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Pricing views</div><div class="stat-value">${pricingViews}</div><div class="stat-sub">${conversionPct(checkoutStarted, pricingViews)} → checkout</div></div>
-      <div class="stat-card"><div class="stat-label">Checkout abandoned</div><div class="stat-value">${checkoutAbandoned}</div><div class="stat-sub">${conversionPct(checkoutAbandoned, checkoutStarted)}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral land</div><div class="stat-value">${referralLand}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral share</div><div class="stat-value">${referralShare}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral convert</div><div class="stat-value">${referralConvert}</div><div class="stat-sub">${conversionPct(referralConvert, referralLand)}</div></div>
-      <div class="stat-card"><div class="stat-label">Link created</div><div class="stat-value">${referralLinkCreated}</div></div>
-      <div class="stat-card"><div class="stat-label">Link clicked</div><div class="stat-value">${referralLinkClicked}</div><div class="stat-sub">${conversionPct(referralSignup, referralLinkClicked)} → signup</div></div>
-      <div class="stat-card"><div class="stat-label">Referral signup</div><div class="stat-value">${referralSignup}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${referralConversion}</div><div class="stat-sub">${conversionPct(referralConversion, referralSignup)}</div></div>
-      <div class="stat-card"><div class="stat-label">Lifecycle enroll</div><div class="stat-value">${lifecycleEnroll}</div></div>
-      <div class="stat-card"><div class="stat-label">Upsell views</div><div class="stat-value">${upsellViews}</div><div class="stat-sub">${conversionPct(upsellClicks, upsellViews)} click</div></div>
-      <div class="stat-card"><div class="stat-label">Upsell conversion</div><div class="stat-value">${upsellConversions}</div><div class="stat-sub">${conversionPct(upsellConversions, upsellClicks)}</div></div>
+      <div class="stat-card"><div class="stat-label">Fiyatlandırma görüntüleme</div><div class="stat-value">${pricingViews}</div><div class="stat-sub">${conversionPct(checkoutStarted, pricingViews)} → checkout</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout terk</div><div class="stat-value">${checkoutAbandoned}</div><div class="stat-sub">${conversionPct(checkoutAbandoned, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans iniş</div><div class="stat-value">${referralLand}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans paylaşım</div><div class="stat-value">${referralShare}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans dönüşüm</div><div class="stat-value">${referralConvert}</div><div class="stat-sub">${conversionPct(referralConvert, referralLand)}</div></div>
+      <div class="stat-card"><div class="stat-label">Link oluşturma</div><div class="stat-value">${referralLinkCreated}</div></div>
+      <div class="stat-card"><div class="stat-label">Link tıklama</div><div class="stat-value">${referralLinkClicked}</div><div class="stat-sub">${conversionPct(referralSignup, referralLinkClicked)} → kayıt</div></div>
+      <div class="stat-card"><div class="stat-label">Referans kayıt</div><div class="stat-value">${referralSignup}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans dönüşüm</div><div class="stat-value">${referralConversion}</div><div class="stat-sub">${conversionPct(referralConversion, referralSignup)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lifecycle kayıt</div><div class="stat-value">${lifecycleEnroll}</div></div>
+      <div class="stat-card"><div class="stat-label">Upsell görüntüleme</div><div class="stat-value">${upsellViews}</div><div class="stat-sub">${conversionPct(upsellClicks, upsellViews)} tıklama</div></div>
+      <div class="stat-card"><div class="stat-label">Upsell dönüşüm</div><div class="stat-value">${upsellConversions}</div><div class="stat-sub">${conversionPct(upsellConversions, upsellClicks)}</div></div>
     </div>
     ${Object.keys(growthByChannel).length ? `
       <div style="height:12px"></div>
@@ -3199,19 +3199,19 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     ` : ''}
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Revenue attribution (UTM)</h3>
+    <h3 style="margin:0 0 14px 0;">Gelir ilişkilendirme (UTM)</h3>
     <div class="stat-grid">
       ${Object.entries(attributionMap).length ? Object.entries(attributionMap).map(([source, cents]) => `
         <div class="stat-card">
           <div class="stat-label">${escapeHtml(source)}</div>
           <div class="stat-value">${(cents / 100).toLocaleString('tr-TR')} ₺</div>
         </div>
-      `).join('') : '<p class="empty">Henüz revenue_attributed event yok.</p>'}
+      `).join('') : '<p class="empty">Henüz revenue_attributed olayı yok.</p>'}
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Admin CRM outcomes</h3>
-    <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
+    <h3 style="margin:0 0 14px 0;">Admin CRM sonuçları</h3>
+    <p class="text-muted">${crmEvents.length} CRM olayı (son 2500 kayıt içinde)</p>
   `;
 
   bindPlatformAnalyticsToolbar(el, filterId, dataMode);
