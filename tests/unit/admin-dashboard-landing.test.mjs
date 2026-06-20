@@ -374,3 +374,132 @@ test('TR-2b-4 buildCeoSummary user-facing lines use Turkish copy', () => {
   assert.doesNotMatch(block, /Landing→paid/);
   assert.doesNotMatch(block, /north star/);
 });
+
+test('TR-2c-1 P18–P26 strategy page shell nav labels use Turkish copy', () => {
+  const html = read('admin-panel.html');
+  const shell = read('js/admin/admin-shell.js');
+  const pairs = [
+    ['startup-operating-center', 'Startup operasyon'],
+    ['scale-architecture', 'Ölçek mimarisi'],
+    ['company-operating-system', 'Şirket işletim sistemi'],
+    ['hiring-architecture', 'İşe alım'],
+    ['international-expansion', 'Uluslararası genişleme'],
+    ['category-dominance', 'Kategori hakimiyeti'],
+    ['competitor-attack', 'Savunma'],
+    ['expansion-prioritization', 'Genişleme'],
+    ['strategic-partnerships', 'Stratejik ortaklıklar']
+  ];
+  for (const [pageId, label] of pairs) {
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.match(
+      shell,
+      new RegExp(`'${pageId}':\\s*'${escapedLabel}'`),
+      `NAV_LABELS maps ${pageId} → ${label}`
+    );
+    assert.match(
+      html,
+      new RegExp(
+        `data-page-target="${pageId}"[^>]*>[\\s\\S]*?<span class="nav-label">${escapedLabel}<\\/span>`
+      ),
+      `nav label for ${pageId} is ${label}`
+    );
+  }
+});
+
+test('TR-2c-1 P18–P26 strategy page h2 and subcopy use Turkish shell copy', () => {
+  const html = read('admin-panel.html');
+  const pages = [
+    {
+      id: 'startup-operating-center',
+      h2: 'Startup Operasyon Merkezi (P18)',
+      subcopy: 'Ölçek sütunları · darboğazlar · karar ritmi · hızlı kazanımlar'
+    },
+    {
+      id: 'scale-architecture',
+      h2: 'Ölçek Mimarisi (P19)',
+      subcopy: '10K · 100K · 1M MAU — risk, darboğaz, azaltma ve teknik güven'
+    },
+    {
+      id: 'company-operating-system',
+      h2: 'Şirket İşletim Sistemi (P20)',
+      subcopy: 'Haftalık KPI · ürün · büyüme · satış · olaylar · RICE · karar günlüğü'
+    },
+    {
+      id: 'hiring-architecture',
+      h2: 'İşe Alım Mimarisi (P21)',
+      subcopy: '8 yakın dönem rol — neden, ne zaman, KPI, ilk 90 gün'
+    },
+    {
+      id: 'international-expansion',
+      h2: 'Uluslararası Genişleme (P22)',
+      subcopy: 'i18n · para birimi · uyumluluk · ödemeler · SEO · alan adı'
+    },
+    {
+      id: 'category-dominance',
+      h2: 'Kategori Hakimiyeti (P23)',
+      subcopy: 'Rakip panoraması · altı hendek planı · kategori sahipliği yol haritası'
+    },
+    {
+      id: 'competitor-attack',
+      h2: 'Rakip Savunması (P24)',
+      subcopy: 'Büyük oyuncu saldırı senaryoları · altı sütun savunması · savaş oyunu matrisi'
+    },
+    {
+      id: 'expansion-prioritization',
+      h2: 'Genişleme Önceliklendirmesi (P25)',
+      subcopy: '7 kategori · 6 kriter · dalga sırası — ev önce, elektronik erteleme'
+    },
+    {
+      id: 'strategic-partnerships',
+      h2: 'Stratejik Ortaklıklar (P26)',
+      subcopy: '7 ortaklık tipi · dağıtım + gelir dalgaları · BD oyun planı'
+    }
+  ];
+  for (const { id, h2, subcopy } of pages) {
+    const pageBlock = html.match(
+      new RegExp(`id="page-${id.replace(/-/g, '\\-')}"[\\s\\S]*?id="page-`)
+    );
+    assert.ok(pageBlock, `page-${id} block exists`);
+    assert.match(pageBlock[0], new RegExp(`<h2>${h2.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<\\/h2>`));
+    assert.match(pageBlock[0], new RegExp(subcopy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+});
+
+test('TR-2c-1 strategy shell no longer exposes legacy English h2 labels', () => {
+  const html = read('admin-panel.html');
+  const forbidden = [
+    'Startup Operating Center',
+    'Scale Architecture',
+    'Company Operating System',
+    'Hiring Architecture',
+    'International Expansion',
+    'Category Dominance',
+    'Competitor Attack',
+    'Expansion Prioritization',
+    'Strategic Partnerships',
+    'Expansion Roadmap'
+  ];
+  for (const label of forbidden) {
+    assert.doesNotMatch(html, new RegExp(`<h2>${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  }
+});
+
+test('TR-2c-1 strategy page ids and data-page-target keys remain unchanged', () => {
+  const html = read('admin-panel.html');
+  const pageIds = [
+    'startup-operating-center',
+    'scale-architecture',
+    'company-operating-system',
+    'hiring-architecture',
+    'international-expansion',
+    'category-dominance',
+    'competitor-attack',
+    'expansion-prioritization',
+    'strategic-partnerships'
+  ];
+  for (const pageId of pageIds) {
+    assert.match(html, new RegExp(`id="page-${pageId}"`));
+    assert.match(html, new RegExp(`data-page-target="${pageId}"`));
+    assert.match(html, new RegExp(`id="${pageId}-root"`));
+  }
+});
