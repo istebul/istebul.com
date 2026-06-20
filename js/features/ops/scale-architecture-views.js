@@ -54,9 +54,9 @@ export function renderScaleArchitectureCenter(report, escapeHtml) {
           return `
         <div class="stat-card" style="padding:10px 12px;margin-bottom:8px">
           <div class="stat-label">${esc(TIER_LABELS[tier])} · ${riskBadge(t.risk, esc)}</div>
-          <p class="text-muted-sm" style="margin:6px 0 4px;font-size:12px"><strong>Bottleneck:</strong> ${esc(t.bottleneck)}</p>
-          <p class="text-muted-sm" style="margin:4px 0;font-size:12px"><strong>Mitigation:</strong> ${esc(t.mitigation)}</p>
-          <p class="text-muted-sm" style="margin:4px 0 0;font-size:11px"><strong>Quick:</strong> ${esc(t.quickImplementation)}</p>
+          <p class="text-muted-sm" style="margin:6px 0 4px;font-size:12px"><strong>Darboğaz:</strong> ${esc(t.bottleneck)}</p>
+          <p class="text-muted-sm" style="margin:4px 0;font-size:12px"><strong>Azaltma:</strong> ${esc(t.mitigation)}</p>
+          <p class="text-muted-sm" style="margin:4px 0 0;font-size:11px"><strong>Hızlı:</strong> ${esc(t.quickImplementation)}</p>
         </div>`;
         })
         .join('');
@@ -72,39 +72,39 @@ export function renderScaleArchitectureCenter(report, escapeHtml) {
 
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P19 Scale Architecture · <code>npm run metrics:scale:architecture</code> ·
-      <a href="/${esc(report.docPath)}" target="_blank" rel="noopener">Execution playbook</a>
+      P19 Ölçek mimarisi · <code>npm run metrics:scale:architecture</code> ·
+      <a href="/${esc(report.docPath)}" target="_blank" rel="noopener">Uygulama oyun planı</a>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px">
-      <strong>Technical scale confidence</strong>
+      <strong>Teknik ölçek güveni</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(report.executiveSummary || []).map((line) => `<li>${esc(line)}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Confidence by scenario</h3>
+    <h3 style="margin:0 0 12px">Senaryo bazlı güven</h3>
     <div class="stat-grid" style="margin-bottom:18px">${confidenceCards}</div>
 
-    <h3 style="margin:0 0 12px">Volume estimates (planning)</h3>
+    <h3 style="margin:0 0 12px">Hacim tahminleri (planlama)</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
         <thead>
-          <tr><th>Tier</th><th>Events/mo</th><th>Events/day</th><th>AI calls/mo</th><th>Lifecycle emails/mo</th></tr>
+          <tr><th>Kademe</th><th>Olay/ay</th><th>Olay/gün</th><th>AI çağrı/ay</th><th>Lifecycle e-posta/ay</th></tr>
         </thead>
         <tbody>${volumeRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Current guardrails (repo)</h3>
+    <h3 style="margin:0 0 12px">Mevcut koruma limitleri (repo)</h3>
     <p class="text-muted-sm" style="margin:0 0 18px;font-size:12px">
-      Analytics queue ${guard.analyticsMaxQueue} · ingest ${guard.analyticsIngestPerIpPerMin}/min/IP ·
-      batch ${guard.analyticsBatchMax} · retention ${guard.analyticsRetentionDays}d ·
+      Analitik kuyruk ${guard.analyticsMaxQueue} · ingest ${guard.analyticsIngestPerIpPerMin}/min/IP ·
+      batch ${guard.analyticsBatchMax} · saklama ${guard.analyticsRetentionDays}d ·
       AI ${guard.aiProxyPerIpPerMin}/min/IP, ${guard.aiSessionCallsPerHour}/session/h ·
-      lifecycle ${guard.lifecycleSendsPerRun}/run · admin rows ${guard.adminExecutiveRowLimit}
+      lifecycle ${guard.lifecycleSendsPerRun}/run · admin satır ${guard.adminExecutiveRowLimit}
     </p>
 
-    <h3 style="margin:0 0 12px">Dimension matrix (risk · bottleneck · mitigation · quick win)</h3>
+    <h3 style="margin:0 0 12px">Boyut matrisi (risk · darboğaz · azaltma · hızlı kazanım)</h3>
     ${dimensionBlocks}
   `;
 }
