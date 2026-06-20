@@ -41,16 +41,77 @@ describe('internal-dashboards', () => {
     const ceoHtml = renderInternalDashboard('ceo', ctx, esc);
     const growthHtml = renderInternalDashboard('growth', ctx, esc);
     const revenueHtml = renderInternalDashboard('revenue', ctx, esc);
+    const partnerHtml = renderInternalDashboard('partner_ops', ctx, esc);
     const supportHtml = renderInternalDashboard('support', ctx, esc);
-    const combined = `${ceoHtml}${growthHtml}${revenueHtml}${supportHtml}`;
+    const combined = `${ceoHtml}${growthHtml}${revenueHtml}${partnerHtml}${supportHtml}`;
 
     assert.match(combined, />Yatırımcı KPI</);
     assert.match(combined, />Operasyon Komuta Merkezi</);
     assert.match(combined, />Platform analitik</);
     assert.match(combined, />Auto analitik</);
+    assert.match(combined, />Gözlemlenebilirlik</);
+    assert.match(combined, />Teslimat logları</);
+    assert.match(combined, />Partner kanalları</);
+    assert.match(combined, />Auto leadler</);
+    assert.match(combined, />SSS yönetimi</);
     assert.doesNotMatch(combined, /Executive KPIs(?: \(detail\))?/);
     assert.doesNotMatch(combined, />Ops Command Center</);
     assert.doesNotMatch(combined, />Platform Analytics</);
     assert.doesNotMatch(combined, />Auto Analytics</);
+    assert.doesNotMatch(combined, />Observability</);
+    assert.doesNotMatch(combined, />Dispatch Logs</);
+    assert.doesNotMatch(combined, />Partner Channels</);
+    assert.doesNotMatch(combined, />Auto Leads</);
+  });
+
+  it('TR-2b internal dashboard dynamic copy uses Turkish labels', () => {
+    const ctx = buildInternalDashboardContext({
+      analyticsEvents: [{ event_name: 'page_view', created_at: new Date().toISOString() }]
+    });
+    const ceoHtml = renderInternalDashboard('ceo', ctx, esc);
+    const growthHtml = renderInternalDashboard('growth', ctx, esc);
+    const revenueHtml = renderInternalDashboard('revenue', ctx, esc);
+    const partnerHtml = renderInternalDashboard('partner_ops', ctx, esc);
+    const supportHtml = renderInternalDashboard('support', ctx, esc);
+
+    assert.match(ceoHtml, /Huni CR/);
+    assert.match(ceoHtml, /Ücretli dönüşümler/);
+    assert.match(ceoHtml, /Partner teslimatı/);
+    assert.match(ceoHtml, /Geri kazanım oranı/);
+    assert.match(ceoHtml, /aktif abonelik/);
+
+    assert.match(growthHtml, /Büyüme komuta merkezi · 7g huni/);
+    assert.match(growthHtml, /Nitelikli leadler \(7g\)/);
+    assert.match(growthHtml, /7 günlük huni/);
+    assert.match(growthHtml, /En iyi kanallar/);
+    assert.match(growthHtml, /<th>Kanal<\/th><th>Olaylar<\/th><th>Leadler<\/th>/);
+
+    const growthEmptyHtml = renderInternalDashboard('growth', buildInternalDashboardContext({}), esc);
+    assert.match(growthEmptyHtml, /Kanal verisi yok/);
+
+    assert.match(revenueHtml, /Gelir &amp; faturalama · RevOps otomasyonları aktif/);
+    assert.match(revenueHtml, /Kayıp sinyali/);
+    assert.match(revenueHtml, /abonelik dönem sonunda iptal/);
+    assert.match(revenueHtml, /İlişkilendirilen gelir/);
+    assert.match(revenueHtml, /Lead pipeline \(monetizasyon\)/);
+
+    assert.match(partnerHtml, /Partner ops sağlığı/);
+    assert.match(partnerHtml, /Teslimat başarısı \(24s\)/);
+    assert.match(partnerHtml, /Şimdi yeniden denenecekler/);
+    assert.match(partnerHtml, /Sağlıksız uç noktalar/);
+
+    assert.match(supportHtml, /Müşteri &amp; destek ops · P11 iş akışları/);
+    assert.match(supportHtml, /SSS makaleleri \(CMS\)/);
+    assert.match(supportHtml, /Destek iş akışları \(manifest\)/);
+    assert.match(supportHtml, /<th>Kimlik<\/th><th>Ad<\/th><th>İşleyici \/ akış<\/th>/);
+
+    const combined = `${ceoHtml}${growthHtml}${revenueHtml}${partnerHtml}${supportHtml}`;
+    assert.doesNotMatch(combined, /Growth command center/);
+    assert.doesNotMatch(combined, /7-day funnel/);
+    assert.doesNotMatch(combined, />Top channels/);
+    assert.doesNotMatch(combined, /Revenue &amp; billing/);
+    assert.doesNotMatch(combined, />Churn signal</);
+    assert.doesNotMatch(combined, />Partner ops health</);
+    assert.doesNotMatch(combined, />Support workflows \(manifest\)/);
   });
 });

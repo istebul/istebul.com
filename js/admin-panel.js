@@ -1612,50 +1612,50 @@ async function loadExecutiveKpis() {
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Traffic &amp; revenue</h3>
+    <h3 style="margin:0 0 12px">Trafik &amp; gelir</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${dash.traffic.pageViews}</div><div class="stat-sub">${dash.traffic.uniqueSessions ?? '—'} sessions</div></div>
-      <div class="stat-card"><div class="stat-label">Auto starts</div><div class="stat-value">${dash.traffic.autoStarts}</div></div>
+      <div class="stat-card"><div class="stat-label">Sayfa görüntüleme</div><div class="stat-value">${dash.traffic.pageViews}</div><div class="stat-sub">${dash.traffic.uniqueSessions ?? '—'} oturum</div></div>
+      <div class="stat-card"><div class="stat-label">Auto başlangıçları</div><div class="stat-value">${dash.traffic.autoStarts}</div></div>
       <div class="stat-card"><div class="stat-label">MRR</div><div class="stat-value">${dash.revenue.mrrTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${dash.revenue.arpuTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">${dash.churn.activeSubscriptions} active · ${dash.churn.trialingSubscriptions} trial</div></div>
-      <div class="stat-card"><div class="stat-label">Attributed revenue</div><div class="stat-value">${dash.revenue.attributedRevenueTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">Churn signal</div><div class="stat-value">${dash.churn.cancelAtPeriodEnd}</div><div class="stat-sub">${dash.churn.grossChurnSignalPct}% cancel at period end</div></div>
+      <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${dash.revenue.arpuTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">${dash.churn.activeSubscriptions} aktif · ${dash.churn.trialingSubscriptions} deneme</div></div>
+      <div class="stat-card"><div class="stat-label">İlişkilendirilen gelir</div><div class="stat-value">${dash.revenue.attributedRevenueTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Kayıp sinyali</div><div class="stat-value">${dash.churn.cancelAtPeriodEnd}</div><div class="stat-sub">${dash.churn.grossChurnSignalPct}% dönem sonunda iptal</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Conversion rates</h3>
+    <h3 style="margin:0 0 12px">Dönüşüm oranları</h3>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Funnel (landing→lead)</div><div class="stat-value">${fmtPct(dash.conversions.funnelConversionPct)}</div><div class="stat-sub">${c.leads} / ${c.landing}</div></div>
-      <div class="stat-card"><div class="stat-label">Wizard completion</div><div class="stat-value">${fmtPct(dash.conversions.wizardCompletionPct)}</div><div class="stat-sub">${c.wizardComplete} / ${c.autoStarts}</div></div>
-      <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${fmtPct(dash.conversions.leadConversionPct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Checkout conversion</div><div class="stat-value">${fmtPct(dash.conversions.checkoutConversionPct)}</div><div class="stat-sub">${c.checkoutComplete} / ${c.checkoutStart}</div></div>
-      <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value">${fmtPct(dash.conversions.paidConversionPct)}</div><div class="stat-sub">${c.paid} paid</div></div>
-      <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${fmtPct(dash.conversions.referralConversionPct)}</div><div class="stat-sub">${c.referralConvert} / ${c.referralLand}</div></div>
+      <div class="stat-card"><div class="stat-label">Wizard tamamlama</div><div class="stat-value">${fmtPct(dash.conversions.wizardCompletionPct)}</div><div class="stat-sub">${c.wizardComplete} / ${c.autoStarts}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead dönüşümü</div><div class="stat-value">${fmtPct(dash.conversions.leadConversionPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout dönüşümü</div><div class="stat-value">${fmtPct(dash.conversions.checkoutConversionPct)}</div><div class="stat-sub">${c.checkoutComplete} / ${c.checkoutStart}</div></div>
+      <div class="stat-card"><div class="stat-label">Ücretli dönüşüm</div><div class="stat-value">${fmtPct(dash.conversions.paidConversionPct)}</div><div class="stat-sub">${c.paid} ücretli</div></div>
+      <div class="stat-card"><div class="stat-label">Referans dönüşümü</div><div class="stat-value">${fmtPct(dash.conversions.referralConversionPct)}</div><div class="stat-sub">${c.referralConvert} / ${c.referralLand}</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Retention</h3>
+    <h3 style="margin:0 0 12px">Elde tutma</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Return visits</div><div class="stat-value">${dash.retention.returnVisits}</div></div>
-      <div class="stat-card"><div class="stat-label">Engagement events</div><div class="stat-value">${dash.retention.engagementEvents}</div></div>
-      <div class="stat-card"><div class="stat-label">Lifecycle enrolls</div><div class="stat-value">${dash.retention.lifecycleEnrolls}</div></div>
-      <div class="stat-card"><div class="stat-label">Abandon recovery</div><div class="stat-value">${fmtPct(dash.retention.recoveryRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Geri dönüş ziyaretleri</div><div class="stat-value">${dash.retention.returnVisits}</div></div>
+      <div class="stat-card"><div class="stat-label">Etkileşim olayları</div><div class="stat-value">${dash.retention.engagementEvents}</div></div>
+      <div class="stat-card"><div class="stat-label">Lifecycle kayıtları</div><div class="stat-value">${dash.retention.lifecycleEnrolls}</div></div>
+      <div class="stat-card"><div class="stat-label">Terk geri kazanımı</div><div class="stat-value">${fmtPct(dash.retention.recoveryRatePct)}</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Partner lead quality</h3>
+    <h3 style="margin:0 0 12px">Partner lead kalitesi</h3>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Leads (CRM)</div><div class="stat-value">${dash.partnerLeadQuality.totalLeads}</div></div>
-      <div class="stat-card"><div class="stat-label">Avg lead score</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} high intent (≥70)</div></div>
+      <div class="stat-card"><div class="stat-label">Avg lead score</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} yüksek niyet (≥70)</div></div>
       <div class="stat-card"><div class="stat-label">Dispatch success</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.dispatchRatePct)}</div></div>
       <div class="stat-card"><div class="stat-label">Partner win rate</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.partnerWinRatePct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Pipeline realized</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">est. ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Pipeline realized</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">tahmini ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
     </div>
 
     <div style="height:18px"></div>
     <h3 style="margin:0 0 12px">Yatırımcı hunisi (adım CR)</h3>
     <table class="table">
-      <thead><tr><th>Step</th><th>Events</th><th>Step CR</th><th>From landing</th></tr></thead>
+      <thead><tr><th>Adım</th><th>Olaylar</th><th>Adım CR</th><th>Landing'den</th></tr></thead>
       <tbody>
         ${dash.funnel.map((row) => `
           <tr>
@@ -1669,9 +1669,9 @@ async function loadExecutiveKpis() {
     </table>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Top acquisition channels</h3>
+    <h3 style="margin:0 0 12px">En iyi edinim kanalları</h3>
     <table class="table">
-      <thead><tr><th>Channel</th><th>Leads</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
+      <thead><tr><th>Kanal</th><th>Leadler</th><th>Ücretli</th><th>Gelir ₺</th></tr></thead>
       <tbody>
         ${dash.topChannels.length ? dash.topChannels.map((ch) => `
           <tr>
@@ -1687,7 +1687,7 @@ async function loadExecutiveKpis() {
     ${unitEconomicsHtml}
 
     <details style="margin-top:16px">
-      <summary>Snapshot JSON (board export)</summary>
+      <summary>Anlık görüntü JSON (board export)</summary>
       <pre style="white-space:pre-wrap;font-size:12px;max-height:360px;overflow:auto;">${escapeHtml(JSON.stringify({ executive: dash, unitEconomics: unitModel }, null, 2))}</pre>
     </details>
   `;

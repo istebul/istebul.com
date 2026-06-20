@@ -78,12 +78,12 @@ function renderCeoDashboard(ctx, escapeHtml) {
 
     ${renderStatGrid(
       [
-        { label: 'MRR', value: `${ex.revenue.mrrTry.toLocaleString('tr-TR')} ₺`, sub: `${ex.churn.activeSubscriptions} active subs` },
-        { label: 'Funnel CR', value: fmtPct(ex.conversions.funnelConversionPct), sub: `${c.leads} / ${c.landing} leads` },
-        { label: 'Paid conversions', value: c.paid, sub: fmtPct(ex.conversions.paidConversionPct) },
-        { label: 'Partner dispatch', value: fmtPct(ex.partnerLeadQuality.dispatchRatePct), sub: `${ex.partnerLeadQuality.totalLeads} CRM leads` },
-        { label: 'Pipeline realized', value: `${ex.pipeline.actualTry.toLocaleString('tr-TR')} ₺`, sub: `est. ${ex.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺` },
-        { label: 'Recovery rate', value: fmtPct(ex.retention.recoveryRatePct), sub: `${ex.retention.lifecycleEnrolls} lifecycle enrolls` }
+        { label: 'MRR', value: `${ex.revenue.mrrTry.toLocaleString('tr-TR')} ₺`, sub: `${ex.churn.activeSubscriptions} aktif abonelik` },
+        { label: 'Huni CR', value: fmtPct(ex.conversions.funnelConversionPct), sub: `${c.leads} / ${c.landing} lead` },
+        { label: 'Ücretli dönüşümler', value: c.paid, sub: fmtPct(ex.conversions.paidConversionPct) },
+        { label: 'Partner teslimatı', value: fmtPct(ex.partnerLeadQuality.dispatchRatePct), sub: `${ex.partnerLeadQuality.totalLeads} CRM lead` },
+        { label: 'Gerçekleşen pipeline', value: `${ex.pipeline.actualTry.toLocaleString('tr-TR')} ₺`, sub: `tahmini ${ex.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺` },
+        { label: 'Geri kazanım oranı', value: fmtPct(ex.retention.recoveryRatePct), sub: `${ex.retention.lifecycleEnrolls} lifecycle kayıt` }
       ],
       escapeHtml
     )}
@@ -91,7 +91,7 @@ function renderCeoDashboard(ctx, escapeHtml) {
     <div class="ib-dash-links">
       <button type="button" class="btn btn-ghost btn-sm" data-page-target="investor-metrics">Yatırımcı KPI</button>
       <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="observability">Observability</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="observability">Gözlemlenebilirlik</button>
     </div>
   `;
 }
@@ -121,31 +121,31 @@ function renderGrowthDashboard(ctx, escapeHtml) {
     .join('');
 
   return `
-    <p class="ib-dash-muted">Growth command center · 7g funnel + ${ctx.windowDays}g channels · <code>npm run metrics:growth:command</code></p>
+    <p class="ib-dash-muted">Büyüme komuta merkezi · 7g huni + ${ctx.windowDays}g kanallar · <code>npm run metrics:growth:command</code></p>
 
     ${renderStatGrid(
       [
-        { label: 'Qualified leads (7d)', value: ns.qualifiedLeads, sub: `landing→lead ${ns.landingToLeadPct ?? '—'}%` },
-        { label: 'Paid (7d)', value: ns.paidConversions, sub: `checkout CR ${ns.checkoutCrPct ?? '—'}%` },
-        { label: 'Experiment exposures', value: g.experiments.exposures, sub: `${g.experiments.conversions} conversions` },
-        { label: 'Paid click capture', value: g.paid.clickCapture, sub: `${g.paid.conversionSignals} signals` },
-        { label: 'Return visits', value: g.retention.returnVisits, sub: `${g.retention.engagementEvents} engagement` },
-        { label: 'Lifecycle enrolls', value: g.retention.lifecycleEnrolls, sub: `recovery ${g.retention.recoveryRatePct ?? '—'}%` }
+        { label: 'Nitelikli leadler (7g)', value: ns.qualifiedLeads, sub: `landing→lead ${ns.landingToLeadPct ?? '—'}%` },
+        { label: 'Ücretli (7g)', value: ns.paidConversions, sub: `checkout CR ${ns.checkoutCrPct ?? '—'}%` },
+        { label: 'Deney gösterimleri', value: g.experiments.exposures, sub: `${g.experiments.conversions} conversions` },
+        { label: 'Ücretli tıklama yakalama', value: g.paid.clickCapture, sub: `${g.paid.conversionSignals} signals` },
+        { label: 'Geri dönüş ziyaretleri', value: g.retention.returnVisits, sub: `${g.retention.engagementEvents} engagement` },
+        { label: 'Lifecycle kayıtları', value: g.retention.lifecycleEnrolls, sub: `recovery ${g.retention.recoveryRatePct ?? '—'}%` }
       ],
       escapeHtml
     )}
 
     <div class="ib-dash-section">
-      <h3>7-day funnel</h3>
+      <h3>7 günlük huni</h3>
       <div class="ib-dash-funnel">${funnelHtml}</div>
     </div>
 
     <div class="ib-dash-section">
-      <h3>Top channels (${ctx.windowDays}d)</h3>
+      <h3>En iyi kanallar (${ctx.windowDays}g)</h3>
       <div class="ib-dash-table-wrap">
         <table class="table">
-          <thead><tr><th>Channel</th><th>Events</th><th>Leads</th><th>Checkouts</th><th>Paid</th></tr></thead>
-          <tbody>${channelRows || '<tr><td colspan="5" class="empty">No channel data</td></tr>'}</tbody>
+          <thead><tr><th>Kanal</th><th>Olaylar</th><th>Leadler</th><th>Checkout</th><th>Ücretli</th></tr></thead>
+          <tbody>${channelRows || '<tr><td colspan="5" class="empty">Kanal verisi yok</td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -163,28 +163,28 @@ function renderRevenueDashboard(ctx, escapeHtml) {
   const sig = r.revOpsSignals;
 
   return `
-    <p class="ib-dash-muted">Revenue &amp; billing · RevOps automations live · <code>npm run metrics:executive</code></p>
+    <p class="ib-dash-muted">Gelir &amp; faturalama · RevOps otomasyonları aktif · <code>npm run metrics:executive</code></p>
 
     <div class="ib-dash-health ${healthClass(sig.cancelAtPeriodEnd >= 3 ? 'warning' : 'ok')}">
-      <p class="ib-dash-kicker">Churn signal</p>
-      <strong>${sig.cancelAtPeriodEnd}</strong> subscriptions cancel at period end
-      · Stripe webhook fails (24h): <strong>${ctx.ops.stripeWebhookFails24h}</strong>
+      <p class="ib-dash-kicker">Kayıp sinyali</p>
+      <strong>${sig.cancelAtPeriodEnd}</strong> abonelik dönem sonunda iptal
+      · Stripe webhook hataları (24s): <strong>${ctx.ops.stripeWebhookFails24h}</strong>
     </div>
 
     ${renderStatGrid(
       [
         { label: 'MRR', value: `${r.mrrTry.toLocaleString('tr-TR')} ₺`, sub: `ARR ${r.arrTry.toLocaleString('tr-TR')} ₺` },
         { label: 'ARPU', value: `${r.arpuTry.toLocaleString('tr-TR')} ₺`, sub: `${r.churn.activeSubscriptions} billable` },
-        { label: 'Attributed revenue', value: `${r.attributedRevenueTry.toLocaleString('tr-TR')} ₺`, sub: 'analytics attributed' },
+        { label: 'İlişkilendirilen gelir', value: `${r.attributedRevenueTry.toLocaleString('tr-TR')} ₺`, sub: 'analytics attributed' },
         { label: 'Checkout CR', value: fmtPct(r.conversions.checkoutConversionPct), sub: `${c.checkoutComplete} / ${c.checkoutStart}` },
-        { label: 'Checkout abandon', value: sig.checkoutAbandon, sub: 'recovery flow enrolled' },
-        { label: 'Payment failed events', value: sig.failedPaymentEvents, sub: 'failed_payment_recovery' }
+        { label: 'Checkout terk', value: sig.checkoutAbandon, sub: 'recovery flow enrolled' },
+        { label: 'Ödeme başarısız olayları', value: sig.failedPaymentEvents, sub: 'failed_payment_recovery' }
       ],
       escapeHtml
     )}
 
     <div class="ib-dash-section">
-      <h3>Lead pipeline (monetization)</h3>
+      <h3>Lead pipeline (monetizasyon)</h3>
       ${renderStatGrid(
         [
           { label: 'Pipeline estimated', value: `${r.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺` },
@@ -210,7 +210,7 @@ function renderPartnerOpsDashboard(ctx, escapeHtml) {
     <p class="ib-dash-muted">Partner delivery ops · 24h dispatch health · <code>npm run partner:ops:run</code></p>
 
     <div class="ib-dash-health ${healthClass(p.overallHealth)}">
-      <p class="ib-dash-kicker">Partner ops health</p>
+      <p class="ib-dash-kicker">Partner ops sağlığı</p>
       <strong>${escapeHtml(p.overallHealth)}</strong>
       · SLA p95 ${Math.round((p.sla?.actualP95Ms ?? 0) / 1000)}s
       ${p.sla?.breached ? ' <span class="badge badge-yellow">SLA breach</span>' : ''}
@@ -218,9 +218,9 @@ function renderPartnerOpsDashboard(ctx, escapeHtml) {
 
     ${renderStatGrid(
       [
-        { label: 'Dispatch success (24h)', value: `${p.dispatchMonitoring?.successRatePct24h ?? '—'}%`, sub: `${p.dispatchMonitoring?.attempts24h ?? 0} attempts` },
-        { label: 'Retry due now', value: p.retryAutomation?.retryDueNow ?? 0, sub: `failed ${p.retryAutomation?.dispatch_failed ?? 0}` },
-        { label: 'Unhealthy endpoints', value: p.webhookHealth?.unhealthyCount ?? 0, sub: `circuit ${p.webhookHealth?.circuitOpenCount ?? 0}` },
+        { label: 'Teslimat başarısı (24s)', value: `${p.dispatchMonitoring?.successRatePct24h ?? '—'}%`, sub: `${p.dispatchMonitoring?.attempts24h ?? 0} attempts` },
+        { label: 'Şimdi yeniden denenecekler', value: p.retryAutomation?.retryDueNow ?? 0, sub: `failed ${p.retryAutomation?.dispatch_failed ?? 0}` },
+        { label: 'Sağlıksız uç noktalar', value: p.webhookHealth?.unhealthyCount ?? 0, sub: `circuit ${p.webhookHealth?.circuitOpenCount ?? 0}` },
         { label: 'Inactive partners', value: p.webhookHealth?.inactiveEndpointCount ?? 0, sub: '7d no success' },
         { label: 'CRM dispatch rate', value: fmtPct(ex.dispatchRatePct), sub: `${ex.totalLeads} leads` },
         { label: 'Partner win rate', value: fmtPct(ex.partnerWinRatePct), sub: `avg score ${ex.avgLeadScore ?? '—'}` }
@@ -230,16 +230,16 @@ function renderPartnerOpsDashboard(ctx, escapeHtml) {
 
     ${
       p.alerts?.triggered?.length
-        ? `<div class="ib-dash-section"><h3>Partner alerts</h3><ul class="ib-dash-alert-list">${p.alerts.triggered
+        ? `<div class="ib-dash-section"><h3>Partner uyarıları</h3><ul class="ib-dash-alert-list">${p.alerts.triggered
             .map((a) => `<li>${escapeHtml(a.message)}</li>`)
             .join('')}</ul></div>`
         : ''
     }
 
     <div class="ib-dash-links">
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="partner-dispatch-logs">Dispatch Logs</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="partner-endpoints">Partner Channels</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Auto Leads</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="partner-dispatch-logs">Teslimat logları</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="partner-endpoints">Partner kanalları</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Auto leadler</button>
     </div>
   `;
 }
@@ -259,14 +259,14 @@ function renderSupportDashboard(ctx, escapeHtml) {
     .join('');
 
   return `
-    <p class="ib-dash-muted">Customer &amp; support ops · P11 workflows · lifecycle + FAQ deflection</p>
+    <p class="ib-dash-muted">Müşteri &amp; destek ops · P11 iş akışları · lifecycle + FAQ deflection</p>
 
     ${renderStatGrid(
       [
-        { label: 'FAQ articles (CMS)', value: s.faqCount ?? '—', sub: 'admin SSS + faq-knowledge' },
-        { label: 'Lifecycle enroll (7d)', value: s.enrollments7d, sub: `${s.activeEnrollments} active` },
-        { label: 'Failed messages', value: s.failedMessages, sub: 'verify lifecycle-cron' },
-        { label: 'Support signals', value: s.supportEvents, sub: 'help_widget, escalation' },
+        { label: 'SSS makaleleri (CMS)', value: s.faqCount ?? '—', sub: 'admin SSS + faq-knowledge' },
+        { label: 'Lifecycle kayıt (7g)', value: s.enrollments7d, sub: `${s.activeEnrollments} active` },
+        { label: 'Başarısız mesajlar', value: s.failedMessages, sub: 'verify lifecycle-cron' },
+        { label: 'Destek sinyalleri', value: s.supportEvents, sub: 'help_widget, escalation' },
         { label: 'Recovery rate', value: fmtPct(ctx.growth.retention.recoveryRatePct), sub: 'retention proxy' },
         { label: 'Lifecycle enrolls (30d)', value: ctx.executive.retention.lifecycleEnrolls, sub: 'all flows' }
       ],
@@ -274,18 +274,18 @@ function renderSupportDashboard(ctx, escapeHtml) {
     )}
 
     <div class="ib-dash-section">
-      <h3>Support workflows (manifest)</h3>
+      <h3>Destek iş akışları (manifest)</h3>
       <div class="ib-dash-table-wrap">
         <table class="table">
-          <thead><tr><th>ID</th><th>Name</th><th>Handler / flow</th></tr></thead>
+          <thead><tr><th>Kimlik</th><th>Ad</th><th>İşleyici / akış</th></tr></thead>
           <tbody>${flowRows || '<tr><td colspan="3" class="empty">Load support-workflows.json</td></tr>'}</tbody>
         </table>
       </div>
     </div>
 
     <div class="ib-dash-links">
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="faqs">SSS Admin</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Auto Leads</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="faqs">SSS yönetimi</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Auto leadler</button>
       <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
     </div>
   `;
