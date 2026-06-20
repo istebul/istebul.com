@@ -775,6 +775,69 @@ function formatOpsAlertMessage(message) {
   return OPS_ALERT_MESSAGE_TR[message] || message;
 }
 
+const FUNNEL_STEP_LABEL_TR = Object.freeze({
+  landing_visit: 'İniş',
+  hero_cta_click: 'Hero CTA',
+  auto_start: 'Auto başlangıç',
+  wizard_complete: 'Wizard tamamlama',
+  results_view: 'Sonuçlar',
+  lead_submit: 'Lead',
+  pricing_view: 'Fiyatlandırma',
+  checkout_start: 'Checkout başlangıç',
+  checkout_complete: 'Checkout tamamlandı',
+  paid_conversion: 'Ücretli dönüşüm'
+});
+
+const FUNNEL_STEP_LABEL_FALLBACK_TR = Object.freeze({
+  Landing: 'İniş',
+  'Hero CTA': 'Hero CTA',
+  'Auto start': 'Auto başlangıç',
+  'Wizard complete': 'Wizard tamamlama',
+  Results: 'Sonuçlar',
+  Lead: 'Lead',
+  Pricing: 'Fiyatlandırma',
+  'Checkout start': 'Checkout başlangıç',
+  'Checkout complete': 'Checkout tamamlandı',
+  'Paid conversion': 'Ücretli dönüşüm'
+});
+
+function formatFunnelStepLabel(step) {
+  const key = String(step?.key || '').toLowerCase();
+  if (key && FUNNEL_STEP_LABEL_TR[key]) return FUNNEL_STEP_LABEL_TR[key];
+  const label = String(step?.label || step || '');
+  return FUNNEL_STEP_LABEL_FALLBACK_TR[label] || label;
+}
+
+const CEO_SUMMARY_PHRASE_TR = Object.freeze([
+  ['partner win rate', 'partner kazanma oranı'],
+  ['Retention dönüş', 'Geri dönüş'],
+  ['Retention ', 'Geri dönüş '],
+  ['churn sinyali (cancel at period end)', 'kayıp sinyali (dönem sonu iptal)'],
+  ['churn signal (cancel at period end)', 'kayıp sinyali (dönem sonu iptal)'],
+  ['Landing→paid', 'İniş→ücretli'],
+  ['Landing → paid', 'İniş → ücretli'],
+  ['(north star)', '(kuzey yıldızı)']
+]);
+
+function formatCeoSummaryLine(line) {
+  let out = String(line || '');
+  for (const [from, to] of CEO_SUMMARY_PHRASE_TR) {
+    out = out.replace(from, to);
+  }
+  return out;
+}
+
+const OPS_RUNBOOK_LABEL_TR = Object.freeze({
+  'Deploy checklist': 'Dağıtım kontrol listesi',
+  'Ops automation roadmap': 'Ops otomasyon yol haritası',
+  'Platform expansion': 'Platform genişlemesi',
+  'Partner webhooks': "Partner webhook'ları"
+});
+
+function formatOpsRunbookLabel(label) {
+  return OPS_RUNBOOK_LABEL_TR[label] || label;
+}
+
 async function loadOpsCommandCenter() {
   const el = document.getElementById('ops-command-center-root');
   if (!el) return;
@@ -1009,7 +1072,7 @@ async function loadOpsCommandCenter() {
       <strong>Genel: ${escapeHtml(formatOpsHealthLabel(center.overallHealth))}</strong>
       <span class="text-muted-sm"> · ${center.alerts.triggeredCount} uyarı kuralı tetiklendi</span>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
-        ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+        ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(formatCeoSummaryLine(line))}</li>`).join('')}
       </ul>
     </div>
 
@@ -1118,7 +1181,7 @@ async function loadOpsCommandCenter() {
     <h3 style="margin:0 0 12px">Runbook'lar</h3>
     <ul style="font-size:13px;line-height:1.6">
       ${center.runbooks
-        .map((r) => `<li><code>${escapeHtml(r.path)}</code> — ${escapeHtml(r.label)}</li>`)
+        .map((r) => `<li><code>${escapeHtml(r.path)}</code> — ${escapeHtml(formatOpsRunbookLabel(r.label))}</li>`)
         .join('')}
     </ul>
   `;
@@ -1751,7 +1814,7 @@ async function loadExecutiveKpis() {
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;background:rgba(37,99,235,0.08);border-radius:10px">
       <strong>Yatırımcı özeti</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
-        ${dash.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+        ${dash.ceoSummary.map((line) => `<li>${escapeHtml(formatCeoSummaryLine(line))}</li>`).join('')}
       </ul>
     </div>
 
@@ -1802,7 +1865,7 @@ async function loadExecutiveKpis() {
       <tbody>
         ${dash.funnel.map((row) => `
           <tr>
-            <td>${escapeHtml(row.label)}</td>
+            <td>${escapeHtml(formatFunnelStepLabel(row))}</td>
             <td><strong>${row.count}</strong></td>
             <td>${row.stepCrPct == null ? '—' : `${row.stepCrPct}%`}</td>
             <td>${row.overallCrPct == null ? '—' : `${row.overallCrPct}%`}</td>

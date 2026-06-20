@@ -332,3 +332,45 @@ test('TR-2b-3 unit economics views map health and source display copy', () => {
   assert.doesNotMatch(renderBlock, /escapeHtml\(model\.supportCost\.source\)/);
   assert.doesNotMatch(renderBlock, /<li>\$\{escapeHtml\(h\)\}<\/li>/);
 });
+
+test('TR-2b-4 funnel, CEO summary, and runbook display mapping helpers', () => {
+  const panel = read('js/admin-panel.js');
+  const helperBlock =
+    panel.match(/const FUNNEL_STEP_LABEL_TR[\s\S]*?function formatOpsRunbookLabel\(label\)[\s\S]*?\n\}/)?.[0] ??
+    '';
+  assert.ok(helperBlock.length > 0, 'TR-2b-4 display helpers exist');
+  assert.match(helperBlock, /landing_visit: 'İniş'/);
+  assert.match(helperBlock, /wizard_complete: 'Wizard tamamlama'/);
+  assert.match(helperBlock, /checkout_start: 'Checkout başlangıç'/);
+  assert.match(helperBlock, /paid_conversion: 'Ücretli dönüşüm'/);
+  assert.match(helperBlock, /partner win rate', 'partner kazanma oranı'/);
+  assert.match(helperBlock, /Landing→paid', 'İniş→ücretli'/);
+  assert.match(helperBlock, /'Deploy checklist': 'Dağıtım kontrol listesi'/);
+
+  const execBlock = panel.match(/async function loadExecutiveKpis\(\)[\s\S]*?^async function/m)?.[0] ?? '';
+  assert.match(execBlock, /formatFunnelStepLabel\(row\)/);
+  assert.match(execBlock, /formatCeoSummaryLine\(line\)/);
+  assert.doesNotMatch(execBlock, /escapeHtml\(row\.label\)/);
+  assert.doesNotMatch(execBlock, /dash\.ceoSummary\.map\(\(line\) => `<li>\$\{escapeHtml\(line\)\}/);
+
+  const opsBlock =
+    panel.match(/async function loadOpsCommandCenter\(\)[\s\S]*?^async function loadStartupOperatingCenter/m)?.[0] ??
+    '';
+  assert.match(opsBlock, /formatCeoSummaryLine\(line\)/);
+  assert.match(opsBlock, /formatOpsRunbookLabel\(r\.label\)/);
+  assert.doesNotMatch(opsBlock, /center\.executiveSummary[\s\S]*escapeHtml\(line\)\)/);
+  assert.doesNotMatch(opsBlock, /escapeHtml\(r\.label\)/);
+});
+
+test('TR-2b-4 buildCeoSummary user-facing lines use Turkish copy', () => {
+  const exec = read('js/features/metrics/executive-dashboard.js');
+  const block = exec.match(/function buildCeoSummary\(ctx\)[\s\S]*?\n\}/)?.[0] ?? '';
+  assert.match(block, /partner kazanma oranı/);
+  assert.match(block, /Geri dönüş/);
+  assert.match(block, /kayıp sinyali \(dönem sonu iptal\)/);
+  assert.match(block, /İniş→ücretli/);
+  assert.match(block, /kuzey yıldızı/);
+  assert.doesNotMatch(block, /partner win rate/);
+  assert.doesNotMatch(block, /Landing→paid/);
+  assert.doesNotMatch(block, /north star/);
+});

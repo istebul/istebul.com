@@ -114,4 +114,57 @@ describe('internal-dashboards', () => {
     assert.doesNotMatch(combined, />Partner ops health</);
     assert.doesNotMatch(combined, />Support workflows \(manifest\)/);
   });
+
+  it('TR-2b-4 internal dashboard funnel and executive display uses Turkish copy', () => {
+    const ctx = buildInternalDashboardContext({
+      analyticsEvents: [
+        { event_name: 'landing_visit', created_at: new Date().toISOString() },
+        { event_name: 'auto_wizard_complete', created_at: new Date().toISOString() },
+        { event_name: 'checkout_started', created_at: new Date().toISOString() },
+        { event_name: 'paid_conversion', created_at: new Date().toISOString() }
+      ],
+      subscriptions: [{ status: 'active', cancel_at_period_end: false }]
+    });
+
+    const ceoHtml = renderInternalDashboard('ceo', ctx, esc);
+    const growthHtml = renderInternalDashboard('growth', ctx, esc);
+    const revenueHtml = renderInternalDashboard('revenue', ctx, esc);
+    const partnerHtml = renderInternalDashboard('partner_ops', ctx, esc);
+    const supportHtml = renderInternalDashboard('support', ctx, esc);
+    const combined = `${ceoHtml}${growthHtml}${revenueHtml}${partnerHtml}${supportHtml}`;
+
+    assert.match(growthHtml, /İniş:/);
+    assert.match(growthHtml, /Wizard tamamlama:/);
+    assert.match(growthHtml, /Checkout başlangıç:/);
+    assert.match(growthHtml, /Ücretli dönüşüm:/);
+    assert.match(growthHtml, /dönüşüm/);
+    assert.match(growthHtml, /etkileşim/);
+    assert.match(growthHtml, /iniş→lead/);
+
+    assert.match(revenueHtml, /Tahmini pipeline/);
+    assert.match(revenueHtml, /Gerçekleşen pipeline/);
+    assert.match(revenueHtml, /Kazanma oranı/);
+    assert.match(revenueHtml, /faturalanabilir/);
+    assert.match(revenueHtml, /kurtarma akışı kayıtlı/);
+
+    assert.match(partnerHtml, /Partner teslimat ops/);
+    assert.match(partnerHtml, /CRM teslimat oranı/);
+    assert.match(partnerHtml, /Partner kazanma oranı/);
+    assert.match(partnerHtml, /Pasif partnerler/);
+    assert.match(partnerHtml, /deneme/);
+
+    assert.match(supportHtml, /Geri kazanım oranı/);
+    assert.match(supportHtml, /elde tutma vekili/);
+    assert.match(supportHtml, /aktif/);
+
+    assert.doesNotMatch(combined, /Wizard complete:/);
+    assert.doesNotMatch(combined, /Checkout start:/);
+    assert.doesNotMatch(combined, /Paid conversion:/);
+    assert.doesNotMatch(combined, />Partner win rate</);
+    assert.doesNotMatch(combined, />Pipeline realized</);
+    assert.doesNotMatch(combined, />SLA breach</);
+    assert.doesNotMatch(combined, />Inactive partners</);
+    assert.doesNotMatch(combined, />Recovery rate</);
+    assert.doesNotMatch(combined, /Load support-workflows\.json/);
+  });
 });
