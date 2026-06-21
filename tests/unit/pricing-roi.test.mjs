@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { PLANS } from '../../js/features/monetization/plans.js';
 import {
   calculatePricingRoi,
   getAnnualSavingsFacts,
@@ -26,8 +27,15 @@ test('calculatePricingRoi scales drift with budget and percent', () => {
     costDriftPercent: 2,
     billing: 'annual'
   });
+  const annualDisplay = PLANS.pro.billing.annual.priceDisplay;
+  const expectedAnnualYearlyCost = parseDisplayAmount(annualDisplay) || 1990;
+
   assert.equal(base.driftCost, 20_000);
-  assert.equal(base.proYearlyCost, 2870);
+  assert.equal(
+    base.proYearlyCost,
+    expectedAnnualYearlyCost,
+    'annual Pro cost uses parsed priceDisplay or 1990 fallback when copy has no digits'
+  );
   assert.ok(base.coverageRatio > 5);
 });
 
