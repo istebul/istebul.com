@@ -132,6 +132,18 @@ function getSignals(rec = bmwListing) {
   return extractPurchaseSignals(buildExecutiveReportInput(rec, profile));
 }
 
+function normalizeVolatileReportFields(report) {
+  return {
+    ...report,
+    pdfPayload: report?.pdfPayload
+      ? {
+          ...report.pdfPayload,
+          generatedAt: '[normalized-generated-at]'
+        }
+      : report?.pdfPayload
+  };
+}
+
 // --- REPORT SCORE BOUNDS ---
 
 test('reportScore is between 0 and 100', () => {
@@ -692,7 +704,10 @@ test('shared and client engines produce identical output', async () => {
   const input = buildExecutiveReportInput(rec, profile);
   const clientResult = runExecutiveReportEngine(input, { skipCache: true });
   const sharedResult = shared.runExecutiveReportEngine(input, { skipCache: true });
-  assert.deepEqual(clientResult, sharedResult);
+  assert.deepEqual(
+    normalizeVolatileReportFields(clientResult),
+    normalizeVolatileReportFields(sharedResult)
+  );
 });
 
 // --- GUARDS ---
