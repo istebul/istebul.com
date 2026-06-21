@@ -17,7 +17,7 @@ export function renderStrategicPartnershipCenter(snapshot, escapeHtml) {
       <td>${t.rank}</td>
       <td><strong>${esc(t.name)}</strong></td>
       <td>${esc(t.maturity)}</td>
-      <td>Wave ${t.wave}</td>
+      <td>Dalga ${t.wave}</td>
       <td><strong>${t.compositeScore}%</strong></td>
       <td>${esc(t.lane)}</td>
       <td class="text-muted-sm">${esc(t.monetizationPlays?.[0])}</td>
@@ -39,37 +39,37 @@ export function renderStrategicPartnershipCenter(snapshot, escapeHtml) {
 
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P26 Strategic Partnerships · <code>npm run metrics:partnerships:roadmap</code> ·
-      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">BD playbook</a>
+      P26 Stratejik ortaklıklar · <code>npm run metrics:partnerships:roadmap</code> ·
+      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">BD oyun planı</a>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid var(--success)">
-      <strong>Acceleration: Wave 1 = ${esc((v.wave1Focus || []).join(' + '))}</strong>
+      <strong>Hızlandırma: Dalga 1 = ${esc((v.wave1Focus || []).join(' + '))}</strong>
       <p class="text-muted-sm" style="margin:8px 0 0;font-size:13px">${esc(snapshot.mission)}</p>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(snapshot.executiveSummary || []).map((line) => `<li>${esc(line)}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Scoring dimensions</h3>
+    <h3 style="margin:0 0 12px">Puanlama boyutları</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>Dimension</th><th>Weight</th></tr></thead>
+        <thead><tr><th>Boyut</th><th>Ağırlık</th></tr></thead>
         <tbody>${dimRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Seven partner types</h3>
+    <h3 style="margin:0 0 12px">Yedi ortak türü</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
         <thead>
-          <tr><th>#</th><th>Type</th><th>Maturity</th><th>Wave</th><th>Score</th><th>Lane</th><th>Monetization</th><th>Distribution</th></tr>
+          <tr><th>#</th><th>Tür</th><th>Olgunluk</th><th>Dalga</th><th>Skor</th><th>Şerit</th><th>Gelirleştirme</th><th>Dağıtım</th></tr>
         </thead>
         <tbody>${typeRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Roadmap phases</h3>
+    <h3 style="margin:0 0 12px">Yol haritası fazları</h3>
     <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.55">${phaseList}</ul>
   `;
 }
