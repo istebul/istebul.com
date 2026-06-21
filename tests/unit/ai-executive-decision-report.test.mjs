@@ -581,10 +581,12 @@ test('buildExecutiveReportShellHtml creates host div', () => {
   assert.match(html, /hidden/);
 });
 
-test('recommendation card includes Yönetici Raporu button', () => {
+// Executive decision report (EDR) is workspace/drawer-only; recommendations tab uses ai-decision-report instead.
+
+test('recommendations card does not mount executive decision report action (workspace drawer only)', () => {
   const html = buildRecommendationCardHtml({ id: 'x', fit_score: 80, recommendation_label: 'Uygun', title: 'Test' });
-  assert.match(html, /Yönetici Raporu/);
-  assert.match(html, /data-rec-edr-id/);
+  assert.doesNotMatch(html, /Yönetici Raporu/);
+  assert.doesNotMatch(html, /data-rec-edr-id/);
 });
 
 test('recommendation card hides edr button without id', () => {
@@ -746,9 +748,9 @@ test('guard: all client sub-modules exist', () => {
   }
 });
 
-test('dashboard html includes edr panel shell', () => {
+test('recommendations dashboard does not embed executive report shell host', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true });
-  assert.match(html, /ai-edr-panel-host/);
+  assert.doesNotMatch(html, /ai-edr-panel-host/);
 });
 
 test('buildExecutiveReportInput preserves fit_score', () => {

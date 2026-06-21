@@ -648,17 +648,18 @@ test('fit_score value unchanged by purchase decision', () => {
 });
 
 // --- ADMIN INTEGRATION ---
+// Purchase decision remains on workspace/drawer (ai-pd-panel-host); not the recommendations tab surface.
 
-test('buildRecommendationCardHtml includes Al Kararı button', () => {
+test('recommendations card does not mount purchase decision action (workspace drawer only)', () => {
   const rec = getTopRecommendation();
   const html = buildRecommendationCardHtml(rec);
-  assert.match(html, /Al Kararı/);
-  assert.match(html, /data-rec-pd-id/);
+  assert.doesNotMatch(html, /Al Kararı/);
+  assert.doesNotMatch(html, /data-rec-pd-id/);
 });
 
-test('buildRecommendationsDashboardHtml includes pd host', () => {
+test('recommendations dashboard does not embed purchase decision shell host', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true });
-  assert.match(html, /ai-pd-panel-host/);
+  assert.doesNotMatch(html, /ai-pd-panel-host/);
 });
 
 test('recommendation card does not show pd button without id', () => {

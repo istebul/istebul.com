@@ -572,17 +572,18 @@ test('purchase decision score unchanged by explainability', () => {
 });
 
 // --- ADMIN INTEGRATION ---
+// Explainability remains on workspace/drawer (ai-exp-panel-host); not the recommendations tab surface.
 
-test('buildRecommendationCardHtml includes Neden Bu Karar button', () => {
+test('recommendations card does not mount explainability action (workspace drawer only)', () => {
   const rec = getTopRecommendation();
   const html = buildRecommendationCardHtml(rec);
-  assert.match(html, /Neden Bu Karar/);
-  assert.match(html, /data-rec-exp-id/);
+  assert.doesNotMatch(html, /Neden Bu Karar/);
+  assert.doesNotMatch(html, /data-rec-exp-id/);
 });
 
-test('buildRecommendationsDashboardHtml includes exp host', () => {
+test('recommendations dashboard does not embed explainability shell host', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true });
-  assert.match(html, /ai-exp-panel-host/);
+  assert.doesNotMatch(html, /ai-exp-panel-host/);
 });
 
 test('recommendation card does not show exp button without id', () => {
