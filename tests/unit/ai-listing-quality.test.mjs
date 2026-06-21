@@ -37,6 +37,8 @@ const { runRecommendationEngine, clearRecommendationMemoCache } = await import(
 const { buildRecommendationsDashboardHtml } = await import('../../js/admin/ai-listings-recommendations-admin.js');
 const { buildRecommendationCardHtml } = await import('../../js/ai-recommendation-engine/recommendation-card-builder.js');
 
+const { parseAiListingsRoute } = await import('../../supabase/functions/_shared/ai-listings/router.js');
+
 const routerPath = path.join(process.cwd(), 'supabase/functions/_shared/ai-listings/router.js');
 const migrationPath = path.join(process.cwd(), 'supabase/migrations/20260701_ai_listings_engine_v1.sql');
 
@@ -569,7 +571,17 @@ test('buildListingQualityInput maps duplicate_status', () => {
 
 test('guard: no endpoint change in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.deepEqual(parseAiListingsRoute('/listings'), {
+    resource: 'listings',
+    id: null,
+    action: null
+  });
+  assert.deepEqual(parseAiListingsRoute('/listings/item-1/analyze'), {
+    resource: 'listings',
+    id: 'item-1',
+    action: 'analyze'
+  });
+  assert.match(router, /KNOWN_RESOURCES[\s\S]*['"]listings['"]/);
   assert.doesNotMatch(router, /listing-quality/i);
 });
 
