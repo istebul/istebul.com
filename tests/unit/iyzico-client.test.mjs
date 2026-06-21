@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const esbuild = require('esbuild');
 
 if (!globalThis.Deno) {
   globalThis.Deno = { env: { get: (key) => process.env[key] } };
@@ -10,11 +14,28 @@ if (!globalThis.Deno) {
 let createIyzwsv2AuthorizationHeader;
 let verifyIyzicoWebhookSignature;
 
+/** Bundle Deno Edge TS shared module for Node test runner (no duplicate crypto). */
+async function loadIyzicoClientModule() {
+  const entry = join(process.cwd(), 'supabase/functions/_shared/iyzico-client.ts');
+  const result = esbuild.buildSync({
+    entryPoints: [entry],
+    bundle: true,
+    format: 'esm',
+    write: false,
+    platform: 'neutral',
+    target: 'es2022',
+  });
+  const url =
+    'data:application/javascript;charset=utf-8,' +
+    encodeURIComponent(result.outputFiles[0].text);
+  return import(url);
+}
+
 test.before(async () => {
   ({
     createIyzwsv2AuthorizationHeader,
     verifyIyzicoWebhookSignature
-  } = await import('../../supabase/functions/_shared/iyzico-client.ts'));
+  } = await loadIyzicoClientModule());
 });
 
 const root = join(process.cwd());
