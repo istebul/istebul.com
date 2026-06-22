@@ -5653,6 +5653,8 @@ function applyProductionRouteVisibility() {
     const routeMap = {
         '/': 'home',
         '/secenekler': 'ilanlar',
+        '/ilanlar': 'ilanlar',
+        '/decision-options': 'ilanlar',
         '/karsilastir': 'compare',
         '/karar-asistani': 'page-karar-analizi',
         '/favoriler': 'favoriler',

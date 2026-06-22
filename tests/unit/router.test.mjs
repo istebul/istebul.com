@@ -129,6 +129,7 @@ test('matchRoute resolves exact and dynamic listing routes', () => {
 
     assert.deepEqual(router.matchRoute('/secenekler'), { component: 'ilanlar', params: {} });
     assert.deepEqual(router.matchRoute('/ilanlar'), { component: 'ilanlar', params: {} });
+    assert.deepEqual(router.matchRoute('/decision-options'), { component: 'ilanlar', params: {} });
     assert.deepEqual(router.matchRoute('/ilan/test%20id'), {
         component: 'listing-detail',
         params: { id: 'test id' }

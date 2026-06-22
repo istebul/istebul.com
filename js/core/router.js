@@ -70,6 +70,7 @@ export class Router {
             { path: '/', component: 'home' },
             { path: '/secenekler', component: 'ilanlar' },
             { path: '/ilanlar', component: 'ilanlar' },
+            { path: '/decision-options', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
             { path: '/planlar', component: 'page-planlar' },
