@@ -1276,6 +1276,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-memory-context-empty-user';
