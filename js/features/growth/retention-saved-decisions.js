@@ -56,6 +56,13 @@ export function saveDecisionSnapshot(snapshot = {}) {
     source: snapshot.source || 'auto_results'
   };
 
+  if (snapshot.passive === true) entry.passive = true;
+  if (snapshot.tracked === true) entry.tracked = true;
+  else if (snapshot.tracked === false) entry.tracked = false;
+  if (typeof snapshot.intent === 'string' && snapshot.intent) {
+    entry.intent = snapshot.intent;
+  }
+
   const list = [entry, ...readList(key).filter((r) => r.id !== entry.id)].slice(0, MAX_SAVED);
   writeStorageRaw(key, JSON.stringify(list));
 
@@ -65,7 +72,8 @@ export function saveDecisionSnapshot(snapshot = {}) {
       {
         decision_id: entry.id,
         category_id: entry.categoryId,
-        has_score: entry.score != null
+        has_score: entry.score != null,
+        ...(entry.passive === true ? { is_passive: true } : {})
       },
       { funnel: 'retention', funnel_step: 'saved_decision' }
     );

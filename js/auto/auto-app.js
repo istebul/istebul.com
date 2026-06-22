@@ -3597,7 +3597,10 @@ form.addEventListener('submit', async (event) => {
           score: top.score,
           summary: `${top.name} — TCO ve kullanım profiline göre öne çıkan eşleşme`,
           revisitPath: '/auto/#analiz',
-          source: 'auto_results',
+          passive: true,
+          tracked: false,
+          intent: 'auto_results_view',
+          source: 'auto_results_passive',
           userId: getAppInstance()?.currentUser?.id || null
         });
         recordHabitAction('results_view');
