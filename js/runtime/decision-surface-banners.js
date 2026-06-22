@@ -66,6 +66,8 @@ export function initDecisionSurfaceBanners() {
   });
 
   const path = window.location.pathname.replace(/\/$/, '') || '/';
-  if (path === '/secenekler' || path === '/ilanlar') mountBanner('ilanlar');
+  if (path === '/secenekler' || path === '/ilanlar' || path === '/decision-options') {
+    mountBanner('ilanlar');
+  }
   if (path === '/karsilastir' || path === '/compare') mountBanner('compare');
 }

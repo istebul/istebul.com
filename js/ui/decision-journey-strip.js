@@ -19,6 +19,7 @@ const PATH_TO_STEP = Object.freeze({
   '/karar-asistani': 'karar-merkezi',
   '/secenekler': 'secenekler',
   '/ilanlar': 'secenekler',
+  '/decision-options': 'secenekler',
   '/karsilastir': 'karsilastir'
 });
 
