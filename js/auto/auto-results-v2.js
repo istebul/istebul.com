@@ -47,6 +47,15 @@ import {
   scoreBandLabel
 } from './auto-results-model.js';
 import { mountKararMahkemesiInResultsDetail } from './auto-results-karar-mahkemesi-mount.js';
+import { isKararNabziEnabled } from '../features/karar-nabzi/karar-nabzi-flags.js';
+import {
+  isTrackedDecision,
+  saveTrackedDecision
+} from '../features/karar-nabzi/karar-nabzi-store.js';
+import {
+  buildAutoTrackedSnapshot,
+  buildAutoTrackedSnapshotId
+} from '../features/karar-nabzi/karar-nabzi-snapshot.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -65,7 +74,19 @@ function safeNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function renderAutoPremiumHero(recommendation, highlights, esc) {
+function renderAutoPremiumHero(recommendation, highlights, esc, kararNabzi = {}) {
+  const { enabled = false, tracked = false } = kararNabzi;
+  const kararNabziBtn = enabled
+    ? `<button
+        type="button"
+        class="btn secondary auto-v2-hero__action auto-v2-karar-nabzi-btn${tracked ? ' is-tracked' : ''}"
+        data-karar-nabzi-track
+        title="${tracked ? 'Bu karar Karar Nabzı takip listenizde' : 'Bu analiz sonucunu Karar Nabzı takip listenize ekleyin'}"
+        aria-label="${tracked ? 'Karar Nabzı takip listesinde' : 'Karar Nabzı takip listesine ekle'}"
+        aria-pressed="${tracked ? 'true' : 'false'}"
+        ${tracked ? 'disabled' : ''}
+      >${tracked ? 'Karar Nabzı\u2019nda' : 'Karar Nabzı\u2019na ekle'}</button>`
+    : '';
   const vehicle = recommendation.vehicle;
   const imageHtml = renderVehicleImageHtml(vehicle, esc, {
     className: 'auto-v2-hero__image',
@@ -111,6 +132,7 @@ function renderAutoPremiumHero(recommendation, highlights, esc) {
             <button type="button" class="btn secondary auto-v2-hero__action" data-auto-v2-expert>
               Uzmanla Görüş
             </button>
+            ${kararNabziBtn}
           </div>
         </div>
       </div>
@@ -228,14 +250,14 @@ function renderAlternativesSection(alternatives, esc) {
     </section>`;
 }
 
-function renderAutoResultsV2Html(model) {
+function renderAutoResultsV2Html(model, kararNabzi = {}) {
   const esc = escapeHtml;
   const rec = model.recommendation;
   const batch = beginVehicleImageRenderBatch();
 
   const html = `
     <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
-      ${renderAutoPremiumHero(rec, model.heroHighlights, esc)}
+      ${renderAutoPremiumHero(rec, model.heroHighlights, esc, kararNabzi)}
       ${renderHeroMetrics(rec, esc)}
 
       <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
@@ -328,7 +350,17 @@ function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
   return { label: 'Düşük', score: 28 };
 }
 
-function wireHeroActions(root, model, track) {
+function setKararNabziButtonTracked(button) {
+  if (!button) return;
+  button.textContent = 'Karar Nabzı\u2019nda';
+  button.classList.add('is-tracked');
+  button.setAttribute('aria-pressed', 'true');
+  button.setAttribute('aria-label', 'Karar Nabzı takip listesinde');
+  button.setAttribute('title', 'Bu karar Karar Nabzı takip listenizde');
+  button.disabled = true;
+}
+
+function wireHeroActions(root, model, track, context = {}) {
   const printHandler = () => {
     safeTrackEvent(track, 'decision_report_print_click', { score: model.decisionScore });
     gatePdfDownload(model.pdfReportData);
@@ -344,6 +376,27 @@ function wireHeroActions(root, model, track) {
       vehicle: model.recommendation.vehicle.name
     });
   });
+
+  const nabziBtn = root.querySelector('[data-karar-nabzi-track]');
+  if (nabziBtn && !nabziBtn.disabled) {
+    nabziBtn.addEventListener('click', () => {
+      const snapshot = buildAutoTrackedSnapshot(
+        model,
+        context.formData || {},
+        context.topResult || null,
+        { id: context.snapshotId }
+      );
+      const saved = saveTrackedDecision(snapshot);
+      if (!saved) return;
+
+      setKararNabziButtonTracked(nabziBtn);
+      safeTrackEvent(track, 'karar_nabzi_tracked', {
+        category: 'auto',
+        decision_id: snapshot.id,
+        decision_score: snapshot.decisionScore
+      });
+    });
+  }
 }
 
 export async function mountAutoResultsV2({ mountNode, topResult, results, formData, track }) {
@@ -451,15 +504,22 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     }
   });
 
+  const kararNabziEnabled = isKararNabziEnabled();
+  const snapshotId = buildAutoTrackedSnapshotId(topResult, formData);
+  const kararNabziTracked = kararNabziEnabled && isTrackedDecision(snapshotId);
+
   const root = document.createElement('div');
   root.className = 'auto-v2-root';
-  root.innerHTML = renderAutoResultsV2Html(model);
+  root.innerHTML = renderAutoResultsV2Html(model, {
+    enabled: kararNabziEnabled,
+    tracked: kararNabziTracked
+  });
   mountNode.prepend(root);
 
   bindVehicleImageFallbacks(root);
   reportVehicleImageLoading(root);
 
-  wireHeroActions(root, model, track);
+  wireHeroActions(root, model, track, { formData, topResult, snapshotId });
 
   await hydrateResultsEconomicIndicators(root, 'auto');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
