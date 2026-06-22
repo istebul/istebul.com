@@ -214,6 +214,17 @@ body.ib-auto #auto-results .auto-v2-root ~ .auto-decision-dashboard {
   padding: 0.45rem 0.75rem;
 }
 
+.auto-v2-karar-nabzi-btn.is-tracked {
+  border-color: rgba(22, 163, 74, 0.45);
+  background: rgba(240, 253, 244, 0.95);
+  color: #166534;
+  cursor: default;
+}
+
+.auto-v2-karar-nabzi-btn.is-tracked:disabled {
+  opacity: 1;
+}
+
 /* Hero KPI strip — compact */
 .auto-v2-hero-metrics {
   display: grid;
