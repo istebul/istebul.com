@@ -1,6 +1,9 @@
 /**
  * Homepage decision categories — routing, status, scores (display copy lives in i18n/marketing-copy.js).
+ * Derived from category-registry via homeKey adapter (Faz 0.2).
  */
+import { listVerticals } from './category-registry.js';
+
 export const HOME_CATEGORY_PILLARS = [
   'Karar skoru',
   'Toplam maliyet',
@@ -8,50 +11,32 @@ export const HOME_CATEGORY_PILLARS = [
   'Sonraki adım'
 ];
 
-export const HOME_DECISION_CATEGORIES = [
-  {
-    id: 'araba',
-    status: 'active',
-    href: '/auto/',
-    sampleScore: 89,
-    settingKey: 'home_category_auto_enabled'
-  },
-  {
-    id: 'konut',
-    status: 'active',
-    href: '/konut/',
-    sampleScore: 88,
-    settingKey: 'home_category_konut_enabled'
-  },
-  {
-    id: 'tatil',
-    status: 'active',
-    href: '/tatil/',
-    sampleScore: 91,
-    settingKey: 'home_category_tatil_enabled'
-  },
-  {
-    id: 'finansman',
-    status: 'active',
-    href: '/finans/',
-    sampleScore: 87,
-    settingKey: 'home_category_finans_enabled'
-  },
-  {
-    id: 'sigorta',
-    status: 'active',
-    href: '/sigorta/',
-    sampleScore: 86,
-    settingKey: 'home_category_sigorta_enabled'
-  },
-  {
-    id: 'kasko',
-    status: 'active',
-    href: '/kasko/',
-    sampleScore: 85,
-    settingKey: 'home_category_kasko_enabled'
-  }
-];
+const HOME_SAMPLE_SCORES = Object.freeze({
+  araba: 89,
+  konut: 88,
+  tatil: 91,
+  finansman: 87,
+  sigorta: 86,
+  kasko: 85
+});
+
+const REGISTRY_TO_HOME_STATUS = Object.freeze({
+  live: 'active',
+  beta: 'coming_soon',
+  draft: 'coming_soon'
+});
+
+function toHomeDecisionCategory(entry) {
+  return {
+    id: entry.homeKey,
+    status: REGISTRY_TO_HOME_STATUS[entry.status] ?? 'coming_soon',
+    href: entry.href,
+    sampleScore: HOME_SAMPLE_SCORES[entry.homeKey],
+    settingKey: entry.settingKey
+  };
+}
+
+export const HOME_DECISION_CATEGORIES = listVerticals().map(toHomeDecisionCategory);
 
 export function isHomeCategoryActive(category) {
   return category?.status === 'active' && Boolean(category?.href);
