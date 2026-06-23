@@ -11,7 +11,7 @@
       "name": "Türkiye İstatistik Kurumu (TÜİK)",
       "providerType": "public",
       "status": "reference",
-      "purpose": "Tüketici fiyatları, enflasyon ve hanehalkı harcama yapısı gibi makro göstergeler; TCO ve bütçe bandı varsayımlarının manuel kalibrasyonu için referans. Canlı API entegrasyonu planlanmaktadır; ham TÜİK tabloları yeniden yayınlanmaz.",
+      "purpose": "Tüketici fiyatları, enflasyon ve hanehalkı harcama yapısı gibi makro göstergeler; TCO ve bütçe bandı varsayımlarının manuel kalibrasyonu için skor-nötr referans katmanı. /api/tuik-snapshot üzerinden statik ve sanitize edilmiş referans metadata sunulur; resmi/upstream TÜİK API beslemesi yoktur ve ham TÜİK tabloları yeniden yayınlanmaz. İçerik periyodik manuel gözden geçirme ile güncellenir.",
       "categories": [
         "Tüketici fiyat endeksi (TÜFE)",
         "Yıllık enflasyon oranları",
@@ -61,9 +61,9 @@
           "note": "Enflasyon ve satın alma gücü — finansman vadesi ve TCO projeksiyonlarında maliyet güncellemesi."
         }
       ],
-      "lastUpdated": "2026-06-08",
+      "lastUpdated": "2026-06-23",
       "officialUrl": "https://www.tuik.gov.tr/",
-      "accessMode": "Manuel referans — resmi web yayınları periyodik gözden geçirilir; otomatik API beslemesi yoktur",
+      "accessMode": "Statik referans snapshot — /api/tuik-snapshot üzerinden sanitize metadata sunulur; skor etkisi yoktur. Resmi TÜİK API beslemesi yoktur; içerik periyodik manuel gözden geçirme ile güncellenir.",
       "licenseNote": "Kaynak atıfı TÜİK yayın kurallarına uygun yapılır; ham veri yeniden satılmaz veya ticari olarak paketlenmez."
     },
     {
@@ -104,14 +104,14 @@
   "disclaimer": {
     "heading": "Veri kullanımı ve sorumluluk",
     "paragraphs": [
-      "isteBul, listelenen kaynaklardan alınan verileri olduğu gibi veya kural tabanlı dönüşümlerle kullanır; resmi kurumların güncel yayınları her zaman platform çıktısından önce güncellenmiş olabilir. TÜİK verileri manuel referans olarak kullanılır; canlı TÜİK API beslemesi henüz devrede değildir.",
+      "isteBul, listelenen kaynaklardan alınan verileri olduğu gibi veya kural tabanlı dönüşümlerle kullanır; resmi kurumların güncel yayınları her zaman platform çıktısından önce güncellenmiş olabilir. TÜİK için skor-nötr manuel referans katmanı kullanılır; /api/tuik-snapshot statik sanitize metadata sunar. Resmi/upstream TÜİK API beslemesi yoktur.",
       "Gösterilen simülasyonlar, skorlar ve TCO bantları bilgilendirme amaçlıdır; banka onayı, sigorta poliçesi veya bağlayıcı fiyat teklifi yerine geçmez.",
       "Üçüncü taraf sitelere yönlendirme (ilan, sigorta karşılaştırma vb.) kullanıcı tercihine bağlıdır; isteBul bu sitelerin içeriğinden sorumlu değildir.",
       "Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz. Veri silme ve erişim talepleri destek kanallarından yürütülür."
     ],
     "bullets": [
       "Kritik kararlar için ekspertiz, hukuki inceleme ve resmi kurum teyidi kullanıcı sorumluluğundadır.",
-      "Canlı API entegrasyonu devreye alındığında bu sayfadaki «son güncelleme» tarihleri ve kategori listesi güncellenir.",
+      "Canlı upstream API bağlantısı devreye alınırsa bu sayfadaki «son güncelleme» tarihleri ve kategori listesi güncellenir.",
       "Metodoloji ve skor üretim süreci için /metodoloji/ sayfasına bakın."
     ]
   },
@@ -122,7 +122,7 @@
       "subsections": [
         {
           "heading": "Manuel ve otomatik güncelleme",
-          "body": "TCMB EVDS serileri API üzerinden saatlik önbellekle güncellenir. TÜİK yayınları periyodik manuel gözden geçirme ile kalibrasyon varsayımlarına yansıtılır; otomatik TÜİK API entegrasyonu planlanmaktadır."
+          "body": "TCMB EVDS serileri canlı API üzerinden saatlik önbellekle güncellenir. TÜİK yayınları periyodik manuel gözden geçirme ile kalibrasyon varsayımlarına yansıtılır; statik referans snapshot /api/tuik-snapshot üzerinden sunulur. Resmi/upstream TÜİK API bağlantısı yoktur."
         },
         {
           "heading": "TCMB EVDS kullanım koşulları (özet)",
