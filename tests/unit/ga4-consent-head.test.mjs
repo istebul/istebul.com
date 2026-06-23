@@ -3,19 +3,11 @@ import assert from 'node:assert/strict';
 import { ga4ConsentHeadSnippet } from '../../scripts/lib/ga4-consent-head.cjs';
 
 describe('ga4-consent-head', () => {
-  it('injects consent update from localStorage before gtag config', () => {
+  it('injects external CSP-safe boot before async gtag loader', () => {
     const snippet = ga4ConsentHeadSnippet('G-TEST12345');
-    assert.match(snippet, /istebul_cookie_consent/);
-    assert.match(snippet, /istebu_cookie_consent/);
-    assert.match(snippet, /console\.info\('\[Consent\]'/);
-    assert.match(snippet, /gtag\('consent','update'/);
-    assert.match(snippet, /analytics_storage:'granted'/);
-    assert.match(snippet, /ad_storage:'granted'/);
-    assert.match(snippet, /console\.info\('\[GA4 Consent State Updated\]'\)/);
-    assert.match(snippet, /gtag\('config','G-TEST12345'/);
-
-    const updateIndex = snippet.indexOf("gtag('consent','update'");
-    const configIndex = snippet.indexOf("gtag('config','G-TEST12345'");
-    assert.ok(updateIndex > -1 && configIndex > updateIndex, 'consent update must precede config');
+    assert.match(snippet, /googletagmanager\.com\/gtag\/js\?id=G-TEST12345/);
+    assert.match(snippet, /ga4-consent-head-boot\.js/);
+    assert.match(snippet, /data-measurement-id="G-TEST12345"/);
+    assert.doesNotMatch(snippet, /<script>\s*window\.dataLayer/);
   });
 });
