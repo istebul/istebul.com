@@ -6,19 +6,17 @@ import {
   handleAuthRouteEntry
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
-import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
 import { initHomeCategories } from './runtime/home-categories.js';
-import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
+import { scheduleCookieConsentReveal } from './runtime/cookie-consent-scheduler.js';
 import {
-    acceptAnalyticsConsent,
-    bootAnalyticsMeasurement,
-    declineAnalyticsConsent
+  acceptAnalyticsConsent,
+  bootAnalyticsMeasurement,
+  declineAnalyticsConsent
 } from './runtime/analytics-consent-boot.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
-import './runtime/growth-bootstrap.js';
 import { trackPricingView, getGrowthContext } from './features/growth/growth-engine.js';
 import { trackCheckoutComplete, trackCheckoutStart } from './features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from './features/growth/paid-acquisition.js';
@@ -28,8 +26,6 @@ import {
     enrollNewsletterWelcome
 } from './features/lifecycle/lifecycle-client.js';
 import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-client.js';
-import { mountHelpCenterWidget } from './ui/help-center-widget.js';
-import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import {
     loadDecisionOptions,
@@ -191,9 +187,6 @@ class App {
 
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
-            initHomeCategories();
-            initHomeEconomicIndicators();
-
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {
                     requestIdleCallback(work, { timeout });
@@ -202,12 +195,24 @@ class App {
                 setTimeout(work, 220);
             };
 
+            initHomeCategories();
             deferNonCritical(() => {
-                mountHelpCenterWidget({
-                    getUserContext: () => ({
-                        email: this.currentUser?.email,
-                        user_id: this.currentUser?.id
-                    })
+                void import('./features/home/home-economic-indicators.js').then(({ initHomeEconomicIndicators }) => {
+                    initHomeEconomicIndicators();
+                });
+            });
+            deferNonCritical(() => {
+                void import('./runtime/growth-bootstrap.js');
+            });
+
+            deferNonCritical(() => {
+                void import('./ui/help-center-widget.js').then(({ mountHelpCenterWidget }) => {
+                    mountHelpCenterWidget({
+                        getUserContext: () => ({
+                            email: this.currentUser?.email,
+                            user_id: this.currentUser?.id
+                        })
+                    });
                 });
             });
 
@@ -227,7 +232,11 @@ class App {
             // Initialize router
             this.router.init();
             initDecisionSurfaceBanners();
-            initDecisionJourneyStrip();
+            deferNonCritical(() => {
+                void import('./ui/decision-journey-strip.js').then(({ initDecisionJourneyStrip }) => {
+                    initDecisionJourneyStrip();
+                });
+            });
 
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
@@ -484,11 +493,13 @@ class App {
 
         const hideBanner = () => {
             banner.hidden = true;
+            banner.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('cookie-consent-pending');
         };
 
         const showBanner = () => {
             banner.hidden = false;
+            banner.setAttribute('aria-hidden', 'false');
             document.body.classList.add('cookie-consent-pending');
         };
 
@@ -502,7 +513,8 @@ class App {
             return;
         }
 
-        showBanner();
+        hideBanner();
+        scheduleCookieConsentReveal(showBanner);
 
         banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => {
             acceptAnalyticsConsent();
@@ -4183,7 +4195,9 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             revenueManager.initPricingControls(homeRoot);
         }
 
-        initPricingCardsMotion(document);
+        void import('./runtime/pricing-cards-motion.js').then(({ initPricingCardsMotion }) => {
+            initPricingCardsMotion(document);
+        });
 
         this.ui.loadIcons?.();
 

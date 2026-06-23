@@ -388,6 +388,9 @@ const emitRuntimeScript = (relativePath) => {
   'js/runtime/perf-fonts-async.js',
   'js/runtime/site-social-deferred-boot.js',
   'js/runtime/category-guides-deferred-boot.js',
+  'js/runtime/cookie-consent-scheduler.js',
+  'js/runtime/ga4-consent-head-boot.js',
+  'js/runtime/vertical-app-loader.js',
   'js/decision/decision-v3-mount.js'
 ].forEach(emitRuntimeScript);
 

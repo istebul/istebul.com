@@ -8,6 +8,7 @@ import {
   hasAnalyticsConsent
 } from './analytics-consent-boot.js';
 import { STORAGE_KEYS, readStorageRaw } from '../core/storage-keys.js';
+import { scheduleCookieConsentReveal } from './cookie-consent-scheduler.js';
 
 function readConsent() {
   return readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT);
@@ -28,7 +29,16 @@ function initStaticCookieConsent() {
     return;
   }
 
-  banner.hidden = false;
+  banner.hidden = true;
+  banner.setAttribute('aria-hidden', 'true');
+
+  const reveal = () => {
+    banner.hidden = false;
+    banner.setAttribute('aria-hidden', 'false');
+  };
+
+  scheduleCookieConsentReveal(reveal);
+
   banner.querySelector('[data-static-cookie-accept]')?.addEventListener('click', () => {
     acceptAnalyticsConsent();
     banner.hidden = true;

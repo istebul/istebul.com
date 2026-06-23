@@ -18,20 +18,7 @@ function ga4ConsentHeadSnippet(measurementId) {
   if (!measurementId || !/^G-[A-Z0-9]+$/i.test(measurementId)) return '';
   const id = escapeHtml(measurementId);
   return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
-<script>
-window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
-gtag('js',new Date());
-gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
-(function(){
-  var v=localStorage.getItem('istebul_cookie_consent')||localStorage.getItem('istebu_cookie_consent');
-  console.info('[Consent]',v);
-  if(v==='accepted'){
-    gtag('consent','update',{analytics_storage:'granted',ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});
-    console.info('[GA4 Consent State Updated]');
-  }
-})();
-gtag('config','${id}',{anonymize_ip:true});
-</script>`;
+<script src="/js/runtime/ga4-consent-head-boot.js" defer data-measurement-id="${id}"></script>`;
 }
 
 function isNoIndexHtml(html) {

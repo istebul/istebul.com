@@ -1051,6 +1051,15 @@ html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard.section {
     grid-template-columns: 1fr;
   }
 
+  .ud-nav-item {
+    min-height: 44px;
+  }
+
+  .ud-main {
+    overflow-x: clip;
+    min-width: 0;
+  }
+
   .ud-main-header p {
     font-size: 0.86rem;
   }

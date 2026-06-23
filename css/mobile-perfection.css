@@ -209,6 +209,12 @@ body.modal-open {
 }
 
 /* —— Cookie consent: fixed overlay on all viewports (footer-in-flow is not visible on desktop) —— */
+#cookie-consent[hidden] {
+  content-visibility: hidden;
+  contain: strict;
+  pointer-events: none;
+}
+
 #cookie-consent:not([hidden]) {
   position: fixed;
   left: 0;
