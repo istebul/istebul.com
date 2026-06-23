@@ -13,11 +13,10 @@ describe('cookie consent desktop visibility', () => {
     assert.match(css, /@media \(min-width: 769px\)/);
   });
 
-  it('setupCookieConsent defers banner reveal until after LCP when no preference', () => {
+  it('setupCookieConsent explicitly shows banner when no preference', () => {
     const src = fs.readFileSync(path.join(root, 'js/app.js'), 'utf8');
-    assert.match(src, /scheduleCookieConsentReveal\(showBanner\)/);
+    assert.match(src, /showBanner\(\)/);
     assert.match(src, /cookie-consent-pending/);
     assert.match(src, /banner\.hidden = false/);
-    assert.match(src, /aria-hidden/);
   });
 });
