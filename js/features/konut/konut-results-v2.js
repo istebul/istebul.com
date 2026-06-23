@@ -38,6 +38,11 @@ import {
   fetchAndBuildAfadRiskLayer,
   mountAfadRiskLayer
 } from '../results/results-afad-risk-layer.js';
+import {
+  buildTuikReferenceLayer,
+  fetchTuikReferenceSnapshot,
+  mountTuikReferenceLayer
+} from '../results/results-tuik-reference-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
 import {
   renderResultsHeroLayout,
@@ -78,6 +83,55 @@ export async function hydrateKonutAfadRiskLayer(root, state = {}, fetchImpl) {
   });
 
   mountAfadRiskLayer(root, layer);
+  return layer;
+}
+
+/**
+ * Konut sonuç hero aside — TÜİK referans katmanı (skor üretmez).
+ * @param {HTMLElement|null} root
+ * @param {object} [_state]
+ * @param {typeof fetch} [fetchImpl]
+ */
+export async function hydrateKonutTuikReferenceLayer(root, _state = {}, fetchImpl) {
+  if (!root || typeof document === 'undefined') return null;
+
+  root.querySelector('[data-tuik-reference-layer]')?.remove();
+
+  const snapshot = await fetchTuikReferenceSnapshot({
+    vertical: 'konut',
+    fetchImpl
+  });
+  if (!snapshot) return null;
+
+  const layer = buildTuikReferenceLayer(snapshot, { vertical: 'konut' });
+  if (!layer?.hasData) return null;
+
+  const wrap = document.createElement('div');
+  if (!mountTuikReferenceLayer(wrap, layer)) return null;
+
+  const card = wrap.firstElementChild;
+  if (!card) return null;
+
+  const afadLayer = root.querySelector('[data-afad-risk-layer]');
+  const evdsLayer = root.querySelector('[data-evds-risk-layer]');
+  const economicMount = root.querySelector('[data-results-economic-mount]');
+
+  if (afadLayer?.parentNode) {
+    afadLayer.insertAdjacentElement('afterend', card);
+    return layer;
+  }
+
+  if (evdsLayer?.parentNode) {
+    evdsLayer.insertAdjacentElement('afterend', card);
+    return layer;
+  }
+
+  if (economicMount?.parentNode) {
+    economicMount.insertAdjacentElement('afterend', card);
+    return layer;
+  }
+
+  root.prepend(card);
   return layer;
 }
 
@@ -781,6 +835,7 @@ export async function mountKonutResultsV2({
   await hydrateResultsEconomicIndicators(root, 'konut');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
   const afadLayer = await hydrateKonutAfadRiskLayer(root, state);
+  await hydrateKonutTuikReferenceLayer(root, state);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
