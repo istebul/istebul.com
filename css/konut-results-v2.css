@@ -437,6 +437,80 @@ body.housing-page #housing-results .konut-v2-rec-level {
   }
 }
 
+/* TÜİK referans katmanı — bilgilendirme amaçlı (ana skoru değiştirmez) */
+.konut-v2-root .ib-tuik-reference-layer {
+  margin: 0 0 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.92) 0%, rgba(255, 255, 255, 1) 100%);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__head {
+  margin-bottom: 0.5rem;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__items {
+  margin: 0 0 0.55rem;
+  padding-left: 1rem;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__item + .ib-tuik-reference-layer__item {
+  margin-top: 0.45rem;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__item-title {
+  display: block;
+  font-size: 0.84rem;
+  color: #0f172a;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__item-usage {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__attribution,
+.konut-v2-root .ib-tuik-reference-layer__attribution-note,
+.konut-v2-root .ib-tuik-reference-layer__reviewed {
+  margin: 0 0 0.25rem;
+  font-size: 0.76rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__attribution {
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+.konut-v2-root .ib-tuik-reference-layer__disclaimer {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+@media (max-width: 520px) {
+  .konut-v2-root .ib-tuik-reference-layer {
+    padding: 0.8rem 0.85rem;
+  }
+}
+
 .konut-v2-grid {
   display: grid;
   gap: 0.5rem;
