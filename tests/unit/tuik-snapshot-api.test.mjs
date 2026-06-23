@@ -207,3 +207,10 @@ test('buildTuikSnapshotPayload normalize edilmiş snapshot ile uyumlu', () => {
   assert.equal(payload.source, 'tuik');
   assert.equal(payload.categories.length, 9);
 });
+
+test('tuik-reference-snapshot-data default export normalize edilebilir', async () => {
+  const { default: tuikReferenceRaw } = await import('../../js/data/tuik-reference-snapshot-data.js');
+  const snapshot = normalizeTuikReferenceSnapshot(tuikReferenceRaw);
+  assert.equal(snapshot.sourceId, 'tuik');
+  assert.equal(snapshot.categories.length, 9);
+});

@@ -1,7 +1,7 @@
 /**
  * Public TÜİK reference snapshot (sanitized static metadata). No upstream fetch or secrets.
  */
-import tuikReferenceRaw from '../../data/snapshots/tuik-reference.json' with { type: 'json' };
+import tuikReferenceRaw from '../../js/data/tuik-reference-snapshot-data.js';
 import {
   getTuikReferenceCategories,
   getTuikReferenceCategoriesForVertical,
