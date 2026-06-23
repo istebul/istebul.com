@@ -760,6 +760,91 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
   });
 
+  test('/konut/ TÜİK reference layer stays isolated in hero aside', async ({ page }) => {
+    test.setTimeout(90000);
+
+    const konutTuikReferenceMock = {
+      ok: true,
+      data: {
+        status: 'reference',
+        source: 'tuik',
+        lastReviewed: '2026-06-08',
+        categories: [
+          {
+            id: 'konut_satis_istatistikleri',
+            title: 'Konut Satış İstatistikleri',
+            relatedVerticals: ['konut'],
+            usage: 'Konut piyasası hacmi referansı.',
+            scoreImpact: false
+          },
+          {
+            id: 'yillik_enflasyon_oranlari',
+            title: 'Yıllık enflasyon oranları',
+            relatedVerticals: ['konut'],
+            usage: 'Makro enflasyon bağlamı.',
+            scoreImpact: false
+          }
+        ],
+        attribution: {
+          provider: 'Türkiye İstatistik Kurumu (TÜİK)',
+          url: 'https://www.tuik.gov.tr/',
+          disclaimer: 'Ham veri yeniden satılmaz veya ticari olarak paketlenmez.'
+        }
+      },
+      meta: { scoreImpact: false }
+    };
+
+    await page.route('**/api/tuik-snapshot**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(konutTuikReferenceMock)
+      });
+    });
+
+    await page.goto('/konut/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const v2Root = page.locator('#housing-results .konut-v2-root');
+    await expect(v2Root).toBeVisible();
+
+    const scoreBadge = v2Root.locator('.konut-v2-hero-badge--score');
+    const scoreRing = v2Root.locator('.ib-results-score-ring');
+    await expect(scoreBadge).toContainText(/\d+/);
+    await expect(scoreRing).toBeVisible();
+    const scoreBefore = (await scoreBadge.innerText()).match(/\d+/)?.[0];
+    expect(scoreBefore).toBeTruthy();
+
+    const tuikLayer = v2Root.locator('[data-tuik-reference-layer]');
+    await expect(tuikLayer).toBeVisible();
+
+    await expect(scoreRing.locator('[data-tuik-reference-layer]')).toHaveCount(0);
+
+    const heroAside = v2Root.locator('.ib-results-hero-aside');
+    await expect(heroAside).toBeVisible();
+    await expect(heroAside.locator('[data-tuik-reference-layer]')).toBeVisible();
+
+    await expect(tuikLayer.locator('.ib-tuik-reference-layer__title')).toContainText('TÜİK referans verisi');
+    const disclaimer = tuikLayer.locator('.ib-tuik-reference-layer__disclaimer');
+    await expect(disclaimer).toContainText(/Karar skoru üretmez/);
+    await expect(disclaimer).toContainText(/Ham tablo yayınlamaz/);
+
+    const tuikText = (await tuikLayer.innerText()).toLowerCase();
+    for (const phrase of ['tavsiye eder', 'skoru artırır', 'canlı bağlı', 'resmi api', 'upstream']) {
+      expect(tuikText).not.toContain(phrase);
+    }
+
+    const execRoot = v2Root.locator('[data-konut-v2-insight-root]');
+    await expect(execRoot).toBeVisible();
+    const execText = (await execRoot.innerText()).toLowerCase();
+    expect(execText).not.toContain('tüik referans verisi');
+
+    const scoreAfter = (await scoreBadge.innerText()).match(/\d+/)?.[0];
+    expect(scoreAfter).toBe(scoreBefore);
+    await expect(scoreRing.locator('strong')).toContainText(/\d+\/100/);
+  });
+
   test('/konut/?decision_cards=1 shows decision category cards with scenario score', async ({ page }) => {
     test.setTimeout(90000);
     await page.goto('/konut/?decision_cards=1');
