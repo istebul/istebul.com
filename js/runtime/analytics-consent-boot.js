@@ -4,7 +4,6 @@
 import { analytics } from '../core/analytics.js';
 import { initSiteAnalyticsPage } from '../platform/site-analytics.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
-import { scheduleCookieConsentReveal } from './cookie-consent-scheduler.js';
 
 export function hasAnalyticsConsent() {
   return readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted';
@@ -94,12 +93,6 @@ export function ensureVerticalCookieBanner() {
   });
 
   document.body.appendChild(banner);
-  banner.hidden = true;
-  banner.setAttribute('aria-hidden', 'true');
-  scheduleCookieConsentReveal(() => {
-    banner.hidden = false;
-    banner.setAttribute('aria-hidden', 'false');
-  });
 }
 
 export function initAnalyticsConsentRuntime() {
