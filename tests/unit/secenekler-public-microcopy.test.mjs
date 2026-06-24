@@ -104,7 +104,8 @@ test('listings card template does not render null/undefined score suffix', () =>
     assert.match(container.innerHTML, /Değerlendirilebilir karar seçenekleri/);
 
     ui.renderListings([{ id: '2', title: 'Skorlu seçenek', price: 100, category: 'arac', score: 77 }]);
-    assert.match(container.innerHTML, /AI uyum 77\/100/);
+    assert.match(container.innerHTML, /Karar skoru 77\/100/);
+    assert.doesNotMatch(container.innerHTML, /AI uyum/);
     assert.match(container.innerHTML, /Değerlendirilebilir karar seçenekleri/);
 
     container.innerHTML = '';

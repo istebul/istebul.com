@@ -15,7 +15,7 @@ const IMAGE_UNVERIFIED_LABEL = 'Görsel doğrulanamadı';
 const GENERIC_LISTING_PLACEHOLDER = '/assets/images/placeholder.svg';
 
 export const AI_SCORE_DISCLAIMER =
-  'Bu değer veri güveni değil, metodolojik uyum skorudur.';
+  'Bu değer veri güveni değil; metodolojik karar uyum skorudur. Tam analiz ilgili kategori akışında hesaplanır.';
 
 const PUBLIC_SOURCE_LABELS = Object.freeze({
   manual_seed: 'Editoryal katalog',
@@ -293,5 +293,5 @@ export function buildListingTrustStripHtml(listing = {}, options = {}) {
     )
     .join('');
 
-  return `<div class="listing-trust-strip" role="group" aria-label="Kaynak ve görünürlük bilgisi">${items}</div>`;
+  return `<div class="listing-trust-strip" role="group" aria-label="Karar seçeneği kaynak ve görsel bilgisi">${items}</div>`;
 }
