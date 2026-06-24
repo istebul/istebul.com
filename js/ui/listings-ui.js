@@ -44,14 +44,14 @@ export class ListingsUI {
                     <i data-lucide="badge-plus"></i>
                     <h3>Henüz kayıtlı seçeneğiniz yok</h3>
                     <p>İlk seçeneğinizi eklediğinizde burada görünür ve karşılaştırma akışına dahil olur.</p>
-                    <a href="/ilan-analizi/" class="btn btn-primary"><i data-lucide="scan-search"></i> Seçenek analizi</a>
+                    <a href="/ilan-analizi/" class="btn btn-primary"><i data-lucide="scan-search"></i> Karar seçeneği analizi</a>
                     <a href="/ilan-ekle/" class="btn btn-outline"><i data-lucide="plus"></i> Seçenek gönder</a>
                 </div>
             ` : `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
                     <h3>Canlı seçenek bulunamadı veya filtre dar</h3>
-                    <p>Bu alan yapay zeka destekli seçenek keşfi içindir — tam karar analizi ilgili kategori akışında yapılır. Ön değerlendirme için Karar Asistanı'na, tam analiz için kategori sihirbazına devam edin.</p>
+                    <p>Bu alan karar skoruna göre değerlendirilmiş seçenek keşfi içindir — tam karar analizi ilgili kategori akışında yapılır. Ön değerlendirme için Karar Asistanı'na, tam analiz için kategori sihirbazına devam edin.</p>
                     <div class="empty-state-actions">
                       <a href="/karar-asistani/" class="btn btn-primary" data-native-route><i data-lucide="sparkles"></i> Ön değerlendirme başlat</a>
                       <a href="${this.escapeHtml(secondaryCta.href)}" class="btn btn-outline" data-native-route><i data-lucide="${this.escapeHtml(secondaryCta.icon)}"></i> ${this.escapeHtml(secondaryCta.label)}</a>
@@ -61,8 +61,8 @@ export class ListingsUI {
             `);
         } else {
             const aiStrip = renderAiPlatformBanner({
-                title: 'Yapay Zeka Destekli Seçenek Keşfi',
-                subtitle: 'Her seçenek metodolojik uyum skoru ile sıralanır — tam analiz için ilgili kategori akışını kullanın.',
+                title: 'Değerlendirilebilir karar seçenekleri',
+                subtitle: 'Her seçenek karar skoru ile sıralanır; AI yalnızca gerekçe üretir — tam analiz için ilgili kategori akışını kullanın.',
                 variant: 'compact'
             });
             container.innerHTML = `<div class="listings-ai-strip">${aiStrip}</div>` + listings.map(listing => {
