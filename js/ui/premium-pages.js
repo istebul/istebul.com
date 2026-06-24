@@ -172,6 +172,32 @@ export class PremiumPages {
             <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.'))}</p>
           </div>
           <div class="assistant-section ib-premium-assistant-shell">
+            <div class="assistant-intent-panel" id="assistant-intent-host">
+              <form id="assistant-intent-form" class="assistant-form assistant-intent-form" novalidate>
+                <div class="assistant-intent-copy">
+                  <span class="assistant-kicker">Hayalini anlat</span>
+                  <h3>Hayalini anlat</h3>
+                  <p>Bütçeni, kullanım amacını ve olmazsa olmazlarını yaz. İsteBul bunu karar asistanı sorularına dönüştürsün.</p>
+                </div>
+                <label class="assistant-field" for="assistant-intent-text">
+                  <span class="assistant-field-label">İhtiyacınız</span>
+                  <textarea
+                    id="assistant-intent-text"
+                    name="intent_text"
+                    rows="4"
+                    placeholder="Örnek: 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun. Bakımı pahalı olmasın."
+                    autocomplete="off"
+                  ></textarea>
+                </label>
+                <div class="assistant-intent-actions">
+                  <button type="submit" class="btn btn-primary" data-analytics-cta="assistant_intent_resolve">
+                    <i data-lucide="sparkles"></i> Niyetimi çöz
+                  </button>
+                </div>
+                <p id="assistant-intent-status" class="assistant-intent-status text-muted-sm" aria-live="polite"></p>
+              </form>
+              <div id="assistant-intent-summary" class="assistant-intent-summary" aria-live="polite"></div>
+            </div>
             <div class="assistant-shell">
               <aside class="assistant-category-rail" id="assistant-category-rail" aria-label="Karar kategorileri"></aside>
               <div class="assistant-workspace">

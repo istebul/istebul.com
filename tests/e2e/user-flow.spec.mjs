@@ -2251,10 +2251,32 @@ test.describe('Faz 3D-1A category journey guards', () => {
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-karar-analizi');
     await expect(page.locator('#premium-karar-analizi-root')).toBeAttached({ timeout: 15000 });
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#assistant-intent-text')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('#decision-assistant-form')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('#assistant-category-rail .assistant-category').first()).toBeAttached({
       timeout: 15000
     });
+  });
+
+  test('karar-asistani hayalini anlat paneli wizardı ön doldurur, redirect yapmaz', async ({ page }) => {
+    await page.route('**/ai-proxy', (route) => route.abort());
+
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+
+    await page.fill(
+      '#assistant-intent-text',
+      '3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun. Bakımı pahalı olmasın.'
+    );
+    await page.locator('#assistant-intent-form button[type="submit"]').click();
+
+    await expect(page.locator('[data-assistant-intent-summary]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-assistant-intent-summary]')).toContainText(/Bütçe/i);
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/);
+    await expect(page.locator('#decision-assistant-form')).toBeVisible();
   });
 
   for (const { path, selector } of VERTICAL_ANALYSIS_SURFACE_GUARDS) {
