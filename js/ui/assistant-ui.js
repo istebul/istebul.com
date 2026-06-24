@@ -39,6 +39,7 @@ import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
 import { hasPublicSourceUrl, resolvePublicExternalUrl } from './listing-trust-ui.js';
 import { buildVerticalContinueHref } from '../features/assistant/assistant-category-bridge.js';
+import { escapeHtml as escapeHtmlValue } from '../core/security.js';
 
 export const VERTICAL_CONTINUE_CATEGORY_LABELS = Object.freeze({
     arac: 'Araba Karar Analizi',
@@ -51,6 +52,83 @@ export const VERTICAL_CONTINUE_CATEGORY_LABELS = Object.freeze({
 
 /** Categories with AI-assisted option marketplace on /secenekler/ */
 export const LISTING_BROWSE_CATEGORY_IDS = Object.freeze(new Set(['arac', 'ev', 'tatil']));
+
+const INTENT_ANSWER_LABELS = Object.freeze({
+    budget: 'Bütçe',
+    usage: 'Kullanım',
+    fuel: 'Yakıt',
+    body: 'Gövde tipi',
+    priority: 'Öncelik'
+});
+
+const INTENT_USAGE_LABELS = Object.freeze({
+    family: 'Aile',
+    city: 'Şehir içi',
+    long: 'Uzun yol',
+    longRoad: 'Uzun yol',
+    business: 'İş / prestij',
+    prestige: 'İş / prestij'
+});
+
+const INTENT_PRIORITY_LABELS = Object.freeze({
+    lowCost: 'Düşük maliyet',
+    safety: 'Güvenlik',
+    comfort: 'Konfor',
+    resale: 'İkinci el değeri'
+});
+
+function formatIntentAnswerValue(key, value) {
+    if (value == null || value === '') return '';
+    if (key === 'budget') {
+        const amount = Number(value);
+        if (!Number.isFinite(amount)) return '';
+        return `${new Intl.NumberFormat('tr-TR').format(amount)} TL`;
+    }
+    if (key === 'usage') return INTENT_USAGE_LABELS[value] || String(value);
+    if (key === 'priority') return INTENT_PRIORITY_LABELS[value] || String(value);
+    return String(value);
+}
+
+/** @param {{ answers?: Record<string, unknown>, summary?: { mustHaves?: string[], dealBreakers?: string[], missingQuestions?: string[] } } | null} mapped */
+export function renderAssistantIntentSummary(mapped) {
+    if (!mapped?.answers) return '';
+
+    const rows = Object.entries(mapped.answers)
+        .map(([key, value]) => {
+            const label = INTENT_ANSWER_LABELS[key];
+            const formatted = formatIntentAnswerValue(key, value);
+            if (!label || !formatted) return '';
+            return `<li><strong>${escapeHtmlValue(label)}:</strong> ${escapeHtmlValue(formatted)}</li>`;
+        })
+        .filter(Boolean);
+
+    const mustHaves = Array.isArray(mapped.summary?.mustHaves) ? mapped.summary.mustHaves : [];
+    const dealBreakers = Array.isArray(mapped.summary?.dealBreakers) ? mapped.summary.dealBreakers : [];
+    const missingQuestions = Array.isArray(mapped.summary?.missingQuestions) ? mapped.summary.missingQuestions : [];
+
+    if (!rows.length && !mustHaves.length && !dealBreakers.length) return '';
+
+    const extras = [];
+    if (mustHaves.length) {
+        extras.push(`<p><strong>Olmazsa olmazlar:</strong> ${escapeHtmlValue(mustHaves.join(', '))}</p>`);
+    }
+    if (dealBreakers.length) {
+        extras.push(`<p><strong>Kaçınılacaklar:</strong> ${escapeHtmlValue(dealBreakers.join(', '))}</p>`);
+    }
+    if (missingQuestions.length) {
+        extras.push(`<p class="text-muted-sm">Eksik alanlar: ${escapeHtmlValue(missingQuestions.join(', '))}</p>`);
+    }
+
+    return (
+        '<section class="assistant-intent-summary-card" data-assistant-intent-summary>' +
+            '<span class="assistant-kicker">Çıkarılan niyet</span>' +
+            '<h4>Ön doldurulan kriterler</h4>' +
+            (rows.length ? `<ul class="assistant-intent-summary-list">${rows.join('')}</ul>` : '') +
+            extras.join('') +
+            '<p class="text-muted-sm">Soruları kontrol edip mevcut akışla devam edebilirsiniz.</p>' +
+        '</section>'
+    );
+}
 
 /** @returns {{ href: string, sectionTitle: string, ctaLabel: string, categoryLabel: string } | null} */
 export function resolveVerticalContinueHandoff(categoryId, rawAnswers = {}) {
@@ -75,6 +153,12 @@ function shouldLazyLoadDecisionMemoryCommentary(model) {
 }
 
 export class AssistantUI {
+    renderAssistantIntentSummaryPanel(mapped) {
+        const host = document.getElementById('assistant-intent-summary');
+        if (!host) return;
+        host.innerHTML = renderAssistantIntentSummary(mapped);
+    }
+
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
         const categoryRail = document.getElementById('assistant-category-rail');
         const progress = document.getElementById('assistant-progress');

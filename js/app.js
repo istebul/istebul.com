@@ -78,6 +78,8 @@ import {
   buildAssistantInsightInput,
   buildVerticalContinueHref
 } from './features/assistant/assistant-category-bridge.js';
+import { extractAssistantIntentFromText } from './features/assistant/assistant-intent-extractor.js';
+import { mapIntentToAssistantAnswers } from './features/assistant/intent-to-assistant-mapper.js';
 import { buildDecisionInsight } from './features/ai/ai-insight-engine.js';
 import {
     mapBillingPortalError,
@@ -1271,6 +1273,8 @@ class App {
             decisionAssistantForm.addEventListener('change', (e) => this.handleDecisionAssistantChange(e));
         }
 
+        this.bindAssistantIntentForm();
+
         const newsletterForm = document.getElementById('newsletter-form');
         if (newsletterForm) {
             newsletterForm.addEventListener('submit', (e) => this.handleNewsletterSubscribe(e));
@@ -2362,8 +2366,101 @@ class App {
             stepIndex: this.assistantStep,
             steps
         });
+        this.bindAssistantIntentForm();
         this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
         this.ui.renderDecisionMemoryContext?.(this.decisionHistory);
+    }
+
+    bindAssistantIntentForm() {
+        const form = document.getElementById('assistant-intent-form');
+        if (!form || form.dataset.intentBound === '1') return;
+        form.dataset.intentBound = '1';
+        form.addEventListener('submit', (event) => {
+            void this.handleAssistantIntentSubmit(event);
+        });
+    }
+
+    mapIntentUsageToAssistantAnswers(answers = {}) {
+        const usageMap = {
+            long: 'longRoad',
+            business: 'prestige',
+            family: 'family',
+            city: 'city'
+        };
+        const next = { ...answers };
+        if (next.usage && usageMap[next.usage]) {
+            next.usage = usageMap[next.usage];
+        }
+        return next;
+    }
+
+    setAssistantIntentStatus(message = '', tone = 'info') {
+        const status = document.getElementById('assistant-intent-status');
+        if (!status) return;
+        status.textContent = message;
+        status.dataset.tone = tone;
+    }
+
+    setAssistantIntentLoading(isLoading) {
+        const form = document.getElementById('assistant-intent-form');
+        const submitBtn = form?.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = Boolean(isLoading);
+            submitBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+        }
+    }
+
+    async handleAssistantIntentSubmit(event) {
+        event.preventDefault();
+
+        const textarea = document.getElementById('assistant-intent-text');
+        const text = String(textarea?.value ?? '').trim();
+        if (!text) {
+            this.setAssistantIntentStatus('Lütfen ihtiyacınızı birkaç cümleyle yazın.', 'error');
+            this.ui.showError?.('Lütfen ihtiyacınızı birkaç cümleyle yazın.');
+            textarea?.focus();
+            return;
+        }
+
+        this.setAssistantIntentLoading(true);
+        this.setAssistantIntentStatus('Niyetiniz çözümleniyor…', 'loading');
+
+        try {
+            const intent = await extractAssistantIntentFromText(text);
+            const mapped = mapIntentToAssistantAnswers(intent);
+
+            if (!mapped) {
+                this.setAssistantIntentStatus(
+                    'Şu an yalnızca araç ihtiyacını çözebiliyorum. Lütfen araç ihtiyacını bütçe ve kullanım amacıyla yaz.',
+                    'error'
+                );
+                this.ui.showError?.(
+                    'Şu an yalnızca araç ihtiyacını çözebiliyorum. Lütfen araç ihtiyacını bütçe ve kullanım amacıyla yaz.'
+                );
+                return;
+            }
+
+            this.assistantCategory = mapped.categoryId;
+            this.assistantAnswers = {
+                ...this.assistantAnswers,
+                ...this.mapIntentUsageToAssistantAnswers(mapped.answers)
+            };
+            this.assistantStep = 0;
+            this.lastDecisionResult = null;
+
+            const resultsContainer = document.getElementById('assistant-results');
+            if (resultsContainer) resultsContainer.innerHTML = '';
+
+            this.renderDecisionAssistant();
+            this.ui.renderAssistantIntentSummaryPanel?.(mapped);
+            this.setAssistantIntentStatus('Sorular ön dolduruldu. Devam etmeden önce kontrol edin.', 'success');
+            this.ui.showSuccess?.('Karar asistanı soruları niyetinize göre ön dolduruldu.');
+        } catch (error) {
+            this.setAssistantIntentStatus('Niyet çözümlenemedi. Lütfen tekrar deneyin veya soruları elle doldurun.', 'error');
+            this.ui.showError?.('Niyet çözümlenemedi. Lütfen tekrar deneyin.');
+        } finally {
+            this.setAssistantIntentLoading(false);
+        }
     }
 
     getAssistantWizardSteps(categoryConfig) {
