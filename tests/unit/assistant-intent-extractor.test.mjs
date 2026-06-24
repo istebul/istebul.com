@@ -141,7 +141,31 @@ test('family vehicle narrative with maintenance signals produces intent', () => 
   assert.ok(intent);
   assert.equal(intent.categoryId, 'arac');
   assert.equal(intent.usage, 'family');
+  assert.equal(intent.householdSize, '3-4');
   assert.equal(intent.priority, 'lowCost');
+});
+
+test('Konya SUV narrative carries city and auto intent', () => {
+  const intent = buildDeterministicAutoIntentFromText('Konya\'da 3 milyon TL SUV arıyorum');
+  assert.ok(intent);
+  assert.equal(intent.categoryId, 'arac');
+  assert.equal(intent.city, 'Konya');
+  assert.equal(intent.body, 'suv');
+  assert.equal(intent.budgetMax, 3000000);
+});
+
+test('large family narrative maps household size to 5+', () => {
+  const intent = buildDeterministicAutoIntentFromText('5 kişilik aile için geniş araç arıyorum');
+  assert.ok(intent);
+  assert.equal(intent.householdSize, '5+');
+  assert.equal(intent.usage, 'family');
+});
+
+test('city usage profile does not set geographic city', () => {
+  const intent = buildDeterministicAutoIntentFromText('şehir içi kullanım için araç arıyorum');
+  assert.ok(intent);
+  assert.equal(intent.usage, 'city');
+  assert.equal(intent.city, null);
 });
 
 test('AI failure still rejects non-auto housing narrative', async () => {

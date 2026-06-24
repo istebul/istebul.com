@@ -58,7 +58,9 @@ const INTENT_ANSWER_LABELS = Object.freeze({
     usage: 'Kullanım',
     fuel: 'Yakıt',
     body: 'Gövde tipi',
-    priority: 'Öncelik'
+    priority: 'Öncelik',
+    province: 'Şehir',
+    household_size: 'Hane büyüklüğü'
 });
 
 const INTENT_USAGE_LABELS = Object.freeze({
@@ -83,7 +85,8 @@ const INTENT_MISSING_QUESTION_LABELS = Object.freeze({
     budget: 'bütçe',
     usage: 'kullanım amacı',
     fuel: 'yakıt tercihi',
-    body: 'gövde tipi'
+    body: 'gövde tipi',
+    household_size: 'hane büyüklüğü'
 });
 
 function formatMissingQuestionLabel(key) {
@@ -100,6 +103,10 @@ function formatIntentAnswerValue(key, value) {
     }
     if (key === 'usage') return INTENT_USAGE_LABELS[value] || String(value);
     if (key === 'priority') return INTENT_PRIORITY_LABELS[value] || String(value);
+    if (key === 'household_size') {
+        const labels = { '1': '1 kişi', '2': '2 kişi', '3-4': '3-4 kişi', '5+': '5+ kişi' };
+        return labels[value] || String(value);
+    }
     return String(value);
 }
 

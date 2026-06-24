@@ -2,6 +2,7 @@
  * Dikey sihirbaz query bootstrap — budget dışı runtime import yolu.
  */
 import { normalizeAutoBody, normalizeAutoUsage, normalizeTatilGoal } from './assistant-category-bridge.js';
+import { normalizeIntentCity } from './assistant-intent-schema.js';
 
 const ASSISTANT_TATIL_TRAVELERS_MAP = Object.freeze({
   solo: { people_type: 'tek', travelers_count: '1' },
@@ -22,6 +23,8 @@ const AUTO_WIZARD_BUDGET_PRESETS = Object.freeze(['500000', '900000', '1500000',
 const AUTO_WIZARD_USAGE = new Set(['family', 'city', 'long', 'business']);
 const AUTO_WIZARD_BODY = new Set(['suv', 'sedan', 'hatchback']);
 const AUTO_WIZARD_FUEL = new Set(['any', 'hybrid', 'electric', 'gasoline', 'diesel']);
+const AUTO_WIZARD_HOUSEHOLD_SIZE = new Set(['1', '2', '3-4', '5+']);
+const AUTO_WIZARD_LOCATION_PRESETS = Object.freeze(['İzmir', 'İstanbul', 'Ankara', 'Antalya']);
 const FINANS_TERM_BY_PURPOSE = Object.freeze({
   arac: '12,24,36,48,60',
   konut: '36,48,60',
@@ -99,6 +102,26 @@ function applyPrefillField(state, field, value, allowedValues = null) {
   if (state[field]) return false;
   if (allowedValues && !allowedValues.has(value)) return false;
   state[field] = value;
+  return true;
+}
+
+function applyAutoCityFromQuery(state, rawCity = '') {
+  if (!state || state.location) return false;
+
+  const city = normalizeIntentCity(rawCity);
+  if (!city) return false;
+
+  const matchedPreset = AUTO_WIZARD_LOCATION_PRESETS.find(
+    (preset) => preset.toLocaleLowerCase('tr-TR') === city.toLocaleLowerCase('tr-TR')
+  );
+
+  if (matchedPreset) {
+    state.location = matchedPreset;
+    return true;
+  }
+
+  state.location = 'custom';
+  state.location_custom = city;
   return true;
 }
 
@@ -204,6 +227,13 @@ export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchPar
     const body = normalizeAutoBody(bodyRaw);
     if (AUTO_WIZARD_BODY.has(body)) applyPrefillField(state, 'body', body);
   }
+
+  applyPrefillField(
+    state,
+    'household_size',
+    pickEnum(params.get('household_size'), AUTO_WIZARD_HOUSEHOLD_SIZE)
+  );
+  applyAutoCityFromQuery(state, params.get('city'));
 
   return state;
 }

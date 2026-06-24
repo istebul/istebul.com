@@ -33,10 +33,23 @@ export const AUTO_ASSISTANT_PRIORITY_VALUES = Object.freeze([
   'resale'
 ]);
 
+export const AUTO_INTENT_HOUSEHOLD_SIZE_VALUES = Object.freeze([
+  '1',
+  '2',
+  '3-4',
+  '5+'
+]);
+
+const AUTO_CITY_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
+
+const USAGE_PROFILE_CITY_PHRASE_PATTERN =
+  /şehir\s+içi|sehir\s+ici|city\s+driving|kısa\s+mesafe|kisa\s+mesafe/i;
+
 const FUEL_SET = new Set(AUTO_INTENT_FUEL_VALUES);
 const BODY_SET = new Set(AUTO_INTENT_BODY_VALUES);
 const USAGE_SET = new Set(AUTO_INTENT_USAGE_VALUES);
 const PRIORITY_SET = new Set(AUTO_ASSISTANT_PRIORITY_VALUES);
+const HOUSEHOLD_SIZE_SET = new Set(AUTO_INTENT_HOUSEHOLD_SIZE_VALUES);
 
 const USAGE_ALIASES = Object.freeze({
   longroad: 'long',
@@ -145,6 +158,32 @@ export function normalizeIntentUsage(value) {
 }
 
 /**
+ * Coğrafi şehir/il — kullanım profili "şehir içi" ifadelerini city olarak algılamaz.
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+export function normalizeIntentCity(value) {
+  const name = String(value ?? '').trim();
+  if (!name || name.length < 2 || name.length > 40) return null;
+  if (USAGE_PROFILE_CITY_PHRASE_PATTERN.test(name)) return null;
+  if (!AUTO_CITY_QUERY_PATTERN.test(name)) return null;
+  return name;
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+export function normalizeIntentHouseholdSize(value) {
+  const key = String(value ?? '').trim();
+  if (!key) return null;
+  if (key === '3-4' || key === '5+') return key;
+  const lowered = key.toLowerCase();
+  if (lowered === '3-4' || lowered === '5+') return lowered === '5+' ? '5+' : '3-4';
+  return HOUSEHOLD_SIZE_SET.has(key) ? key : null;
+}
+
+/**
  * @param {unknown} value
  * @returns {string[]}
  */
@@ -200,6 +239,8 @@ export function normalizeAssistantIntent(raw) {
   const usageSource = raw.usage ?? raw.usagePurpose;
   const budgetMax = parseBudgetMax(raw.budgetMax ?? raw.budget);
 
+  const citySource = raw.city ?? raw.province ?? raw.location;
+
   return {
     categoryId,
     budgetMax,
@@ -207,6 +248,8 @@ export function normalizeAssistantIntent(raw) {
     fuel: normalizeIntentFuel(raw.fuel),
     body: normalizeIntentBody(raw.body),
     priority: deriveAssistantPriorityFromIntent(raw.priorities, raw.priority),
+    city: normalizeIntentCity(citySource),
+    householdSize: normalizeIntentHouseholdSize(raw.householdSize ?? raw.household_size),
     mustHaves: normalizeIntentStringList(raw.mustHaves),
     dealBreakers: normalizeIntentStringList(raw.dealBreakers),
     missingQuestions: normalizeIntentStringList(raw.missingQuestions)
@@ -221,6 +264,8 @@ export function normalizeAssistantIntent(raw) {
  * @property {string|null} fuel
  * @property {string|null} body
  * @property {string|null} priority
+ * @property {string|null} city
+ * @property {string|null} householdSize
  * @property {string[]} mustHaves
  * @property {string[]} dealBreakers
  * @property {string[]} missingQuestions
