@@ -93,7 +93,7 @@ export class ListingsUI {
                              width="400"
                              height="250">
                         <div class="listing-badges">
-                            ${aiScoreDisplay !== null ? `<span class="listing-ai-score" title="${this.escapeHtml(AI_SCORE_DISCLAIMER)}" aria-label="AI uyum ${this.escapeHtml(aiScoreDisplay)}/100. ${this.escapeHtml(AI_SCORE_DISCLAIMER)}"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
+                            ${aiScoreDisplay !== null ? `<span class="listing-ai-score" title="${this.escapeHtml(AI_SCORE_DISCLAIMER)}" aria-label="Karar skoru ${this.escapeHtml(aiScoreDisplay)}/100. ${this.escapeHtml(AI_SCORE_DISCLAIMER)}"><i data-lucide="sparkles"></i> Karar skoru ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span>${this.escapeHtml(categoryLabel || 'Seçenek')}</span>
                         </div>
                         ${mediaCount > 1 ? `<span class="listing-media-count"><i data-lucide="images"></i> ${mediaCount}</span>` : ''}

@@ -142,7 +142,7 @@ test('hasPublicSourceUrl accepts source_url or external_url and rejects empty va
   assert.equal(hasPublicSourceUrl({ source_url: 'not-a-url' }), false);
 });
 
-test('listing card renders trust strip and AI uyum disclaimer without external fallback CTA', () => {
+test('listing card renders trust strip and karar skoru disclaimer without external fallback CTA', () => {
   const htmlWithoutSource = renderListingCard({
     id: '1',
     title: 'Kaynaksız seçenek',
@@ -156,8 +156,9 @@ test('listing card renders trust strip and AI uyum disclaimer without external f
   assert.match(htmlWithoutSource, /Yayınlanmış seçenek/);
   assert.match(htmlWithoutSource, /Kaynak bağlantısı yok/);
   assert.match(htmlWithoutSource, /Görsel temsili/);
-  assert.match(htmlWithoutSource, /AI uyum 77\/100/);
+  assert.match(htmlWithoutSource, /Karar skoru 77\/100/);
   assert.match(htmlWithoutSource, /veri güveni değil/);
+  assert.doesNotMatch(htmlWithoutSource, /AI uyum/);
   assert.doesNotMatch(htmlWithoutSource, /external-btn/);
   assert.doesNotMatch(htmlWithoutSource, /sahibinden\.com/);
   assert.doesNotMatch(htmlWithoutSource, /Doğrulanmış görsel/);
@@ -207,6 +208,7 @@ test('regression guard: trust patch files avoid forbidden public trust phrases',
   assert.doesNotMatch(combined, /Onaylandı/);
   assert.match(combined, /Yayınlanmış seçenek/);
   assert.match(combined, /veri güveni değil/);
+  assert.match(combined, /Karar seçeneği kaynak ve görsel bilgisi/);
 });
 
 test('regression guard: listings-ui does not render external CTA without resolvable source URL', () => {
@@ -739,6 +741,43 @@ test('regression guard: Faz 2B public trust copy avoids forbidden visual trust p
   assert.doesNotMatch(combined, /Resmi/);
   assert.doesNotMatch(combined, /Garantili/);
   assert.doesNotMatch(combined, /sahibinden\.com/);
+});
+
+test('regression guard: Faz 2C trust catalog copy uses decision-platform language', () => {
+  const trustUi = readRepoFile('js/ui/listing-trust-ui.js');
+  const listingsUi = readRepoFile('js/ui/listings-ui.js');
+  const combined = `${trustUi}\n${listingsUi}`;
+
+  const FORBIDDEN_TRUST_CATALOG_COPY = [
+    'AI uyum',
+    'AI ilan',
+    'Yapay Zeka Destekli',
+    'yapay zeka destekli seçenek',
+    'Doğrulanmış görsel',
+    'Onaylandı',
+    'Garantili',
+    'https://www.sahibinden.com/'
+  ];
+
+  const REQUIRED_TRUST_CATALOG_COPY = [
+    'Karar skoru',
+    'Yayınlanmış seçenek',
+    'Karar seçeneği kaynak ve görsel bilgisi',
+    'metodolojik karar uyum skorudur',
+    'Tam analiz ilgili kategori akışında hesaplanır'
+  ];
+
+  for (const phrase of FORBIDDEN_TRUST_CATALOG_COPY) {
+    assert.equal(
+      combined.includes(phrase),
+      false,
+      `trust catalog surfaces must not include: ${phrase}`
+    );
+  }
+
+  for (const phrase of REQUIRED_TRUST_CATALOG_COPY) {
+    assert.match(combined, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
 });
 
 function listingHasResolvablePublicSource(listing = {}) {
