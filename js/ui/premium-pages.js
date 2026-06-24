@@ -175,7 +175,6 @@ export class PremiumPages {
             <div class="assistant-intent-panel" id="assistant-intent-host">
               <form id="assistant-intent-form" class="assistant-form assistant-intent-form" novalidate>
                 <div class="assistant-intent-copy">
-                  <span class="assistant-kicker">Hayalini anlat</span>
                   <h3>Hayalini anlat</h3>
                   <p>Şu an araç ihtiyacı için çalışır. Bütçeni, kullanım amacını ve olmazsa olmazlarını yaz; İsteBul karar asistanı sorularını ön doldursun.</p>
                 </div>
