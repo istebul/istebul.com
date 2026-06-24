@@ -2453,7 +2453,7 @@ class App {
 
             this.renderDecisionAssistant();
             this.ui.renderAssistantIntentSummaryPanel?.(mapped);
-            this.setAssistantIntentStatus('Sorular ön dolduruldu. Devam etmeden önce kontrol edin.', 'success');
+            this.setAssistantIntentStatus('Kriterler ön değerlendirme sorularına aktarıldı. Tam skoru görmek için kategori akışında devam edin.', 'success');
             this.ui.showSuccess?.('Karar asistanı soruları niyetinize göre ön dolduruldu.');
         } catch (error) {
             this.setAssistantIntentStatus('Niyet çözümlenemedi. Lütfen tekrar deneyin veya soruları elle doldurun.', 'error');

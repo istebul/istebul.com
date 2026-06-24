@@ -718,7 +718,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const browseCta = page.locator('[data-browse-decision-listings]');
     await expect(browseCta).toBeVisible({ timeout: 15000 });
     await expect(browseCta).toHaveClass(/btn-outline/);
-    await expect(browseCta).toHaveText(/AI destekli seçenekleri incele/i);
+    await expect(browseCta).toHaveText(/Karar skoruna göre seçenekleri incele/i);
   });
 
   test('karar asistanı finansman sonucunda browse CTA gösterilmez', async ({ page }) => {
@@ -2266,7 +2266,7 @@ test.describe('Faz 3D-1A category journey guards', () => {
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
     await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('#assistant-intent-form button[type="submit"]')).toContainText('Kriterleri çıkar');
+    await expect(page.locator('#assistant-intent-form button[type="submit"]')).toContainText('Kriterleri anla ve ön doldur');
 
     await page.fill(
       '#assistant-intent-text',
