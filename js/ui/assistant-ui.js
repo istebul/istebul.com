@@ -195,7 +195,7 @@ export function renderAssistantIntentSummary(mapped) {
             '<h4>Anladığımız kriterler</h4>' +
             (rows.length ? `<ul class="assistant-intent-summary-list">${rows.join('')}</ul>` : '') +
             extras.join('') +
-            '<p class="text-muted-sm">Soruları kontrol edip mevcut akışla devam edebilirsiniz.</p>' +
+            '<p class="text-muted-sm">Bu kriterler ön değerlendirme sorularını ön doldurur; tam skor ilgili kategori akışında hesaplanır.</p>' +
         '</section>'
     );
 }
@@ -339,7 +339,7 @@ export class AssistantUI {
         return (isFirst ? '' : '<button type="button" class="btn btn-outline" data-assistant-prev><i data-lucide="arrow-left"></i> Önceki</button>') +
             '<button type="button" class="btn btn-outline" data-assistant-reset><i data-lucide="rotate-ccw"></i> Temizle</button>' +
             (isLast
-                ? '<button type="submit" class="btn btn-primary"><i data-lucide="sparkles"></i> Sonucu hesapla</button>'
+                ? '<button type="submit" class="btn btn-primary"><i data-lucide="sparkles"></i> Ön değerlendirmeyi tamamla</button>'
                 : '<button type="button" class="btn btn-primary" data-assistant-next>Devam et <i data-lucide="arrow-right"></i></button>');
     }
 
@@ -408,10 +408,10 @@ export class AssistantUI {
                         '<span class="assistant-kicker">Ön değerlendirme tamamlandı</span>' +
                         '<h3>' + this.escapeHtml(primary.name) + '</h3>' +
                         '<p>' + this.escapeHtml(result.summary) + '</p>' +
-                        '<p class="assistant-result-pre-eval-note">Tam karar analizi için ilgili kategori akışına devam edin. Verdiğiniz bilgiler tam analizde kullanılmak üzere aktarılacak.</p>' +
+                        '<p class="assistant-result-pre-eval-note">Tam karar skoru ve detaylı analiz ilgili kategori akışında hesaplanır. Tam analize devam ettiğinizde verdiğiniz bilgiler aktarılacak.</p>' +
                         '<div class="assistant-result-badges">' +
                             '<span><i data-lucide="map-pin"></i>' + this.escapeHtml(result.categoryName) + '</span>' +
-                            '<span><i data-lucide="shield-check"></i>Güven skoru ' + this.escapeHtml(primary.score) + '/100</span>' +
+                            '<span><i data-lucide="shield-check"></i>Ön uyum skoru ' + this.escapeHtml(primary.score) + '/100</span>' +
                             (result.dataHealth ? '<span title="Girdi kalitesi; kesin sonuç değildir"><i data-lucide="database-zap"></i>Veri güven bandı ' + this.escapeHtml(result.dataHealth.confidenceLabel || '') + '</span>' : '') +
                             '<span><i data-lucide="clock-3"></i>' + this.escapeHtml(this.formatDate(result.createdAt)) + '</span>' +
                         '</div>' +
@@ -479,7 +479,7 @@ export class AssistantUI {
 
         const browseCta = LISTING_BROWSE_CATEGORY_IDS.has(categoryId)
             ? '<button type="button" class="btn btn-outline btn-sm" data-browse-decision-listings data-analytics-cta="assistant_browse_listings" data-analytics-placement="decision_result_toolbar">' +
-                '<i data-lucide="list-checks"></i> AI destekli seçenekleri incele' +
+                '<i data-lucide="list-checks"></i> Karar skoruna göre seçenekleri incele' +
             '</button>'
             : '';
 
@@ -1002,7 +1002,7 @@ export class AssistantUI {
         const listingSourceUrl = resolvePublicExternalUrl(item);
         const planTemplates = {
             arac: [
-                { icon: 'search-check', title: 'Seçeneği doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', requiresListingSource: true },
+                { icon: 'search-check', title: 'Seçeneği doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı segmentteki alternatiflerle karşılaştırın.', requiresListingSource: true },
                 { icon: 'landmark', title: 'Krediyi netleştir', text: 'Aylık taksit yerine toplam geri ödeme ve kredi kullandırım oranını kontrol edin.', url: 'https://www.hangikredi.com/kredi/tasit-kredisi' },
                 { icon: 'shield-check', title: 'Sigorta + ekspertiz', text: 'Kasko, trafik sigortası ve ekspertiz sonucu olmadan kapora göndermeyin.', url: 'https://www.sigortam.net/' }
             ],

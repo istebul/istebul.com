@@ -176,7 +176,7 @@ export class PremiumPages {
               <form id="assistant-intent-form" class="assistant-form assistant-intent-form" novalidate>
                 <div class="assistant-intent-copy">
                   <h3>Hayalini anlat</h3>
-                  <p>Şu an araç ihtiyacı için çalışır. Bütçeni, kullanım amacını ve olmazsa olmazlarını yaz; İsteBul karar asistanı sorularını ön doldursun.</p>
+                  <p>Şu an araç ihtiyacı için çalışır. İhtiyacınızı yazın; Karar Asistanı soruları ön doldurur. Tam skor ve karar analizi ilgili kategori akışında hesaplanır.</p>
                 </div>
                 <label class="assistant-field" for="assistant-intent-text">
                   <span class="assistant-field-label">İhtiyacınız</span>
@@ -190,7 +190,7 @@ export class PremiumPages {
                 </label>
                 <div class="assistant-intent-actions">
                   <button type="submit" class="btn btn-primary" data-analytics-cta="assistant_intent_resolve">
-                    <i data-lucide="sparkles"></i> Kriterleri çıkar
+                    <i data-lucide="sparkles"></i> Kriterleri anla ve ön doldur
                   </button>
                 </div>
                 <p id="assistant-intent-status" class="assistant-intent-status text-muted-sm" aria-live="polite"></p>
@@ -265,7 +265,7 @@ export class PremiumPages {
         <div class="container ib-premium-cta-band-inner">
           <div>
             <h2>Yanlış karar maliyetini azaltın</h2>
-            <p>Önce ücretsiz karar analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
+            <p>Önce ücretsiz ön değerlendirme; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
           </div>
           <div class="ib-premium-hero-actions">
             <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_premium_footer" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryDecisionFree}">${BRAND_VOICE.cta.primaryDecisionFree}</a>
