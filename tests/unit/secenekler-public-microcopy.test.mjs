@@ -35,6 +35,36 @@ test('secenekler filter category has neutral default and supported non-auto opti
   assert.doesNotMatch(selectHtml, /value="kasko"/);
 });
 
+test('secenekler public surface uses decision-platform microcopy', () => {
+  const html = readRepoFile('index.html');
+  const listingsUi = readRepoFile('js/ui/listings-ui.js');
+  const ilanlarSection = html.match(/<section id="ilanlar"[\s\S]*?<\/section>/);
+  assert.ok(ilanlarSection, '#ilanlar section must exist');
+
+  const sectionHtml = ilanlarSection[0];
+  assert.match(sectionHtml, /Karar skoruna göre değerlendirilmiş seçenekler/);
+  assert.match(sectionHtml, /Karar kriterlerinize göre seçenekler yükleniyor/);
+  assert.doesNotMatch(sectionHtml, /AI uyum skoruna göre öne çıkan seçenekler/);
+  assert.doesNotMatch(sectionHtml, /Size uygun seçenekler hazırlanıyor/);
+  assert.doesNotMatch(sectionHtml, /Yapay Zeka Destekli Seçenekler/);
+  assert.doesNotMatch(sectionHtml, /AI ilan/i);
+
+  assert.match(listingsUi, /Değerlendirilebilir karar seçenekleri/);
+  assert.match(listingsUi, /karar skoruna göre değerlendirilmiş seçenek keşfi/);
+  assert.match(listingsUi, /Karar seçeneği analizi/);
+  assert.doesNotMatch(listingsUi, /Yapay Zeka Destekli Seçenek Keşfi/);
+  assert.doesNotMatch(listingsUi, /yapay zeka destekli seçenek keşfi/);
+});
+
+test('secenekler route guardrails remain canonical', () => {
+  const routerJs = readRepoFile('js/core/router.js');
+  const html = readRepoFile('index.html');
+
+  assert.match(routerJs, /\{ path: '\/secenekler', component: 'ilanlar' \}/);
+  assert.match(routerJs, /\{ path: '\/ilanlar', component: 'ilanlar' \}/);
+  assert.match(html, /href="\/secenekler\/"/);
+});
+
 test('resolveListingQualityScoreDisplay hides null and invalid scores', () => {
   const ui = new UIManager();
   assert.equal(ui.resolveListingQualityScoreDisplay({}), null);
@@ -71,9 +101,16 @@ test('listings card template does not render null/undefined score suffix', () =>
     assert.doesNotMatch(container.innerHTML, /null\/100/);
     assert.doesNotMatch(container.innerHTML, /undefined\/100/);
     assert.doesNotMatch(container.innerHTML, /AI uyum/);
+    assert.match(container.innerHTML, /Değerlendirilebilir karar seçenekleri/);
 
     ui.renderListings([{ id: '2', title: 'Skorlu seçenek', price: 100, category: 'arac', score: 77 }]);
     assert.match(container.innerHTML, /AI uyum 77\/100/);
+    assert.match(container.innerHTML, /Değerlendirilebilir karar seçenekleri/);
+
+    container.innerHTML = '';
+    ui.renderListings([], { category: 'arac' });
+    assert.match(container.innerHTML, /karar skoruna göre değerlendirilmiş seçenek keşfi/);
+    assert.doesNotMatch(container.innerHTML, /yapay zeka destekli seçenek keşfi/i);
   } finally {
     if (originalGetElementById) {
       global.document.getElementById = originalGetElementById;

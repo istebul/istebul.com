@@ -23,7 +23,7 @@ const REQUIRED_HUB_COPY = [
   '12 ay toplam maliyet',
   'Aylık ödeme yükü',
   'Yanlış karar maliyetini azaltın',
-  'Önce ücretsiz karar analizi'
+  'Önce ücretsiz ön değerlendirme'
 ];
 
 test('renderKararAnaliziPage uses category-neutral hub copy', () => {
