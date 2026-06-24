@@ -56,11 +56,41 @@ export const LISTING_BROWSE_CATEGORY_IDS = Object.freeze(new Set(['arac', 'ev', 
 const INTENT_ANSWER_LABELS = Object.freeze({
     budget: 'Bütçe',
     usage: 'Kullanım',
-    fuel: 'Yakıt',
+    fuel: 'Yakıt tercihi',
     body: 'Gövde tipi',
     priority: 'Öncelik',
     province: 'Şehir',
     household_size: 'Hane büyüklüğü'
+});
+
+const INTENT_FUEL_LABELS = Object.freeze({
+    gasoline: 'Benzinli',
+    diesel: 'Dizel',
+    hybrid: 'Hibrit',
+    electric: 'Elektrikli',
+    any: 'Fark etmez'
+});
+
+const INTENT_BODY_LABELS = Object.freeze({
+    suv: 'SUV',
+    sedan: 'Sedan',
+    hatchback: 'Hatchback'
+});
+
+const INTENT_MUST_HAVE_LABELS = Object.freeze({
+    'geniş': 'Geniş iç hacim',
+    'genis': 'Geniş iç hacim',
+    'düşük yakıt': 'Düşük yakıt tüketimi',
+    'dusuk yakit': 'Düşük yakıt tüketimi',
+    'az yaksın': 'Düşük yakıt tüketimi',
+    'az yaksin': 'Düşük yakıt tüketimi'
+});
+
+const INTENT_CITY_DISPLAY_OVERRIDES = Object.freeze({
+    izmir: 'İzmir',
+    istanbul: 'İstanbul',
+    ankara: 'Ankara',
+    bursa: 'Bursa'
 });
 
 const INTENT_USAGE_LABELS = Object.freeze({
@@ -94,6 +124,21 @@ function formatMissingQuestionLabel(key) {
     return INTENT_MISSING_QUESTION_LABELS[normalized] || normalized;
 }
 
+function formatCityDisplayValue(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    const lowered = raw.toLocaleLowerCase('tr-TR');
+    if (INTENT_CITY_DISPLAY_OVERRIDES[lowered]) return INTENT_CITY_DISPLAY_OVERRIDES[lowered];
+    return raw.charAt(0).toLocaleUpperCase('tr-TR') + raw.slice(1);
+}
+
+function formatMustHaveLabel(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    const lowered = raw.toLocaleLowerCase('tr-TR');
+    return INTENT_MUST_HAVE_LABELS[lowered] || raw;
+}
+
 function formatIntentAnswerValue(key, value) {
     if (value == null || value === '') return '';
     if (key === 'budget') {
@@ -103,6 +148,9 @@ function formatIntentAnswerValue(key, value) {
     }
     if (key === 'usage') return INTENT_USAGE_LABELS[value] || String(value);
     if (key === 'priority') return INTENT_PRIORITY_LABELS[value] || String(value);
+    if (key === 'fuel') return INTENT_FUEL_LABELS[value] || String(value);
+    if (key === 'body') return INTENT_BODY_LABELS[value] || String(value);
+    if (key === 'province') return formatCityDisplayValue(value);
     if (key === 'household_size') {
         const labels = { '1': '1 kişi', '2': '2 kişi', '3-4': '3-4 kişi', '5+': '5+ kişi' };
         return labels[value] || String(value);
@@ -131,7 +179,8 @@ export function renderAssistantIntentSummary(mapped) {
 
     const extras = [];
     if (mustHaves.length) {
-        extras.push(`<p><strong>Olmazsa olmazlar:</strong> ${escapeHtmlValue(mustHaves.join(', '))}</p>`);
+        const friendlyMustHaves = mustHaves.map(formatMustHaveLabel).join(', ');
+        extras.push(`<p><strong>Olmazsa olmazlar:</strong> ${escapeHtmlValue(friendlyMustHaves)}</p>`);
     }
     if (dealBreakers.length) {
         extras.push(`<p><strong>Kaçınılacaklar:</strong> ${escapeHtmlValue(dealBreakers.join(', '))}</p>`);
