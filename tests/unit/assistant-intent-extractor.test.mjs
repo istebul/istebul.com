@@ -27,7 +27,7 @@ test('deterministic fallback parses SUV family budget narrative', () => {
   assert.equal(intent.budgetMax, 3000000);
   assert.equal(intent.usage, 'family');
   assert.equal(intent.body, 'suv');
-  assert.equal(intent.fuel, 'hybrid');
+  assert.equal(intent.fuel, null);
   assert.equal(intent.priority, 'lowCost');
 });
 
@@ -69,6 +69,8 @@ test('AI success path uses normalized assistant intent', async () => {
   assert.ok(intent);
   assert.equal(intent.budgetMax, 2800000);
   assert.equal(intent.usage, 'family');
+  assert.equal(intent.fuel, null);
+  assert.equal(intent.priority, 'lowCost');
   assert.deepEqual(intent.mustHaves, ['geniş']);
   assert.deepEqual(intent.missingQuestions, ['province']);
 });
@@ -131,7 +133,8 @@ test('compact auto narrative with budget and SUV produces intent', () => {
   assert.equal(intent.categoryId, 'arac');
   assert.equal(intent.budgetMax, 3000000);
   assert.equal(intent.body, 'suv');
-  assert.equal(intent.fuel, 'hybrid');
+  assert.equal(intent.fuel, null);
+  assert.equal(intent.priority, 'lowCost');
 });
 
 test('family vehicle narrative with maintenance signals produces intent', () => {
@@ -168,6 +171,14 @@ test('city usage profile does not set geographic city', () => {
   assert.equal(intent.city, null);
 });
 
+test('city usage profile does not set geographic city for SUV narrative', () => {
+  const intent = buildDeterministicAutoIntentFromText('şehir içi kullanım için SUV arıyorum');
+  assert.ok(intent);
+  assert.equal(intent.usage, 'city');
+  assert.equal(intent.city, null);
+  assert.equal(intent.body, 'suv');
+});
+
 test('AI failure still rejects non-auto housing narrative', async () => {
   const housingText = 'İstanbul\'da 5 milyon TL daire arıyorum';
   const intent = await extractAssistantIntentFromText(housingText, {
@@ -192,4 +203,63 @@ test('AI success is blocked for non-auto housing narrative', async () => {
   });
 
   assert.equal(intent, null);
+});
+
+const IZMIR_NARRATIVE =
+  'İzmir\'de 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun.';
+
+test('Izmir narrative deterministic path avoids gasoline and captures city', () => {
+  const intent = buildDeterministicAutoIntentFromText(IZMIR_NARRATIVE);
+  assert.ok(intent);
+  assert.equal(intent.categoryId, 'arac');
+  assert.equal(intent.city, 'İzmir');
+  assert.equal(intent.body, 'suv');
+  assert.equal(intent.householdSize, '3-4');
+  assert.equal(intent.priority, 'lowCost');
+  assert.notEqual(intent.fuel, 'gasoline');
+  assert.equal(intent.fuel, null);
+});
+
+test('AI gasoline is cleared when narrative only says az yaksın', async () => {
+  const intent = await extractAssistantIntentFromText(IZMIR_NARRATIVE, {
+    askAI: async () => ({
+      result: JSON.stringify({
+        categoryId: 'arac',
+        budgetMax: 3000000,
+        usagePurpose: 'family',
+        fuel: 'gasoline',
+        body: 'suv',
+        city: 'izmir',
+        householdSize: '3-4',
+        mustHaves: ['geniş'],
+        priorities: ['lowCost']
+      })
+    })
+  });
+
+  assert.ok(intent);
+  assert.equal(intent.fuel, null);
+  assert.equal(intent.priority, 'lowCost');
+  assert.equal(intent.city, 'İzmir');
+});
+
+test('explicit benzinli narrative keeps gasoline fuel', () => {
+  const intent = buildDeterministicAutoIntentFromText('Benzinli SUV istiyorum, 2 milyon TL bütçem var');
+  assert.ok(intent);
+  assert.equal(intent.fuel, 'gasoline');
+  assert.equal(intent.body, 'suv');
+});
+
+test('explicit hibrit narrative keeps hybrid fuel', () => {
+  const intent = buildDeterministicAutoIntentFromText('Hibrit SUV olsun, 2 milyon TL bütçem var');
+  assert.ok(intent);
+  assert.equal(intent.fuel, 'hybrid');
+  assert.equal(intent.body, 'suv');
+});
+
+test('Izmir SUV narrative captures city without usage-city confusion', () => {
+  const intent = buildDeterministicAutoIntentFromText('İzmir\'de SUV arıyorum, geniş olsun');
+  assert.ok(intent);
+  assert.equal(intent.city, 'İzmir');
+  assert.equal(intent.body, 'suv');
 });

@@ -173,3 +173,28 @@ test('keeps mustHaves and dealBreakers in summary only', () => {
   assert.deepEqual(result.summary.dealBreakers, ['yüksek bakım']);
   assert.equal(result.answers.mustHaves, undefined);
 });
+
+test('omits fuel from answers when fuel is absent after normalization', () => {
+  const result = mapIntentToAssistantAnswers({
+    categoryId: 'arac',
+    budgetMax: 3000000,
+    usagePurpose: 'family',
+    body: 'suv',
+    priority: 'lowCost'
+  });
+
+  assert.ok(result);
+  assert.equal(result.answers.fuel, undefined);
+});
+
+test('title-cases lowercase city in mapped province answer', () => {
+  const result = mapIntentToAssistantAnswers({
+    categoryId: 'arac',
+    usage: 'family',
+    body: 'suv',
+    city: 'izmir'
+  });
+
+  assert.ok(result);
+  assert.equal(result.answers.province, 'İzmir');
+});

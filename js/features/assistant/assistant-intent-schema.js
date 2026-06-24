@@ -83,6 +83,42 @@ const FUEL_ALIASES = Object.freeze({
 const LOW_COST_PRIORITY_PATTERN =
   /bak[iı]m|yak[iı]t|masraf|d[uü][şs]ük\s*maliyet|ucuz|ekonomik|tco|maliyet|d[uü][şs]ük\s*t[uü]ketim|az\s*yak/i;
 
+const CITY_TITLE_CASE_OVERRIDES = Object.freeze({
+  izmir: 'İzmir',
+  istanbul: 'İstanbul',
+  ankara: 'Ankara',
+  bursa: 'Bursa',
+  antalya: 'Antalya',
+  konya: 'Konya',
+  adana: 'Adana',
+  gaziantep: 'Gaziantep',
+  mersin: 'Mersin',
+  kayseri: 'Kayseri',
+  eskişehir: 'Eskişehir',
+  eskisehir: 'Eskişehir'
+});
+
+/**
+ * @param {string} name
+ * @returns {string}
+ */
+function titleCaseIntentCityName(name) {
+  const trimmed = String(name ?? '').trim();
+  if (!trimmed) return trimmed;
+
+  const override = CITY_TITLE_CASE_OVERRIDES[trimmed.toLocaleLowerCase('tr-TR')];
+  if (override) return override;
+
+  return trimmed
+    .split(/\s+/)
+    .map((part) => {
+      if (!part) return part;
+      const lower = part.toLocaleLowerCase('tr-TR');
+      return lower.charAt(0).toLocaleUpperCase('tr-TR') + lower.slice(1);
+    })
+    .join(' ');
+}
+
 /**
  * @param {unknown} value
  * @returns {string|null}
@@ -166,8 +202,10 @@ export function normalizeIntentCity(value) {
   const name = String(value ?? '').trim();
   if (!name || name.length < 2 || name.length > 40) return null;
   if (USAGE_PROFILE_CITY_PHRASE_PATTERN.test(name)) return null;
-  if (!AUTO_CITY_QUERY_PATTERN.test(name)) return null;
-  return name;
+
+  const titled = titleCaseIntentCityName(name);
+  if (!AUTO_CITY_QUERY_PATTERN.test(titled)) return null;
+  return titled;
 }
 
 /**

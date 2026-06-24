@@ -2308,6 +2308,30 @@ test.describe('Faz 3D-1A category journey guards', () => {
     await expect(handoff).not.toHaveAttribute('href', /^\/auto\/\?$/);
   });
 
+  test('karar-asistani hayalini anlat Izmir summary labels stay user friendly', async ({ page }) => {
+    await page.route('**/ai-proxy', (route) => route.abort());
+
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+
+    await page.fill(
+      '#assistant-intent-text',
+      'İzmir\'de 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun.'
+    );
+    await page.locator('#assistant-intent-form button[type="submit"]').click();
+
+    const summary = page.locator('[data-assistant-intent-summary]');
+    await expect(summary).toBeVisible({ timeout: 15000 });
+    await expect(summary).toContainText(/İzmir/i);
+    await expect(summary).toContainText(/SUV/);
+    await expect(summary).toContainText(/Geniş iç hacim/i);
+    await expect(summary).not.toContainText(/gasoline/i);
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/);
+    await expect(page).not.toHaveURL(/\/auto\//);
+  });
+
   for (const { path, selector } of VERTICAL_ANALYSIS_SURFACE_GUARDS) {
     test(`vertical guard ${path} tam analiz yüzeyi yükler`, async ({ page }) => {
       await page.goto(path);
