@@ -2431,11 +2431,11 @@ class App {
 
             if (!mapped) {
                 this.setAssistantIntentStatus(
-                    'Şu an yalnızca araç ihtiyacını çözebiliyorum. Lütfen araç ihtiyacını bütçe ve kullanım amacıyla yaz.',
+                    'Şu an bu alan yalnızca araç ihtiyacını ön doldurabiliyor. Araç için bütçe, kullanım amacı veya gövde tipi yazarak deneyin.',
                     'error'
                 );
                 this.ui.showError?.(
-                    'Şu an yalnızca araç ihtiyacını çözebiliyorum. Lütfen araç ihtiyacını bütçe ve kullanım amacıyla yaz.'
+                    'Şu an bu alan yalnızca araç ihtiyacını ön doldurabiliyor. Araç için bütçe, kullanım amacı veya gövde tipi yazarak deneyin.'
                 );
                 return;
             }

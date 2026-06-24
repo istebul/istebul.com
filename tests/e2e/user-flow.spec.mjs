@@ -2266,6 +2266,7 @@ test.describe('Faz 3D-1A category journey guards', () => {
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
     await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#assistant-intent-form button[type="submit"]')).toContainText('Kriterleri çıkar');
 
     await page.fill(
       '#assistant-intent-text',

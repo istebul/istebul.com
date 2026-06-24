@@ -6,7 +6,8 @@ const {
   buildDeterministicAutoIntentFromText,
   parseBudgetFromNarrative,
   MIN_INTENT_TEXT_LENGTH,
-  hasMeaningfulAutoSignals
+  hasMeaningfulAutoSignals,
+  shouldRejectNonAutoNarrative
 } = await import('../../js/features/assistant/assistant-intent-extractor.js');
 
 const SAMPLE_TEXT =
@@ -106,4 +107,65 @@ test('ambiguous text without auto signals returns null', () => {
     null
   );
   assert.equal(hasMeaningfulAutoSignals({ categoryId: 'arac', mustHaves: [], dealBreakers: [], missingQuestions: [] }), false);
+});
+
+test('budget-only narrative does not produce auto intent', () => {
+  assert.equal(buildDeterministicAutoIntentFromText('3 milyon TL bütçem var'), null);
+});
+
+test('housing narrative with budget is rejected', () => {
+  const housingText = 'İstanbul\'da 5 milyon TL daire arıyorum';
+  assert.ok(shouldRejectNonAutoNarrative(housingText));
+  assert.equal(buildDeterministicAutoIntentFromText(housingText), null);
+});
+
+test('travel narrative with budget is rejected', () => {
+  const travelText = 'Tatil için 100 bin TL bütçem var';
+  assert.ok(shouldRejectNonAutoNarrative(travelText));
+  assert.equal(buildDeterministicAutoIntentFromText(travelText), null);
+});
+
+test('compact auto narrative with budget and SUV produces intent', () => {
+  const intent = buildDeterministicAutoIntentFromText('3 milyon TL bütçem var SUV olsun az yaksın');
+  assert.ok(intent);
+  assert.equal(intent.categoryId, 'arac');
+  assert.equal(intent.budgetMax, 3000000);
+  assert.equal(intent.body, 'suv');
+  assert.equal(intent.fuel, 'hybrid');
+});
+
+test('family vehicle narrative with maintenance signals produces intent', () => {
+  const intent = buildDeterministicAutoIntentFromText(
+    '2 çocuk için geniş araç arıyorum, bakım pahalı olmasın'
+  );
+  assert.ok(intent);
+  assert.equal(intent.categoryId, 'arac');
+  assert.equal(intent.usage, 'family');
+  assert.equal(intent.priority, 'lowCost');
+});
+
+test('AI failure still rejects non-auto housing narrative', async () => {
+  const housingText = 'İstanbul\'da 5 milyon TL daire arıyorum';
+  const intent = await extractAssistantIntentFromText(housingText, {
+    askAI: async () => {
+      throw new Error('proxy down');
+    }
+  });
+
+  assert.equal(intent, null);
+});
+
+test('AI success is blocked for non-auto housing narrative', async () => {
+  const housingText = 'İstanbul\'da 5 milyon TL daire arıyorum';
+  const intent = await extractAssistantIntentFromText(housingText, {
+    askAI: async () => ({
+      result: JSON.stringify({
+        categoryId: 'arac',
+        budgetMax: 5000000,
+        body: 'suv'
+      })
+    })
+  });
+
+  assert.equal(intent, null);
 });

@@ -21,6 +21,73 @@ const FUEL_ECONOMY_PATTERN = /(az\s*yak|yakıt|hibrit|ekonomik)/i;
 const MILLION_BUDGET_PATTERN = /(\d+(?:[.,]\d+)?)\s*milyon/i;
 const DIGIT_BUDGET_PATTERN = /(\d{1,3}(?:[.\s]\d{3})+|\d{6,})/;
 
+const NON_AUTO_SIGNAL_PATTERNS = [
+  /\bkonut\b/i,
+  /\bdaire\b/i,
+  /\bvilla\b/i,
+  /\barsa\b/i,
+  /\bkiralık\b/i,
+  /\bkira\b/i,
+  /satılık\s+ev/i,
+  /\btatil\b/i,
+  /\botel\b/i,
+  /\bresort\b/i,
+  /\buçak\b/i,
+  /\btur\b/i,
+  /\bfinans\b/i,
+  /\bkredi\b/i,
+  /\bsigorta\b/i,
+  /\bkasko\b/i,
+  /\bev\b/i
+];
+
+const AUTO_SIGNAL_PATTERNS = [
+  /\baraba(?:lar|ları|ya)?\b/i,
+  /\baraç(?:ları|lar|ı)?\b/i,
+  /\botomobil\b/i,
+  /\bsuv\b/i,
+  /\bsedan\b/i,
+  /\bhatchback\b/i,
+  /\bhibrit\b/i,
+  /\belektrikli\b/i,
+  /\bdizel\b/i,
+  /\bbenzinli\b/i,
+  /\byakıt\b/i,
+  /az\s*yaksın/i,
+  /\bbakım\b/i,
+  /geniş\s+araç/i,
+  /araç\s+arıyorum/i,
+  /çocuk.*araç/i,
+  /araç.*çocuk/i
+];
+
+/**
+ * @param {string} rawText
+ * @returns {boolean}
+ */
+export function hasNonAutoCategorySignals(rawText = '') {
+  const text = String(rawText ?? '');
+  return NON_AUTO_SIGNAL_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+/**
+ * @param {string} rawText
+ * @returns {boolean}
+ */
+export function hasAutoCategorySignalsInText(rawText = '') {
+  const text = String(rawText ?? '');
+  return AUTO_SIGNAL_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+/**
+ * @param {string} rawText
+ * @returns {boolean}
+ */
+export function shouldRejectNonAutoNarrative(rawText = '') {
+  const text = String(rawText ?? '');
+  return hasNonAutoCategorySignals(text) && !hasAutoCategorySignalsInText(text);
+}
+
 /**
  * @param {string} rawText
  * @returns {number|null}
@@ -50,6 +117,7 @@ export function parseBudgetFromNarrative(rawText = '') {
 export function buildDeterministicAutoIntentFromText(rawText = '') {
   const text = String(rawText ?? '').trim();
   if (text.length < MIN_INTENT_TEXT_LENGTH) return null;
+  if (shouldRejectNonAutoNarrative(text)) return null;
 
   /** @type {Record<string, unknown>} */
   const raw = {
@@ -84,8 +152,7 @@ export function buildDeterministicAutoIntentFromText(rawText = '') {
 export function hasMeaningfulAutoSignals(intent) {
   if (!intent) return false;
   return Boolean(
-    intent.budgetMax ||
-      intent.usage ||
+    intent.usage ||
       intent.fuel ||
       intent.body ||
       intent.priority ||
@@ -143,6 +210,7 @@ ${text}
 export async function extractAssistantIntentFromText(text, options = {}) {
   const narrative = String(text ?? '').trim();
   if (narrative.length < MIN_INTENT_TEXT_LENGTH) return null;
+  if (shouldRejectNonAutoNarrative(narrative)) return null;
 
   const askAI = options.askAI ?? ((prompt, context) => API.askAI(prompt, context));
 
@@ -155,7 +223,7 @@ export async function extractAssistantIntentFromText(text, options = {}) {
     const rawAiText = aiResponse?.result ?? aiResponse?.response ?? '';
     const parsed = parseAiJsonObject(rawAiText);
     const normalized = normalizeAssistantIntent(parsed);
-    if (normalized && hasMeaningfulAutoSignals(normalized)) {
+    if (normalized && hasMeaningfulAutoSignals(normalized) && !shouldRejectNonAutoNarrative(narrative)) {
       return normalized;
     }
   } catch {

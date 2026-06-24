@@ -77,6 +77,20 @@ const INTENT_PRIORITY_LABELS = Object.freeze({
     resale: 'İkinci el değeri'
 });
 
+const INTENT_MISSING_QUESTION_LABELS = Object.freeze({
+    province: 'şehir',
+    annual_km: 'yıllık km',
+    budget: 'bütçe',
+    usage: 'kullanım amacı',
+    fuel: 'yakıt tercihi',
+    body: 'gövde tipi'
+});
+
+function formatMissingQuestionLabel(key) {
+    const normalized = String(key ?? '').trim().toLowerCase();
+    return INTENT_MISSING_QUESTION_LABELS[normalized] || normalized;
+}
+
 function formatIntentAnswerValue(key, value) {
     if (value == null || value === '') return '';
     if (key === 'budget') {
@@ -116,13 +130,13 @@ export function renderAssistantIntentSummary(mapped) {
         extras.push(`<p><strong>Kaçınılacaklar:</strong> ${escapeHtmlValue(dealBreakers.join(', '))}</p>`);
     }
     if (missingQuestions.length) {
-        extras.push(`<p class="text-muted-sm">Eksik alanlar: ${escapeHtmlValue(missingQuestions.join(', '))}</p>`);
+        const friendlyMissing = missingQuestions.map(formatMissingQuestionLabel).join(', ');
+        extras.push(`<p class="text-muted-sm">Eksik alanlar: ${escapeHtmlValue(friendlyMissing)}</p>`);
     }
 
     return (
         '<section class="assistant-intent-summary-card" data-assistant-intent-summary>' +
-            '<span class="assistant-kicker">Çıkarılan niyet</span>' +
-            '<h4>Ön doldurulan kriterler</h4>' +
+            '<h4>Anladığımız kriterler</h4>' +
             (rows.length ? `<ul class="assistant-intent-summary-list">${rows.join('')}</ul>` : '') +
             extras.join('') +
             '<p class="text-muted-sm">Soruları kontrol edip mevcut akışla devam edebilirsiniz.</p>' +

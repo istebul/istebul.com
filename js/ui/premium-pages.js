@@ -177,7 +177,7 @@ export class PremiumPages {
                 <div class="assistant-intent-copy">
                   <span class="assistant-kicker">Hayalini anlat</span>
                   <h3>Hayalini anlat</h3>
-                  <p>Bütçeni, kullanım amacını ve olmazsa olmazlarını yaz. İsteBul bunu karar asistanı sorularına dönüştürsün.</p>
+                  <p>Şu an araç ihtiyacı için çalışır. Bütçeni, kullanım amacını ve olmazsa olmazlarını yaz; İsteBul karar asistanı sorularını ön doldursun.</p>
                 </div>
                 <label class="assistant-field" for="assistant-intent-text">
                   <span class="assistant-field-label">İhtiyacınız</span>
@@ -191,7 +191,7 @@ export class PremiumPages {
                 </label>
                 <div class="assistant-intent-actions">
                   <button type="submit" class="btn btn-primary" data-analytics-cta="assistant_intent_resolve">
-                    <i data-lucide="sparkles"></i> Niyetimi çöz
+                    <i data-lucide="sparkles"></i> Kriterleri çıkar
                   </button>
                 </div>
                 <p id="assistant-intent-status" class="assistant-intent-status text-muted-sm" aria-live="polite"></p>
