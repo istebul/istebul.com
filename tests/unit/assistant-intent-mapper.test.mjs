@@ -125,3 +125,51 @@ test('mapped arac answers remain compatible with existing vertical handoff bridg
   assert.match(href, /fuel=hybrid/);
   assert.match(href, /body=suv/);
 });
+
+test('maps city and household size into assistant answers', () => {
+  const result = mapIntentToAssistantAnswers({
+    categoryId: 'arac',
+    budgetMax: 3000000,
+    usagePurpose: 'family',
+    body: 'suv',
+    fuel: 'hybrid',
+    city: 'Konya',
+    householdSize: '3-4'
+  });
+
+  assert.ok(result);
+  assert.equal(result.answers.province, 'Konya');
+  assert.equal(result.answers.household_size, '3-4');
+  assert.equal(result.answers.mustHaves, undefined);
+});
+
+test('drops invalid household size and city from answers', () => {
+  const result = mapIntentToAssistantAnswers({
+    categoryId: 'arac',
+    usage: 'family',
+    body: 'suv',
+    city: 'şehir içi',
+    householdSize: '9'
+  });
+
+  assert.ok(result);
+  assert.equal(result.answers.province, undefined);
+  assert.equal(result.answers.household_size, undefined);
+});
+
+test('keeps mustHaves and dealBreakers in summary only', () => {
+  const result = mapIntentToAssistantAnswers({
+    categoryId: 'arac',
+    usage: 'family',
+    body: 'suv',
+    city: 'Konya',
+    householdSize: '3-4',
+    mustHaves: ['geniş bagaj'],
+    dealBreakers: ['yüksek bakım']
+  });
+
+  assert.ok(result);
+  assert.deepEqual(result.summary.mustHaves, ['geniş bagaj']);
+  assert.deepEqual(result.summary.dealBreakers, ['yüksek bakım']);
+  assert.equal(result.answers.mustHaves, undefined);
+});

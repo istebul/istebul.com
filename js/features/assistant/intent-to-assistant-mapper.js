@@ -47,6 +47,12 @@ export function mapIntentToAssistantAnswers(intent) {
     if (normalized.priority) {
       answers.priority = normalized.priority;
     }
+    if (normalized.city) {
+      answers.province = normalized.city;
+    }
+    if (normalized.householdSize) {
+      answers.household_size = normalized.householdSize;
+    }
 
     return {
       categoryId: normalized.categoryId,

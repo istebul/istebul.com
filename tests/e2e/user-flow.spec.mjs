@@ -2280,6 +2280,34 @@ test.describe('Faz 3D-1A category journey guards', () => {
     await expect(page.locator('#decision-assistant-form')).toBeVisible();
   });
 
+  test('karar-asistani hayalini anlat city ve household handoff üretir', async ({ page }) => {
+    await page.route('**/ai-proxy', (route) => route.abort());
+
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+
+    await page.fill(
+      '#assistant-intent-text',
+      'Konya\'da 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun.'
+    );
+    await page.locator('#assistant-intent-form button[type="submit"]').click();
+
+    await expect(page.locator('[data-assistant-intent-summary]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-assistant-intent-summary]')).toContainText(/Konya/i);
+    await expect(page.locator('[data-assistant-intent-summary]')).toContainText(/Hane büyüklüğü/i);
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/);
+
+    const answers = await page.evaluate(() => ({ ...window.app.assistantAnswers }));
+    await renderAssistantDecisionResult(page, { category: 'arac', answers });
+
+    const handoff = assistantDecisionToolbarLocator(page);
+    await expect(handoff).toHaveAttribute('href', /city=Konya/);
+    await expect(handoff).toHaveAttribute('href', /household_size=3-4/);
+    await expect(handoff).not.toHaveAttribute('href', /^\/auto\/\?$/);
+  });
+
   for (const { path, selector } of VERTICAL_ANALYSIS_SURFACE_GUARDS) {
     test(`vertical guard ${path} tam analiz yüzeyi yükler`, async ({ page }) => {
       await page.goto(path);

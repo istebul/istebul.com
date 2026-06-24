@@ -251,6 +251,13 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
     if (fuel) params.set('fuel', fuel);
     const body = pickCsv(normalizeAutoBody(answers.body), ',suv,sedan,hatchback,');
     if (body) params.set('body', body);
+    const cityRaw = String(answers.province || answers.city || '').trim();
+    if (isValidKonutAssistantProvinceQuery(cityRaw)) params.set('city', cityRaw);
+    const householdSize = pickCsv(
+      answers.household_size || answers.householdSize,
+      ',1,2,3-4,5+,'
+    );
+    if (householdSize) params.set('household_size', householdSize);
     return `/auto/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'ev') {

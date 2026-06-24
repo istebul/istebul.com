@@ -77,6 +77,65 @@ test('bootstrapAutoFromAssistantQuery applies usage budget fuel and body', async
   assert.equal(state.body, 'suv');
 });
 
+test('buildVerticalContinueHref carries auto city and household_size params', () => {
+  const href = buildVerticalContinueHref('arac', {
+    budget: 3000000,
+    usage: 'family',
+    fuel: 'hybrid',
+    body: 'suv',
+    province: 'Konya',
+    household_size: '3-4'
+  });
+
+  assert.match(href, /budget=3000000/);
+  assert.match(href, /usage=family/);
+  assert.match(href, /fuel=hybrid/);
+  assert.match(href, /body=suv/);
+  assert.match(href, /city=Konya/);
+  assert.match(href, /household_size=3-4/);
+});
+
+test('buildVerticalContinueHref omits invalid auto city and household_size', () => {
+  const href = buildVerticalContinueHref('arac', {
+    budget: 900000,
+    usage: 'family',
+    province: 'x',
+    household_size: '9'
+  });
+
+  assert.match(href, /budget=900000/);
+  assert.doesNotMatch(href, /city=/);
+  assert.doesNotMatch(href, /household_size=/);
+});
+
+test('bootstrapAutoFromAssistantQuery applies city and household_size', async () => {
+  const { bootstrapAutoFromAssistantQuery } = await import(
+    '../../js/features/assistant/assistant-vertical-bootstrap.js'
+  );
+
+  const customCityState = { usage: '', household_size: '' };
+  bootstrapAutoFromAssistantQuery(
+    customCityState,
+    new URLSearchParams('city=Konya&household_size=3-4')
+  );
+  assert.equal(customCityState.location, 'custom');
+  assert.equal(customCityState.location_custom, 'Konya');
+  assert.equal(customCityState.household_size, '3-4');
+
+  const presetCityState = { usage: '', household_size: '' };
+  bootstrapAutoFromAssistantQuery(presetCityState, new URLSearchParams('city=İstanbul'));
+  assert.equal(presetCityState.location, 'İstanbul');
+
+  const invalidState = { usage: '', household_size: '' };
+  bootstrapAutoFromAssistantQuery(
+    invalidState,
+    new URLSearchParams('city=x&household_size=9&usage=family')
+  );
+  assert.equal(invalidState.location, undefined);
+  assert.equal(invalidState.household_size, '');
+  assert.equal(invalidState.usage, 'family');
+});
+
 test('buildVerticalContinueHref carries finansman query params with purpose-aware term', () => {
   const href = buildVerticalContinueHref('finansman', {
     purpose: 'konut',
