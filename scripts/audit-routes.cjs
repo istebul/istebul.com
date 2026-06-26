@@ -71,6 +71,16 @@ const bootstrapSource = fs.readFileSync(bootstrapFile, 'utf8');
 if (!bootstrapSource.includes('karar-asistani')) {
   fail('route bootstrap missing /karar-asistani alias');
 }
+
+const redirects = fs.readFileSync(path.join(root, '_redirects'), 'utf8');
+for (const rule of [
+  '/finansman /finans/ 301',
+  '/finansman/ /finans/ 301',
+  '/araba /auto/ 301',
+  '/araba/ /auto/ 301'
+]) {
+  if (!redirects.includes(rule)) fail(`_redirects missing legacy vertical rule: ${rule}`);
+}
 if (!indexHtml.includes('route-bootstrap-head.js')) {
   fail('index.html must reference route-bootstrap-head.js');
 }
