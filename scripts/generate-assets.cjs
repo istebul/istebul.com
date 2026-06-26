@@ -204,4 +204,16 @@ const ogSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"
 
 fs.writeFileSync(path.join(root, 'assets/images/og-image.svg'), ogSvg);
 
-console.log('Generated PWA icons (istebul-icon), favicon.ico, and OG image.');
+const sharp = require('sharp');
+
+sharp(Buffer.from(ogSvg))
+  .resize(1200, 630, { fit: 'fill' })
+  .png({ compressionLevel: 9, effort: 10 })
+  .toFile(path.join(root, 'assets/images/og-image.png'))
+  .then(() => {
+    console.log('Generated PWA icons (istebul-icon), favicon.ico, and OG image (SVG + PNG).');
+  })
+  .catch((err) => {
+    console.error('Failed to generate og-image.png:', err);
+    process.exit(1);
+  });
