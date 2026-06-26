@@ -1,7 +1,7 @@
 # Site Analiz Raporu — isteBul (www.istebul.com)
 
 **İlk analiz tarihi:** 2026-05-25  
-**Bu revizyon:** 2026-06-19 — `main` **610a10a7** ile hizalandı (PR #54 docs refresh)  
+**Bu revizyon:** 2026-06-26 — GSC Domain Property / DNS TXT doğrulaması PASS (`GSC_DNS_VERIFIED_PASS`); 2026-06-19 `main` **610a10a7** ile hizalandı (PR #54 docs refresh)
 **Kapsam:** 2026-05-25 canlı örnekleme (WebFetch + curl) + o tarihteki üretim build audit’i  
 **Genel durum (2026-05-25 snapshot):** **Üretime hazır (YELLOW)** — gelir/SEO monetizasyonu ve performans iyileştirmeleri onay bekliyordu
 
@@ -19,11 +19,11 @@
 | SEO teknik altyapı | **YELLOW** | Mayıs’ta ~28 URL; güncel build audit **178 URL** (`docs/SEO_INDEXABILITY_REPORT.md`, 2026-06-10) |
 | Canlı içerik | **GREEN** | Ana sayfa karar altyapısı mesajı ve CTA’lar doğru (May 2026 gözlemi) |
 | Performans (bundle) | **YELLOW (stale)** | Mayıs ölçümü ~818 KB SPA; **610a10a7 sonrası yeniden ölçüm gerekir** |
-| Google Search Console | **TURUNCU** | Build-time doğrulama altyapısı mevcut; prod secret + GSC panel doğrulaması ayrı adım |
+| Google Search Console | **GREEN** | **PASS** — Domain Property / DNS TXT ile doğrulandı; HTML meta tag yalnızca URL-prefix alternatifi (opsiyonel) |
 | Google AdSense | **SARI → KIRMIZI (canlı)** | Repoda `ads.txt` var; Mayıs canlı taramada `/ads.txt` HTML döndü — prod yeniden doğrulanmalı |
 | Otomasyon curl/Lighthouse | **SINIRLI** | Cloudflare bot challenge (403); Googlebot etkilenmeyebilir |
 
-**Sonuç (güncellenmiş):** Site işlevsel ve yayında. Tam kapasite için **GSC prod doğrulaması**, **canlı `/ads.txt` doğrulaması**, **AdSense entegrasyonu (script/CSP/çerez)**, **bundle küçültme (yeniden ölçüm sonrası)** ve **çerez/CSP güncellemesi** sırayla yapılmalı — aşağıdaki onay listesi.
+**Sonuç (güncellenmiş):** Site işlevsel ve yayında. GSC mülk doğrulaması **tamamlandı** (DNS TXT). Tam kapasite için **GSC operasyonel SEO** (sitemap, URL inspection, CWV), **canlı `/ads.txt` doğrulaması**, **AdSense entegrasyonu (script/CSP/çerez)**, **bundle küçültme (yeniden ölçüm sonrası)** ve **çerez/CSP güncellemesi** sırayla yapılmalı — aşağıdaki onay listesi.
 
 ---
 
@@ -83,6 +83,8 @@ performance-check (kaynak) ✗ index.html'de perf:importmap işareti (dist OK)
 
 ## 4. Google Search Console
 
+> **2026-06 closure:** Mülk doğrulaması **Domain Property / DNS TXT** ile tamamlandı (`GSC_DNS_VERIFIED_PASS`). Canlı HTML’de `google-site-verification` meta tag **olmaması bu doğrulama tipinde hata veya blocker değildir**. `GOOGLE_SITE_VERIFICATION` secret yalnızca URL-prefix + HTML tag yöntemi seçilirse opsiyoneldir.
+
 ### Repoda ne var? (610a10a7)
 
 | Bileşen | Durum | Kanıt |
@@ -93,26 +95,32 @@ performance-check (kaynak) ✗ index.html'de perf:importmap işareti (dist OK)
 | Secret dokümantasyonu | **Mevcut** | `.github/SECRETS.example.md` → `GOOGLE_SITE_VERIFICATION` |
 | SEO dokümantasyonu | **Mevcut** | `docs/SEO_AUDIT.md` satır 38 |
 
-**Düzeltme (eski iddia):** “Repoda `google-site-verification` yok” ifadesi **artık yanlış**. Altyapı repoda; meta etiketinin **dist/** çıktısına yazılması `GOOGLE_SITE_VERIFICATION` secret’ının CI/Cloudflare Pages ortamında tanımlı olmasına bağlıdır.
+**Not (HTML tag alternatifi):** Repoda build-time meta enjeksiyon altyapısı mevcuttur (`scripts/lib/gsc-verification.cjs`). Meta etiketinin **dist/** çıktısına yazılması yalnızca URL-prefix + HTML tag doğrulaması seçilirse `GOOGLE_SITE_VERIFICATION` secret’ına bağlıdır; DNS Domain Property kullanıldığında secret zorunlu değildir.
 
-### Kalan ihtiyaçlar (operasyonel — Search Console tarafı)
+### Mülk doğrulaması
+
+| Yöntem | Durum | Not |
+|--------|--------|-----|
+| Domain Property / DNS TXT | **PASS** | Mevcut tercih; canlı HTML’de meta tag gerekmez |
+| URL-prefix / HTML tag | Opsiyonel alternatif | `GOOGLE_SITE_VERIFICATION` secret + build enjeksiyonu |
+
+### Kalan işler (operasyonel SEO — mülk doğrulaması değil)
 
 | İş | Agent / repo | Sizin yapmanız gereken |
 |----|--------------|------------------------|
-| Secret yapılandırması | Repo secret veya CF Pages env’de `GOOGLE_SITE_VERIFICATION` | GSC → Doğrulama → HTML etiketi `content` değerini secret olarak ekleyin |
-| Prod deploy doğrulama | Deploy sonrası `dist/index.html` meta kontrolü | GSC panelinde mülk doğrulamasını tamamlayın |
-| DNS doğrulama (alternatif) | — | Cloudflare DNS’e TXT kaydı |
 | Sitemap gönderme | Build `sitemap.xml` üretir | GSC → Sitemaps → `https://www.istebul.com/sitemap.xml` |
 | URL denetimi / indeks | — | Önemli URL’ler için “İndeks iste” |
+| Core Web Vitals | — | GSC → Deneyim → CWV raporu |
 | Yapılandırılmış veri raporu | Schema build’de mevcut | GSC → Zengin sonuçlar |
+| HTML tag doğrulaması (opsiyonel) | `GOOGLE_SITE_VERIFICATION` secret | Yalnızca URL-prefix + HTML tag yöntemi seçilirse; DNS PASS iken gerekmez |
 
-**Önerilen GSC kontrol listesi (panel):**
+**Önerilen GSC kontrol listesi (panel — operasyonel):**
 
-1. Mülk: `https://www.istebul.com` (www tercih edin, `_redirects` ile uyumlu).
+1. Mülk: Domain Property (`istebul.com`) — DNS TXT doğrulandı.
 2. Sitemap durumu: 178 URL (`docs/SEO_INDEXABILITY_REPORT.md`) — gönderildi mi, hata var mı?
 3. `/rehber/*`, `/auto/`, `/karar-asistani/` için URL denetimi.
 4. Mobil kullanılabilirlik + Core Web Vitals (alan verileri 28 gün gecikmeli).
-5. Deploy sonrası: canlı HTML’de `google-site-verification` meta var mı?
+5. *(Opsiyonel — yalnızca HTML tag yöntemi)* Deploy sonrası: canlı HTML’de `google-site-verification` meta var mı?
 
 ---
 
@@ -141,12 +149,11 @@ performance-check (kaynak) ✗ index.html'de perf:importmap işareti (dist OK)
 | # | Engel | Etki | Önerilen çözüm |
 |---|--------|------|----------------|
 | 1 | Canlı `/ads.txt` prod doğrulaması eksik (May 2026: HTML fallback) | AdSense publisher doğrulaması başarısız olabilir | Deploy sonrası `curl -sI https://www.istebul.com/ads.txt` + içerik kontrolü; gerekirse `_redirects` / Pages statik kural |
-| 2 | GSC secret + prod meta doğrulaması | Build altyapısı var; secret yoksa meta dist’e yazılmaz | `GOOGLE_SITE_VERIFICATION` secret → deploy → GSC panel doğrulama |
-| 3 | Ana JS bundle (May 2026: 364 KB + chunk 213 KB) — **stale** | LCP/TBT, mobil | `610a10a7` üzerinde yeniden ölçüm; route bazlı lazy load, admin ayrımı |
-| 4 | `sameAs` boş | Marka bilgisi zayıf | `data/seo/site.json` sosyal URL’ler |
-| 5 | OG görsel SVG | Bazı paylaşım önizlemeleri zayıf | PNG/WebP 1200×630 |
-| 6 | `performance-check.cjs` kaynak drift | CI gürültüsü | `perf:importmap` yorum işareti veya script güncelleme |
-| 7 | AdSense script/CSP/çerez yok | Monetizasyon + KVKK | Politika + CMP genişletme (onaylı) |
+| 2 | Ana JS bundle (May 2026: 364 KB + chunk 213 KB) — **stale** | LCP/TBT, mobil | `610a10a7` üzerinde yeniden ölçüm; route bazlı lazy load, admin ayrımı |
+| 3 | `sameAs` boş | Marka bilgisi zayıf | `data/seo/site.json` sosyal URL’ler |
+| 4 | OG görsel SVG | Bazı paylaşım önizlemeleri zayıf | PNG/WebP 1200×630 |
+| 5 | `performance-check.cjs` kaynak drift | CI gürültüsü | `perf:importmap` yorum işareti veya script güncelleme |
+| 6 | AdSense script/CSP/çerez yok | Monetizasyon + KVKK | Politika + CMP genişletme (onaylı) |
 
 ---
 
@@ -154,14 +161,14 @@ performance-check (kaynak) ✗ index.html'de perf:importmap işareti (dist OK)
 
 Aşağıdaki sırayı **sizin onayınızdan sonra** uygulayacağız:
 
-1. **GSC prod doğrulama** — Siz: `GOOGLE_SITE_VERIFICATION` secret değerini sağlayın → deploy → GSC panelinde mülk doğrulaması.
+1. **GSC operasyonel SEO** — Sitemap gönder (178 URL), 5–10 öncelik URL “İndeks iste”, CWV ve zengin sonuç raporlarını izle. *(Mülk doğrulaması DNS TXT ile PASS.)*
 2. **Canlı `ads.txt` doğrulama** — Deploy sonrası prod `/ads.txt` statik içerik döndürüyor mu kontrol; gerekirse routing düzeltmesi.
-3. **GSC operasyonel** — Siz: sitemap gönder (178 URL), 5–10 öncelik URL “İndeks iste”, CWV raporunu kaydet.
-4. **AdSense başvuru** — Siz: hesap + site onayı → Biz: onaylı `ca-pub-…` ile script + birim yerleşimi (sayfa seçimi sizinle); `ads.txt` repoda mevcut.
-5. **Çerez / KVKK** — Reklam çerezleri, banner metni, consent gate, gizlilik sayfası.
-6. **CSP güncelleme** — `_headers` AdSense domainleri.
-7. **Performans sprint** — `610a10a7` build sonrası bundle ölçümü; admin chunk ayrımı, LHCI 90+ hedefi.
-8. **SEO güven** — `sameAs`, OG PNG, isteğe bağlı `lastmod` sitemap.
+3. **AdSense başvuru** — Siz: hesap + site onayı → Biz: onaylı `ca-pub-…` ile script + birim yerleşimi (sayfa seçimi sizinle); `ads.txt` repoda mevcut.
+4. **Çerez / KVKK** — Reklam çerezleri, banner metni, consent gate, gizlilik sayfası.
+5. **CSP güncelleme** — `_headers` AdSense domainleri.
+6. **Performans sprint** — `610a10a7` build sonrası bundle ölçümü; admin chunk ayrımı, LHCI 90+ hedefi.
+7. **SEO güven** — `sameAs`, OG PNG, isteğe bağlı `lastmod` sitemap.
+8. *(Opsiyonel)* **HTML tag doğrulaması** — URL-prefix mülkü seçilirse `GOOGLE_SITE_VERIFICATION` secret + deploy; DNS PASS iken gerekmez.
 
 ---
 
@@ -169,7 +176,8 @@ Aşağıdaki sırayı **sizin onayınızdan sonra** uygulayacağız:
 
 Lütfen onay verirken mümkünse şunları iletin:
 
-- [ ] `GOOGLE_SITE_VERIFICATION` secret değeri (GSC HTML etiketi `content`) **veya** DNS TXT tercihi  
+- [x] GSC mülk doğrulaması — **Domain Property / DNS TXT (PASS)**
+- [ ] `GOOGLE_SITE_VERIFICATION` secret *(opsiyonel — yalnızca URL-prefix + HTML tag yöntemi seçilirse)*
 - [ ] Canlı `/ads.txt` prod test sonucu (deploy sonrası)  
 - [ ] AdSense: başvuru yapılsın mı? (evet/hayır) — evet ise hedef sayfalar (ör. yalnızca `/rehber/*`)  
 - [ ] AdSense onaylı `ca-pub-XXXXXXXX` (onay sonrası — repodaki `pub-6412697542113702` ile uyum kontrolü)  
@@ -193,4 +201,4 @@ Lütfen onay verirken mümkünse şunları iletin:
 
 ---
 
-*Bu rapor 2026-05-25 otomatik audit + canlı örnekleme ile üretilmiş; 2026-06-19’da `main` 610a10a7 ile hizalanmıştır. Onayınız olmadan GSC secret değeri, AdSense script veya reklam yerleşimi deploy edilmemelidir.*
+*Bu rapor 2026-05-25 otomatik audit + canlı örnekleme ile üretilmiş; 2026-06-19’da `main` 610a10a7 ile hizalanmıştır. GSC mülk doğrulaması 2026-06’da DNS TXT ile tamamlanmıştır. Onayınız olmadan AdSense script veya reklam yerleşimi deploy edilmemelidir.*

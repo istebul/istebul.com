@@ -35,7 +35,10 @@
 - **Indexation:** `robots` index on public pages; `Disallow` admin, profil, messages, favoriler, gecmis.
 - **Crawl:** Statik HTML öncelikli; SPA catch-all yalnızca oturum rotaları (`/profil/`, vb.).
 - **Build:** `scripts/lib/seo.cjs` → `buildSeoPages`, `generateSitemap`, `generateRobots` (`npm run build`).
-- **Search Console:** `GOOGLE_SITE_VERIFICATION` GitHub secret → build sırasında `<meta name="google-site-verification">` enjekte edilir (`scripts/lib/gsc-verification.cjs`). GSC’de sitemap: `https://www.istebul.com/sitemap.xml`.
+- **Search Console doğrulama:**
+  - **(a) Domain Property / DNS TXT** — mevcut tercih, **PASS** (2026-06). Canlı HTML’de `google-site-verification` meta tag gerekmez.
+  - **(b) URL-prefix / HTML tag** — alternatif; `GOOGLE_SITE_VERIFICATION` GitHub secret → build sırasında `<meta name="google-site-verification">` enjekte edilir (`scripts/lib/gsc-verification.cjs`).
+- **Search Console operasyonel:** Sitemap `https://www.istebul.com/sitemap.xml`; URL inspection, Core Web Vitals ve zengin sonuç raporları.
 
 ## Performance SEO Blockers (bilinen)
 
@@ -52,7 +55,7 @@
 - Marka/model long-tail (ör. «Corolla mı Civic mi») — veri kaynağı gerekir
 - Blog / haber akışı ve `lastmod` sitemap alanı
 - `hreflang` yalnızca TR olduğu için şimdilik gerek yok
-- Search Console + yapılandırılmış veri doğrulama (deploy sonrası)
+- Search Console operasyonel izleme: sitemap durumu, URL inspection, yapılandırılmış veri raporu (mülk doğrulaması DNS TXT ile tamamlandı)
 
 ## Ölçüm
 
