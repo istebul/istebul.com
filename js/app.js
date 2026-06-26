@@ -3804,7 +3804,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
     }
 
-    saveDecisionHistory(result) {
+    saveDecisionHistory(result, options = {}) {
         const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
         if (!storageKey) {
             this.decisionHistory = [];
@@ -3816,7 +3816,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         const topPick = result.recommendations[0];
         const history = this.readStoredArray(storageKey);
-        const filtered = mergeDecisionHistoryEntry(history, record, 12);
+        const maxEntries = Number(options.maxEntries) > 0 ? Number(options.maxEntries) : 12;
+        const filtered = mergeDecisionHistoryEntry(history, record, maxEntries);
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
         this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
