@@ -14,7 +14,13 @@ import {
   formatTry
 } from './real-estate-calculator.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
+import { saveDecisionHistory } from '../core/app-bridge.js';
+import { buildDecisionHistoryEntry, mergeDecisionHistoryEntry } from '../ui/decision-history-entry.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
+import {
+  buildKonutDecisionHistoryPayload,
+  KONUT_DECISION_HISTORY_MAX
+} from './konut-decision-history-payload.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountKonutResultsV2, syncCanonicalDecisionScore } from '../features/konut/konut-results-v2.js';
 import {
@@ -660,39 +666,38 @@ async function getAuthUserId() {
   }
 }
 
+function persistKonutDecisionHistory(payload, userId) {
+  const historyOptions = { maxEntries: KONUT_DECISION_HISTORY_MAX };
+
+  if (saveDecisionHistory(payload, historyOptions)) {
+    return payload;
+  }
+
+  if (!userId) return payload;
+
+  const record = buildDecisionHistoryEntry(payload, { source: 'konut' });
+  if (!record) return payload;
+
+  const key = userScopedKey(STORAGE_KEYS.DECISION_HISTORY, userId);
+  const history = readStoredJson(key, []);
+  writeStoredJson(key, mergeDecisionHistoryEntry(history, record, KONUT_DECISION_HISTORY_MAX));
+  return payload;
+}
+
 function saveReportLocally(metrics, aiText) {
-  const record = {
-    id: `konut_${Date.now()}`,
-    categoryId: 'konut',
-    categoryName: 'Konut',
-    createdAt: new Date().toISOString(),
-    summary: aiText.slice(0, 220),
-    purchasePurpose: state.purchasePurpose,
-    city: state.city,
-    district: state.district,
-    topPick: {
-      name: `${formatLocationLabel()} · ${state.purchasePurpose}`,
-      score: metrics.score,
-      monthlyPayment: metrics.ownership.monthlyPayment,
-      yearlyCost: metrics.ownership.realTotal,
-      riskLevel: metrics.risk.label
-    }
-  };
+  const payload = buildKonutDecisionHistoryPayload(metrics, aiText, state);
   void getAuthUserId().then((userId) => {
     if (!userId) return;
-    const key = userScopedKey(STORAGE_KEYS.DECISION_HISTORY, userId);
-    const history = readStoredJson(key, []);
-    history.unshift(record);
-    writeStoredJson(key, history.slice(0, 80));
+    persistKonutDecisionHistory(payload, userId);
   });
   try {
     const guestKey = 'ib_housing_saved_reports';
     const guest = JSON.parse(localStorage.getItem(guestKey) || '[]');
-    guest.unshift(record);
+    guest.unshift(payload);
     localStorage.setItem(guestKey, JSON.stringify(guest.slice(0, 20)));
   } catch {}
   trackEvent('home_report_save', { score: metrics.score });
-  return record;
+  return payload;
 }
 
 async function submitLead(metrics, aiText) {

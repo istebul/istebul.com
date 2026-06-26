@@ -10,10 +10,10 @@ export function getCurrentUserId() {
   return getAppInstance()?.currentUser?.id ?? null;
 }
 
-export function saveDecisionHistory(entry) {
+export function saveDecisionHistory(entry, options = {}) {
   const app = getAppInstance();
   if (app && typeof app.saveDecisionHistory === 'function') {
-    app.saveDecisionHistory(entry);
+    app.saveDecisionHistory(entry, options);
     return true;
   }
   return false;
