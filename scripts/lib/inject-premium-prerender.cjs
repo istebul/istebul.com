@@ -21,7 +21,7 @@ function renderPrerenderBlock(sectionId, data) {
   return `            <div class="ib-prerender-seo" data-prerender-for="${sectionId}">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker">${escapeHtml(data.title)}</p>
-                    <h1>${escapeHtml(data.h1)}</h1>
+                    <h2>${escapeHtml(data.h1)}</h2>
                     <p class="ib-premium-lead">${escapeHtml(data.lead)}</p>
                     <ul class="ib-check-list">${bullets}</ul>
                     <p class="ib-prerender-actions">
