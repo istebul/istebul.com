@@ -105,6 +105,9 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra, ogTy
   <meta property="og:type" content="${escapeHtml(ogType)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   <meta property="og:image" content="${escapeHtml(ogImage)}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">

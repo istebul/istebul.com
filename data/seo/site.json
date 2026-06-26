@@ -1,7 +1,7 @@
 {
   "baseUrl": "https://www.istebul.com",
   "siteName": "isteBul",
-  "defaultOgImage": "/assets/images/og-image.svg",
+  "defaultOgImage": "/assets/images/og-image.png",
   "locale": "tr_TR",
   "language": "tr-TR",
   "organization": {
