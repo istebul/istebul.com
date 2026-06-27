@@ -60,8 +60,17 @@ function loadPlausible(domain) {
   document.head.appendChild(script);
 }
 
+function hasExistingCloudflareBeaconScript() {
+  if (document.querySelector('script[data-analytics-provider="cf-beacon"]')) return true;
+  if (document.querySelector('script[src*="static.cloudflareinsights.com/beacon.min.js"]')) {
+    return true;
+  }
+  if (document.querySelector('script[src*="beacon.min.js"][data-cf-beacon]')) return true;
+  return false;
+}
+
 function loadCloudflareBeacon(token) {
-  if (!token || document.querySelector('script[data-analytics-provider="cf-beacon"]')) return;
+  if (!token || hasExistingCloudflareBeaconScript()) return;
   const script = document.createElement('script');
   script.defer = true;
   script.src = 'https://static.cloudflareinsights.com/beacon.min.js';

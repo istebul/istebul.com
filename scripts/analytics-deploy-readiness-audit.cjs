@@ -132,5 +132,37 @@ if (!headers.includes('https://www.istebul.com')) {
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 if (!pkg.scripts['audit:analytics']) fail('package.json must define audit:analytics script');
 
+const distDir = path.join(root, 'dist');
+const embeddedBeaconPatterns = [
+  'static.cloudflareinsights.com/beacon.min.js',
+  'Cloudflare Pages Analytics',
+  'data-cf-beacon'
+];
+
+const walkDistHtml = (dir, files = []) => {
+  if (!fs.existsSync(dir)) return files;
+  for (const name of fs.readdirSync(dir)) {
+    const file = path.join(dir, name);
+    const stat = fs.statSync(file);
+    if (stat.isDirectory()) {
+      walkDistHtml(file, files);
+      continue;
+    }
+    if (name.endsWith('.html')) files.push(file);
+  }
+  return files;
+};
+
+for (const htmlFile of walkDistHtml(distDir)) {
+  const html = fs.readFileSync(htmlFile, 'utf8');
+  for (const pattern of embeddedBeaconPatterns) {
+    if (html.includes(pattern)) {
+      fail(
+        `dist HTML must not embed Cloudflare Web Analytics beacon (${pattern}): ${path.relative(root, htmlFile)}`
+      );
+    }
+  }
+}
+
 if (failed) process.exit(1);
 console.log('analytics-deploy-readiness-audit: OK');
