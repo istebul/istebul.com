@@ -21,7 +21,7 @@ test('production env script only contains browser-safe keys', () => {
 test('service worker pre-caches offline page but bypasses env.js cache', () => {
   const worker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 
-  assert.match(worker, /'\/offline\.html'/);
+  assert.match(worker, /'\/offline'/);
   assert.match(worker, /pathname === '\/env\.js'/);
   assert.match(worker, /cache: 'no-store'/);
   assert.match(worker, /IMMUTABLE_ASSET/);
