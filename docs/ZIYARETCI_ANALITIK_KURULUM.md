@@ -62,12 +62,17 @@ GA4 **Kurulumu test et** yalnızca çerez kabulünden sonra başarılı olur.
 ## 4) Cloudflare Web Analytics (ücretsiz, aynı hesap)
 
 1. Cloudflare Dashboard → **Analytics & Logs** → **Web Analytics** → Add site `istebul.com`.
-2. Beacon **token** kopyalayın.
-3. Pages env:
+2. Beacon **token** kopyalayın (değeri repoya veya HTML’e yapıştırmayın).
+3. Cloudflare Pages → **istebul-com** → Settings → Environment variables:
 
 | Değişken | Açıklama |
 |----------|----------|
-| `CF_WEB_ANALYTICS_TOKEN` | Beacon token |
+| `CF_WEB_ANALYTICS_TOKEN` | Web Analytics beacon token (Production + Preview) |
+
+4. **Cloudflare Pages Web Analytics otomatik script enjeksiyonunu kapatın.** Dashboard’da “Enable Web Analytics” / otomatik beacon ekleme açıksa edge, HTML’e `beacon.min.js` enjekte eder; bu çerez onayını bypass eder ve consent-gated loader ile **çift beacon** riski oluşturur.
+5. Beacon **repo HTML’ine veya build çıktısına doğrudan eklenmemelidir.** Consent sonrası yükleme yalnızca `js/core/third-party-analytics.js` → `loadCloudflareBeacon()` üzerinden yapılır (`loadThirdPartyMeasurement()` → `analytics.hasConsent()`).
+
+`npm run audit:analytics`, `dist/**/*.html` içinde gömülü beacon olmadığını doğrular (repo/build kaynağı). Canlı edge auto-inject bu guard ile yakalanmaz; yukarıdaki dashboard adımı zorunludur.
 
 ## Opsiyonel
 
