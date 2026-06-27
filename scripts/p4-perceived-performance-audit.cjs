@@ -26,7 +26,7 @@ const mustContain = [
   ['index.html', 'perf-fonts.css'],
   ['!index.html', 'enterprise-polish.css'],
   ['scripts/production-build.cjs', 'perf:preload-style'],
-  ['sw.js', 'v51'],
+  ['sw.js', 'v52'],
   ['js/auto/auto-app.js', 'initPerceivedPerformance'],
   ['js/runtime/corporate-ux.js', 'initPerceivedPerformance'],
   ['scripts/production-build.cjs', 'p4-5-perceived-performance.css']
