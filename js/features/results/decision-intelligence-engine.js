@@ -30,18 +30,57 @@ function normalizeCategory(category) {
   return 'konut';
 }
 
-function impactSigned(delta) {
+function formatFactorImpactDisplay(delta) {
   const n = Math.round(delta);
-  if (n > 0) return `+${n}`;
-  if (n < 0) return String(n);
-  return '0';
+  if (n > 0) return `+${n} puan`;
+  if (n < 0) return `${n} puan`;
+  return 'Nötr';
+}
+
+const AUTO_USAGE_LABELS = {
+  family: 'Aile kullanımı',
+  personal: 'Bireysel kullanım',
+  city: 'Şehir içi kullanım',
+  long: 'Uzun yol',
+  business: 'İş kullanımı',
+  prestige: 'Prestij kullanımı',
+  mixed: 'Karma kullanım'
+};
+
+const AUTO_FUEL_LABELS = {
+  gasoline: 'Benzin',
+  diesel: 'Dizel',
+  hybrid: 'Hibrit',
+  electric: 'Elektrikli',
+  lpg: 'LPG',
+  any: 'Esnek'
+};
+
+/**
+ * @param {unknown} usage
+ * @returns {string}
+ */
+export function formatAutoUsageLabel(usage) {
+  const key = String(usage || '').trim().toLowerCase();
+  if (!key) return '';
+  return AUTO_USAGE_LABELS[key] || 'Belirtilen kullanım profili';
+}
+
+/**
+ * @param {unknown} fuel
+ * @returns {string}
+ */
+export function formatAutoFuelLabel(fuel) {
+  const key = String(fuel || '').trim().toLowerCase();
+  if (!key) return '';
+  return AUTO_FUEL_LABELS[key] || 'Belirtilen yakıt tipi';
 }
 
 function addFactor(factors, label, delta, reason) {
   if (!label || !reason) return;
   factors.push({
     label,
-    impact: impactSigned(delta),
+    impact: formatFactorImpactDisplay(delta),
     reason
   });
 }
@@ -72,7 +111,7 @@ export function resolveRecommendationLevel(decisionScore, context = {}) {
 }
 
 const RECOMMENDATION_LABELS = {
-  proceed: 'İlerlenebilir',
+  proceed: 'Devam edilebilir',
   proceed_with_caution: 'Dikkatli ilerle',
   wait: 'Ertelenmeli / revize edilmeli',
   avoid: 'Şu an önerilmez'
@@ -329,13 +368,17 @@ export function computeDecisionScoreV3(category, context = {}) {
       factors,
       'Kullanım amacı',
       usageFit,
-      context.usage ? `${context.usage} kullanım profili` : 'Kullanım belirtilmedi'
+      context.usage ?
+        `${formatAutoUsageLabel(context.usage)} profili`
+      : 'Kullanım belirtilmedi'
     );
     addFactor(
       factors,
       'Yakıt/enerji',
       context.fuel === 'electric' ? 4 : context.fuel === 'diesel' ? 2 : 0,
-      context.fuel || 'Yakıt tipi'
+      context.fuel ?
+        `${formatAutoFuelLabel(context.fuel)} yakıt profili`
+      : 'Yakıt tipi belirtilmedi'
     );
   }
 
@@ -579,7 +622,9 @@ export function buildRiskAnalysisV3(category, context = {}) {
       'fuel',
       context.fuel === 'electric' && context.km > 25000 ? 'orta' : 'düşük',
       'Yakıt/enerji tipi',
-      'Kullanım ve yakıt tipi uyumu değerlendirildi.',
+      context.fuel ?
+        `${formatAutoFuelLabel(context.fuel)} tipi kullanım senaryosuyla değerlendirildi.`
+      : 'Kullanım ve yakıt tipi uyumu değerlendirildi.',
       'Yıllık km ile enerji maliyetini doğrulayın.'
     ),
     buildRiskItem(
@@ -608,7 +653,7 @@ export function buildRiskAnalysisV3(category, context = {}) {
       'düşük',
       'Kullanım amacı',
       context.usage ?
-        `${context.usage} profiline göre segment seçildi.`
+        `${formatAutoUsageLabel(context.usage)} profiline göre segment seçildi.`
       : 'Kullanım amacı netleştirilmeli.',
       'Şehir içi/uzun yol/aile kullanımına göre model daraltın.'
     )
