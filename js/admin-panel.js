@@ -88,7 +88,8 @@ import {
   renderPagePathDetailPanel,
   renderPlatformAnalyticsEmptyGuide,
   exportPlatformAnalyticsCsv,
-  FILTER_PRESETS
+  FILTER_PRESETS,
+  PLATFORM_LEAD_SUBMIT_EVENT_ALIASES
 } from './admin/platform-site-analytics-dashboard.js';
 import {
   ANALYTICS_DATA_MODES,
@@ -3207,7 +3208,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
   const checkoutStarted = countFunnelStep(kpiRows, 'checkout_start');
   const checkoutCompleted = countFunnelStep(kpiRows, 'checkout_complete');
   const paidConversions = countFunnelStep(kpiRows, 'paid_conversion');
-  const leadSubmit = countEvents(kpiRows, 'lead_submit') + countEvents(kpiRows, 'auto_lead_submit');
+  const leadSubmit = countEventsAny(kpiRows, PLATFORM_LEAD_SUBMIT_EVENT_ALIASES);
   const partnerOk = countEvents(kpiRows, 'partner_dispatch_success');
   const partnerFail = countEvents(kpiRows, 'partner_dispatch_failed');
   const financeStart = countEvents(kpiRows, 'finance_funnel_start');
@@ -3287,8 +3288,9 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     kpiRows,
     ['paid_conversion', 'checkout_completed', 'checkout_complete', 'revenue_attributed']
   );
+  const leadSubmitEventNames = new Set(PLATFORM_LEAD_SUBMIT_EVENT_ALIASES);
   const channelLeads = kpiRows
-    .filter((row) => row.event_name === 'lead_submit' || row.event_name === 'auto_lead_submit')
+    .filter((row) => leadSubmitEventNames.has(row.event_name))
     .reduce((acc, row) => {
       const props = row.properties || {};
       const channel =

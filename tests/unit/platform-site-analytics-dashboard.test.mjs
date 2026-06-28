@@ -8,7 +8,8 @@ import {
   renderPagePathDetailPanel,
   exportPlatformAnalyticsCsv,
   renderPlatformAnalyticsEmptyGuide,
-  filterRowsByPreset
+  filterRowsByPreset,
+  PLATFORM_LEAD_SUBMIT_EVENT_ALIASES
 } from '../../js/admin/platform-site-analytics-dashboard.js';
 
 const sampleRows = [
@@ -62,6 +63,31 @@ test('buildSiteAnalyticsMetrics aggregates site funnel KPIs', () => {
   const autoRow = metrics.categoryRows.find((r) => r.id === 'auto');
   assert.ok(autoRow);
   assert.ok(autoRow.analysis >= 1);
+});
+
+test('buildSiteAnalyticsMetrics counts vertical lead submit aliases in lead KPIs', () => {
+  const rows = [
+    {
+      event_name: 'kasko_lead_submit',
+      session_id: 'k1',
+      created_at: new Date().toISOString(),
+      funnel: 'kasko'
+    },
+    {
+      event_name: 'insurance_lead_submit',
+      session_id: 's1',
+      created_at: new Date().toISOString(),
+      funnel: 'sigorta'
+    }
+  ];
+  const metrics = buildSiteAnalyticsMetrics(rows);
+  assert.equal(metrics.leads, 2);
+  assert.ok(PLATFORM_LEAD_SUBMIT_EVENT_ALIASES.includes('kasko_lead_submit'));
+  assert.ok(PLATFORM_LEAD_SUBMIT_EVENT_ALIASES.includes('insurance_lead_submit'));
+  const kaskoRow = metrics.categoryRows.find((r) => r.id === 'kasko');
+  const sigortaRow = metrics.categoryRows.find((r) => r.id === 'sigorta');
+  assert.equal(kaskoRow?.lead, 1);
+  assert.equal(sigortaRow?.lead, 1);
 });
 
 test('buildPagePathDetail filters events for one path', () => {
