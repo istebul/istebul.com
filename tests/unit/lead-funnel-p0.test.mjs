@@ -67,3 +67,46 @@ test('tatil hero bypass fires vacation_start on first interaction', async () => 
   const initBlock = src.slice(src.indexOf('async function init()'), src.indexOf('init();'));
   assert.doesNotMatch(initBlock, /vacation_start/);
 });
+
+test('kasko-app wires saveLead to saveKaskoLead instead of stub', async () => {
+  const src = await readFile(`${root}js/kasko/kasko-app.js`, 'utf8');
+  assert.match(src, /import[\s\S]*saveKaskoLead[\s\S]*from '\.\/kasko-intake\.js'/);
+  assert.match(src, /saveLead:\s*saveKaskoLeadFromTracker/);
+  assert.doesNotMatch(src, /saveLead:\s*\(\)\s*=>\s*Promise\.resolve\(\{\s*ok:\s*false\s*\}\)/);
+});
+
+test('kasko results v2 emits kasko_wizard_complete once per mount', async () => {
+  const src = await readFile(`${root}js/features/kasko/kasko-results-v2.js`, 'utf8');
+  assert.match(src, /trackKaskoWizardComplete/);
+  assert.match(src, /if \(!hadV2Root\)/);
+  assert.match(src, /trackKaskoResultsView/);
+});
+
+test('kasko analytics legacy map includes vertical event parity keys', async () => {
+  const { LEGACY_TO_SITE_EVENT } = await import('../../js/platform/site-analytics.js');
+  assert.equal(LEGACY_TO_SITE_EVENT.kasko_page_view, 'category_page_view');
+  assert.equal(LEGACY_TO_SITE_EVENT.kasko_results_view, 'results_viewed');
+  assert.equal(LEGACY_TO_SITE_EVENT.kasko_wizard_complete, 'analysis_completed');
+  assert.equal(LEGACY_TO_SITE_EVENT.kasko_lead_submit, 'lead_submitted');
+  assert.equal(LEGACY_TO_SITE_EVENT.insurance_lead_submit, 'lead_submitted');
+});
+
+test('platform analytics allowlist includes kasko and insurance lead events', async () => {
+  const src = await readFile(`${root}supabase/functions/_shared/platform-analytics.ts`, 'utf8');
+  for (const eventName of [
+    'kasko_page_view',
+    'kasko_results_view',
+    'kasko_wizard_complete',
+    'kasko_lead_submit',
+    'insurance_lead_submit'
+  ]) {
+    assert.match(src, new RegExp(`"${eventName}"`));
+  }
+});
+
+test('sigorta saveSigortaLead emits insurance_lead_submit on success', async () => {
+  const src = await readFile(`${root}js/sigorta/sigorta-intake.js`, 'utf8');
+  const saveBlock = src.slice(src.indexOf('export function saveSigortaLead'), src.indexOf('export async function trackSigortaStep'));
+  assert.match(saveBlock, /if \(res\.ok\)/);
+  assert.match(saveBlock, /trackAnalytics\('insurance_lead_submit'/);
+});

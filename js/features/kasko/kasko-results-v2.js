@@ -17,7 +17,11 @@ import {
   hydrateInsightBlocks,
   renderInsightBlocksHtml
 } from '../ai/ai-insight-engine.js';
-import { saveKaskoLead, trackKaskoResultsView } from '../../kasko/kasko-intake.js';
+import {
+  saveKaskoLead,
+  trackKaskoResultsView,
+  trackKaskoWizardComplete
+} from '../../kasko/kasko-intake.js';
 
 export const KASKO_RESULTS_MOUNT_ID = 'kasko-results';
 
@@ -354,6 +358,7 @@ export async function mountKaskoResultsV2(mountNode, payload = {}) {
   const selectedOption = payload.selectedOption || results[0]?.id || '';
   const { user } = getResultsPlanContext();
 
+  const hadV2Root = Boolean(target.querySelector('.kasko-v2-root'));
   target.querySelector('.kasko-v2-root')?.remove();
 
   const built = buildKaskoResultsV2Payload({
@@ -370,6 +375,9 @@ export async function mountKaskoResultsV2(mountNode, payload = {}) {
   target.prepend(root);
 
   trackKaskoResultsView({ decision_score: model.decisionScore });
+  if (!hadV2Root) {
+    trackKaskoWizardComplete({ decision_score: model.decisionScore });
+  }
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'kasko',
