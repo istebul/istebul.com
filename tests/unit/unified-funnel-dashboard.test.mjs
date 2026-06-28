@@ -61,6 +61,13 @@ test('buildUnifiedFunnelMetrics counts kasko_wizard_complete in results', () => 
   assert.ok(kasko.results >= 1);
 });
 
+test('buildUnifiedFunnelMetrics counts insurance_lead_submit for sigorta', () => {
+  const rows = [{ event_name: 'insurance_lead_submit', session_id: 's1' }];
+  const metrics = buildUnifiedFunnelMetrics(rows);
+  const sigorta = metrics.find((m) => m.id === 'sigorta');
+  assert.ok(sigorta.leads >= 1);
+});
+
 test('renderUnifiedFunnelDashboard shows cutover note', () => {
   const html = renderUnifiedFunnelDashboard(buildUnifiedFunnelMetrics([]), (s) => String(s));
   assert.match(html, /5 Haziran 2026/);
