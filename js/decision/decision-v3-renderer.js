@@ -210,7 +210,8 @@ export function renderDecisionV3Panel(model = {}) {
         </div>
         <div class="decision-v3-score-card" aria-label="Karar skoru">
           <span class="decision-v3-score-value">${esc(String(model.decisionScore))}</span>
-          <span class="decision-v3-score-meta">${esc(model.scoreLabel)} · ${esc(String(model.confidenceScore))}/100 güven</span>
+          <span class="decision-v3-score-meta">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</span>
+          <span class="decision-v3-score-meta">Veri güveni: ${esc(String(model.confidenceScore))}/100</span>
           <span class="decision-v3-risk-pill">${esc(model.overallRisk)} risk</span>
         </div>
       </section>
@@ -221,10 +222,11 @@ export function renderDecisionV3Panel(model = {}) {
               <h3>Skor Faktörleri</h3>
               <ul class="decision-v3-factor-list">
                 ${scoreFactors
-                  .map(
-                    (factor) =>
-                      `<li><strong>${esc(factor.label)}</strong> ${esc(factor.impact || '')} · ${esc(factor.reason || '')}</li>`
-                  )
+                  .map((factor) => {
+                    const impact = String(factor.impact || 'Nötr');
+                    const impactSuffix = impact !== 'Nötr' ? ` · ${impact}` : '';
+                    return `<li><strong>${esc(factor.label)}</strong> · ${esc(factor.reason || '')}${esc(impactSuffix)}</li>`;
+                  })
                   .join('')}
               </ul>
             </section>`

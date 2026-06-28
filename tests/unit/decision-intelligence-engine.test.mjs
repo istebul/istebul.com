@@ -87,7 +87,7 @@ test('tatil insufficient budget raises budget risk', () => {
   assert.equal(budgetRisk?.level, 'yüksek');
 });
 
-test('auto usage appears in score factors', () => {
+test('auto usage appears in score factors with Turkish labels', () => {
   const ctx = buildDecisionContext(
     'auto',
     { usage: 'family', fuel: 'hybrid', budget: 1_200_000 },
@@ -95,7 +95,54 @@ test('auto usage appears in score factors', () => {
     { totalCost: 1_000_000 }
   );
   computeDecisionScoreV3('auto', ctx);
-  assert.ok(ctx.scoreFactors.some((f) => /Kullanım/i.test(f.label)));
+  const usageFactor = ctx.scoreFactors.find((f) => /Kullanım/i.test(f.label));
+  assert.ok(usageFactor);
+  assert.match(usageFactor.reason, /Aile kullanımı profili/);
+  assert.doesNotMatch(usageFactor.reason, /\bfamily\b/i);
+});
+
+test('auto intelligence result avoids raw enum leakage in user-facing copy', () => {
+  const result = buildDecisionIntelligenceResult(
+    'auto',
+    { usage: 'family', fuel: 'gasoline', budget: 1_500_000, km: 15_000, body: 'suv', loan: 'hayir' },
+    { topResult: { fuel: 'gasoline', body: 'suv', price: 1_400_000, score: 84 } },
+    { totalCost: 1_200_000, budget: 1_500_000 }
+  );
+
+  const serialized = JSON.stringify({
+    scoreFactors: result.scoreFactors,
+    riskAnalysis: result.riskAnalysis,
+    executiveSummary: result.executiveSummary,
+    recommendationLabel: result.recommendationLabel
+  });
+
+  assert.doesNotMatch(serialized, /\bfamily\b/i);
+  assert.doesNotMatch(serialized, /\bgasoline\b/i);
+  assert.match(serialized, /Aile kullanımı/i);
+  assert.match(serialized, /Benzin/i);
+
+  const usageFactor = result.scoreFactors.find((f) => f.label === 'Kullanım amacı');
+  assert.match(usageFactor?.reason || '', /Aile kullanımı profili/);
+  assert.equal(usageFactor?.impact, 'Nötr');
+
+  const fuelFactor = result.scoreFactors.find((f) => f.label === 'Yakıt/enerji');
+  assert.match(fuelFactor?.reason || '', /Benzin yakıt profili/);
+
+  const usageRisk = result.riskAnalysis.find((r) => r.key === 'usage');
+  assert.match(usageRisk?.description || '', /Aile kullanımı profiline göre/);
+});
+
+test('auto proceed recommendation uses softer Turkish label', () => {
+  const result = buildDecisionIntelligenceResult(
+    'auto',
+    { usage: 'city', fuel: 'hybrid', budget: 2_000_000, km: 12_000, body: 'sedan', loan: 'hayir' },
+    { topResult: { fuel: 'hybrid', body: 'sedan', price: 1_600_000, score: 90 } },
+    { totalCost: 1_100_000, budget: 2_000_000 }
+  );
+
+  if (result.recommendationLevel === 'proceed') {
+    assert.equal(result.recommendationLabel, 'Devam edilebilir');
+  }
 });
 
 test('buildAlternativesV3 returns at least three options', () => {
