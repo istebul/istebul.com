@@ -54,6 +54,14 @@ describe('supabase CLI retry classification', () => {
     assert.equal(isTransientCliOutput('network timeout ETIMEDOUT'), true);
   });
 
+  it('treats esm.sh 522 import failures as transient', () => {
+    assert.equal(
+      isTransientCliOutput("Import 'https://esm.sh/@supabase/supabase-js@2' failed: 522 <unknown status code>"),
+      true
+    );
+    assert.equal(isTransientCliOutput('error code: 522'), true);
+  });
+
   it('fails fast on unauthorized/forbidden output', () => {
     assert.equal(isAuthCliFailure('Error: unauthorized (401)'), true);
     assert.equal(isAuthCliFailure('permission denied: invalid token'), true);
@@ -119,6 +127,45 @@ exit 1
       `export PATH="${mockBin}:$PATH"; retry_cmd_run supabase link --project-ref test --yes || exit $?`
     );
     assert.notEqual(status, 0);
+  });
+
+  it('retries esm.sh 522 bundling output then succeeds', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'retry-esm-'));
+    const stateFile = path.join(tmp, 'state');
+    fs.writeFileSync(stateFile, '0');
+    const mockBin = path.join(tmp, 'bin');
+    fs.mkdirSync(mockBin);
+    fs.writeFileSync(
+      path.join(mockBin, 'sleep'),
+      '#!/usr/bin/env bash\nexit 0\n',
+      { mode: 0o755 }
+    );
+    fs.writeFileSync(
+      path.join(mockBin, 'supabase'),
+      `#!/usr/bin/env bash
+set -euo pipefail
+n=$(cat "${stateFile}")
+if [ "$n" = "0" ]; then
+  echo 1 > "${stateFile}"
+  echo "Import 'https://esm.sh/@supabase/supabase-js@2' failed: 522 <unknown status code>" >&2
+  exit 1
+fi
+echo "Deployed Functions on project test-ref: housing-intake"
+`,
+      { mode: 0o755 }
+    );
+
+    const out = execFileSync(
+      'bash',
+      [retrySh, 'supabase', 'functions', 'deploy', 'housing-intake', '--project-ref', 'test-ref'],
+      {
+        env: { ...process.env, PATH: `${mockBin}:${process.env.PATH}` },
+        encoding: 'utf8'
+      }
+    ).trim();
+
+    assert.match(out, /Deployed Functions on project test-ref: housing-intake/);
+    assert.equal(fs.readFileSync(stateFile, 'utf8').trim(), '1');
   });
 });
 
@@ -205,6 +252,34 @@ describe('production deploy workflow wiring', () => {
     assert.match(
       source,
       /- name: Link Supabase project[\s\S]*?run: bash scripts\/lib\/retry-command\.sh supabase link/
+    );
+  });
+
+  it('uses retry wrapper for edge intake function deploy steps', () => {
+    const source = fs.readFileSync(workflow, 'utf8');
+    const edgeIntakeBlock = source.match(
+      /deploy-edge-intake:[\s\S]*?deploy-cloudflare:/
+    )?.[0];
+    assert.ok(edgeIntakeBlock, 'deploy-edge-intake job block missing');
+    assert.doesNotMatch(
+      edgeIntakeBlock,
+      /run: supabase functions deploy (housing-intake|vacation-intake|ai-listings-intake|partner-endpoint-test)/
+    );
+    assert.equal(
+      (edgeIntakeBlock.match(/retry-command\.sh supabase functions deploy/g) || []).length,
+      4
+    );
+  });
+
+  it('uses retry wrapper for bulk edge function deploy loop', () => {
+    const source = fs.readFileSync(workflow, 'utf8');
+    assert.match(
+      source,
+      /for fn in "\$\{FUNCTIONS\[@\]\}"; do[\s\S]*?bash scripts\/lib\/retry-command\.sh supabase functions deploy "\$fn"/
+    );
+    assert.doesNotMatch(
+      source,
+      /for fn in "\$\{FUNCTIONS\[@\]\}"; do[\s\S]*?run: supabase functions deploy "\$fn"/
     );
   });
 

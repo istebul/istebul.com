@@ -12,7 +12,8 @@ export const RETRIABLE_HTTP_CODES = new Set([
   500,
   502,
   503,
-  504
+  504,
+  522
 ]);
 
 export const NON_RETRIABLE_HTTP_CODES = new Set([400, 401, 403, 404]);
@@ -47,13 +48,16 @@ export const TRANSIENT_CLI_PATTERNS = [
   /\b502\b/i,
   /\b503\b/i,
   /\b504\b/i,
+  /\b522\b/i,
   /gateway/i,
   /timeout/i,
   /timed out/i,
   /network/i,
   /ECONNRESET/i,
   /ETIMEDOUT/i,
-  /error code:\s*50[234]/i
+  /error code:\s*50[234]/i,
+  /error code:\s*522/i,
+  /failed:\s*522/i
 ];
 
 export const AUTH_CLI_PATTERNS = [

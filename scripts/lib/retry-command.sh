@@ -34,7 +34,7 @@ retry_cmd_is_transient() {
     return 1
   fi
   case "$msg" in
-    *502*|*503*|*504*|*gateway*|*timeout*|*"timed out"*|*network*|*econnreset*|*etimedout*|*"error code: 502"*|*"error code: 503"*|*"error code: 504"*) return 0 ;;
+    *502*|*503*|*504*|*522*|*gateway*|*timeout*|*"timed out"*|*network*|*econnreset*|*etimedout*|*"error code: 502"*|*"error code: 503"*|*"error code: 504"*|*"error code: 522"*|*"failed: 522"*) return 0 ;;
   esac
   return 1
 }

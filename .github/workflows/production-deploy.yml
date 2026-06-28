@@ -73,19 +73,19 @@ jobs:
 
       - name: Deploy housing-intake
         if: steps.gate.outputs.skip != 'true'
-        run: supabase functions deploy housing-intake --project-ref "$SUPABASE_PROJECT_REF"
+        run: bash scripts/lib/retry-command.sh supabase functions deploy housing-intake --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy vacation-intake
         if: steps.gate.outputs.skip != 'true'
-        run: supabase functions deploy vacation-intake --project-ref "$SUPABASE_PROJECT_REF"
+        run: bash scripts/lib/retry-command.sh supabase functions deploy vacation-intake --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy ai-listings-intake
         if: steps.gate.outputs.skip != 'true'
-        run: supabase functions deploy ai-listings-intake --project-ref "$SUPABASE_PROJECT_REF"
+        run: bash scripts/lib/retry-command.sh supabase functions deploy ai-listings-intake --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy partner-endpoint-test (CORS hotfix path)
         if: steps.gate.outputs.skip != 'true'
-        run: supabase functions deploy partner-endpoint-test --project-ref "$SUPABASE_PROJECT_REF"
+        run: bash scripts/lib/retry-command.sh supabase functions deploy partner-endpoint-test --project-ref "$SUPABASE_PROJECT_REF"
 
   deploy-cloudflare:
     name: Cloudflare Pages
@@ -360,7 +360,7 @@ jobs:
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."
-            supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
+            bash scripts/lib/retry-command.sh supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
           done
 
       - name: Edge function smoke guard
