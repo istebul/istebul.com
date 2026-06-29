@@ -746,7 +746,9 @@ test('regression guard: Faz 2B public trust copy avoids forbidden visual trust p
 test('regression guard: Faz 2C trust catalog copy uses decision-platform language', () => {
   const trustUi = readRepoFile('js/ui/listing-trust-ui.js');
   const listingsUi = readRepoFile('js/ui/listings-ui.js');
-  const combined = `${trustUi}\n${listingsUi}`;
+  const indexHtml = readRepoFile('index.html');
+  const journeyStrip = readRepoFile('js/ui/decision-journey-strip.js');
+  const combined = `${trustUi}\n${listingsUi}\n${indexHtml}\n${journeyStrip}`;
 
   const FORBIDDEN_TRUST_CATALOG_COPY = [
     'AI uyum',
@@ -764,7 +766,11 @@ test('regression guard: Faz 2C trust catalog copy uses decision-platform languag
     'Yayınlanmış seçenek',
     'Karar seçeneği kaynak ve görsel bilgisi',
     'metodolojik karar uyum skorudur',
-    'Tam analiz ilgili kategori akışında hesaplanır'
+    'Tam analiz ilgili kategori akışında hesaplanır',
+    'AI destekli karar seçenekleri',
+    'Henüz yayınlanmış karar seçeneği yok',
+    'Skorlanmış ve karşılaştırılabilir karar seçenekleri',
+    'Karar seçenekleri'
   ];
 
   for (const phrase of FORBIDDEN_TRUST_CATALOG_COPY) {

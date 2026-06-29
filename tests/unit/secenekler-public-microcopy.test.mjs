@@ -42,15 +42,17 @@ test('secenekler public surface uses decision-platform microcopy', () => {
   assert.ok(ilanlarSection, '#ilanlar section must exist');
 
   const sectionHtml = ilanlarSection[0];
-  assert.match(sectionHtml, /Karar skoruna göre değerlendirilmiş seçenekler/);
+  assert.match(sectionHtml, /AI destekli karar seçenekleri/);
+  assert.match(sectionHtml, /Skorlanmış ve karşılaştırılabilir karar seçenekleri/);
+  assert.match(sectionHtml, /canlı ilan pazarı değil/);
   assert.match(sectionHtml, /Karar kriterlerinize göre seçenekler yükleniyor/);
   assert.doesNotMatch(sectionHtml, /AI uyum skoruna göre öne çıkan seçenekler/);
   assert.doesNotMatch(sectionHtml, /Size uygun seçenekler hazırlanıyor/);
   assert.doesNotMatch(sectionHtml, /Yapay Zeka Destekli Seçenekler/);
   assert.doesNotMatch(sectionHtml, /AI ilan/i);
 
-  assert.match(listingsUi, /Değerlendirilebilir karar seçenekleri/);
-  assert.match(listingsUi, /karar skoruna göre değerlendirilmiş seçenek keşfi/);
+  assert.match(listingsUi, /AI destekli karar seçenekleri/);
+  assert.match(listingsUi, /Henüz yayınlanmış karar seçeneği yok/);
   assert.match(listingsUi, /Karar seçeneği analizi/);
   assert.doesNotMatch(listingsUi, /Yapay Zeka Destekli Seçenek Keşfi/);
   assert.doesNotMatch(listingsUi, /yapay zeka destekli seçenek keşfi/);
@@ -101,17 +103,17 @@ test('listings card template does not render null/undefined score suffix', () =>
     assert.doesNotMatch(container.innerHTML, /null\/100/);
     assert.doesNotMatch(container.innerHTML, /undefined\/100/);
     assert.doesNotMatch(container.innerHTML, /AI uyum/);
-    assert.match(container.innerHTML, /Değerlendirilebilir karar seçenekleri/);
+    assert.match(container.innerHTML, /AI destekli karar seçenekleri/);
 
     ui.renderListings([{ id: '2', title: 'Skorlu seçenek', price: 100, category: 'arac', score: 77 }]);
     assert.match(container.innerHTML, /Karar skoru 77\/100/);
     assert.doesNotMatch(container.innerHTML, /AI uyum/);
-    assert.match(container.innerHTML, /Değerlendirilebilir karar seçenekleri/);
+    assert.match(container.innerHTML, /AI destekli karar seçenekleri/);
 
     container.innerHTML = '';
     ui.renderListings([], { category: 'arac' });
-    assert.match(container.innerHTML, /karar skoruna göre değerlendirilmiş seçenek keşfi/);
-    assert.doesNotMatch(container.innerHTML, /yapay zeka destekli seçenek keşfi/i);
+    assert.match(container.innerHTML, /Henüz yayınlanmış karar seçeneği yok/);
+    assert.match(container.innerHTML, /canlı ilan pazarı değil/);
   } finally {
     if (originalGetElementById) {
       global.document.getElementById = originalGetElementById;

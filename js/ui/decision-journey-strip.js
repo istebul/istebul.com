@@ -4,7 +4,7 @@
 
 const JOURNEY_STEPS = Object.freeze([
   { id: 'karar-merkezi', label: 'Ön değerlendirme', href: '/karar-asistani/' },
-  { id: 'secenekler', label: 'Seçenekler', href: '/secenekler/' },
+  { id: 'secenekler', label: 'Karar seçenekleri', href: '/secenekler/' },
   { id: 'karsilastir', label: 'Karşılaştır', href: '/karsilastir/' }
 ]);
 
