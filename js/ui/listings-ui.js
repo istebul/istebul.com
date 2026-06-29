@@ -50,8 +50,8 @@ export class ListingsUI {
             ` : `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
-                    <h3>Canlı seçenek bulunamadı veya filtre dar</h3>
-                    <p>Bu alan karar skoruna göre değerlendirilmiş seçenek keşfi içindir — tam karar analizi ilgili kategori akışında yapılır. Ön değerlendirme için Karar Asistanı'na, tam analiz için kategori sihirbazına devam edin.</p>
+                    <h3>Henüz yayınlanmış karar seçeneği yok</h3>
+                    <p>Bu alan canlı ilan pazarı değil; QA'dan geçmiş, skorlanmış ve karşılaştırılabilir karar seçenekleri kataloğudur. Filtre daraltılmış olabilir — ön değerlendirme için Karar Asistanı'na, tam analiz için kategori sihirbazına devam edin.</p>
                     <div class="empty-state-actions">
                       <a href="/karar-asistani/" class="btn btn-primary" data-native-route><i data-lucide="sparkles"></i> Ön değerlendirme başlat</a>
                       <a href="${this.escapeHtml(secondaryCta.href)}" class="btn btn-outline" data-native-route><i data-lucide="${this.escapeHtml(secondaryCta.icon)}"></i> ${this.escapeHtml(secondaryCta.label)}</a>
@@ -61,8 +61,8 @@ export class ListingsUI {
             `);
         } else {
             const aiStrip = renderAiPlatformBanner({
-                title: 'Değerlendirilebilir karar seçenekleri',
-                subtitle: 'Her seçenek karar skoru ile sıralanır; AI yalnızca gerekçe üretir — tam analiz için ilgili kategori akışını kullanın.',
+                title: 'AI destekli karar seçenekleri',
+                subtitle: "QA'dan geçmiş seçenekler karar skoruna göre sıralanır; AI yalnızca gerekçe üretir — tam analiz için ilgili kategori akışını kullanın.",
                 variant: 'compact'
             });
             container.innerHTML = `<div class="listings-ai-strip">${aiStrip}</div>` + listings.map(listing => {
