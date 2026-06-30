@@ -11,12 +11,45 @@
  *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/seed-ai-listings.cjs --direct --publish
  */
 
+const PUBLISH_APPROVAL_ENV = 'PRODUCTION_AI_LISTINGS_PUBLISH_ONAY';
+const PUBLISH_APPROVAL_VALUE = 'EVET';
+const PUBLISH_GATE_ERROR =
+  '--publish için PRODUCTION_AI_LISTINGS_PUBLISH_ONAY=EVET gerekli. Seed/publish durduruldu.';
+
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const memoryMode = args.has('--memory');
 const directMode = args.has('--direct');
 const analyzeAfterCreate = !args.has('--no-analyze');
 const publishMode = args.has('--publish');
+
+/**
+ * @param {boolean} wantsPublish
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {{ ok: true } | { ok: false, message: string }}
+ */
+function checkPublishApproval(wantsPublish, env = process.env) {
+  if (!wantsPublish) {
+    return { ok: true };
+  }
+  const approval = String(env[PUBLISH_APPROVAL_ENV] ?? '').trim();
+  if (approval !== PUBLISH_APPROVAL_VALUE) {
+    return { ok: false, message: PUBLISH_GATE_ERROR };
+  }
+  return { ok: true };
+}
+
+/**
+ * @param {boolean} wantsPublish
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+function assertPublishApprovalOrExit(wantsPublish, env = process.env) {
+  const gate = checkPublishApproval(wantsPublish, env);
+  if (!gate.ok) {
+    console.error(gate.message);
+    process.exit(1);
+  }
+}
 
 async function loadSeedModule() {
   return import('../src/ai-listings/seed/seed-data.js');
@@ -191,6 +224,8 @@ async function seedViaDirectSupabase(records) {
 }
 
 async function main() {
+  assertPublishApprovalOrExit(publishMode);
+
   const { getAllSeedListings } = await loadSeedModule();
   const records = getAllSeedListings();
 
@@ -225,7 +260,17 @@ async function main() {
   console.log(`Seed complete: ${results.length} listing(s) created.`);
 }
 
-main().catch((err) => {
-  console.error('Seed failed:', err.message || err);
-  process.exit(1);
-});
+module.exports = {
+  PUBLISH_APPROVAL_ENV,
+  PUBLISH_APPROVAL_VALUE,
+  PUBLISH_GATE_ERROR,
+  checkPublishApproval,
+  assertPublishApprovalOrExit
+};
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Seed failed:', err.message || err);
+    process.exit(1);
+  });
+}
