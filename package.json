@@ -112,7 +112,7 @@
   "devDependencies": {
     "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.44.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.28.0",
     "eslint": "^8.57.0",
     "wrangler": "^4.95.0"
   },
