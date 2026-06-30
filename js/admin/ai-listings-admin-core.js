@@ -1045,6 +1045,66 @@ export function buildQaActionsHtml(status) {
   return buttons || '<p class="ai-listings-admin__muted">Bu durum için işlem yok.</p>';
 }
 
+export const PUBLISH_CHECKLIST_INCOMPLETE_MESSAGE =
+  'Yayınlamadan önce kalite kontrol maddeleri tamamlanmalı.';
+
+export const PUBLISH_CONFIRM_PROMPT =
+  'Bu kaydı production\'da yayınlamak üzeresiniz. Kalite kontrol tamamlandı mı?';
+
+/**
+ * @param {Record<string, unknown>|null|undefined} listing
+ * @param {Record<string, unknown>|null|undefined} [latestAnalysis]
+ * @returns {boolean}
+ */
+export function isPublishChecklistComplete(listing, latestAnalysis = null) {
+  const checklist = buildQualityChecklist(listing, latestAnalysis);
+  const passed = countChecklistPassed(checklist);
+  const total = Object.keys(checklist).length;
+  return total > 0 && passed === total;
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} listing
+ * @param {Record<string, unknown>|null|undefined} [latestAnalysis]
+ * @param {{ confirmed?: boolean }} [options]
+ * @returns {{ proceed: boolean, showConfirm: boolean, message: string|null }}
+ */
+export function resolvePublishAttempt(listing, latestAnalysis = null, options = {}) {
+  const confirmed = Boolean(options.confirmed);
+
+  if (!isPublishChecklistComplete(listing, latestAnalysis)) {
+    return {
+      proceed: false,
+      showConfirm: false,
+      message: PUBLISH_CHECKLIST_INCOMPLETE_MESSAGE
+    };
+  }
+
+  if (!confirmed) {
+    return {
+      proceed: false,
+      showConfirm: true,
+      message: PUBLISH_CONFIRM_PROMPT
+    };
+  }
+
+  return { proceed: true, showConfirm: false, message: null };
+}
+
+/**
+ * @returns {string}
+ */
+export function buildPublishConfirmFormHtml() {
+  return `
+      <div id="ai-listings-publish-form" class="ai-listings-admin__publish-form" hidden>
+        <p class="ai-listings-admin__warning-inline">${safeRenderText(PUBLISH_CONFIRM_PROMPT)}</p>
+        <div class="ai-listings-admin__drawer-actions">
+          <button type="button" id="ai-listings-confirm-publish-btn" class="ai-listings-admin__btn ai-listings-admin__btn--success">Yayınlamayı onayla</button>
+          <button type="button" id="ai-listings-cancel-publish-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
+        </div>
+      </div>`;
+}
+
 /**
  * @typedef {{ type: string, label: string, emoji: string, cssClass: string }} AiDecision
  */
