@@ -21,6 +21,7 @@ import {
   buildListingCardHtml,
   buildListingSkeletonHtml,
   buildPremiumDashboardHtml,
+  buildPublishConfirmFormHtml,
   buildStatusFilterChipsHtml,
   computeKpiStats,
   extractLatestAnalysis,
@@ -31,6 +32,7 @@ import {
   previewImportContent,
   buildAcquisitionErrorsExportText,
   resolveActiveStatusFilter,
+  resolvePublishAttempt,
   resolveEdgeBaseUrl,
   resolveImportAnalyzeFlag,
   safeRenderText,
@@ -2319,6 +2321,7 @@ function renderListingDetailContent(detailEl, listingData, latest, events) {
   if (detailMount) {
     detailMount.innerHTML = `
       ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
+      ${buildPublishConfirmFormHtml()}
       <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
         <label>
           Red nedeni
@@ -2339,7 +2342,21 @@ function renderListingDetailContent(detailEl, listingData, latest, events) {
       const action = btn.getAttribute('data-qa-action');
       if (!action) return;
       if (action === 'reject') {
+        $('ai-listings-publish-form')?.setAttribute('hidden', '');
         $('ai-listings-reject-form')?.removeAttribute('hidden');
+        return;
+      }
+      if (action === 'publish') {
+        const attempt = resolvePublishAttempt(listingData, latest, { confirmed: false });
+        if (!attempt.proceed && attempt.showConfirm) {
+          $('ai-listings-reject-form')?.setAttribute('hidden', '');
+          $('ai-listings-publish-form')?.removeAttribute('hidden');
+          return;
+        }
+        if (!attempt.proceed) {
+          setStatus(attempt.message ?? 'Yayınlama engellendi.', 'error');
+          return;
+        }
         return;
       }
       if (action === 'pdf') {
@@ -2359,12 +2376,25 @@ function renderListingDetailContent(detailEl, listingData, latest, events) {
       setStatus('Red nedeni zorunludur.', 'error');
       return;
     }
+    $('ai-listings-publish-form')?.setAttribute('hidden', '');
     runQaAction(id, 'reject', { reason });
   });
   $('ai-listings-cancel-reject-btn')?.addEventListener('click', () => {
     $('ai-listings-reject-form')?.setAttribute('hidden', '');
     const reasonEl = $('ai-listings-reject-reason');
     if (reasonEl) reasonEl.value = '';
+  });
+  $('ai-listings-confirm-publish-btn')?.addEventListener('click', () => {
+    const attempt = resolvePublishAttempt(listingData, latest, { confirmed: true });
+    if (!attempt.proceed) {
+      setStatus(attempt.message ?? 'Yayınlama engellendi.', 'error');
+      return;
+    }
+    $('ai-listings-publish-form')?.setAttribute('hidden', '');
+    runQaAction(id, 'publish');
+  });
+  $('ai-listings-cancel-publish-btn')?.addEventListener('click', () => {
+    $('ai-listings-publish-form')?.setAttribute('hidden', '');
   });
 
   bindDuplicateDetailActions(detailEl);
