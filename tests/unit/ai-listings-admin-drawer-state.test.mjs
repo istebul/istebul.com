@@ -147,6 +147,18 @@ test('getDrawerHostId for purchase', () => {
   assert.equal(getDrawerHostId('purchase'), 'ai-pd-panel-host');
 });
 
+test('getDrawerHostId for negotiation', () => {
+  assert.equal(getDrawerHostId('negotiation'), 'ai-neg-panel-host');
+});
+
+test('getDrawerBodyClass for negotiation', () => {
+  assert.equal(getDrawerBodyClass('negotiation'), 'ai-listings-admin--neg-open');
+});
+
+test('getDrawerBodyClass for purchase', () => {
+  assert.equal(getDrawerBodyClass('purchase'), 'ai-listings-admin--pd-open');
+});
+
 test('getDrawerHostId for scenario', () => {
   assert.equal(getDrawerHostId('scenario'), 'ai-ss-panel-host');
 });

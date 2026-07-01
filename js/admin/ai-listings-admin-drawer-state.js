@@ -39,7 +39,7 @@ export const MODULE_UNAVAILABLE_TR = Object.freeze({
 /** @type {Readonly<Record<string, string>>} */
 export const DRAWER_BODY_CLASSES = Object.freeze({
   quality: 'ai-listings-admin--exp-open',
-  negotiation: 'ai-listings-admin--pd-open',
+  negotiation: 'ai-listings-admin--neg-open',
   purchase: 'ai-listings-admin--pd-open',
   explain: 'ai-listings-admin--exp-open',
   report: 'ai-listings-admin--edr-open',
@@ -50,7 +50,7 @@ export const DRAWER_BODY_CLASSES = Object.freeze({
 /** @type {Readonly<Record<string, string>>} */
 export const DRAWER_HOST_IDS = Object.freeze({
   quality: 'ai-exp-panel-host',
-  negotiation: 'ai-pd-panel-host',
+  negotiation: 'ai-neg-panel-host',
   purchase: 'ai-pd-panel-host',
   explain: 'ai-exp-panel-host',
   report: 'ai-edr-panel-host',
