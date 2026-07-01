@@ -145,6 +145,12 @@ import { buildExplainabilityShellHtml } from '../ai-decision-explainability/expl
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/index.js';
 import { buildComparePanelHtml, buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import {
+  buildNegotiationInput,
+  runNegotiationIntelligenceEngine,
+  buildNegotiationPanelHtml,
+  buildNegotiationShellHtml
+} from '../ai-negotiation-intelligence/index.js';
 import { formatErrorFallbackLabel } from './ai-listings-admin-labels.js';
 
 /** @type {Record<string, unknown>|null} */
@@ -1350,6 +1356,46 @@ function getRecommendationById(recordId) {
   });
 }
 
+/**
+ * @param {string} listingId
+ * @returns {Record<string, unknown>|null}
+ */
+function findListingById(listingId) {
+  return (
+    cachedListings.find((item) => String(item.id) === String(listingId)) ??
+    (String(selectedListing?.id ?? '') === String(listingId) ? selectedListing : null)
+  );
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} listing
+ * @param {Record<string, unknown>|null} [latestAnalysis]
+ * @returns {Record<string, unknown>|null}
+ */
+function buildNegotiationInputFromListing(listing, latestAnalysis = null) {
+  if (!listing) return null;
+
+  const analysis =
+    latestAnalysis ??
+    extractLatestAnalysis(listing) ??
+    (listing.latest_analysis && typeof listing.latest_analysis === 'object'
+      ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
+      : null);
+
+  return buildNegotiationInput({
+    category: listing.category,
+    listingPrice: listing.price,
+    location: listing.location,
+    attributes: listing.attributes || {},
+    confidence: analysis?.confidence ?? 0.5,
+    marketReference: analysis?.market_reference ?? analysis?.marketReference ?? {},
+    qualitySignal: {
+      listingQualityScore: analysis?.quality_score,
+      verificationLevel: analysis?.verification_level ?? 'none'
+    }
+  });
+}
+
 function syncRecommendationCache() {
   const result = ensureRecommendationCache(cachedListings, recommendationProfile);
   if (result) {
@@ -1397,6 +1443,8 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     hasPersonalization: false
   };
 
+  ctx.hasNegotiation = Number(listing?.price) > 0 && Boolean(rec?.id ?? listing?.id);
+
   try {
     const pool = runListingDataPoolEngine([listing], { skipCache: true });
     ctx.dataCompleteness = Number(pool.avgDataCompleteness ?? 0);
@@ -1431,7 +1479,6 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     ctx.trustScore = exp?.decisionSnapshot?.trustScore ?? rec?.trust_score ?? '—';
     ctx.reportScore = edr?.reportScore ?? '—';
     ctx.hasOwnershipCost = Boolean(cost?.total_cost);
-    ctx.hasNegotiation = Array.isArray(pd?.negotiationScenario) && pd.negotiationScenario.length > 0;
     ctx.decisionSummary = pd?.summary ?? ctx.decisionSummary;
     ctx.scenarioTeaser = `Tahmini karar skoru ${pd?.decisionScore ?? '—'}; senaryolarla etkiyi inceleyin.`;
 
@@ -1552,6 +1599,60 @@ function closeScenarioPanel(root) {
   }
   root.querySelector('[data-ss-backdrop]')?.setAttribute('hidden', '');
   document.body.classList.remove('ai-listings-admin--ss-open');
+}
+
+function closeNegotiationPanel(root) {
+  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-neg-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--neg-open');
+}
+
+function openNegotiationPanel(root, listingId, options = {}) {
+  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
+  if (!host) return;
+
+  const title = options.title ?? getDrawerTitleTr('negotiation');
+  const listing = findListingById(listingId);
+
+  if (!listing) {
+    host.innerHTML = buildNegotiationPanelHtml(null, { title });
+    host.hidden = false;
+    document.body.classList.add('ai-listings-admin--neg-open');
+    bindNegotiationPanelClose(host, root);
+    return;
+  }
+
+  const latest =
+    extractLatestAnalysis(listing) ??
+    (listing.latest_analysis && typeof listing.latest_analysis === 'object'
+      ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
+      : null);
+  const input = buildNegotiationInputFromListing(listing, latest);
+  const result = input ? runNegotiationIntelligenceEngine(input) : null;
+
+  host.innerHTML = buildNegotiationPanelHtml(result, { title });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--neg-open');
+  bindNegotiationPanelClose(host, root);
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindNegotiationPanelClose(host, root) {
+  const close = () => {
+    closeNegotiationPanel(root);
+    if (isDrawerOpen(aiDrawerState) && aiDrawerState.activeDrawerType === 'negotiation') {
+      closeAiListingsDrawer(root);
+    }
+  };
+  host.querySelector('[data-neg-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-neg-backdrop]')?.addEventListener('click', close);
 }
 
 function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', options = {}) {
@@ -2016,6 +2117,7 @@ function closeAllAiPanelHosts(root) {
   closeExecutiveReportPanel(root);
   closeComparePanel(root);
   closeScenarioPanel(root);
+  closeNegotiationPanel(root);
 }
 
 function syncDrawerBodyScroll() {
@@ -2063,8 +2165,10 @@ function renderActiveAiListingsDrawer(root) {
   const listingId = aiDrawerState.activeDrawerListingId;
   const title = getDrawerTitleTr(type);
 
-  if (type === 'purchase' || type === 'negotiation') {
+  if (type === 'purchase') {
     openPurchaseDecisionPanel(root, listingId, { title, focus: type });
+  } else if (type === 'negotiation') {
+    openNegotiationPanel(root, listingId, { title });
   } else if (type === 'explain' || type === 'quality') {
     openExplainabilityPanel(root, listingId, { title, focus: type });
   } else if (type === 'report') {
@@ -2294,7 +2398,8 @@ function mountGlobalPanelHosts() {
     buildExplainabilityShellHtml(),
     buildExecutiveReportShellHtml(),
     buildCompareShellHtml(),
-    buildScenarioShellHtml()
+    buildScenarioShellHtml(),
+    buildNegotiationShellHtml()
   ].join('');
   main.appendChild(wrap);
 }
