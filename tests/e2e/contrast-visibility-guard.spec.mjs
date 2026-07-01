@@ -186,6 +186,7 @@ test.describe('P0-1 contrast/visibility guard', () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto('/');
       await waitForAppRoute(page, 'home');
+      await page.locator('#home-vertical-focus').scrollIntoViewIfNeeded();
 
       await page.waitForSelector('#home-category-grid .ib-cat-mockup__title', { timeout: 15000 });
 
