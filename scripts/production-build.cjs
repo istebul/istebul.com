@@ -30,7 +30,44 @@ const { injectLocaleShellMeta, loadLocaleIds } = require('./lib/locale-shell-met
 const { injectVerticalFaqs } = require('./lib/seo-vertical-faq.cjs');
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
+const { injectHomeCategoryPrerender } = require('./lib/inject-home-category-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
+
+function runInjectHomeCategoryPrerender(html) {
+  const os = require('os');
+  const tmpIn = path.join(os.tmpdir(), `ib-home-cat-in-${process.pid}-${Date.now()}.html`);
+  const tmpOut = path.join(os.tmpdir(), `ib-home-cat-out-${process.pid}-${Date.now()}.html`);
+  const injectorPath = path.join(__dirname, 'lib/inject-home-category-prerender.cjs');
+
+  fs.writeFileSync(tmpIn, html, 'utf8');
+
+  const script = `
+    const fs = require('fs');
+    const { injectHomeCategoryPrerender } = require(${JSON.stringify(injectorPath)});
+    injectHomeCategoryPrerender(fs.readFileSync(${JSON.stringify(tmpIn)}, 'utf8'))
+      .then((output) => {
+        fs.writeFileSync(${JSON.stringify(tmpOut)}, output, 'utf8');
+      })
+      .catch((error) => {
+        console.error(error);
+        process.exit(1);
+      });
+  `;
+
+  const result = spawnSync(process.execPath, ['-e', script], { stdio: 'inherit' });
+  try {
+    if (result.status !== 0) {
+      throw new Error('injectHomeCategoryPrerender failed during production build');
+    }
+    return fs.readFileSync(tmpOut, 'utf8');
+  } finally {
+    for (const filePath of [tmpIn, tmpOut]) {
+      try {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      } catch {}
+    }
+  }
+}
 const { buildHashedCssAssets } = require('./lib/css-build.cjs');
 const runCssBundles = spawnSync(process.execPath, [path.join(root, 'scripts/generate-css-bundles.cjs')], {
   cwd: root,
@@ -269,6 +306,7 @@ pendingStaticFiles.forEach(({ file, source }) => {
       `/js/runtime/route-bootstrap-head.js?v=${bootstrapHash}`
     );
     html = injectPremiumPrerender(html);
+    html = runInjectHomeCategoryPrerender(html);
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
   }
