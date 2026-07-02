@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import {
   ADSENSE_CLIENT_ID,
   adsenseHeadSnippet,
@@ -10,6 +11,7 @@ import {
   hasAdSenseHead
 } from '../../scripts/lib/inject-adsense-head.cjs';
 
+const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 describe('inject-adsense-head', () => {
@@ -52,6 +54,15 @@ describe('production build AdSense integration', () => {
     const buildScript = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');
     assert.match(buildScript, /inject-adsense-head\.cjs/);
     assert.match(buildScript, /applyAdSenseHeadToHtmlFiles/);
+  });
+
+  it('CSP policy allows AdSense runtime hosts', () => {
+    const { CSP_PUBLIC } = require('../../scripts/lib/csp-policy.cjs');
+    assert.match(CSP_PUBLIC, /pagead2\.googlesyndication\.com/);
+    assert.match(CSP_PUBLIC, /googleads\.g\.doubleclick\.net/);
+    const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+    const globalCsp = headers.split('\n').find((l) => l.includes('Content-Security-Policy:')) || '';
+    assert.match(globalCsp, /pagead2\.googlesyndication\.com/);
   });
 
   it('dist HTML files contain a single AdSense script when dist exists', () => {
