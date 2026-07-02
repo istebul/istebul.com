@@ -886,6 +886,10 @@ if (ga4Id) {
   console.warn('[ga4] GA4_MEASUREMENT_ID not set — skip gtag head (see docs/ZIYARETCI_ANALITIK_KURULUM.md)');
 }
 
+const { applyAdSenseHeadToHtmlFiles } = require('./lib/inject-adsense-head.cjs');
+const adsenseResult = applyAdSenseHeadToHtmlFiles(dist);
+console.log(`[adsense] head script injected into ${adsenseResult.injected} HTML file(s)`);
+
 /** Admin deep links — physical shells so /admin/* is not rewritten by /* SPA fallback */
 const adminIndexPath = path.join(dist, 'admin', 'index.html');
 if (fs.existsSync(adminIndexPath)) {
