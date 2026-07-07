@@ -75,11 +75,61 @@
         <div id="reservation-slots-list" class="reservation-slots__list" role="listbox" aria-label="Uygun saatler"></div>
       </section>
 
+      <form id="reservation-contact-form" class="reservation-contact-form" novalidate>
+        <h2 class="reservation-slots__title">İletişim bilgileri</h2>
+
+        <div class="restoran-field">
+          <label for="reservation-customer-name">Ad Soyad</label>
+          <input
+            id="reservation-customer-name"
+            name="customer_name"
+            type="text"
+            autocomplete="name"
+            required
+            placeholder="Adınız ve soyadınız">
+        </div>
+
+        <div class="restoran-field">
+          <label for="reservation-customer-phone">Telefon</label>
+          <input
+            id="reservation-customer-phone"
+            name="customer_phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            required
+            placeholder="05xx xxx xx xx">
+        </div>
+
+        <div class="restoran-field">
+          <label for="reservation-note">Not / Alerji / özel istek</label>
+          <textarea
+            id="reservation-note"
+            name="note"
+            rows="3"
+            placeholder="Opsiyonel"></textarea>
+        </div>
+      </form>
+
+      <section id="reservation-success" class="reservation-success" hidden aria-live="polite">
+        <h2 class="reservation-success__title">Rezervasyon tamamlandı</h2>
+        <p class="reservation-success__code-label">Rezervasyon kodu</p>
+        <p class="reservation-success__code" id="reservation-success-code">—</p>
+        <p class="reservation-success__summary" id="reservation-success-summary"></p>
+        <a
+          class="btn btn-primary reservation-calendar-link"
+          id="reservation-calendar-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Takvime ekle</a>
+      </section>
+
       <p id="reservation-cta-notice" class="reservation-cta-notice" hidden role="status" aria-live="polite"></p>
 
-      <div class="reservation-actions">
+      <div class="reservation-actions" id="reservation-actions">
         <button type="button" class="btn btn-primary" id="reservation-confirm-btn" disabled aria-disabled="true">
-          Rezervasyonu onayla (yakında)
+          Önce uygun saat seç
         </button>
         <a class="btn reservation-back-link" href="/restoran/">Başka restoran ara</a>
       </div>

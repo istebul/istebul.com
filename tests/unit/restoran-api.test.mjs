@@ -2,18 +2,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const {
+  buildGoogleCalendarUrl,
+  buildReservationApiBody,
+  buildReservationsApiUrl,
   buildReservationUrl,
   buildReservationQuery,
   buildRestaurantDetailUrl,
   buildRestaurantSlotsUrl,
+  createRestaurantReservation,
   getRestaurantDetail,
   getRestaurantSlots,
   normalizeGuestCount,
+  normalizeReservationPayload,
+  normalizeReservationResponse,
   normalizeRestaurantDetail,
   normalizeRestaurantSlots,
   normalizeSearchResults,
   parseBusinessIdFromLocation,
   parseReservationContext,
+  ReservationValidationError,
   resolveSlotDate
 } = await import('../../js/restoran/restoran-api.js');
 
@@ -271,4 +278,237 @@ test('normalizeRestaurantSlots returns empty array for broken payload', () => {
   assert.deepEqual(normalizeRestaurantSlots(null), []);
   assert.deepEqual(normalizeRestaurantSlots({ slots: 'bad' }), []);
   assert.deepEqual(normalizeRestaurantSlots({ data: { slots: null } }), []);
+});
+
+test('normalizeReservationPayload validates required fields and trims contact info', () => {
+  const payload = normalizeReservationPayload({
+    businessId: ' cafe-1 ',
+    date: '2026-07-10',
+    time: '19:30',
+    guestCount: 2,
+    customerName: '  Ayşe Yılmaz ',
+    customerPhone: '  05551234567 ',
+    note: '  Vejetaryen ',
+    foodQuery: ' risotto ',
+    searchQuery: ' Nişantaşı '
+  });
+
+  assert.equal(payload.businessId, 'cafe-1');
+  assert.equal(payload.customerName, 'Ayşe Yılmaz');
+  assert.equal(payload.customerPhone, '05551234567');
+  assert.equal(payload.note, 'Vejetaryen');
+  assert.equal(payload.foodQuery, 'risotto');
+  assert.equal(payload.searchQuery, 'Nişantaşı');
+  assert.equal(payload.guestCount, 2);
+});
+
+test('normalizeReservationPayload requires time or slotId', () => {
+  assert.throws(
+    () =>
+      normalizeReservationPayload({
+        businessId: 'cafe-1',
+        date: '2026-07-10',
+        guestCount: 2,
+        customerName: 'Test',
+        customerPhone: '0555'
+      }),
+    ReservationValidationError
+  );
+});
+
+test('normalizeReservationPayload normalizes guestCount and allows optional note', () => {
+  const payload = normalizeReservationPayload({
+    businessId: 'cafe-1',
+    date: '2026-07-10',
+    slotId: 'slot-9',
+    guestCount: 99,
+    customerName: 'Test',
+    customerPhone: '0555'
+  });
+
+  assert.equal(payload.guestCount, 20);
+  assert.equal(payload.slotId, 'slot-9');
+  assert.equal(payload.note, undefined);
+});
+
+test('normalizeReservationPayload rejects missing guest count', () => {
+  assert.throws(
+    () =>
+      normalizeReservationPayload({
+        businessId: 'cafe-1',
+        date: '2026-07-10',
+        time: '19:30',
+        guestCount: 0,
+        customerName: 'Test',
+        customerPhone: '0555'
+      }),
+    /Kişi sayısı en az 1 olmalı/
+  );
+});
+
+test('buildReservationApiBody maps snake_case API fields', () => {
+  const body = buildReservationApiBody({
+    businessId: 'cafe-1',
+    date: '2026-07-10',
+    time: '19:30',
+    guestCount: 2,
+    slotId: 'slot-1',
+    customerName: 'Ayşe',
+    customerPhone: '0555',
+    note: 'Pencere',
+    foodQuery: 'kebap',
+    searchQuery: 'Beşiktaş'
+  });
+
+  assert.deepEqual(body, {
+    business_id: 'cafe-1',
+    date: '2026-07-10',
+    guest_count: 2,
+    customer_name: 'Ayşe',
+    customer_phone: '0555',
+    time: '19:30',
+    slot_id: 'slot-1',
+    note: 'Pencere',
+    food_query: 'kebap',
+    search_query: 'Beşiktaş'
+  });
+});
+
+test('normalizeReservationResponse handles reservation wrapper and code fallback', () => {
+  const result = normalizeReservationResponse({
+    reservation: {
+      id: 'res-42',
+      status: 'pending',
+      business_id: 'cafe-1',
+      date: '2026-07-10',
+      time: '19:30:00',
+      guest_count: 3,
+      customer_name: 'Ayşe'
+    }
+  });
+
+  assert.equal(result.id, 'res-42');
+  assert.equal(result.code, 'RES-res-42');
+  assert.equal(result.status, 'pending');
+  assert.equal(result.time, '19:30');
+  assert.equal(result.guestCount, 3);
+});
+
+test('normalizeReservationResponse handles nested data.reservation format', () => {
+  const result = normalizeReservationResponse({
+    data: {
+      reservation: {
+        reservation_id: 'abc',
+        code: 'GAR-123',
+        date: '2026-07-10',
+        time: '20:00'
+      }
+    }
+  });
+
+  assert.equal(result.id, 'abc');
+  assert.equal(result.code, 'GAR-123');
+});
+
+test('normalizeReservationResponse handles direct reservation object', () => {
+  const result = normalizeReservationResponse({
+    id: 'direct-1',
+    confirmation_code: 'CONF-9',
+    guestCount: 4
+  });
+
+  assert.equal(result.id, 'direct-1');
+  assert.equal(result.code, 'CONF-9');
+  assert.equal(result.status, 'confirmed');
+  assert.equal(result.guestCount, 4);
+});
+
+test('createRestaurantReservation posts JSON to reservations endpoint', async () => {
+  const originalFetch = globalThis.fetch;
+  let captured = null;
+
+  globalThis.fetch = async (url, options) => {
+    captured = { url, options };
+    return {
+      ok: true,
+      async json() {
+        return { reservation: { id: 'r1', code: 'GAR-001', date: '2026-07-10', time: '19:30' } };
+      }
+    };
+  };
+
+  try {
+    const result = await createRestaurantReservation({
+      businessId: 'demo/cafe',
+      date: '2026-07-10',
+      time: '19:30',
+      slotId: 'slot-1',
+      guestCount: 2,
+      customerName: 'Ayşe',
+      customerPhone: '05551234567',
+      note: 'Pencere'
+    });
+
+    assert.match(String(captured.url), /\/public\/reservations$/);
+    assert.equal(captured.options.method, 'POST');
+    assert.equal(captured.options.headers['Content-Type'], 'application/json');
+    assert.equal(captured.options.headers.Accept, 'application/json');
+
+    const body = JSON.parse(String(captured.options.body));
+    assert.equal(body.business_id, 'demo/cafe');
+    assert.equal(body.time, '19:30');
+    assert.equal(body.slot_id, 'slot-1');
+    assert.equal(body.customer_name, 'Ayşe');
+
+    assert.equal(result.code, 'GAR-001');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('createRestaurantReservation throws on API error', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 500
+  });
+
+  try {
+    await assert.rejects(
+      () =>
+        createRestaurantReservation({
+          businessId: 'demo',
+          date: '2026-07-10',
+          time: '19:30',
+          guestCount: 2,
+          customerName: 'Ayşe',
+          customerPhone: '0555'
+        }),
+      /Rezervasyon oluşturulamadı \(500\)/
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('buildReservationsApiUrl points to public reservations endpoint', () => {
+  assert.match(buildReservationsApiUrl(), /\/public\/reservations$/);
+});
+
+test('buildGoogleCalendarUrl creates calendar template link', () => {
+  const url = buildGoogleCalendarUrl({
+    title: 'Demo Rezervasyon',
+    date: '2026-07-10',
+    time: '19:30',
+    description: 'Kod: GAR-1',
+    location: 'İstanbul'
+  });
+
+  const parsed = new URL(url);
+  assert.equal(parsed.hostname, 'calendar.google.com');
+  assert.equal(parsed.searchParams.get('action'), 'TEMPLATE');
+  assert.equal(parsed.searchParams.get('text'), 'Demo Rezervasyon');
+  assert.match(parsed.searchParams.get('dates') || '', /20260710T/);
+  assert.equal(parsed.searchParams.get('details'), 'Kod: GAR-1');
+  assert.equal(parsed.searchParams.get('location'), 'İstanbul');
 });

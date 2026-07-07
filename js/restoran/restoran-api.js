@@ -451,3 +451,230 @@ export async function getRestaurantDetail(id) {
 
   return response.json();
 }
+
+/**
+ * @typedef {Object} ReservationCreateInput
+ * @property {string} [businessId]
+ * @property {string} [date]
+ * @property {string} [time]
+ * @property {number} [guestCount]
+ * @property {string} [slotId]
+ * @property {string} [customerName]
+ * @property {string} [customerPhone]
+ * @property {string} [note]
+ * @property {string} [foodQuery]
+ * @property {string} [searchQuery]
+ */
+
+/**
+ * @typedef {Object} NormalizedReservationPayload
+ * @property {string} businessId
+ * @property {string} date
+ * @property {string} time
+ * @property {number} guestCount
+ * @property {string} slotId
+ * @property {string} customerName
+ * @property {string} customerPhone
+ * @property {string} [note]
+ * @property {string} [foodQuery]
+ * @property {string} [searchQuery]
+ */
+
+/**
+ * @typedef {Object} NormalizedReservationResult
+ * @property {string} id
+ * @property {string} code
+ * @property {string} status
+ * @property {string} businessId
+ * @property {string} date
+ * @property {string} time
+ * @property {number} guestCount
+ * @property {string} customerName
+ * @property {unknown} raw
+ */
+
+export class ReservationValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ReservationValidationError';
+  }
+}
+
+const MAX_GUEST_COUNT = 20;
+
+/**
+ * @param {ReservationCreateInput} input
+ * @returns {NormalizedReservationPayload}
+ */
+export function normalizeReservationPayload(input = {}) {
+  const row = /** @type {Record<string, unknown>} */ (
+    input && typeof input === 'object' ? input : {}
+  );
+
+  const businessId = String(row.businessId ?? row.business_id ?? '').trim();
+  const date = resolveSlotDate(String(row.date ?? '').trim());
+  const time = normalizeSlotTime(row.time);
+  const slotId = String(row.slotId ?? row.slot_id ?? '').trim();
+  const customerName = String(row.customerName ?? row.customer_name ?? '').trim();
+  const customerPhone = String(row.customerPhone ?? row.customer_phone ?? '').trim();
+  const note = row.note != null ? String(row.note).trim() : '';
+  const foodQuery = String(row.foodQuery ?? row.food ?? '').trim();
+  const searchQuery = String(row.searchQuery ?? row.q ?? '').trim();
+
+  const guestRaw = Number.parseInt(String(row.guestCount ?? row.guest_count ?? ''), 10);
+  let guestCount = Number.isFinite(guestRaw) && guestRaw > 0 ? guestRaw : 0;
+  if (guestCount > MAX_GUEST_COUNT) guestCount = MAX_GUEST_COUNT;
+
+  if (!businessId) throw new ReservationValidationError('Restoran seçimi gerekli');
+  if (!date) throw new ReservationValidationError('Rezervasyon tarihi gerekli');
+  if (!time && !slotId) throw new ReservationValidationError('Saat seçimi gerekli');
+  if (guestCount < 1) throw new ReservationValidationError('Kişi sayısı en az 1 olmalı');
+  if (!customerName) throw new ReservationValidationError('Ad soyad gerekli');
+  if (!customerPhone) throw new ReservationValidationError('Telefon gerekli');
+
+  return {
+    businessId,
+    date,
+    time,
+    guestCount,
+    slotId: slotId || time,
+    customerName,
+    customerPhone,
+    note: note || undefined,
+    foodQuery: foodQuery || undefined,
+    searchQuery: searchQuery || undefined
+  };
+}
+
+/**
+ * @param {NormalizedReservationPayload} payload
+ * @returns {Record<string, unknown>}
+ */
+export function buildReservationApiBody(payload) {
+  /** @type {Record<string, unknown>} */
+  const body = {
+    business_id: payload.businessId,
+    date: payload.date,
+    guest_count: payload.guestCount,
+    customer_name: payload.customerName,
+    customer_phone: payload.customerPhone
+  };
+
+  if (payload.time) body.time = payload.time;
+  if (payload.slotId) body.slot_id = payload.slotId;
+  if (payload.note) body.note = payload.note;
+  if (payload.foodQuery) body.food_query = payload.foodQuery;
+  if (payload.searchQuery) body.search_query = payload.searchQuery;
+
+  return body;
+}
+
+/**
+ * @param {unknown} payload
+ * @returns {NormalizedReservationResult}
+ */
+export function normalizeReservationResponse(payload) {
+  let row = payload;
+
+  if (payload && typeof payload === 'object') {
+    const root = /** @type {Record<string, unknown>} */ (payload);
+    if (root.reservation && typeof root.reservation === 'object') {
+      row = root.reservation;
+    } else if (root.data && typeof root.data === 'object') {
+      const data = /** @type {Record<string, unknown>} */ (root.data);
+      row =
+        data.reservation && typeof data.reservation === 'object'
+          ? data.reservation
+          : data;
+    }
+  }
+
+  const record = /** @type {Record<string, unknown>} */ (
+    row && typeof row === 'object' ? row : {}
+  );
+
+  const id = String(record.id ?? record.reservation_id ?? '').trim();
+  const code =
+    String(
+      record.code ?? record.reservation_code ?? record.confirmation_code ?? ''
+    ).trim() || (id ? `RES-${id}` : 'RES-PENDING');
+  const status = String(record.status ?? 'confirmed').trim() || 'confirmed';
+  const businessId = String(record.business_id ?? record.businessId ?? '').trim();
+  const date = String(record.date ?? '').trim();
+  const time = normalizeSlotTime(record.time ?? record.slot_time);
+  const guestCount = normalizeGuestCount(record.guest_count ?? record.guestCount, 1);
+  const customerName = String(record.customer_name ?? record.customerName ?? '').trim();
+
+  return {
+    id,
+    code,
+    status,
+    businessId,
+    date,
+    time,
+    guestCount,
+    customerName,
+    raw: payload
+  };
+}
+
+/**
+ * @returns {string}
+ */
+export function buildReservationsApiUrl() {
+  return `${getGarsonAiApiUrl()}/public/reservations`;
+}
+
+/**
+ * @param {ReservationCreateInput} input
+ * @returns {Promise<NormalizedReservationResult>}
+ */
+export async function createRestaurantReservation(input) {
+  const payload = normalizeReservationPayload(input);
+  const body = buildReservationApiBody(payload);
+  const url = buildReservationsApiUrl();
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Rezervasyon oluşturulamadı (${response.status})`);
+  }
+
+  const json = await response.json();
+  return normalizeReservationResponse(json);
+}
+
+/**
+ * @param {{ title: string, date: string, time: string, description?: string, location?: string }} params
+ * @returns {string}
+ */
+export function buildGoogleCalendarUrl({ title, date, time, description = '', location = '' }) {
+  const safeDate = resolveSlotDate(date);
+  const safeTime = normalizeSlotTime(time) || '19:00';
+  const start = new Date(`${safeDate}T${safeTime}:00`);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+
+  /**
+   * @param {Date} value
+   * @returns {string}
+   */
+  const formatDate = (value) =>
+    value.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${formatDate(start)}/${formatDate(end)}`,
+    details: description,
+    location
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
