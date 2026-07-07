@@ -23,7 +23,8 @@ const STATIC_ALIASES = Object.freeze({
   '/finans': '/finans/',
   '/finansman': '/finans/',
   '/sigorta': '/sigorta/',
-  '/kasko': '/kasko/'
+  '/kasko': '/kasko/',
+  '/restoran': '/restoran/'
 });
 
 /**

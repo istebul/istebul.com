@@ -1,0 +1,261 @@
+/* Restoran keşif — GarsonAI entegrasyonu */
+body.restoran-page.vacation-page {
+  background:
+    radial-gradient(900px 520px at 78% -5%, rgba(234, 88, 12, 0.22), transparent 60%),
+    radial-gradient(700px 420px at 0% 42%, rgba(245, 158, 11, 0.16), transparent 55%),
+    linear-gradient(180deg, #1a0f08 0%, #1f140c 42%, #0f1218 100%);
+}
+
+body.restoran-page .vacation-hero-badge {
+  background: rgba(234, 88, 12, 0.32);
+  color: #ffedd5;
+}
+
+.ib-vertical-header--restoran .ib-vertical-brand__badge {
+  background: rgba(234, 88, 12, 0.12);
+  color: #c2410c;
+}
+
+.restoran-api-banner {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  background: rgba(251, 146, 60, 0.12);
+  color: #ffedd5;
+  font-size: 0.9rem;
+}
+
+.restoran-search-panel {
+  margin: 1.5rem 0 2rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border-radius: var(--vacation-radius);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--vacation-border);
+  box-shadow: var(--vacation-shadow);
+  color: var(--vacation-on-surface);
+}
+
+.restoran-search-panel h2 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+  color: var(--vacation-on-surface);
+}
+
+.restoran-search-panel__lead {
+  margin: 0 0 1rem;
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.92rem;
+}
+
+.restoran-search-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.restoran-field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-field input,
+.restoran-field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font: inherit;
+  color: var(--vacation-on-surface);
+  background: #fff;
+}
+
+.restoran-field input:focus,
+.restoran-field select:focus {
+  outline: 2px solid rgba(234, 88, 12, 0.35);
+  outline-offset: 1px;
+  border-color: rgba(234, 88, 12, 0.45);
+}
+
+.restoran-field-row {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 640px) {
+  .restoran-field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .restoran-field-row--triple {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.restoran-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+}
+
+.restoran-search-actions .btn {
+  min-height: 44px;
+  padding: 0.7rem 1.1rem;
+}
+
+.restoran-status {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.92rem;
+}
+
+.restoran-status--loading {
+  background: rgba(59, 130, 246, 0.12);
+  color: #dbeafe;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.restoran-status--error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.restoran-results {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 720px) {
+  .restoran-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.restoran-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--vacation-radius);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--vacation-border);
+  box-shadow: var(--vacation-shadow);
+  color: var(--vacation-on-surface);
+}
+
+.restoran-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.restoran-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-card__badge {
+  flex-shrink: 0;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.restoran-card__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.restoran-card__products {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--vacation-on-surface-body);
+  font-size: 0.92rem;
+}
+
+.restoran-card__products li + li {
+  margin-top: 0.2rem;
+}
+
+.restoran-card__muted {
+  margin: 0;
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.9rem;
+}
+
+.restoran-card__footer {
+  margin-top: auto;
+}
+
+.restoran-card__reserve {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-decoration: none;
+}
+
+.restoran-card__reserve[aria-disabled='true'] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.restoran-empty {
+  grid-column: 1 / -1;
+  padding: 1.25rem;
+  border-radius: var(--vacation-radius);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  text-align: center;
+}
+
+#restoran-nav.is-open {
+  display: flex;
+}
+
+@media (max-width: 850px) {
+  #restoran-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid var(--vacation-border);
+  }
+
+  #restoran-nav.is-open {
+    display: flex;
+  }
+
+  .vacation-nav-toggle {
+    display: inline-flex;
+  }
+
+  .vacation-header {
+    position: sticky;
+    flex-wrap: wrap;
+  }
+}

@@ -9,6 +9,7 @@ const DEFAULT_SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co';
 const PUBLIC_ENV_KEYS = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
+  'GARSONAI_API_URL',
   'SENTRY_DSN',
   'LOGROCKET_APP_ID',
   'GOOGLE_OAUTH_ENABLED',
@@ -24,7 +25,8 @@ const ENV_SOURCE_KEYS = {
     'SUPABASE_ANON_KEY',
     'VITE_SUPABASE_ANON_KEY',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY'
-  ]
+  ],
+  GARSONAI_API_URL: ['GARSONAI_API_URL', 'VITE_GARSONAI_API_URL']
 };
 
 function loadPublicEnvDefaults(rootDir = process.cwd()) {
