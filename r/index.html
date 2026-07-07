@@ -69,6 +69,14 @@
         </div>
       </dl>
 
+      <section class="reservation-slots" id="reservation-slots-section" hidden aria-labelledby="reservation-slots-title">
+        <h2 id="reservation-slots-title" class="reservation-slots__title">Uygun saatler</h2>
+        <div id="reservation-slots-status" class="restoran-status" hidden role="status" aria-live="polite"></div>
+        <div id="reservation-slots-list" class="reservation-slots__list" role="listbox" aria-label="Uygun saatler"></div>
+      </section>
+
+      <p id="reservation-cta-notice" class="reservation-cta-notice" hidden role="status" aria-live="polite"></p>
+
       <div class="reservation-actions">
         <button type="button" class="btn btn-primary" id="reservation-confirm-btn" disabled aria-disabled="true">
           Rezervasyonu onayla (yakında)

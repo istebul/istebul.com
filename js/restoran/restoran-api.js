@@ -230,6 +230,170 @@ export function buildReservationUrl(businessId, context = {}, origin = getReserv
 }
 
 /**
+ * @typedef {Object} RestaurantSlot
+ * @property {string} id
+ * @property {string} time
+ * @property {string} label
+ * @property {boolean} available
+ * @property {number|null} capacityLeft
+ * @property {unknown} raw
+ */
+
+/**
+ * @param {unknown} value
+ * @param {number} [fallback]
+ * @returns {number}
+ */
+export function normalizeGuestCount(value, fallback = 2) {
+  const num = Number.parseInt(String(value ?? ''), 10);
+  if (Number.isFinite(num) && num > 0) return num;
+  return fallback;
+}
+
+/**
+ * @param {string} [date]
+ * @returns {string}
+ */
+export function resolveSlotDate(date) {
+  const trimmed = String(date || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
+function normalizeSlotTime(value) {
+  if (value == null || value === '') return '';
+  const str = String(value).trim();
+  const timeMatch = str.match(/(\d{2}:\d{2})/);
+  if (timeMatch) return timeMatch[1];
+  return str;
+}
+
+/**
+ * @param {unknown} item
+ * @param {number} index
+ * @returns {RestaurantSlot|null}
+ */
+function normalizeSingleSlot(item, index) {
+  if (item == null) return null;
+
+  if (typeof item === 'string') {
+    const time = normalizeSlotTime(item);
+    if (!time) return null;
+    return {
+      id: time,
+      time,
+      label: time,
+      available: true,
+      capacityLeft: null,
+      raw: item
+    };
+  }
+
+  if (typeof item !== 'object') return null;
+
+  const row = /** @type {Record<string, unknown>} */ (item);
+  const time = normalizeSlotTime(
+    row.time ?? row.start_time ?? row.startTime ?? row.slot_time ?? row.label
+  );
+  const id = String(row.id ?? row.slot_id ?? row.slotId ?? time ?? `slot-${index}`).trim();
+  if (!time && !id) return null;
+
+  const availableRaw = row.available ?? row.is_available ?? row.open;
+  let available = true;
+  if (availableRaw === false || availableRaw === 0) available = false;
+  if (row.status === 'unavailable' || row.status === 'closed') available = false;
+
+  const capacityRaw = row.capacity_left ?? row.capacityLeft ?? row.remaining ?? row.tables_left;
+  const capacityNum = Number(capacityRaw);
+  const capacityLeft =
+    capacityRaw != null && capacityRaw !== '' && Number.isFinite(capacityNum)
+      ? capacityNum
+      : null;
+
+  const label = String(row.label ?? row.display ?? time ?? id).trim();
+
+  return {
+    id,
+    time: time || id,
+    label,
+    available,
+    capacityLeft,
+    raw: item
+  };
+}
+
+/**
+ * @param {unknown} payload
+ * @returns {RestaurantSlot[]}
+ */
+export function normalizeRestaurantSlots(payload) {
+  let raw = [];
+
+  if (Array.isArray(payload)) {
+    raw = payload;
+  } else if (payload && typeof payload === 'object') {
+    const root = /** @type {Record<string, unknown>} */ (payload);
+    if (Array.isArray(root.slots)) {
+      raw = root.slots;
+    } else if (root.data && typeof root.data === 'object') {
+      const data = /** @type {Record<string, unknown>} */ (root.data);
+      if (Array.isArray(data.slots)) raw = data.slots;
+      else if (Array.isArray(data)) raw = data;
+    }
+  }
+
+  return raw
+    .map((item, index) => normalizeSingleSlot(item, index))
+    .filter((slot) => slot != null);
+}
+
+/**
+ * @param {string} id
+ * @param {{ date?: string, guestCount?: number }} params
+ * @returns {string}
+ */
+export function buildRestaurantSlotsUrl(id, { date, guestCount } = {}) {
+  const trimmed = String(id || '').trim();
+  const params = new URLSearchParams();
+  params.set('date', resolveSlotDate(date));
+  params.set('guest_count', String(normalizeGuestCount(guestCount)));
+  return `${getGarsonAiApiUrl()}/public/restaurants/${encodeURIComponent(trimmed)}/slots?${params.toString()}`;
+}
+
+/**
+ * @param {string} id
+ * @param {{ date?: string, guestCount?: number }} [params]
+ * @returns {Promise<unknown>}
+ */
+export async function getRestaurantSlots(id, { date, guestCount } = {}) {
+  const trimmed = String(id || '').trim();
+  if (!trimmed) {
+    throw new Error('Restoran kimliği gerekli');
+  }
+
+  const url = buildRestaurantSlotsUrl(trimmed, { date, guestCount });
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Müsait saatler alınamadı (${response.status})`);
+  }
+
+  return response.json();
+}
+
+/**
  * @param {string} id
  * @returns {string}
  */

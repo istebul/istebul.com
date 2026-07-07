@@ -285,6 +285,70 @@ body.restoran-page .vacation-hero-badge {
   cursor: not-allowed;
 }
 
+.reservation-slots {
+  margin: 0 0 1.25rem;
+}
+
+.reservation-slots__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface);
+}
+
+.reservation-slots__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reservation-slot {
+  min-height: 44px;
+  min-width: 4.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  background: #fff;
+  color: #c2410c;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reservation-slot.is-selected {
+  background: #ea580c;
+  border-color: #ea580c;
+  color: #fff;
+}
+
+.reservation-slot.is-disabled,
+.reservation-slot:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reservation-slot:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.45);
+  outline-offset: 2px;
+}
+
+.reservation-cta-notice {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #065f46;
+  font-size: 0.92rem;
+}
+
+#reservation-slots-status.restoran-status--loading {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e3a8a;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
 #restoran-nav.is-open {
   display: flex;
 }
