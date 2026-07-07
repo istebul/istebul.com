@@ -3,6 +3,7 @@
  * Serves /env.js from Pages environment variables (overrides empty build-time env.js).
  */
 const DEFAULT_SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co';
+const DEFAULT_GARSONAI_API_URL = 'https://api.istebul.com';
 
 const PUBLIC_ENV_KEYS = [
   'SUPABASE_URL',
@@ -42,6 +43,9 @@ function pickFromBindings(bindings, key) {
   }
   if (key === 'SUPABASE_URL') {
     return DEFAULT_SUPABASE_URL;
+  }
+  if (key === 'GARSONAI_API_URL') {
+    return DEFAULT_GARSONAI_API_URL;
   }
   return '';
 }

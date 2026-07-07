@@ -1,6 +1,5 @@
 import {
   buildReservationUrl,
-  getGarsonAiApiUrl,
   normalizeSearchResults,
   searchRestaurants
 } from './restoran-api.js';
@@ -183,21 +182,10 @@ function bindNavToggle() {
   });
 }
 
-function showApiWarning() {
-  const banner = $('restoran-api-banner');
-  if (!banner) return;
-  if (!getGarsonAiApiUrl()) {
-    banner.hidden = false;
-    banner.textContent =
-      'GarsonAI API adresi tanımlı değil. Yerel geliştirmede .env.local içine GARSONAI_API_URL ekleyin.';
-  }
-}
-
 function boot() {
   document.body.classList.add('ib-ready');
   setDefaultDateTime();
   bindNavToggle();
-  showApiWarning();
 
   const form = $('restoran-search-form');
   form?.addEventListener('submit', handleSearch);

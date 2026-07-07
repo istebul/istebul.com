@@ -1,7 +1,8 @@
 /**
- * GarsonAI public restaurant search API client.
+ * GarsonAI public restaurant search API client (isteBul API gateway).
  */
 
+const DEFAULT_GARSONAI_API_URL = 'https://api.istebul.com';
 const ENV_KEYS = ['GARSONAI_API_URL', 'VITE_GARSONAI_API_URL'];
 
 /**
@@ -15,20 +16,7 @@ export function getGarsonAiApiUrl() {
       return String(raw).trim().replace(/\/$/, '');
     }
   }
-  return '';
-}
-
-/**
- * @returns {string}
- */
-export function getGarsonAiOrigin() {
-  const apiUrl = getGarsonAiApiUrl();
-  if (!apiUrl) return '';
-  try {
-    return new URL(apiUrl).origin;
-  } catch {
-    return '';
-  }
+  return DEFAULT_GARSONAI_API_URL;
 }
 
 /**
@@ -101,11 +89,6 @@ export function normalizeSearchResults(data) {
  */
 export async function searchRestaurants({ q, guestCount, date }) {
   const base = getGarsonAiApiUrl();
-  if (!base) {
-    throw new Error(
-      'GarsonAI API adresi yapılandırılmadı. GARSONAI_API_URL veya VITE_GARSONAI_API_URL tanımlayın.'
-    );
-  }
 
   const params = new URLSearchParams();
   if (q) params.set('q', q);
@@ -133,7 +116,8 @@ export async function searchRestaurants({ q, guestCount, date }) {
  */
 export function buildReservationUrl(businessId) {
   const id = String(businessId || '').trim();
-  const origin = getGarsonAiOrigin();
-  if (origin) return `${origin}/r/${encodeURIComponent(id)}`;
-  return `/r/${encodeURIComponent(id)}`;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/r/${encodeURIComponent(id)}`;
+  }
+  return `https://www.istebul.com/r/${encodeURIComponent(id)}`;
 }
