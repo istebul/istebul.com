@@ -116,13 +116,20 @@
         <p class="reservation-success__code-label">Rezervasyon kodu</p>
         <p class="reservation-success__code" id="reservation-success-code">—</p>
         <p class="reservation-success__summary" id="reservation-success-summary"></p>
-        <a
-          class="btn btn-primary reservation-calendar-link"
-          id="reservation-calendar-link"
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Takvime ekle</a>
+        <div class="reservation-success__actions">
+          <a
+            class="btn btn-primary"
+            id="reservation-detail-link"
+            href="#"
+          >Rezervasyon detayını aç</a>
+          <a
+            class="btn reservation-calendar-link"
+            id="reservation-calendar-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Takvime ekle</a>
+        </div>
       </section>
 
       <p id="reservation-cta-notice" class="reservation-cta-notice" hidden role="status" aria-live="polite"></p>

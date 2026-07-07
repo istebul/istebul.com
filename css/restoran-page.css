@@ -410,6 +410,29 @@ body.restoran-page .vacation-hero-badge {
   font-size: 0.95rem;
 }
 
+.reservation-success__actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reservation-confirm-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.reservation-confirm-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reservation-confirm-error {
+  color: #991b1b;
+}
+
+.reservation-confirm-fallback .reservation-panel__title {
+  margin-bottom: 0.75rem;
+}
+
 .reservation-calendar-link {
   display: inline-flex;
   align-items: center;

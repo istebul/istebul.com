@@ -117,6 +117,8 @@
 /offline.html /offline 301
 
 # --- GarsonAI reservation deep links (before SPA fallback) ---
+/r/onay /r/onay/index.html 200
+/r/onay/ /r/onay/index.html 200
 /r /r/index.html 200
 /r/ /r/index.html 200
 /r/* /r/index.html 200

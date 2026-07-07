@@ -1,5 +1,6 @@
 import {
   buildGoogleCalendarUrl,
+  buildReservationConfirmUrl,
   createRestaurantReservation,
   getRestaurantDetail,
   getRestaurantSlots,
@@ -337,6 +338,7 @@ function showReservationSuccess(result) {
   const code = $('reservation-success-code');
   const summary = $('reservation-success-summary');
   const calendarLink = /** @type {HTMLAnchorElement|null} */ ($('reservation-calendar-link'));
+  const detailLink = /** @type {HTMLAnchorElement|null} */ ($('reservation-detail-link'));
   const contactForm = $('reservation-contact-form');
   const actions = $('reservation-actions');
   const slotsSection = $('reservation-slots-section');
@@ -360,6 +362,10 @@ function showReservationSuccess(result) {
       description: `Rezervasyon kodu: ${result.code}`,
       location: currentRestaurantAddress
     });
+  }
+
+  if (detailLink) {
+    detailLink.href = buildReservationConfirmUrl(result.code);
   }
 
   if (success) success.hidden = false;

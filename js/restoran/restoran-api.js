@@ -155,7 +155,7 @@ export function parseBusinessIdFromLocation(pathname = '', search = '') {
   if (rIndex === -1) return '';
 
   const segment = parts[rIndex + 1];
-  if (!segment || segment === 'index.html') return '';
+  if (!segment || segment === 'index.html' || segment === 'onay') return '';
 
   try {
     return decodeURIComponent(segment).trim();
@@ -486,10 +486,13 @@ export async function getRestaurantDetail(id) {
  * @property {string} code
  * @property {string} status
  * @property {string} businessId
+ * @property {string} businessName
  * @property {string} date
  * @property {string} time
  * @property {number} guestCount
  * @property {string} customerName
+ * @property {string} customerPhone
+ * @property {string} note
  * @property {unknown} raw
  */
 
@@ -598,24 +601,102 @@ export function normalizeReservationResponse(payload) {
     String(
       record.code ?? record.reservation_code ?? record.confirmation_code ?? ''
     ).trim() || (id ? `RES-${id}` : 'RES-PENDING');
-  const status = String(record.status ?? 'confirmed').trim() || 'confirmed';
+  const status = String(record.status ?? 'pending').trim() || 'pending';
   const businessId = String(record.business_id ?? record.businessId ?? '').trim();
+  const businessName = String(
+    record.business_name ?? record.businessName ?? record.restaurant_name ?? ''
+  ).trim();
   const date = String(record.date ?? '').trim();
   const time = normalizeSlotTime(record.time ?? record.slot_time);
   const guestCount = normalizeGuestCount(record.guest_count ?? record.guestCount, 1);
   const customerName = String(record.customer_name ?? record.customerName ?? '').trim();
+  const customerPhone = String(record.customer_phone ?? record.customerPhone ?? '').trim();
+  const note = record.note != null ? String(record.note).trim() : '';
 
   return {
     id,
     code,
     status,
     businessId,
+    businessName,
     date,
     time,
     guestCount,
     customerName,
+    customerPhone,
+    note,
     raw: payload
   };
+}
+
+/**
+ * @param {string} [status]
+ * @returns {string}
+ */
+export function formatReservationStatusLabel(status) {
+  const key = String(status || 'pending').trim().toLowerCase();
+  const labels = {
+    pending: 'Beklemede',
+    confirmed: 'Onaylandı',
+    cancelled: 'İptal edildi',
+    completed: 'Tamamlandı'
+  };
+  return labels[key] || String(status || 'Beklemede');
+}
+
+/**
+ * @param {string} [search]
+ * @returns {string}
+ */
+export function parseReservationCodeFromSearch(search = '') {
+  const query = search.startsWith('?') ? search.slice(1) : search;
+  const params = new URLSearchParams(query);
+  return String(params.get('code') ?? '').trim();
+}
+
+/**
+ * @param {string} code
+ * @returns {string}
+ */
+export function buildRestaurantReservationLookupUrl(code) {
+  const trimmed = String(code || '').trim();
+  return `${getGarsonAiApiUrl()}/public/reservations/${encodeURIComponent(trimmed)}`;
+}
+
+/**
+ * @param {string} code
+ * @param {string} [origin]
+ * @returns {string}
+ */
+export function buildReservationConfirmUrl(code, origin = getReservationBaseOrigin()) {
+  const trimmed = String(code || '').trim();
+  const base = String(origin || getReservationBaseOrigin()).replace(/\/$/, '');
+  if (!trimmed) return `${base}/r/onay/`;
+  return `${base}/r/onay?code=${encodeURIComponent(trimmed)}`;
+}
+
+/**
+ * @param {string} code
+ * @returns {Promise<NormalizedReservationResult>}
+ */
+export async function getRestaurantReservation(code) {
+  const trimmed = String(code || '').trim();
+  if (!trimmed) {
+    throw new Error('Rezervasyon kodu gerekli');
+  }
+
+  const url = buildRestaurantReservationLookupUrl(trimmed);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Rezervasyon bilgisi alınamadı (${response.status})`);
+  }
+
+  const json = await response.json();
+  return normalizeReservationResponse(json);
 }
 
 /**
