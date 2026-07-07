@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ea580c">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>Restoran Keşfi | isteBul — GarsonAI ile masa ve menü arama</title>
+  <meta name="description" content="Kişi sayısı, tarih ve yemek tercihinize göre restoran arayın. Müsait masa durumu ve eşleşen ürünlerle rezervasyona geçin.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://www.istebul.com/restoran/">
+  <meta property="og:title" content="Restoran Keşfi | isteBul">
+  <meta property="og:description" content="GarsonAI ile restoran, menü ve masa müsaitliği araması.">
+  <meta property="og:url" content="https://www.istebul.com/restoran/">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/restoran-page.css">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=7">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/restoran/restoran-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+</head>
+<body class="vacation-page restoran-page">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
+    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Restoran</span>
+    </a>
+    <button class="vacation-nav-toggle" type="button" id="restoran-nav-toggle" aria-controls="restoran-nav" aria-expanded="false">Menü</button>
+    <nav id="restoran-nav" aria-label="Ana navigasyon">
+      <div class="ib-vertical-nav-primary">
+        <a href="/">Ana sayfa</a>
+        <a href="/auto/">Araç</a>
+        <a href="/konut/">Konut</a>
+        <a href="/tatil/">Tatil</a>
+        <a href="/finans/">Finansman</a>
+        <a href="/restoran/" class="is-active" aria-current="page">Restoran</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> › <span>Restoran keşfi</span>
+    </nav>
+  </div>
+
+  <section class="vacation-hero restoran-hero" aria-labelledby="restoran-hero-title">
+    <div class="vacation-container">
+      <div class="vacation-hero-inner">
+        <div class="vacation-hero-copy">
+          <span class="vacation-hero-badge">GarsonAI · Restoran keşfi</span>
+          <h1 id="restoran-hero-title">Doğru restoranı, doğru masayla bulun</h1>
+          <p class="vacation-hero-lead">
+            Restoran adı, yemek tercihi, kişi sayısı ve tarih/saat ile arayın; eşleşen ürünleri ve müsait masa durumunu görün.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="vacation-container" id="restoran-main">
+    <div id="restoran-api-banner" class="restoran-api-banner" hidden role="status"></div>
+
+    <section class="restoran-search-panel" aria-labelledby="restoran-search-title">
+      <h2 id="restoran-search-title">Restoran ara</h2>
+      <p class="restoran-search-panel__lead">GarsonAI public API üzerinden canlı arama yapılır.</p>
+
+      <form id="restoran-search-form" class="restoran-search-form" novalidate>
+        <div class="restoran-field">
+          <label for="restoran-query">Restoran adı veya konum</label>
+          <input
+            id="restoran-query"
+            name="q"
+            type="search"
+            inputmode="search"
+            autocomplete="off"
+            placeholder="Örn. Beşiktaş balık, Nişantaşı"
+            aria-describedby="restoran-search-hint">
+        </div>
+
+        <div class="restoran-field">
+          <label for="restoran-food">Yemek adı</label>
+          <input
+            id="restoran-food"
+            name="food"
+            type="search"
+            inputmode="search"
+            autocomplete="off"
+            placeholder="Örn. levrek, risotto, kebap">
+        </div>
+
+        <div class="restoran-field-row restoran-field-row--triple">
+          <div class="restoran-field">
+            <label for="restoran-guests">Kişi sayısı</label>
+            <select id="restoran-guests" name="guest_count" required>
+              <option value="1">1 kişi</option>
+              <option value="2" selected>2 kişi</option>
+              <option value="3">3 kişi</option>
+              <option value="4">4 kişi</option>
+              <option value="5">5 kişi</option>
+              <option value="6">6 kişi</option>
+              <option value="7">7 kişi</option>
+              <option value="8">8 kişi</option>
+              <option value="10">10 kişi</option>
+              <option value="12">12 kişi</option>
+            </select>
+          </div>
+
+          <div class="restoran-field">
+            <label for="restoran-date">Tarih</label>
+            <input id="restoran-date" name="date" type="date" required>
+          </div>
+
+          <div class="restoran-field">
+            <label for="restoran-time">Saat</label>
+            <input id="restoran-time" name="time" type="time" required step="900">
+          </div>
+        </div>
+
+        <p id="restoran-search-hint" class="restoran-search-panel__lead">
+          Arama sorgusu restoran ve yemek alanlarının birleşiminden oluşur.
+        </p>
+
+        <div class="restoran-search-actions">
+          <button type="submit" class="btn btn-primary" id="restoran-search-btn">Restoran ara</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="restoran-status" class="restoran-status" hidden role="status" aria-live="polite"></div>
+
+    <section aria-labelledby="restoran-results-title">
+      <h2 id="restoran-results-title" class="sr-only">Arama sonuçları</h2>
+      <div id="restoran-results" class="restoran-results" aria-live="polite" aria-busy="false"></div>
+    </section>
+  </main>
+
+  <footer class="vacation-container" style="padding-bottom: 2rem; color: #94a3b8; font-size: 0.85rem;">
+  <p>Rezervasyonlar GarsonAI üzerinden tamamlanır. isteBul yalnızca keşif arayüzünü sunar.</p>
+  </footer>
+</body>
+</html>

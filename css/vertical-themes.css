@@ -13,6 +13,13 @@ body.finans-page.vacation-page {
     linear-gradient(180deg, #061410 0%, #0b1f1a 42%, #0a1218 100%);
 }
 
+body.restoran-page.vacation-page {
+  background:
+    radial-gradient(900px 520px at 78% -5%, rgba(234, 88, 12, 0.22), transparent 60%),
+    radial-gradient(700px 420px at 0% 42%, rgba(245, 158, 11, 0.16), transparent 55%),
+    linear-gradient(180deg, #1a0f08 0%, #1f140c 42%, #0f1218 100%);
+}
+
 body.konut-page .vacation-hero-badge,
 body.finans-page .vacation-hero-badge {
   background: rgba(99, 102, 241, 0.35);

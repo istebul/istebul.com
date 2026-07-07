@@ -3,5 +3,6 @@
   "PLAUSIBLE_DOMAIN": "istebul.com",
   "GA4_MEASUREMENT_ID": "G-SEV413SX9T",
   "GOOGLE_OAUTH_ENABLED": "true",
-  "DECISION_OS_ENABLED": "true"
+  "DECISION_OS_ENABLED": "true",
+  "GARSONAI_API_URL": "https://api.istebul.com"
 }
