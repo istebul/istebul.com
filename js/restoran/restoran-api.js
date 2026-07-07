@@ -6,6 +6,23 @@ const DEFAULT_GARSONAI_API_URL = 'https://api.istebul.com';
 const ENV_KEYS = ['GARSONAI_API_URL', 'VITE_GARSONAI_API_URL'];
 
 /**
+ * @typedef {Object} ReservationContext
+ * @property {string} [q]
+ * @property {string} [food]
+ * @property {string} [date]
+ * @property {string} [time]
+ * @property {number} [guests]
+ */
+
+/**
+ * @typedef {Object} RestaurantDetail
+ * @property {string} businessId
+ * @property {string} name
+ * @property {string} address
+ * @property {string} availability
+ */
+
+/**
  * @returns {string}
  */
 export function getGarsonAiApiUrl() {
@@ -20,10 +37,20 @@ export function getGarsonAiApiUrl() {
 }
 
 /**
+ * @returns {string}
+ */
+export function getReservationBaseOrigin() {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return 'https://www.istebul.com';
+}
+
+/**
  * @param {unknown} value
  * @returns {string}
  */
-function formatAvailability(value) {
+export function formatAvailability(value) {
   if (value == null || value === '') return 'Bilgi yok';
   if (typeof value === 'boolean') return value ? 'Müsait masa var' : 'Müsait masa yok';
   if (typeof value === 'number') return value > 0 ? `${value} masa müsait` : 'Müsait masa yok';
@@ -84,6 +111,134 @@ export function normalizeSearchResults(data) {
 }
 
 /**
+ * @param {unknown} data
+ * @returns {RestaurantDetail}
+ */
+export function normalizeRestaurantDetail(data) {
+  const root = /** @type {Record<string, unknown>} */ (
+    data && typeof data === 'object' ? data : {}
+  );
+  const nested =
+    root.restaurant && typeof root.restaurant === 'object'
+      ? root.restaurant
+      : root.data && typeof root.data === 'object'
+        ? root.data
+        : root;
+  const row = /** @type {Record<string, unknown>} */ (nested);
+  const businessId = String(row.business_id ?? row.businessId ?? row.id ?? '').trim();
+  const name = String(row.name ?? row.restaurant_name ?? 'Restoran').trim();
+  const address = String(
+    row.address ?? row.location ?? row.address_line ?? row.city ?? ''
+  ).trim();
+  const availability = formatAvailability(
+    row.table_availability ?? row.availability ?? row.available_tables
+  );
+  return { businessId, name, address, availability };
+}
+
+/**
+ * @param {string} pathname
+ * @param {string} [search]
+ * @returns {string}
+ */
+export function parseBusinessIdFromLocation(pathname = '', search = '') {
+  const query = search.startsWith('?') ? search.slice(1) : search;
+  const params = new URLSearchParams(query);
+  const fromQuery = params.get('id') ?? params.get('businessId') ?? params.get('business_id');
+  if (fromQuery) return String(fromQuery).trim();
+
+  const parts = String(pathname || '')
+    .replace(/\/$/, '')
+    .split('/')
+    .filter(Boolean);
+  const rIndex = parts.indexOf('r');
+  if (rIndex === -1) return '';
+
+  const segment = parts[rIndex + 1];
+  if (!segment || segment === 'index.html') return '';
+
+  try {
+    return decodeURIComponent(segment).trim();
+  } catch {
+    return segment.trim();
+  }
+}
+
+/**
+ * @param {string|URLSearchParams} input
+ * @returns {ReservationContext}
+ */
+export function parseReservationContext(input = '') {
+  const params =
+    input instanceof URLSearchParams
+      ? input
+      : new URLSearchParams(String(input).startsWith('?') ? String(input).slice(1) : String(input));
+
+  /** @type {ReservationContext} */
+  const context = {};
+  const q = params.get('q');
+  const food = params.get('food');
+  const date = params.get('date');
+  const time = params.get('time');
+  const guestsRaw = params.get('guests') ?? params.get('guest_count');
+
+  if (q) context.q = q;
+  if (food) context.food = food;
+  if (date) context.date = date;
+  if (time) context.time = time;
+  if (guestsRaw != null && guestsRaw !== '') {
+    const guests = Number.parseInt(guestsRaw, 10);
+    if (Number.isFinite(guests) && guests > 0) context.guests = guests;
+  }
+
+  return context;
+}
+
+/**
+ * @param {ReservationContext} [context]
+ * @returns {string}
+ */
+export function buildReservationQuery(context = {}) {
+  const params = new URLSearchParams();
+  if (context.q) params.set('q', context.q);
+  if (context.food) params.set('food', context.food);
+  if (context.date) params.set('date', context.date);
+  if (context.time) params.set('time', context.time);
+  if (context.guests != null && context.guests > 0) {
+    params.set('guests', String(context.guests));
+  }
+  return params.toString();
+}
+
+/**
+ * @param {string} businessId
+ * @param {ReservationContext} [context]
+ * @param {string} [origin]
+ * @returns {string}
+ */
+export function buildReservationUrl(businessId, context = {}, origin = getReservationBaseOrigin()) {
+  const id = String(businessId || '').trim();
+  const query = buildReservationQuery(context);
+  const querySuffix = query ? `?${query}` : '';
+  const base = String(origin || getReservationBaseOrigin()).replace(/\/$/, '');
+
+  if (!id) {
+    return `${base}/r/${querySuffix}`;
+  }
+
+  return `${base}/r/${encodeURIComponent(id)}${querySuffix}`;
+}
+
+/**
+ * @param {string} id
+ * @returns {string}
+ */
+export function buildRestaurantDetailUrl(id) {
+  const trimmed = String(id || '').trim();
+  return `${getGarsonAiApiUrl()}/public/restaurants/${encodeURIComponent(trimmed)}`;
+}
+
+/**
  * @param {{ q?: string, guestCount?: number, date?: string }} params
  * @returns {Promise<unknown>}
  */
@@ -111,13 +266,24 @@ export async function searchRestaurants({ q, guestCount, date }) {
 }
 
 /**
- * @param {string} businessId
- * @returns {string}
+ * @param {string} id
+ * @returns {Promise<unknown>}
  */
-export function buildReservationUrl(businessId) {
-  const id = String(businessId || '').trim();
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return `${window.location.origin}/r/${encodeURIComponent(id)}`;
+export async function getRestaurantDetail(id) {
+  const trimmed = String(id || '').trim();
+  if (!trimmed) {
+    throw new Error('Restoran kimliği gerekli');
   }
-  return `https://www.istebul.com/r/${encodeURIComponent(id)}`;
+
+  const url = buildRestaurantDetailUrl(trimmed);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Restoran bilgisi alınamadı (${response.status})`);
+  }
+
+  return response.json();
 }

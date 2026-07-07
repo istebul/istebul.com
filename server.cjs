@@ -92,6 +92,13 @@ app.get('*', (req, res, next) => {
     }
   }
 
+  if (raw === '/r' || raw === '/r/' || raw.startsWith('/r/')) {
+    const reservationIndex = path.join(__dirname, 'r', 'index.html');
+    if (fs.existsSync(reservationIndex)) {
+      return res.sendFile(reservationIndex);
+    }
+  }
+
   if (raw.startsWith('/auto/') && !path.extname(raw)) {
     const autoIndex = path.join(__dirname, 'auto', 'index.html');
     if (fs.existsSync(autoIndex)) {

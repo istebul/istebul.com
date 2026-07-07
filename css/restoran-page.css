@@ -228,6 +228,63 @@ body.restoran-page .vacation-hero-badge {
   text-align: center;
 }
 
+.reservation-main {
+  padding-bottom: 2.5rem;
+}
+
+.reservation-panel__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  color: var(--vacation-on-surface);
+}
+
+.reservation-summary {
+  margin: 0 0 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.reservation-summary__row {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.reservation-summary__row dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reservation-summary__row dd {
+  margin: 0;
+  color: var(--vacation-on-surface-body);
+  font-size: 0.95rem;
+}
+
+.reservation-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reservation-actions .btn {
+  min-height: 44px;
+  justify-content: center;
+}
+
+.reservation-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+#reservation-confirm-btn[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 #restoran-nav.is-open {
   display: flex;
 }

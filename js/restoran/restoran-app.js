@@ -4,8 +4,6 @@ import {
   searchRestaurants
 } from './restoran-api.js';
 
-const GUEST_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12];
-
 /**
  * @param {string} id
  * @returns {HTMLElement|null}
@@ -50,6 +48,28 @@ function buildSearchQuery() {
   const restaurant = /** @type {HTMLInputElement|null} */ ($('restoran-query'))?.value.trim() ?? '';
   const food = /** @type {HTMLInputElement|null} */ ($('restoran-food'))?.value.trim() ?? '';
   return [restaurant, food].filter(Boolean).join(' ').trim();
+}
+
+/**
+ * @returns {import('./restoran-api.js').ReservationContext}
+ */
+function buildReservationContext() {
+  const restaurant = /** @type {HTMLInputElement|null} */ ($('restoran-query'))?.value.trim() ?? '';
+  const food = /** @type {HTMLInputElement|null} */ ($('restoran-food'))?.value.trim() ?? '';
+  const date = /** @type {HTMLInputElement|null} */ ($('restoran-date'))?.value.trim() ?? '';
+  const time = /** @type {HTMLInputElement|null} */ ($('restoran-time'))?.value.trim() ?? '';
+  const guests = Number.parseInt(
+    /** @type {HTMLSelectElement|null} */ ($('restoran-guests'))?.value ?? '2',
+    10
+  ) || 2;
+
+  /** @type {import('./restoran-api.js').ReservationContext} */
+  const context = { guests };
+  if (restaurant) context.q = restaurant;
+  if (food) context.food = food;
+  if (date) context.date = date;
+  if (time) context.time = time;
+  return context;
 }
 
 /**
@@ -106,6 +126,8 @@ function renderResults(items) {
     return;
   }
 
+  const reservationContext = buildReservationContext();
+
   grid.innerHTML = items
     .map((item) => {
       const productsHtml = item.products.length
@@ -117,7 +139,7 @@ function renderResults(items) {
 
       const reserveDisabled = !item.businessId;
       const reserveHref = item.businessId
-        ? buildReservationUrl(item.businessId)
+        ? buildReservationUrl(item.businessId, reservationContext)
         : '#';
 
       return `
@@ -134,7 +156,7 @@ function renderResults(items) {
             <a
               class="btn btn-primary restoran-card__reserve"
               href="${escapeHtml(reserveHref)}"
-              ${reserveDisabled ? 'aria-disabled="true" tabindex="-1"' : 'target="_blank" rel="noopener noreferrer"'}
+              ${reserveDisabled ? 'aria-disabled="true" tabindex="-1"' : ''}
             >Rezervasyon yap</a>
           </footer>
         </article>`;
