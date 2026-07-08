@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ea580c">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>GarsonAI Mutfak | isteBul</title>
+  <meta name="description" content="GarsonAI mutfak ekranı — gelen ön siparişleri yönetin.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/restoran-page.css">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/restoran/kds-admin.js"></script>
+</head>
+<body class="vacation-page restoran-page kds-admin-page">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
+    <a class="logo ib-vertical-brand" href="/garson/" aria-label="GarsonAI ana sayfa">
+      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">GarsonAI</span>
+    </a>
+    <nav id="kds-admin-nav" aria-label="Ana navigasyon">
+      <div class="ib-vertical-nav-primary">
+        <a href="/garson/">GarsonAI</a>
+        <a href="/restoran/">Restoran keşfi</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="vacation-container kds-admin-main" id="kds-admin-main">
+    <div class="kds-admin-toolbar">
+      <div>
+        <p class="kds-admin-toolbar__lead">GarsonAI operasyon</p>
+        <h1 class="kds-admin-toolbar__title">GarsonAI Mutfak</h1>
+      </div>
+      <button type="button" class="vacation-btn vacation-btn--secondary kds-admin-toolbar__refresh" id="kds-admin-refresh">
+        Yenile
+      </button>
+    </div>
+
+    <div id="kds-admin-status" class="restoran-status restoran-status--loading" hidden role="status" aria-live="polite">
+      Mutfak kuyruğu yükleniyor…
+    </div>
+
+    <div id="kds-admin-missing" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite">
+      <p id="kds-admin-missing-text">Restoran kimliği gerekli. URL'ye ?businessId= ekleyin.</p>
+    </div>
+
+    <div id="kds-admin-fallback" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite">
+      <p id="kds-admin-fallback-text">Canlı mutfak ekranı yakında aktif olacak.</p>
+    </div>
+
+    <p id="kds-admin-empty" class="kds-admin-empty" hidden role="status" aria-live="polite"></p>
+
+    <section id="kds-admin-board" class="kds-admin-board" hidden aria-label="Mutfak sipariş panosu">
+      <div class="kds-admin-column">
+        <h2 class="kds-admin-column__title">Yeni Siparişler</h2>
+        <p id="kds-admin-column-new-empty" class="kds-admin-column__empty">Sipariş yok</p>
+        <div id="kds-admin-column-new" class="kds-admin-column__list"></div>
+      </div>
+      <div class="kds-admin-column">
+        <h2 class="kds-admin-column__title">Hazırlanıyor</h2>
+        <p id="kds-admin-column-preparing-empty" class="kds-admin-column__empty">Sipariş yok</p>
+        <div id="kds-admin-column-preparing" class="kds-admin-column__list"></div>
+      </div>
+      <div class="kds-admin-column">
+        <h2 class="kds-admin-column__title">Hazır</h2>
+        <p id="kds-admin-column-ready-empty" class="kds-admin-column__empty">Sipariş yok</p>
+        <div id="kds-admin-column-ready" class="kds-admin-column__list"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
