@@ -1267,6 +1267,256 @@ export async function getPreorderStatus(preorderId) {
   return normalizePreorderStatus(json);
 }
 
+/** @type {Set<string>} */
+const KITCHEN_ORDER_STATUS_KEYS = new Set([
+  'submitted',
+  'scheduled',
+  'preparing',
+  'ready',
+  'served',
+  'cancelled'
+]);
+
+/** @type {Set<string>} */
+const KITCHEN_STATUS_UPDATE_KEYS = new Set(['preparing', 'ready', 'served']);
+
+/**
+ * @typedef {Object} NormalizedKitchenItem
+ * @property {string} name
+ * @property {number} quantity
+ * @property {string} note
+ */
+
+/**
+ * @typedef {Object} NormalizedKitchenOrder
+ * @property {string} id
+ * @property {string} reservationId
+ * @property {string} customerName
+ * @property {string} tableName
+ * @property {string} arrivalTime
+ * @property {string} status
+ * @property {number|null} etaMinutes
+ * @property {NormalizedKitchenItem[]} items
+ * @property {string} createdAt
+ * @property {unknown} raw
+ */
+
+/**
+ * @typedef {Object} NormalizedKitchenQueue
+ * @property {NormalizedKitchenOrder[]} orders
+ * @property {unknown} raw
+ */
+
+/**
+ * @param {string} [status]
+ * @returns {string}
+ */
+export function normalizeKitchenOrderStatus(status) {
+  const key = String(status || '').trim().toLowerCase();
+  if (key === 'pending' || key === 'new' || key === 'received') return 'submitted';
+  return KITCHEN_ORDER_STATUS_KEYS.has(key) ? key : 'submitted';
+}
+
+/**
+ * @param {unknown} item
+ * @returns {NormalizedKitchenItem|null}
+ */
+function normalizeKitchenQueueItem(item) {
+  const row = /** @type {Record<string, unknown>} */ (
+    item && typeof item === 'object' ? item : {}
+  );
+
+  const name = String(row.name ?? row.product_name ?? row.title ?? row.menu_item_name ?? '').trim();
+  if (!name) return null;
+
+  const qtyRaw = Number.parseInt(String(row.quantity ?? row.qty ?? row.count ?? '1'), 10);
+  const quantity = Number.isFinite(qtyRaw) && qtyRaw > 0 ? qtyRaw : 1;
+  const note = String(row.note ?? row.notes ?? row.special_request ?? '').trim();
+
+  return { name, quantity, note };
+}
+
+/**
+ * @param {unknown} order
+ * @returns {NormalizedKitchenOrder|null}
+ */
+function normalizeKitchenQueueOrder(order) {
+  const row = /** @type {Record<string, unknown>} */ (
+    order && typeof order === 'object' ? order : {}
+  );
+
+  const id = String(row.id ?? row.order_id ?? row.preorder_id ?? row.preorderId ?? '').trim();
+  if (!id) return null;
+
+  const reservationId = String(row.reservation_id ?? row.reservationId ?? '').trim();
+  const customerName = String(
+    row.customer_name ?? row.customerName ?? row.guest_name ?? ''
+  ).trim();
+  const tableName = String(row.table_name ?? row.tableName ?? row.table ?? '').trim();
+  const arrivalTime = String(
+    row.arrival_time ?? row.arrivalTime ?? row.reservation_time ?? row.time ?? ''
+  ).trim();
+  const status = normalizeKitchenOrderStatus(String(row.status ?? ''));
+
+  const etaRaw = row.eta_minutes ?? row.etaMinutes ?? row.eta;
+  const etaNum = etaRaw != null && etaRaw !== '' ? Number(etaRaw) : null;
+  const etaMinutes = etaNum != null && Number.isFinite(etaNum) && etaNum >= 0 ? etaNum : null;
+
+  const itemSource = row.items ?? row.line_items ?? row.products ?? [];
+  const items = Array.isArray(itemSource)
+    ? itemSource
+        .map((item) => normalizeKitchenQueueItem(item))
+        .filter((item) => item != null)
+    : [];
+
+  const createdAt = String(row.created_at ?? row.createdAt ?? '').trim();
+
+  return {
+    id,
+    reservationId,
+    customerName,
+    tableName,
+    arrivalTime,
+    status,
+    etaMinutes,
+    items,
+    createdAt,
+    raw: order
+  };
+}
+
+/**
+ * @param {unknown} payload
+ * @returns {NormalizedKitchenQueue}
+ */
+export function normalizeKitchenQueue(payload) {
+  let row = payload;
+
+  if (payload && typeof payload === 'object') {
+    const root = /** @type {Record<string, unknown>} */ (payload);
+    if (Array.isArray(root.orders)) {
+      row = root.orders;
+    } else if (Array.isArray(root.queue)) {
+      row = root.queue;
+    } else if (root.kitchen && typeof root.kitchen === 'object') {
+      const kitchen = /** @type {Record<string, unknown>} */ (root.kitchen);
+      row = kitchen.orders ?? kitchen.queue ?? kitchen;
+    } else if (root.data && typeof root.data === 'object') {
+      const data = /** @type {Record<string, unknown>} */ (root.data);
+      row = data.orders ?? data.queue ?? data;
+    }
+  }
+
+  const source = Array.isArray(row) ? row : [];
+  const orders = source
+    .map((order) => normalizeKitchenQueueOrder(order))
+    .filter((order) => order != null);
+
+  return { orders, raw: payload };
+}
+
+/**
+ * @param {string} businessId
+ * @returns {string}
+ */
+export function buildKitchenQueueUrl(businessId) {
+  const trimmed = String(businessId || '').trim();
+  return `${getGarsonAiApiUrl()}/public/restaurants/${encodeURIComponent(trimmed)}/kitchen`;
+}
+
+/**
+ * @param {string} orderId
+ * @returns {string}
+ */
+export function buildKitchenOrderStatusUrl(orderId) {
+  const trimmed = String(orderId || '').trim();
+  return `${getGarsonAiApiUrl()}/public/kitchen/orders/${encodeURIComponent(trimmed)}`;
+}
+
+/**
+ * @param {string} status
+ * @returns {Record<string, string>}
+ */
+export function buildKitchenStatusUpdateBody(status) {
+  const key = String(status || '').trim().toLowerCase();
+  if (!KITCHEN_STATUS_UPDATE_KEYS.has(key)) {
+    throw new Error('Geçersiz mutfak durumu');
+  }
+  return { status: key };
+}
+
+/**
+ * @param {string} businessId
+ * @returns {Promise<NormalizedKitchenQueue>}
+ */
+export async function getKitchenQueue(businessId) {
+  const trimmed = String(businessId || '').trim();
+  if (!trimmed) {
+    throw new Error('Restoran kimliği gerekli');
+  }
+
+  const url = buildKitchenQueueUrl(trimmed);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Mutfak kuyruğu alınamadı (${response.status})`);
+  }
+
+  const json = await response.json();
+  return normalizeKitchenQueue(json);
+}
+
+/**
+ * @param {string} orderId
+ * @param {string} status
+ * @returns {Promise<NormalizedKitchenOrder>}
+ */
+export async function updateKitchenOrderStatus(orderId, status) {
+  const trimmedId = String(orderId || '').trim();
+  if (!trimmedId) {
+    throw new Error('Sipariş kimliği gerekli');
+  }
+
+  const body = buildKitchenStatusUpdateBody(status);
+  const url = buildKitchenOrderStatusUrl(trimmedId);
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Sipariş durumu güncellenemedi (${response.status})`);
+  }
+
+  const json = await response.json();
+  const normalized = normalizeKitchenQueueOrder(json);
+  if (normalized) return normalized;
+
+  const queue = normalizeKitchenQueue(json);
+  const match = queue.orders.find((order) => order.id === trimmedId);
+  if (match) return match;
+
+  return {
+    id: trimmedId,
+    reservationId: '',
+    customerName: '',
+    tableName: '',
+    arrivalTime: '',
+    status: body.status,
+    etaMinutes: null,
+    items: [],
+    createdAt: '',
+    raw: json
+  };
+}
+
 /**
  * @param {{ title: string, date: string, time: string, description?: string, location?: string }} params
  * @returns {string}
