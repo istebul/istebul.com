@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ea580c">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>Rezervasyon Onayı | GarsonAI — isteBul</title>
+  <meta name="description" content="GarsonAI rezervasyon kodunuzla rezervasyon detaylarını görüntüleyin.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/restoran-page.css">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/restoran/reservation-confirm-page.js"></script>
+</head>
+<body class="vacation-page restoran-page reservation-page reservation-confirm-page">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
+    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">GarsonAI</span>
+    </a>
+    <nav id="confirm-nav" aria-label="Ana navigasyon">
+      <div class="ib-vertical-nav-primary">
+        <a href="/">Ana sayfa</a>
+        <a href="/restoran/">Restoran keşfi</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> ›
+      <a href="/restoran/">Restoran keşfi</a> ›
+      <span>Rezervasyon onayı</span>
+    </nav>
+  </div>
+
+  <main class="vacation-container reservation-main" id="confirm-main">
+    <div id="confirm-status" class="restoran-status restoran-status--loading" hidden role="status" aria-live="polite">
+      Rezervasyon bilgileri yükleniyor…
+    </div>
+
+    <section
+      class="restoran-search-panel reservation-confirm-panel"
+      id="confirm-panel"
+      hidden
+      aria-labelledby="confirm-title"
+    >
+      <p class="restoran-search-panel__lead">GarsonAI rezervasyon özeti</p>
+      <h1 id="confirm-title" class="reservation-panel__title">Rezervasyon detayı</h1>
+
+      <div class="reservation-confirm-card">
+        <p class="reservation-success__code-label">Rezervasyon kodu</p>
+        <p class="reservation-success__code" id="confirm-code">—</p>
+
+        <dl class="reservation-summary">
+          <div class="reservation-summary__row">
+            <dt>Durum</dt>
+            <dd><span class="restoran-card__badge" id="confirm-reservation-status">—</span></dd>
+          </div>
+          <div class="reservation-summary__row">
+            <dt>Restoran</dt>
+            <dd id="confirm-restaurant">—</dd>
+          </div>
+          <div class="reservation-summary__row">
+            <dt>Tarih ve saat</dt>
+            <dd id="confirm-datetime">—</dd>
+          </div>
+          <div class="reservation-summary__row">
+            <dt>Kişi sayısı</dt>
+            <dd id="confirm-guests">—</dd>
+          </div>
+          <div class="reservation-summary__row">
+            <dt>Müşteri</dt>
+            <dd id="confirm-customer">—</dd>
+          </div>
+          <div class="reservation-summary__row" id="confirm-note-row" hidden>
+            <dt>Not</dt>
+            <dd id="confirm-note">—</dd>
+          </div>
+        </dl>
+
+        <div class="reservation-confirm-actions">
+          <a
+            class="btn btn-primary reservation-calendar-link"
+            id="confirm-calendar-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Takvime ekle</a>
+          <a class="btn reservation-back-link" href="/restoran/">Başka restoran ara</a>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="restoran-search-panel reservation-confirm-fallback"
+      id="confirm-missing"
+      hidden
+      aria-labelledby="confirm-missing-title"
+    >
+      <h1 id="confirm-missing-title" class="reservation-panel__title">Rezervasyon onayı</h1>
+      <p id="confirm-missing-text" class="restoran-search-panel__lead"></p>
+      <div class="reservation-confirm-actions">
+        <a class="btn btn-primary" href="/restoran/">Restoran keşfine dön</a>
+      </div>
+    </section>
+
+    <section
+      class="restoran-search-panel reservation-confirm-fallback"
+      id="confirm-error"
+      hidden
+      aria-labelledby="confirm-error-title"
+    >
+      <h1 id="confirm-error-title" class="reservation-panel__title">Rezervasyon onayı</h1>
+      <p id="confirm-error-text" class="restoran-search-panel__lead reservation-confirm-error"></p>
+      <div class="reservation-confirm-actions">
+        <a class="btn btn-primary" href="/restoran/">Restoran keşfine dön</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

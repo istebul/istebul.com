@@ -1,0 +1,540 @@
+import {
+  buildGoogleCalendarUrl,
+  buildReservationConfirmUrl,
+  createRestaurantReservation,
+  getRestaurantDetail,
+  getRestaurantSlots,
+  normalizeRestaurantDetail,
+  normalizeRestaurantSlots,
+  parseBusinessIdFromLocation,
+  parseReservationContext,
+  ReservationValidationError,
+  resolveSlotDate
+} from './restoran-api.js';
+
+const FALLBACK_MESSAGE =
+  'GarsonAI rezervasyon altyapısı hazırlanıyor. Bu restoran için rezervasyon yakında aktif olacak.';
+const SLOTS_FALLBACK_MESSAGE =
+  'Bu restoran için canlı saat seçimi yakında aktif olacak.';
+const SLOTS_UNAVAILABLE_POST_MESSAGE =
+  'Canlı saat seçimi olmadan rezervasyon oluşturulamaz. Rezervasyon yakında aktif olacak.';
+
+/** @type {import('./restoran-api.js').RestaurantSlot[]} */
+let currentSlots = [];
+
+/** @type {import('./restoran-api.js').RestaurantSlot|null} */
+let selectedSlot = null;
+
+/** @type {import('./restoran-api.js').ReservationContext} */
+let currentContext = {};
+
+/** @type {string} */
+let currentBusinessId = '';
+
+/** @type {string} */
+let currentRestaurantName = '';
+
+/** @type {string} */
+let currentRestaurantAddress = '';
+
+/** @type {boolean} */
+let slotsAvailable = false;
+
+/** @type {boolean} */
+let isSubmitting = false;
+
+/** @type {boolean} */
+let reservationComplete = false;
+
+/**
+ * @param {string} id
+ * @returns {HTMLElement|null}
+ */
+function $(id) {
+  return document.getElementById(id);
+}
+
+/**
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * @param {string} time
+ * @returns {string}
+ */
+function normalizeTimeForMatch(time) {
+  const match = String(time || '').match(/(\d{2}:\d{2})/);
+  return match ? match[1] : String(time || '').trim();
+}
+
+/**
+ * @param {import('./restoran-api.js').ReservationContext} context
+ * @returns {string}
+ */
+function formatContextSummary(context) {
+  const parts = [];
+  if (context.guests != null && context.guests > 0) {
+    parts.push(`${context.guests} kişi`);
+  }
+  if (context.date) {
+    parts.push(context.time ? `${context.date} ${context.time}` : context.date);
+  } else if (context.time) {
+    parts.push(context.time);
+  }
+  if (context.food) parts.push(`Yemek: ${context.food}`);
+  if (context.q) parts.push(`Arama: ${context.q}`);
+  return parts.length ? parts.join(' · ') : 'Tarih ve kişi sayısı seçilmedi';
+}
+
+/**
+ * @returns {{ customerName: string, customerPhone: string, note: string }}
+ */
+function readContactForm() {
+  return {
+    customerName:
+      /** @type {HTMLInputElement|null} */ ($('reservation-customer-name'))?.value.trim() ?? '',
+    customerPhone:
+      /** @type {HTMLInputElement|null} */ ($('reservation-customer-phone'))?.value.trim() ?? '',
+    note: /** @type {HTMLTextAreaElement|null} */ ($('reservation-note'))?.value.trim() ?? ''
+  };
+}
+
+/**
+ * @returns {boolean}
+ */
+function isFormComplete() {
+  const { customerName, customerPhone } = readContactForm();
+  return Boolean(customerName && customerPhone);
+}
+
+/**
+ * @param {'loading'|'ready'|'fallback'} state
+ * @param {string} [message]
+ */
+function setPageState(state, message = '') {
+  const status = $('reservation-status');
+  const panel = $('reservation-panel');
+  const fallback = $('reservation-fallback');
+
+  if (status) {
+    status.hidden = state !== 'loading';
+    status.className = 'restoran-status restoran-status--loading';
+    status.textContent = message || 'Restoran bilgileri yükleniyor…';
+  }
+
+  if (panel) panel.hidden = state !== 'ready';
+  if (fallback) fallback.hidden = state !== 'fallback';
+}
+
+/**
+ * @param {import('./restoran-api.js').ReservationContext} context
+ */
+function updateContextSummary(context) {
+  const summary = formatContextSummary(context);
+  const contextSummary = $('reservation-context-summary');
+  if (contextSummary) contextSummary.textContent = summary;
+}
+
+function updateConfirmButton() {
+  const button = /** @type {HTMLButtonElement|null} */ ($('reservation-confirm-btn'));
+  if (!button || reservationComplete) return;
+
+  if (isSubmitting) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Rezervasyon oluşturuluyor…';
+    return;
+  }
+
+  if (!slotsAvailable) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Rezervasyonu onayla (yakında)';
+    return;
+  }
+
+  if (!selectedSlot) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Önce uygun saat seç';
+    return;
+  }
+
+  if (!isFormComplete()) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Bilgileri tamamla';
+    return;
+  }
+
+  button.disabled = false;
+  button.setAttribute('aria-disabled', 'false');
+  button.textContent = 'Rezervasyonu onayla';
+}
+
+/**
+ * @param {string} message
+ * @param {'info'|'error'} [tone]
+ */
+function showCtaNotice(message, tone = 'info') {
+  const notice = $('reservation-cta-notice');
+  if (!notice) return;
+  notice.hidden = false;
+  notice.className = `reservation-cta-notice reservation-cta-notice--${tone}`;
+  notice.textContent = message;
+}
+
+function hideCtaNotice() {
+  const notice = $('reservation-cta-notice');
+  if (!notice) return;
+  notice.hidden = true;
+  notice.textContent = '';
+}
+
+/**
+ * @param {string} message
+ * @param {'info'|'error'} [tone]
+ */
+function showSlotsMessage(message, tone = 'info') {
+  const status = $('reservation-slots-status');
+  const list = $('reservation-slots-list');
+  if (list) list.innerHTML = '';
+  if (!status) return;
+
+  status.hidden = false;
+  status.className = `restoran-status restoran-status--${tone === 'error' ? 'error' : 'loading'}`;
+  status.textContent = message;
+}
+
+/**
+ * @param {import('./restoran-api.js').RestaurantSlot} slot
+ */
+function selectSlot(slot) {
+  if (!slot.available || reservationComplete) return;
+
+  selectedSlot = slot;
+  currentContext = { ...currentContext, time: slot.time };
+  updateContextSummary(currentContext);
+  hideCtaNotice();
+  updateConfirmButton();
+  renderSlotButtons();
+}
+
+/**
+ * @param {import('./restoran-api.js').RestaurantSlot[]} slots
+ * @param {string} [preferredTime]
+ * @returns {import('./restoran-api.js').RestaurantSlot|null}
+ */
+function findPreferredSlot(slots, preferredTime) {
+  if (!preferredTime) return null;
+  const normalized = normalizeTimeForMatch(preferredTime);
+  return (
+    slots.find(
+      (slot) =>
+        slot.available &&
+        (normalizeTimeForMatch(slot.time) === normalized ||
+          normalizeTimeForMatch(slot.label) === normalized ||
+          slot.id === preferredTime)
+    ) ?? null
+  );
+}
+
+function renderSlotButtons() {
+  const list = $('reservation-slots-list');
+  const status = $('reservation-slots-status');
+  if (!list) return;
+
+  if (!currentSlots.length) {
+    showSlotsMessage('Bu tarih için uygun saat bulunamadı.');
+    return;
+  }
+
+  if (status) status.hidden = true;
+
+  list.innerHTML = currentSlots
+    .map((slot) => {
+      const isSelected = selectedSlot?.id === slot.id;
+      const disabled = !slot.available;
+      return `
+        <button
+          type="button"
+          class="reservation-slot${isSelected ? ' is-selected' : ''}${disabled ? ' is-disabled' : ''}"
+          data-slot-id="${escapeHtml(slot.id)}"
+          role="option"
+          aria-selected="${isSelected ? 'true' : 'false'}"
+          ${disabled ? 'disabled aria-disabled="true"' : ''}
+        >${escapeHtml(slot.label)}</button>`;
+    })
+    .join('');
+
+  list.querySelectorAll('.reservation-slot:not(.is-disabled)').forEach((node) => {
+    node.addEventListener('click', () => {
+      const slotId = node.getAttribute('data-slot-id');
+      const slot = currentSlots.find((item) => item.id === slotId);
+      if (slot) selectSlot(slot);
+    });
+  });
+}
+
+/**
+ * @param {string} businessId
+ * @param {import('./restoran-api.js').ReservationContext} context
+ */
+async function loadSlots(businessId, context) {
+  const slotsSection = $('reservation-slots-section');
+  if (slotsSection) slotsSection.hidden = false;
+
+  showSlotsMessage('Uygun saatler yükleniyor…');
+
+  try {
+    const payload = await getRestaurantSlots(businessId, {
+      date: context.date,
+      guestCount: context.guests
+    });
+    currentSlots = normalizeRestaurantSlots(payload).filter((slot) => slot.time || slot.label);
+    slotsAvailable = currentSlots.some((slot) => slot.available);
+
+    if (!currentSlots.length) {
+      selectedSlot = null;
+      slotsAvailable = false;
+      updateConfirmButton();
+      showSlotsMessage('Bu tarih için uygun saat bulunamadı.');
+      return;
+    }
+
+    const preferred = findPreferredSlot(currentSlots, context.time);
+    if (preferred) {
+      selectSlot(preferred);
+      return;
+    }
+
+    selectedSlot = null;
+    updateConfirmButton();
+    renderSlotButtons();
+  } catch {
+    currentSlots = [];
+    selectedSlot = null;
+    slotsAvailable = false;
+    updateConfirmButton();
+    showSlotsMessage(SLOTS_FALLBACK_MESSAGE);
+  }
+}
+
+/**
+ * @param {import('./restoran-api.js').NormalizedReservationResult} result
+ */
+function showReservationSuccess(result) {
+  reservationComplete = true;
+
+  const success = $('reservation-success');
+  const code = $('reservation-success-code');
+  const summary = $('reservation-success-summary');
+  const calendarLink = /** @type {HTMLAnchorElement|null} */ ($('reservation-calendar-link'));
+  const detailLink = /** @type {HTMLAnchorElement|null} */ ($('reservation-detail-link'));
+  const contactForm = $('reservation-contact-form');
+  const actions = $('reservation-actions');
+  const slotsSection = $('reservation-slots-section');
+  const button = /** @type {HTMLButtonElement|null} */ ($('reservation-confirm-btn'));
+
+  const date = result.date || resolveSlotDate(currentContext.date);
+  const time = result.time || selectedSlot?.time || currentContext.time || '';
+  const guests = result.guestCount || currentContext.guests || 2;
+  const restaurantName = currentRestaurantName || 'Restoran';
+
+  if (code) code.textContent = result.code;
+  if (summary) {
+    summary.textContent = `${restaurantName} · ${date} ${time} · ${guests} kişi`;
+  }
+
+  if (calendarLink) {
+    calendarLink.href = buildGoogleCalendarUrl({
+      title: `${restaurantName} rezervasyonu`,
+      date,
+      time,
+      description: `Rezervasyon kodu: ${result.code}`,
+      location: currentRestaurantAddress
+    });
+  }
+
+  if (detailLink) {
+    detailLink.href = buildReservationConfirmUrl(result.code);
+  }
+
+  if (success) success.hidden = false;
+  if (contactForm) contactForm.hidden = true;
+  if (slotsSection) slotsSection.hidden = true;
+  if (actions) actions.hidden = true;
+  if (button) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+  }
+
+  hideCtaNotice();
+}
+
+/**
+ * @param {import('./restoran-api.js').RestaurantDetail} detail
+ * @param {import('./restoran-api.js').ReservationContext} context
+ */
+function renderDetail(detail, context) {
+  const title = $('reservation-title');
+  const address = $('reservation-address');
+  const availability = $('reservation-availability');
+
+  currentRestaurantName = detail.name || 'Restoran rezervasyonu';
+  currentRestaurantAddress = detail.address || '';
+
+  if (title) title.textContent = currentRestaurantName;
+  if (address) {
+    address.textContent = detail.address || 'Adres bilgisi yakında eklenecek';
+    address.hidden = false;
+  }
+  if (availability) availability.textContent = detail.availability || 'Bilgi yok';
+
+  currentContext = { ...context };
+  updateContextSummary(currentContext);
+  updateConfirmButton();
+
+  document.title = `${currentRestaurantName} | GarsonAI — isteBul`;
+  setPageState('ready');
+}
+
+function renderFallback(context) {
+  const title = $('reservation-title');
+  const address = $('reservation-address');
+  const availability = $('reservation-availability');
+  const contextSummary = $('reservation-context-summary');
+  const fallbackText = $('reservation-fallback-text');
+  const slotsSection = $('reservation-slots-section');
+  const contactForm = $('reservation-contact-form');
+
+  if (title) title.textContent = 'Rezervasyon';
+  if (address) address.hidden = true;
+  if (availability) availability.textContent = 'Yakında';
+  if (contextSummary) contextSummary.textContent = formatContextSummary(context);
+  if (fallbackText) fallbackText.textContent = FALLBACK_MESSAGE;
+  if (slotsSection) slotsSection.hidden = true;
+  if (contactForm) contactForm.hidden = true;
+
+  const fallbackSummary = $('reservation-context-summary-fallback');
+  if (fallbackSummary) fallbackSummary.textContent = formatContextSummary(context);
+
+  setPageState('fallback');
+}
+
+function bindContactForm() {
+  const form = $('reservation-contact-form');
+  form?.addEventListener('input', () => {
+    hideCtaNotice();
+    updateConfirmButton();
+  });
+}
+
+async function handleConfirm() {
+  if (reservationComplete || isSubmitting) return;
+
+  if (!slotsAvailable) {
+    showCtaNotice(SLOTS_UNAVAILABLE_POST_MESSAGE, 'error');
+    return;
+  }
+
+  if (!selectedSlot) return;
+
+  hideCtaNotice();
+  isSubmitting = true;
+  updateConfirmButton();
+
+  try {
+    const contact = readContactForm();
+    const result = await createRestaurantReservation({
+      businessId: currentBusinessId,
+      date: resolveSlotDate(currentContext.date),
+      time: selectedSlot.time,
+      slotId: selectedSlot.id,
+      guestCount: currentContext.guests,
+      customerName: contact.customerName,
+      customerPhone: contact.customerPhone,
+      note: contact.note,
+      foodQuery: currentContext.food,
+      searchQuery: currentContext.q
+    });
+
+    isSubmitting = false;
+    showReservationSuccess(result);
+  } catch (error) {
+    isSubmitting = false;
+    updateConfirmButton();
+
+    const message =
+      error instanceof ReservationValidationError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : 'Rezervasyon oluşturulamadı. Lütfen tekrar deneyin.';
+
+    showCtaNotice(message, 'error');
+  }
+}
+
+function bindConfirmButton() {
+  const button = $('reservation-confirm-btn');
+  button?.addEventListener('click', handleConfirm);
+}
+
+async function boot() {
+  document.body.classList.add('ib-ready');
+  bindContactForm();
+  bindConfirmButton();
+
+  const businessId = parseBusinessIdFromLocation(
+    window.location.pathname,
+    window.location.search
+  );
+  const context = parseReservationContext(window.location.search);
+
+  if (!businessId) {
+    renderFallback(context);
+    return;
+  }
+
+  currentBusinessId = businessId;
+
+  setPageState('loading');
+
+  try {
+    const payload = await getRestaurantDetail(businessId);
+    const detail = normalizeRestaurantDetail(payload);
+    if (!detail.name) {
+      renderFallback(context);
+      return;
+    }
+
+    renderDetail(detail, context);
+    await loadSlots(businessId, context);
+  } catch {
+    renderFallback(context);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+
+export {
+  escapeHtml,
+  formatContextSummary,
+  findPreferredSlot,
+  FALLBACK_MESSAGE,
+  SLOTS_FALLBACK_MESSAGE,
+  SLOTS_UNAVAILABLE_POST_MESSAGE
+};
