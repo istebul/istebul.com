@@ -12,6 +12,9 @@ const {
   buildRestaurantDetailUrl,
   buildRestaurantMenuUrl,
   buildPreorderStatusUrl,
+  buildKitchenQueueUrl,
+  buildKitchenOrderStatusUrl,
+  buildKitchenStatusUpdateBody,
   buildRestaurantPreorderUrl,
   buildRestaurantReservationLookupUrl,
   buildRestaurantSlotsUrl,
@@ -20,6 +23,8 @@ const {
   formatPreorderStatusLabel,
   formatReservationStatusLabel,
   getPreorderStatus,
+  getKitchenQueue,
+  updateKitchenOrderStatus,
   getRestaurantDetail,
   getRestaurantMenu,
   getRestaurantReservation,
@@ -29,6 +34,8 @@ const {
   normalizePreorderResponse,
   normalizePreorderStatus,
   normalizePreorderStatusKey,
+  normalizeKitchenQueue,
+  normalizeKitchenOrderStatus,
   normalizeReservationPayload,
   normalizeReservationResponse,
   normalizeRestaurantDetail,
@@ -1045,4 +1052,148 @@ test('formatPreorderStatusLabel maps known kitchen statuses', () => {
   assert.equal(formatPreorderStatusLabel('preparing'), 'Hazırlanıyor');
   assert.equal(formatPreorderStatusLabel('ready'), 'Hazır');
   assert.equal(formatPreorderStatusLabel('weird'), 'Alındı');
+});
+
+test('buildKitchenQueueUrl encodes restaurant id', () => {
+  const url = buildKitchenQueueUrl('cafe/demo');
+  assert.match(url, /\/public\/restaurants\/cafe%2Fdemo\/kitchen$/);
+});
+
+test('buildKitchenOrderStatusUrl encodes order id', () => {
+  const url = buildKitchenOrderStatusUrl('po/42');
+  assert.match(url, /\/public\/kitchen\/orders\/po%2F42$/);
+});
+
+test('buildKitchenStatusUpdateBody accepts preparing ready served', () => {
+  assert.deepEqual(buildKitchenStatusUpdateBody('preparing'), { status: 'preparing' });
+  assert.deepEqual(buildKitchenStatusUpdateBody('ready'), { status: 'ready' });
+  assert.deepEqual(buildKitchenStatusUpdateBody('served'), { status: 'served' });
+});
+
+test('buildKitchenStatusUpdateBody rejects invalid status', () => {
+  assert.throws(() => buildKitchenStatusUpdateBody('submitted'), /Geçersiz mutfak durumu/);
+});
+
+test('getKitchenQueue throws for missing business id', async () => {
+  await assert.rejects(() => getKitchenQueue(''), /Restoran kimliği gerekli/);
+});
+
+test('getKitchenQueue throws on API error', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 404
+  });
+
+  try {
+    await assert.rejects(() => getKitchenQueue('biz-1'), /Mutfak kuyruğu alınamadı \(404\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('getKitchenQueue requests encoded endpoint with Accept header', async () => {
+  const originalFetch = globalThis.fetch;
+  const payload = {
+    orders: [
+      {
+        id: 'po-1',
+        status: 'preparing',
+        customer_name: 'Ali',
+        items: [{ name: 'Kebap', qty: 1 }]
+      }
+    ]
+  };
+
+  globalThis.fetch = async (url, options) => {
+    const parsed = new URL(String(url));
+    assert.equal(parsed.pathname, '/public/restaurants/biz%2F9/kitchen');
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers.Accept, 'application/json');
+    return {
+      ok: true,
+      async json() {
+        return payload;
+      }
+    };
+  };
+
+  try {
+    const result = await getKitchenQueue('biz/9');
+    assert.equal(result.orders.length, 1);
+    assert.equal(result.orders[0].id, 'po-1');
+    assert.equal(result.orders[0].status, 'preparing');
+    assert.equal(result.orders[0].customerName, 'Ali');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('updateKitchenOrderStatus sends PATCH body and handles response', async () => {
+  const originalFetch = globalThis.fetch;
+  /** @type {Record<string, unknown>|null} */
+  let captured = null;
+
+  globalThis.fetch = async (url, options) => {
+    const parsed = new URL(String(url));
+    assert.equal(parsed.pathname, '/public/kitchen/orders/po-55');
+    assert.equal(options.method, 'PATCH');
+    assert.equal(options.headers['Content-Type'], 'application/json');
+    captured = JSON.parse(String(options.body));
+    return {
+      ok: true,
+      async json() {
+        return {
+          id: 'po-55',
+          status: 'ready',
+          customer_name: 'Deniz',
+          items: []
+        };
+      }
+    };
+  };
+
+  try {
+    const result = await updateKitchenOrderStatus('po-55', 'ready');
+    assert.deepEqual(captured, { status: 'ready' });
+    assert.equal(result.id, 'po-55');
+    assert.equal(result.status, 'ready');
+    assert.equal(result.customerName, 'Deniz');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('updateKitchenOrderStatus throws on API error', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 500
+  });
+
+  try {
+    await assert.rejects(
+      () => updateKitchenOrderStatus('po-1', 'preparing'),
+      /Sipariş durumu güncellenemedi \(500\)/
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('normalizeKitchenQueue handles nested kitchen wrapper', () => {
+  const result = normalizeKitchenQueue({
+    kitchen: {
+      orders: [{ id: 'po-3', status: 'ready', items: [{ product_name: 'Tatlı', quantity: 1 }] }]
+    }
+  });
+
+  assert.equal(result.orders.length, 1);
+  assert.equal(result.orders[0].status, 'ready');
+  assert.equal(result.orders[0].items[0].name, 'Tatlı');
+});
+
+test('normalizeKitchenOrderStatus maps pending aliases', () => {
+  assert.equal(normalizeKitchenOrderStatus('pending'), 'submitted');
+  assert.equal(normalizeKitchenOrderStatus('new'), 'submitted');
 });
