@@ -9,17 +9,20 @@ const {
   buildReservationUrl,
   buildReservationQuery,
   buildRestaurantDetailUrl,
+  buildRestaurantMenuUrl,
   buildRestaurantReservationLookupUrl,
   buildRestaurantSlotsUrl,
   createRestaurantReservation,
   formatReservationStatusLabel,
   getRestaurantDetail,
+  getRestaurantMenu,
   getRestaurantReservation,
   getRestaurantSlots,
   normalizeGuestCount,
   normalizeReservationPayload,
   normalizeReservationResponse,
   normalizeRestaurantDetail,
+  normalizeRestaurantMenu,
   normalizeRestaurantSlots,
   normalizeSearchResults,
   parseBusinessIdFromLocation,
@@ -602,4 +605,134 @@ test('formatReservationStatusLabel maps known statuses', () => {
   assert.equal(formatReservationStatusLabel('pending'), 'Beklemede');
   assert.equal(formatReservationStatusLabel('confirmed'), 'Onaylandı');
   assert.equal(formatReservationStatusLabel('custom'), 'custom');
+});
+
+test('buildRestaurantMenuUrl encodes restaurant id', () => {
+  const url = buildRestaurantMenuUrl('demo/cafe');
+  assert.match(url, /\/public\/restaurants\/demo%2Fcafe\/menu$/);
+});
+
+test('getRestaurantMenu throws for missing id', async () => {
+  await assert.rejects(() => getRestaurantMenu(''), /Restoran kimliği gerekli/);
+});
+
+test('getRestaurantMenu throws on non-ok response', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 404
+  });
+
+  try {
+    await assert.rejects(() => getRestaurantMenu('demo'), /Menü bilgisi alınamadı \(404\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('getRestaurantMenu requests encoded endpoint with Accept header', async () => {
+  const originalFetch = globalThis.fetch;
+  const payload = { categories: [{ id: 'c1', name: 'Ana yemek', items: [] }] };
+
+  globalThis.fetch = async (url, options) => {
+    const parsed = new URL(String(url));
+    assert.equal(parsed.pathname, '/public/restaurants/demo%2Fcafe/menu');
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers.Accept, 'application/json');
+    return {
+      ok: true,
+      async json() {
+        return payload;
+      }
+    };
+  };
+
+  try {
+    const result = await getRestaurantMenu('demo/cafe');
+    assert.deepEqual(result, payload);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('normalizeRestaurantMenu handles categories object format', () => {
+  const categories = normalizeRestaurantMenu({
+    categories: [
+      {
+        id: 'cat-1',
+        name: 'Başlangıçlar',
+        description: 'Hafif',
+        items: [
+          {
+            id: 'i1',
+            name: 'Çorba',
+            description: 'Günün çorbası',
+            price: 120,
+            prep_time_minutes: 10,
+            allergens: ['gluten']
+          }
+        ]
+      }
+    ]
+  });
+
+  assert.equal(categories.length, 1);
+  assert.equal(categories[0].name, 'Başlangıçlar');
+  assert.equal(categories[0].items.length, 1);
+  assert.equal(categories[0].items[0].priceLabel, '120 TL');
+  assert.equal(categories[0].items[0].currency, 'TRY');
+  assert.equal(categories[0].items[0].prepTimeMinutes, 10);
+  assert.deepEqual(categories[0].items[0].allergens, ['gluten']);
+  assert.equal(categories[0].items[0].available, true);
+});
+
+test('normalizeRestaurantMenu handles menu.categories format', () => {
+  const categories = normalizeRestaurantMenu({
+    menu: {
+      categories: [{ name: 'Tatlılar', items: [{ name: 'Sütlaç', price: 90 }] }]
+    }
+  });
+
+  assert.equal(categories.length, 1);
+  assert.equal(categories[0].name, 'Tatlılar');
+  assert.equal(categories[0].items[0].priceLabel, '90 TL');
+});
+
+test('normalizeRestaurantMenu handles data.categories format', () => {
+  const categories = normalizeRestaurantMenu({
+    data: {
+      categories: [{ name: 'İçecekler', items: [{ name: 'Ayran', price_label: '45 TL' }] }]
+    }
+  });
+
+  assert.equal(categories.length, 1);
+  assert.equal(categories[0].items[0].priceLabel, '45 TL');
+});
+
+test('normalizeRestaurantMenu handles array format', () => {
+  const categories = normalizeRestaurantMenu([
+    { name: 'Salatalar', items: [{ name: 'Çoban', price: 150 }] }
+  ]);
+
+  assert.equal(categories.length, 1);
+  assert.equal(categories[0].name, 'Salatalar');
+});
+
+test('normalizeRestaurantMenu marks unavailable items', () => {
+  const categories = normalizeRestaurantMenu({
+    categories: [
+      {
+        name: 'Ana yemek',
+        items: [{ name: 'Levrek', available: false }]
+      }
+    ]
+  });
+
+  assert.equal(categories[0].items[0].available, false);
+});
+
+test('normalizeRestaurantMenu returns empty array for broken payload', () => {
+  assert.deepEqual(normalizeRestaurantMenu(null), []);
+  assert.deepEqual(normalizeRestaurantMenu({ categories: 'bad' }), []);
+  assert.deepEqual(normalizeRestaurantMenu({ menu: { categories: null } }), []);
 });

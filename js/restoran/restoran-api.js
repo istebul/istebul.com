@@ -453,6 +453,196 @@ export async function getRestaurantDetail(id) {
 }
 
 /**
+ * @typedef {Object} RestaurantMenuItem
+ * @property {string} id
+ * @property {string} name
+ * @property {string} description
+ * @property {number|null} price
+ * @property {string} priceLabel
+ * @property {string} currency
+ * @property {boolean} available
+ * @property {number|null} prepTimeMinutes
+ * @property {string[]} allergens
+ * @property {string} imageUrl
+ * @property {unknown} raw
+ */
+
+/**
+ * @typedef {Object} RestaurantMenuCategory
+ * @property {string} id
+ * @property {string} name
+ * @property {string} description
+ * @property {RestaurantMenuItem[]} items
+ * @property {unknown} raw
+ */
+
+/**
+ * @param {number} price
+ * @param {string} [currency]
+ * @returns {string}
+ */
+function formatMenuPriceLabel(price, currency = 'TRY') {
+  const formatted = Number.isInteger(price) ? String(price) : String(price);
+  const symbol = currency === 'TRY' ? 'TL' : currency;
+  return `${formatted} ${symbol}`;
+}
+
+/**
+ * @param {unknown} item
+ * @param {number} index
+ * @returns {RestaurantMenuItem|null}
+ */
+function normalizeMenuItem(item, index) {
+  if (!item || typeof item !== 'object') return null;
+
+  const row = /** @type {Record<string, unknown>} */ (item);
+  const id = String(row.id ?? row.item_id ?? row.itemId ?? `item-${index}`).trim();
+  const name = String(row.name ?? row.title ?? row.product_name ?? '').trim();
+  if (!name) return null;
+
+  const description = String(row.description ?? row.desc ?? '').trim();
+
+  let price = null;
+  const priceRaw = row.price ?? row.unit_price ?? row.unitPrice;
+  if (priceRaw != null && priceRaw !== '') {
+    const num = Number(priceRaw);
+    if (Number.isFinite(num)) price = num;
+  }
+
+  const currency = String(row.currency ?? row.currency_code ?? 'TRY').trim() || 'TRY';
+
+  let priceLabel = String(row.price_label ?? row.priceLabel ?? '').trim();
+  if (!priceLabel && price != null) {
+    priceLabel = formatMenuPriceLabel(price, currency);
+  }
+
+  const availableRaw = row.available ?? row.is_available ?? row.in_stock;
+  let available = true;
+  if (availableRaw === false || availableRaw === 0 || row.status === 'unavailable') {
+    available = false;
+  }
+
+  let prepTimeMinutes = null;
+  const prepRaw = row.prep_time_minutes ?? row.prepTimeMinutes ?? row.prep_time;
+  if (prepRaw != null && prepRaw !== '') {
+    const num = Number(prepRaw);
+    if (Number.isFinite(num) && num >= 0) prepTimeMinutes = num;
+  }
+
+  const allergenSource = row.allergens ?? row.allergen_tags ?? row.allergenTags ?? [];
+  const allergens = Array.isArray(allergenSource)
+    ? allergenSource.map((entry) => String(entry).trim()).filter(Boolean)
+    : typeof allergenSource === 'string'
+      ? allergenSource.split(/[,;]/).map((entry) => entry.trim()).filter(Boolean)
+      : [];
+
+  const imageUrl = String(row.image_url ?? row.imageUrl ?? row.image ?? '').trim();
+
+  return {
+    id,
+    name,
+    description,
+    price,
+    priceLabel,
+    currency,
+    available,
+    prepTimeMinutes,
+    allergens,
+    imageUrl,
+    raw: item
+  };
+}
+
+/**
+ * @param {unknown} category
+ * @param {number} index
+ * @returns {RestaurantMenuCategory|null}
+ */
+function normalizeMenuCategory(category, index) {
+  if (!category || typeof category !== 'object') return null;
+
+  const row = /** @type {Record<string, unknown>} */ (category);
+  const id = String(row.id ?? row.category_id ?? row.categoryId ?? `cat-${index}`).trim();
+  const name = String(row.name ?? row.title ?? row.category_name ?? '').trim();
+  if (!name) return null;
+
+  const description = String(row.description ?? row.desc ?? '').trim();
+  const itemSource = row.items ?? row.products ?? row.menu_items ?? row.menuItems ?? [];
+  const items = Array.isArray(itemSource)
+    ? itemSource
+        .map((entry, itemIndex) => normalizeMenuItem(entry, itemIndex))
+        .filter((entry) => entry != null)
+    : [];
+
+  return {
+    id,
+    name,
+    description,
+    items,
+    raw: category
+  };
+}
+
+/**
+ * @param {unknown} payload
+ * @returns {RestaurantMenuCategory[]}
+ */
+export function normalizeRestaurantMenu(payload) {
+  let rawCategories = [];
+
+  if (Array.isArray(payload)) {
+    rawCategories = payload;
+  } else if (payload && typeof payload === 'object') {
+    const root = /** @type {Record<string, unknown>} */ (payload);
+    if (Array.isArray(root.categories)) {
+      rawCategories = root.categories;
+    } else if (root.menu && typeof root.menu === 'object') {
+      const menu = /** @type {Record<string, unknown>} */ (root.menu);
+      if (Array.isArray(menu.categories)) rawCategories = menu.categories;
+    } else if (root.data && typeof root.data === 'object') {
+      const data = /** @type {Record<string, unknown>} */ (root.data);
+      if (Array.isArray(data.categories)) rawCategories = data.categories;
+    }
+  }
+
+  return rawCategories
+    .map((entry, index) => normalizeMenuCategory(entry, index))
+    .filter((entry) => entry != null);
+}
+
+/**
+ * @param {string} id
+ * @returns {string}
+ */
+export function buildRestaurantMenuUrl(id) {
+  const trimmed = String(id || '').trim();
+  return `${getGarsonAiApiUrl()}/public/restaurants/${encodeURIComponent(trimmed)}/menu`;
+}
+
+/**
+ * @param {string} id
+ * @returns {Promise<unknown>}
+ */
+export async function getRestaurantMenu(id) {
+  const trimmed = String(id || '').trim();
+  if (!trimmed) {
+    throw new Error('Restoran kimliği gerekli');
+  }
+
+  const url = buildRestaurantMenuUrl(trimmed);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Menü bilgisi alınamadı (${response.status})`);
+  }
+
+  return response.json();
+}
+
+/**
  * @typedef {Object} ReservationCreateInput
  * @property {string} [businessId]
  * @property {string} [date]

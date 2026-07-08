@@ -3,8 +3,10 @@ import {
   buildReservationConfirmUrl,
   createRestaurantReservation,
   getRestaurantDetail,
+  getRestaurantMenu,
   getRestaurantSlots,
   normalizeRestaurantDetail,
+  normalizeRestaurantMenu,
   normalizeRestaurantSlots,
   parseBusinessIdFromLocation,
   parseReservationContext,
@@ -18,6 +20,9 @@ const SLOTS_FALLBACK_MESSAGE =
   'Bu restoran için canlı saat seçimi yakında aktif olacak.';
 const SLOTS_UNAVAILABLE_POST_MESSAGE =
   'Canlı saat seçimi olmadan rezervasyon oluşturulamaz. Rezervasyon yakında aktif olacak.';
+const MENU_FALLBACK_MESSAGE =
+  'Bu restoran için menü yakında aktif olacak.';
+const MENU_EMPTY_MESSAGE = 'Menü bilgisi henüz eklenmemiş.';
 
 /** @type {import('./restoran-api.js').RestaurantSlot[]} */
 let currentSlots = [];
@@ -197,6 +202,123 @@ function hideCtaNotice() {
   if (!notice) return;
   notice.hidden = true;
   notice.textContent = '';
+}
+
+/**
+ * @param {'hidden'|'loading'|'error'|'empty'|'content'} state
+ * @param {string} [message]
+ */
+function setMenuState(state, message = '') {
+  const section = $('reservation-menu-section');
+  const loading = $('reservation-menu-loading');
+  const error = $('reservation-menu-error');
+  const empty = $('reservation-menu-empty');
+  const content = $('reservation-menu-content');
+
+  if (section) section.hidden = state === 'hidden';
+  if (loading) loading.hidden = state !== 'loading';
+  if (error) {
+    error.hidden = state !== 'error';
+    if (state === 'error') error.textContent = message || MENU_FALLBACK_MESSAGE;
+  }
+  if (empty) {
+    empty.hidden = state !== 'empty';
+    if (state === 'empty') empty.textContent = message || MENU_EMPTY_MESSAGE;
+  }
+  if (content) content.hidden = state !== 'content';
+}
+
+/**
+ * @param {import('./restoran-api.js').RestaurantMenuCategory[]} categories
+ */
+function renderMenuCategories(categories) {
+  const content = $('reservation-menu-content');
+  if (!content) return;
+
+  content.innerHTML = categories
+    .map((category) => {
+      const categoryDesc = category.description
+        ? `<p class="restoran-menu-category__desc">${escapeHtml(category.description)}</p>`
+        : '';
+
+      const itemsHtml = category.items
+        .map((item) => {
+          const metaParts = [];
+          if (item.priceLabel) {
+            metaParts.push(
+              `<span class="restoran-menu-item__price">${escapeHtml(item.priceLabel)}</span>`
+            );
+          }
+          if (item.prepTimeMinutes != null) {
+            metaParts.push(
+              `<span class="restoran-menu-item__prep">~${item.prepTimeMinutes} dk</span>`
+            );
+          }
+
+          const allergensHtml = item.allergens.length
+            ? `<div class="restoran-menu-item__allergens">${item.allergens
+                .map(
+                  (allergen) =>
+                    `<span class="restoran-menu-item__allergen">${escapeHtml(allergen)}</span>`
+                )
+                .join('')}</div>`
+            : '';
+
+          const unavailableHtml = !item.available
+            ? '<p class="restoran-menu-item__unavailable">Şu an mevcut değil</p>'
+            : '';
+
+          const descriptionHtml = item.description
+            ? `<p class="restoran-menu-item__desc">${escapeHtml(item.description)}</p>`
+            : '';
+
+          return `
+            <article class="restoran-menu-item${item.available ? '' : ' is-unavailable'}">
+              <div class="restoran-menu-item__body">
+                <h4 class="restoran-menu-item__name">${escapeHtml(item.name)}</h4>
+                ${descriptionHtml}
+                <div class="restoran-menu-item__meta">${metaParts.join('')}</div>
+                ${allergensHtml}
+                ${unavailableHtml}
+              </div>
+              <button type="button" class="btn restoran-menu-item__cta" disabled aria-disabled="true">
+                Sepete ekle (yakında)
+              </button>
+            </article>`;
+        })
+        .join('');
+
+      return `
+        <section class="restoran-menu-category" aria-labelledby="menu-cat-${escapeHtml(category.id)}">
+          <h3 id="menu-cat-${escapeHtml(category.id)}" class="restoran-menu-category__title">${escapeHtml(category.name)}</h3>
+          ${categoryDesc}
+          <div class="restoran-menu-category__items">${itemsHtml}</div>
+        </section>`;
+    })
+    .join('');
+}
+
+/**
+ * @param {string} businessId
+ */
+async function loadMenu(businessId) {
+  setMenuState('loading');
+
+  try {
+    const payload = await getRestaurantMenu(businessId);
+    const categories = normalizeRestaurantMenu(payload);
+    const hasItems = categories.some((category) => category.items.length > 0);
+
+    if (!categories.length || !hasItems) {
+      setMenuState('empty');
+      return;
+    }
+
+    renderMenuCategories(categories);
+    setMenuState('content');
+  } catch {
+    setMenuState('error');
+  }
 }
 
 /**
@@ -424,6 +546,8 @@ function renderFallback(context) {
   if (slotsSection) slotsSection.hidden = true;
   if (contactForm) contactForm.hidden = true;
 
+  setMenuState('hidden');
+
   const fallbackSummary = $('reservation-context-summary-fallback');
   if (fallbackSummary) fallbackSummary.textContent = formatContextSummary(context);
 
@@ -518,7 +642,7 @@ async function boot() {
     }
 
     renderDetail(detail, context);
-    await loadSlots(businessId, context);
+    await Promise.all([loadSlots(businessId, context), loadMenu(businessId)]);
   } catch {
     renderFallback(context);
   }
@@ -536,5 +660,7 @@ export {
   findPreferredSlot,
   FALLBACK_MESSAGE,
   SLOTS_FALLBACK_MESSAGE,
-  SLOTS_UNAVAILABLE_POST_MESSAGE
+  SLOTS_UNAVAILABLE_POST_MESSAGE,
+  MENU_FALLBACK_MESSAGE,
+  MENU_EMPTY_MESSAGE
 };

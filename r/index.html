@@ -69,6 +69,16 @@
         </div>
       </dl>
 
+      <section class="reservation-menu" id="reservation-menu-section" hidden aria-labelledby="reservation-menu-title">
+        <h2 id="reservation-menu-title" class="reservation-slots__title">Menü</h2>
+        <div id="reservation-menu-loading" class="restoran-menu__status restoran-status restoran-status--loading" hidden role="status" aria-live="polite">
+          Menü yükleniyor…
+        </div>
+        <div id="reservation-menu-error" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite"></div>
+        <div id="reservation-menu-empty" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite"></div>
+        <div id="reservation-menu-content" class="restoran-menu__content" hidden></div>
+      </section>
+
       <section class="reservation-slots" id="reservation-slots-section" hidden aria-labelledby="reservation-slots-title">
         <h2 id="reservation-slots-title" class="reservation-slots__title">Uygun saatler</h2>
         <div id="reservation-slots-status" class="restoran-status" hidden role="status" aria-live="polite"></div>
