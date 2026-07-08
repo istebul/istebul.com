@@ -737,6 +737,55 @@ body.restoran-page .vacation-hero-badge {
   cursor: not-allowed;
 }
 
+#reservation-preorder-btn.is-loading {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.reservation-preorder-success {
+  margin-top: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--vacation-radius);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.reservation-preorder-success__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  color: #065f46;
+}
+
+.reservation-preorder-success__details {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.reservation-preorder-success__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.reservation-preorder-success__row dt {
+  margin: 0;
+  color: #047857;
+  font-weight: 600;
+}
+
+.reservation-preorder-success__row dd {
+  margin: 0;
+  color: #064e3b;
+  font-weight: 600;
+  text-align: right;
+}
+
+#reservation-preorder-notice.reservation-cta-notice--error {
+  margin-top: 0.65rem;
+}
+
 #restoran-nav.is-open {
   display: flex;
 }
