@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ea580c">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>Rezervasyon | GarsonAI — isteBul</title>
+  <meta name="description" content="GarsonAI ile restoran rezervasyonu. Tarih, saat ve kişi sayısı özetiyle rezervasyonunuzu tamamlayın.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/restoran-page.css">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/restoran/reservation-page.js"></script>
+</head>
+<body class="vacation-page restoran-page reservation-page">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
+    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">GarsonAI</span>
+    </a>
+    <nav id="reservation-nav" aria-label="Ana navigasyon">
+      <div class="ib-vertical-nav-primary">
+        <a href="/">Ana sayfa</a>
+        <a href="/restoran/">Restoran keşfi</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> ›
+      <a href="/restoran/">Restoran keşfi</a> ›
+      <span>Rezervasyon</span>
+    </nav>
+  </div>
+
+  <main class="vacation-container reservation-main" id="reservation-main">
+    <div id="reservation-status" class="restoran-status restoran-status--loading" hidden role="status" aria-live="polite">
+      Restoran bilgileri yükleniyor…
+    </div>
+
+    <section class="restoran-search-panel reservation-panel" id="reservation-panel" hidden aria-labelledby="reservation-title">
+      <p class="restoran-search-panel__lead">GarsonAI rezervasyon özeti</p>
+      <h1 id="reservation-title" class="reservation-panel__title">Rezervasyon</h1>
+
+      <dl class="reservation-summary">
+        <div class="reservation-summary__row">
+          <dt>Adres</dt>
+          <dd id="reservation-address">—</dd>
+        </div>
+        <div class="reservation-summary__row">
+          <dt>Masa durumu</dt>
+          <dd><span class="restoran-card__badge" id="reservation-availability">—</span></dd>
+        </div>
+        <div class="reservation-summary__row">
+          <dt>Seçiminiz</dt>
+          <dd id="reservation-context-summary">—</dd>
+        </div>
+      </dl>
+
+      <section class="reservation-menu" id="reservation-menu-section" hidden aria-labelledby="reservation-menu-title">
+        <h2 id="reservation-menu-title" class="reservation-slots__title">Menü</h2>
+        <div id="reservation-menu-loading" class="restoran-menu__status restoran-status restoran-status--loading" hidden role="status" aria-live="polite">
+          Menü yükleniyor…
+        </div>
+        <div id="reservation-menu-error" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite"></div>
+        <div id="reservation-menu-empty" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite"></div>
+        <div id="reservation-menu-content" class="restoran-menu__content" hidden></div>
+      </section>
+
+      <section class="reservation-slots" id="reservation-slots-section" hidden aria-labelledby="reservation-slots-title">
+        <h2 id="reservation-slots-title" class="reservation-slots__title">Uygun saatler</h2>
+        <div id="reservation-slots-status" class="restoran-status" hidden role="status" aria-live="polite"></div>
+        <div id="reservation-slots-list" class="reservation-slots__list" role="listbox" aria-label="Uygun saatler"></div>
+      </section>
+
+      <form id="reservation-contact-form" class="reservation-contact-form" novalidate>
+        <h2 class="reservation-slots__title">İletişim bilgileri</h2>
+
+        <div class="restoran-field">
+          <label for="reservation-customer-name">Ad Soyad</label>
+          <input
+            id="reservation-customer-name"
+            name="customer_name"
+            type="text"
+            autocomplete="name"
+            required
+            placeholder="Adınız ve soyadınız">
+        </div>
+
+        <div class="restoran-field">
+          <label for="reservation-customer-phone">Telefon</label>
+          <input
+            id="reservation-customer-phone"
+            name="customer_phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            required
+            placeholder="05xx xxx xx xx">
+        </div>
+
+        <div class="restoran-field">
+          <label for="reservation-note">Not / Alerji / özel istek</label>
+          <textarea
+            id="reservation-note"
+            name="note"
+            rows="3"
+            placeholder="Opsiyonel"></textarea>
+        </div>
+      </form>
+
+      <section id="reservation-success" class="reservation-success" hidden aria-live="polite">
+        <h2 class="reservation-success__title">Rezervasyon tamamlandı</h2>
+        <p class="reservation-success__code-label">Rezervasyon kodu</p>
+        <p class="reservation-success__code" id="reservation-success-code">—</p>
+        <p class="reservation-success__summary" id="reservation-success-summary"></p>
+        <div class="reservation-success__actions">
+          <a
+            class="btn btn-primary"
+            id="reservation-detail-link"
+            href="#"
+          >Rezervasyon detayını aç</a>
+          <a
+            class="btn reservation-calendar-link"
+            id="reservation-calendar-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Takvime ekle</a>
+        </div>
+      </section>
+
+      <p id="reservation-cta-notice" class="reservation-cta-notice" hidden role="status" aria-live="polite"></p>
+
+      <div class="reservation-actions" id="reservation-actions">
+        <button type="button" class="btn btn-primary" id="reservation-confirm-btn" disabled aria-disabled="true">
+          Önce uygun saat seç
+        </button>
+        <a class="btn reservation-back-link" href="/restoran/">Başka restoran ara</a>
+      </div>
+    </section>
+
+    <section
+      class="restoran-search-panel reservation-fallback"
+      id="reservation-fallback"
+      hidden
+      aria-labelledby="reservation-fallback-title"
+    >
+      <h1 id="reservation-fallback-title" class="reservation-panel__title">Rezervasyon</h1>
+      <p id="reservation-fallback-text" class="restoran-search-panel__lead"></p>
+      <dl class="reservation-summary">
+        <div class="reservation-summary__row">
+          <dt>Seçiminiz</dt>
+          <dd id="reservation-context-summary-fallback">—</dd>
+        </div>
+      </dl>
+      <div class="reservation-actions">
+        <a class="btn btn-primary" href="/restoran/">Restoran keşfine dön</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

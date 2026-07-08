@@ -228,6 +228,352 @@ body.restoran-page .vacation-hero-badge {
   text-align: center;
 }
 
+.reservation-main {
+  padding-bottom: 2.5rem;
+}
+
+.reservation-panel__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  color: var(--vacation-on-surface);
+}
+
+.reservation-summary {
+  margin: 0 0 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.reservation-summary__row {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.reservation-summary__row dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reservation-summary__row dd {
+  margin: 0;
+  color: var(--vacation-on-surface-body);
+  font-size: 0.95rem;
+}
+
+.reservation-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reservation-actions .btn {
+  min-height: 44px;
+  justify-content: center;
+}
+
+.reservation-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+#reservation-confirm-btn[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.reservation-slots {
+  margin: 0 0 1.25rem;
+}
+
+.reservation-slots__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface);
+}
+
+.reservation-slots__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reservation-slot {
+  min-height: 44px;
+  min-width: 4.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  background: #fff;
+  color: #c2410c;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reservation-slot.is-selected {
+  background: #ea580c;
+  border-color: #ea580c;
+  color: #fff;
+}
+
+.reservation-slot.is-disabled,
+.reservation-slot:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reservation-slot:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.45);
+  outline-offset: 2px;
+}
+
+.reservation-cta-notice {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #065f46;
+  font-size: 0.92rem;
+}
+
+.reservation-cta-notice--error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #991b1b;
+}
+
+.reservation-contact-form {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 0 1.25rem;
+}
+
+.reservation-contact-form textarea {
+  width: 100%;
+  min-height: 88px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font: inherit;
+  color: var(--vacation-on-surface);
+  background: #fff;
+  resize: vertical;
+}
+
+.reservation-contact-form textarea:focus {
+  outline: 2px solid rgba(234, 88, 12, 0.35);
+  outline-offset: 1px;
+  border-color: rgba(234, 88, 12, 0.45);
+}
+
+.reservation-success {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--vacation-radius);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.reservation-success__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: #065f46;
+}
+
+.reservation-success__code-label {
+  margin: 0 0 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #047857;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reservation-success__code {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #064e3b;
+  letter-spacing: 0.04em;
+}
+
+.reservation-success__summary {
+  margin: 0 0 0.85rem;
+  color: #065f46;
+  font-size: 0.95rem;
+}
+
+.reservation-success__actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reservation-confirm-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.reservation-confirm-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reservation-confirm-error {
+  color: #991b1b;
+}
+
+.reservation-confirm-fallback .reservation-panel__title {
+  margin-bottom: 0.75rem;
+}
+
+.reservation-calendar-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+#reservation-slots-status.restoran-status--loading {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e3a8a;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.reservation-menu {
+  margin: 0 0 1.25rem;
+}
+
+.restoran-menu__status {
+  margin: 0;
+}
+
+.restoran-menu__empty {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(234, 88, 12, 0.08);
+  border: 1px dashed rgba(234, 88, 12, 0.28);
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.92rem;
+}
+
+.restoran-menu__content {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.restoran-menu-category__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-menu-category__desc {
+  margin: 0 0 0.75rem;
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.9rem;
+}
+
+.restoran-menu-category__items {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.restoran-menu-item {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+@media (min-width: 640px) {
+  .restoran-menu-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+}
+
+.restoran-menu-item.is-unavailable {
+  opacity: 0.72;
+}
+
+.restoran-menu-item__name {
+  margin: 0 0 0.25rem;
+  font-size: 0.98rem;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-menu-item__desc {
+  margin: 0 0 0.45rem;
+  color: var(--vacation-on-surface-body);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.restoran-menu-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.restoran-menu-item__price {
+  font-weight: 700;
+  color: #c2410c;
+  font-size: 0.92rem;
+}
+
+.restoran-menu-item__prep {
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(234, 88, 12, 0.1);
+  color: #9a3412;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.restoran-menu-item__allergens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.restoran-menu-item__allergen {
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.restoran-menu-item__unavailable {
+  margin: 0.35rem 0 0;
+  color: #b45309;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.restoran-menu-item__cta {
+  min-height: 40px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 #restoran-nav.is-open {
   display: flex;
 }
