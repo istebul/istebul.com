@@ -229,6 +229,33 @@ export function normalizeAdminNavigation(payload, options = {}) {
       };
     }
 
+    if (section.id === 'menu') {
+      return {
+        id: section.id,
+        label: section.label,
+        href: '/garson/panel/menu/',
+        external: false
+      };
+    }
+
+    if (section.id === 'reservations') {
+      return {
+        id: section.id,
+        label: section.label,
+        href: '/garson/panel/rezervasyonlar/',
+        external: false
+      };
+    }
+
+    if (section.id === 'preorders') {
+      return {
+        id: section.id,
+        label: section.label,
+        href: '/garson/panel/siparisler/',
+        external: false
+      };
+    }
+
     return {
       id: section.id,
       label: section.label,
