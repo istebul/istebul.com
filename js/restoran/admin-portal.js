@@ -384,13 +384,6 @@ export function renderAdminSectionsHtml(restaurant, settings) {
 }
 
 /**
- * @returns {void}
- */
-export function activateDemoAdminSessionPortal() {
-  activateDemoAdminSession();
-}
-
-/**
  * @param {HTMLFormElement} form
  * @returns {boolean}
  */
