@@ -923,6 +923,218 @@ export async function createRestaurantReservation(input) {
 }
 
 /**
+ * @typedef {Object} PreorderItemInput
+ * @property {string} [menuItemId]
+ * @property {string} [menu_item_id]
+ * @property {number} [qty]
+ * @property {string} [note]
+ */
+
+/**
+ * @typedef {Object} PreorderCreateInput
+ * @property {string} [reservationId]
+ * @property {string} [reservation_id]
+ * @property {PreorderItemInput[]} [items]
+ */
+
+/**
+ * @typedef {Object} NormalizedPreorderItem
+ * @property {string} menuItemId
+ * @property {number} qty
+ * @property {string} [note]
+ */
+
+/**
+ * @typedef {Object} NormalizedPreorderPayload
+ * @property {string} reservationId
+ * @property {NormalizedPreorderItem[]} items
+ */
+
+/**
+ * @typedef {Object} NormalizedPreorderResult
+ * @property {string} preorderId
+ * @property {string} reservationId
+ * @property {string} status
+ * @property {number} itemCount
+ * @property {number|null} totalAmount
+ * @property {string} currency
+ * @property {number|null} etaMinutes
+ * @property {string} createdAt
+ * @property {unknown} raw
+ */
+
+export class PreorderValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'PreorderValidationError';
+  }
+}
+
+/**
+ * @param {unknown} item
+ * @param {number} index
+ * @returns {NormalizedPreorderItem}
+ */
+function normalizePreorderItem(item, index) {
+  const row = /** @type {Record<string, unknown>} */ (
+    item && typeof item === 'object' ? item : {}
+  );
+  const menuItemId = String(row.menuItemId ?? row.menu_item_id ?? row.id ?? '').trim();
+  const qtyRaw = Number.parseInt(String(row.qty ?? ''), 10);
+  const qty = Number.isFinite(qtyRaw) ? qtyRaw : 0;
+  const note = row.note != null ? String(row.note).trim() : '';
+
+  if (!menuItemId) {
+    throw new PreorderValidationError(`Ürün kimliği gerekli (sıra ${index + 1})`);
+  }
+  if (qty < 1) {
+    throw new PreorderValidationError(`Ürün adedi en az 1 olmalı (sıra ${index + 1})`);
+  }
+
+  return {
+    menuItemId,
+    qty,
+    note: note || undefined
+  };
+}
+
+/**
+ * @param {PreorderCreateInput} input
+ * @returns {NormalizedPreorderPayload}
+ */
+export function normalizePreorderPayload(input = {}) {
+  const row = /** @type {Record<string, unknown>} */ (
+    input && typeof input === 'object' ? input : {}
+  );
+  const reservationId = String(row.reservationId ?? row.reservation_id ?? '').trim();
+  const rawItems = row.items;
+
+  if (!reservationId) {
+    throw new PreorderValidationError('Rezervasyon kimliği gerekli');
+  }
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    throw new PreorderValidationError('Ön sipariş ürün listesi boş olamaz');
+  }
+
+  const items = rawItems.map((entry, index) => normalizePreorderItem(entry, index));
+
+  return { reservationId, items };
+}
+
+/**
+ * @param {NormalizedPreorderPayload} payload
+ * @returns {Record<string, unknown>}
+ */
+export function buildPreorderApiBody(payload) {
+  return {
+    reservation_id: payload.reservationId,
+    items: payload.items.map((item) => {
+      /** @type {Record<string, unknown>} */
+      const row = {
+        menu_item_id: item.menuItemId,
+        qty: item.qty
+      };
+      if (item.note) row.note = item.note;
+      return row;
+    })
+  };
+}
+
+/**
+ * @param {string} reservationId
+ * @returns {string}
+ */
+export function buildRestaurantPreorderUrl(reservationId) {
+  const trimmed = String(reservationId || '').trim();
+  return `${getGarsonAiApiUrl()}/public/reservations/${encodeURIComponent(trimmed)}/preorder`;
+}
+
+/**
+ * @param {unknown} payload
+ * @returns {NormalizedPreorderResult}
+ */
+export function normalizePreorderResponse(payload) {
+  let row = payload;
+
+  if (payload && typeof payload === 'object') {
+    const root = /** @type {Record<string, unknown>} */ (payload);
+    if (root.preorder && typeof root.preorder === 'object') {
+      row = root.preorder;
+    } else if (root.data && typeof root.data === 'object') {
+      const data = /** @type {Record<string, unknown>} */ (root.data);
+      row =
+        data.preorder && typeof data.preorder === 'object'
+          ? data.preorder
+          : data;
+    }
+  }
+
+  const record = /** @type {Record<string, unknown>} */ (
+    row && typeof row === 'object' ? row : {}
+  );
+
+  const preorderId = String(record.id ?? record.preorder_id ?? record.preorderId ?? '').trim();
+  const reservationId = String(record.reservation_id ?? record.reservationId ?? '').trim();
+  const status = String(record.status ?? 'pending').trim() || 'pending';
+
+  const itemCountRaw = Number.parseInt(
+    String(record.item_count ?? record.itemCount ?? '0'),
+    10
+  );
+  const itemCount = Number.isFinite(itemCountRaw) && itemCountRaw >= 0 ? itemCountRaw : 0;
+
+  const totalRaw = record.total_amount ?? record.totalAmount ?? record.total;
+  const totalNum = totalRaw != null && totalRaw !== '' ? Number(totalRaw) : null;
+  const totalAmount = totalNum != null && Number.isFinite(totalNum) ? totalNum : null;
+
+  const currency = String(record.currency ?? record.currency_code ?? 'TRY').trim() || 'TRY';
+
+  const etaRaw = record.eta_minutes ?? record.etaMinutes ?? record.eta;
+  const etaNum = etaRaw != null && etaRaw !== '' ? Number(etaRaw) : null;
+  const etaMinutes = etaNum != null && Number.isFinite(etaNum) && etaNum >= 0 ? etaNum : null;
+
+  const createdAt = String(record.created_at ?? record.createdAt ?? '').trim();
+
+  return {
+    preorderId,
+    reservationId,
+    status,
+    itemCount,
+    totalAmount,
+    currency,
+    etaMinutes,
+    createdAt,
+    raw: payload
+  };
+}
+
+/**
+ * @param {PreorderCreateInput} input
+ * @returns {Promise<NormalizedPreorderResult>}
+ */
+export async function createRestaurantPreorder(input) {
+  const payload = normalizePreorderPayload(input);
+  const body = buildPreorderApiBody(payload);
+  const url = buildRestaurantPreorderUrl(payload.reservationId);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ön sipariş oluşturulamadı (${response.status})`);
+  }
+
+  const json = await response.json();
+  return normalizePreorderResponse(json);
+}
+
+/**
  * @param {{ title: string, date: string, time: string, description?: string, location?: string }} params
  * @returns {string}
  */

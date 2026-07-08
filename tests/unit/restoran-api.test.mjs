@@ -4,14 +4,17 @@ import assert from 'node:assert/strict';
 const {
   buildGoogleCalendarUrl,
   buildReservationApiBody,
+  buildPreorderApiBody,
   buildReservationConfirmUrl,
   buildReservationsApiUrl,
   buildReservationUrl,
   buildReservationQuery,
   buildRestaurantDetailUrl,
   buildRestaurantMenuUrl,
+  buildRestaurantPreorderUrl,
   buildRestaurantReservationLookupUrl,
   buildRestaurantSlotsUrl,
+  createRestaurantPreorder,
   createRestaurantReservation,
   formatReservationStatusLabel,
   getRestaurantDetail,
@@ -19,6 +22,8 @@ const {
   getRestaurantReservation,
   getRestaurantSlots,
   normalizeGuestCount,
+  normalizePreorderPayload,
+  normalizePreorderResponse,
   normalizeReservationPayload,
   normalizeReservationResponse,
   normalizeRestaurantDetail,
@@ -28,6 +33,7 @@ const {
   parseBusinessIdFromLocation,
   parseReservationCodeFromSearch,
   parseReservationContext,
+  PreorderValidationError,
   ReservationValidationError,
   resolveSlotDate
 } = await import('../../js/restoran/restoran-api.js');
@@ -735,4 +741,190 @@ test('normalizeRestaurantMenu returns empty array for broken payload', () => {
   assert.deepEqual(normalizeRestaurantMenu(null), []);
   assert.deepEqual(normalizeRestaurantMenu({ categories: 'bad' }), []);
   assert.deepEqual(normalizeRestaurantMenu({ menu: { categories: null } }), []);
+});
+
+test('buildRestaurantPreorderUrl encodes reservation id', () => {
+  const url = buildRestaurantPreorderUrl('res/42');
+  assert.match(url, /\/public\/reservations\/res%2F42\/preorder$/);
+});
+
+test('normalizePreorderPayload validates reservation id and items', () => {
+  assert.throws(
+    () => normalizePreorderPayload({ items: [{ menu_item_id: 'm1', qty: 1 }] }),
+    PreorderValidationError
+  );
+  assert.throws(
+    () => normalizePreorderPayload({ reservation_id: 'r1', items: [] }),
+    /Ön sipariş ürün listesi boş olamaz/
+  );
+  assert.throws(
+    () =>
+      normalizePreorderPayload({
+        reservation_id: 'r1',
+        items: [{ menu_item_id: '', qty: 1 }]
+      }),
+    /Ürün kimliği gerekli/
+  );
+  assert.throws(
+    () =>
+      normalizePreorderPayload({
+        reservation_id: 'r1',
+        items: [{ menu_item_id: 'm1', qty: 0 }]
+      }),
+    /Ürün adedi en az 1 olmalı/
+  );
+});
+
+test('normalizePreorderPayload maps items and trims note', () => {
+  const payload = normalizePreorderPayload({
+    reservationId: ' res-9 ',
+    items: [
+      { menuItemId: 'soup-1', qty: 2, note: '  az tuzlu  ' },
+      { menu_item_id: 'salad-2', qty: 1 }
+    ]
+  });
+
+  assert.equal(payload.reservationId, 'res-9');
+  assert.deepEqual(payload.items, [
+    { menuItemId: 'soup-1', qty: 2, note: 'az tuzlu' },
+    { menuItemId: 'salad-2', qty: 1, note: undefined }
+  ]);
+});
+
+test('buildPreorderApiBody maps snake_case preorder fields', () => {
+  const body = buildPreorderApiBody({
+    reservationId: 'res-9',
+    items: [
+      { menuItemId: 'soup-1', qty: 2, note: 'sıcak' },
+      { menuItemId: 'salad-2', qty: 1 }
+    ]
+  });
+
+  assert.deepEqual(body, {
+    reservation_id: 'res-9',
+    items: [
+      { menu_item_id: 'soup-1', qty: 2, note: 'sıcak' },
+      { menu_item_id: 'salad-2', qty: 1 }
+    ]
+  });
+});
+
+test('normalizePreorderResponse handles preorder wrapper', () => {
+  const result = normalizePreorderResponse({
+    preorder: {
+      id: 'po-1',
+      reservation_id: 'res-9',
+      status: 'confirmed',
+      item_count: 3,
+      total_amount: 420,
+      currency: 'TRY',
+      eta_minutes: 25,
+      created_at: '2026-07-10T19:30:00Z'
+    }
+  });
+
+  assert.equal(result.preorderId, 'po-1');
+  assert.equal(result.reservationId, 'res-9');
+  assert.equal(result.status, 'confirmed');
+  assert.equal(result.itemCount, 3);
+  assert.equal(result.totalAmount, 420);
+  assert.equal(result.currency, 'TRY');
+  assert.equal(result.etaMinutes, 25);
+  assert.equal(result.createdAt, '2026-07-10T19:30:00Z');
+});
+
+test('normalizePreorderResponse handles nested data.preorder format', () => {
+  const result = normalizePreorderResponse({
+    data: {
+      preorder: {
+        preorder_id: 'po-2',
+        reservationId: 'res-10',
+        status: 'pending',
+        itemCount: 1,
+        totalAmount: 90
+      }
+    }
+  });
+
+  assert.equal(result.preorderId, 'po-2');
+  assert.equal(result.reservationId, 'res-10');
+  assert.equal(result.itemCount, 1);
+  assert.equal(result.totalAmount, 90);
+  assert.equal(result.currency, 'TRY');
+});
+
+test('createRestaurantPreorder posts JSON to preorder endpoint', async () => {
+  const originalFetch = globalThis.fetch;
+  let captured = null;
+
+  globalThis.fetch = async (url, options) => {
+    captured = { url, options };
+    return {
+      ok: true,
+      async json() {
+        return {
+          preorder: {
+            id: 'po-99',
+            reservation_id: 'res-42',
+            status: 'pending',
+            item_count: 2,
+            total_amount: 310,
+            currency: 'TRY',
+            eta_minutes: 20,
+            created_at: '2026-07-10T20:00:00Z'
+          }
+        };
+      }
+    };
+  };
+
+  try {
+    const result = await createRestaurantPreorder({
+      reservationId: 'res/42',
+      items: [
+        { menu_item_id: 'm1', qty: 1, note: 'sossuz' },
+        { menu_item_id: 'm2', qty: 2 }
+      ]
+    });
+
+    const parsed = new URL(String(captured.url));
+    assert.equal(parsed.pathname, '/public/reservations/res%2F42/preorder');
+    assert.equal(captured.options.method, 'POST');
+    assert.equal(captured.options.headers['Content-Type'], 'application/json');
+    assert.equal(captured.options.headers.Accept, 'application/json');
+
+    const body = JSON.parse(String(captured.options.body));
+    assert.equal(body.reservation_id, 'res/42');
+    assert.deepEqual(body.items, [
+      { menu_item_id: 'm1', qty: 1, note: 'sossuz' },
+      { menu_item_id: 'm2', qty: 2 }
+    ]);
+
+    assert.equal(result.preorderId, 'po-99');
+    assert.equal(result.reservationId, 'res-42');
+    assert.equal(result.totalAmount, 310);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('createRestaurantPreorder throws on API error', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 422
+  });
+
+  try {
+    await assert.rejects(
+      () =>
+        createRestaurantPreorder({
+          reservation_id: 'res-1',
+          items: [{ menu_item_id: 'm1', qty: 1 }]
+        }),
+      /Ön sipariş oluşturulamadı \(422\)/
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
