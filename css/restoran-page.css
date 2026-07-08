@@ -786,6 +786,99 @@ body.restoran-page .vacation-hero-badge {
   margin-top: 0.65rem;
 }
 
+.reservation-preorder-kds {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.reservation-preorder-kds__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #065f46;
+}
+
+.reservation-preorder-kds__current {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: #047857;
+}
+
+.reservation-preorder-kds__current-label {
+  margin-right: 0.35rem;
+}
+
+.preorder-kds-timeline {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.preorder-kds-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.88rem;
+}
+
+.preorder-kds-step__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  border: 2px solid rgba(15, 23, 42, 0.18);
+  background: #fff;
+}
+
+.preorder-kds-step.is-complete {
+  color: #047857;
+}
+
+.preorder-kds-step.is-complete .preorder-kds-step__dot {
+  border-color: #10b981;
+  background: #10b981;
+}
+
+.preorder-kds-step.is-current {
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.preorder-kds-step.is-current .preorder-kds-step__dot {
+  border-color: #ea580c;
+  background: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
+}
+
+.preorder-kds-step.is-cancelled {
+  opacity: 0.55;
+}
+
+.reservation-preorder-kds__eta {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #9a3412;
+}
+
+.reservation-preorder-kds__kitchen {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--vacation-on-surface-muted);
+}
+
+.reservation-preorder-kds__refresh {
+  min-height: 40px;
+}
+
+#reservation-preorder-kds-refresh[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 #restoran-nav.is-open {
   display: flex;
 }

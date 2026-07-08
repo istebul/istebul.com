@@ -126,6 +126,26 @@
               <dd id="reservation-preorder-success-status">—</dd>
             </div>
           </dl>
+
+          <section id="reservation-preorder-kds" class="reservation-preorder-kds" hidden aria-labelledby="reservation-preorder-kds-title">
+            <h4 id="reservation-preorder-kds-title" class="reservation-preorder-kds__title">Hazırlık Durumu</h4>
+            <p class="reservation-preorder-kds__current">
+              <span class="reservation-preorder-kds__current-label">Mutfak durumu:</span>
+              <strong id="reservation-preorder-kds-current">—</strong>
+            </p>
+            <div id="reservation-preorder-kds-loading" class="restoran-status restoran-status--loading" hidden role="status">
+              Mutfak durumu yükleniyor…
+            </div>
+            <div id="reservation-preorder-kds-fallback" class="restoran-preorder__empty" hidden role="status"></div>
+            <div id="reservation-preorder-kds-content" hidden>
+              <ol id="reservation-preorder-kds-timeline" class="preorder-kds-timeline" aria-label="Hazırlık adımları"></ol>
+              <p id="reservation-preorder-kds-eta" class="reservation-preorder-kds__eta" hidden></p>
+              <p id="reservation-preorder-kds-kitchen" class="reservation-preorder-kds__kitchen" hidden></p>
+            </div>
+            <button type="button" class="btn reservation-preorder-kds__refresh" id="reservation-preorder-kds-refresh">
+              Durumu yenile
+            </button>
+          </section>
         </section>
       </section>
 

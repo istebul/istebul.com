@@ -1134,6 +1134,139 @@ export async function createRestaurantPreorder(input) {
   return normalizePreorderResponse(json);
 }
 
+/** @type {Set<string>} */
+const PREORDER_STATUS_KEYS = new Set([
+  'submitted',
+  'scheduled',
+  'preparing',
+  'ready',
+  'served',
+  'cancelled'
+]);
+
+/**
+ * @typedef {Object} NormalizedPreorderStatus
+ * @property {string} id
+ * @property {string} status
+ * @property {number|null} etaMinutes
+ * @property {string} estimatedReadyAt
+ * @property {string} kitchenMessage
+ * @property {string} updatedAt
+ * @property {unknown} raw
+ */
+
+/**
+ * @param {string} [status]
+ * @returns {string}
+ */
+export function normalizePreorderStatusKey(status) {
+  const key = String(status || '').trim().toLowerCase();
+  return PREORDER_STATUS_KEYS.has(key) ? key : 'submitted';
+}
+
+/**
+ * @param {string} [status]
+ * @returns {string}
+ */
+export function formatPreorderStatusLabel(status) {
+  const labels = {
+    submitted: 'Alındı',
+    scheduled: 'Planlandı',
+    preparing: 'Hazırlanıyor',
+    ready: 'Hazır',
+    served: 'Servis edildi',
+    cancelled: 'İptal edildi'
+  };
+  return labels[normalizePreorderStatusKey(status)] || labels.submitted;
+}
+
+/**
+ * @param {unknown} payload
+ * @returns {NormalizedPreorderStatus}
+ */
+export function normalizePreorderStatus(payload) {
+  let row = payload;
+
+  if (payload && typeof payload === 'object') {
+    const root = /** @type {Record<string, unknown>} */ (payload);
+    if (root.status && typeof root.status === 'object' && !Array.isArray(root.status)) {
+      row = root.status;
+    } else if (root.preorder_status && typeof root.preorder_status === 'object') {
+      row = root.preorder_status;
+    } else if (root.data && typeof root.data === 'object') {
+      const data = /** @type {Record<string, unknown>} */ (root.data);
+      row =
+        data.status && typeof data.status === 'object' && !Array.isArray(data.status)
+          ? data.status
+          : data;
+    }
+  }
+
+  const record = /** @type {Record<string, unknown>} */ (
+    row && typeof row === 'object' ? row : {}
+  );
+
+  const id = String(record.id ?? record.preorder_id ?? record.preorderId ?? '').trim();
+  const status = normalizePreorderStatusKey(record.status);
+
+  const etaRaw = record.eta_minutes ?? record.etaMinutes ?? record.eta;
+  const etaNum = etaRaw != null && etaRaw !== '' ? Number(etaRaw) : null;
+  const etaMinutes = etaNum != null && Number.isFinite(etaNum) && etaNum >= 0 ? etaNum : null;
+
+  const estimatedReadyAt = String(
+    record.estimated_ready_at ?? record.estimatedReadyAt ?? ''
+  ).trim();
+
+  const kitchenMessage = String(
+    record.kitchen_message ?? record.kitchenMessage ?? record.message ?? ''
+  ).trim();
+
+  const updatedAt = String(record.updated_at ?? record.updatedAt ?? '').trim();
+
+  return {
+    id,
+    status,
+    etaMinutes,
+    estimatedReadyAt,
+    kitchenMessage,
+    updatedAt,
+    raw: payload
+  };
+}
+
+/**
+ * @param {string} preorderId
+ * @returns {string}
+ */
+export function buildPreorderStatusUrl(preorderId) {
+  const trimmed = String(preorderId || '').trim();
+  return `${getGarsonAiApiUrl()}/public/preorders/${encodeURIComponent(trimmed)}/status`;
+}
+
+/**
+ * @param {string} preorderId
+ * @returns {Promise<NormalizedPreorderStatus>}
+ */
+export async function getPreorderStatus(preorderId) {
+  const trimmed = String(preorderId || '').trim();
+  if (!trimmed) {
+    throw new Error('Ön sipariş kimliği gerekli');
+  }
+
+  const url = buildPreorderStatusUrl(trimmed);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ön sipariş durumu alınamadı (${response.status})`);
+  }
+
+  const json = await response.json();
+  return normalizePreorderStatus(json);
+}
+
 /**
  * @param {{ title: string, date: string, time: string, description?: string, location?: string }} params
  * @returns {string}

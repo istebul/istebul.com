@@ -3,7 +3,9 @@ import {
   buildReservationConfirmUrl,
   createRestaurantPreorder,
   createRestaurantReservation,
+  formatPreorderStatusLabel,
   formatReservationStatusLabel,
+  getPreorderStatus,
   getRestaurantDetail,
   getRestaurantMenu,
   getRestaurantSlots,
@@ -29,6 +31,16 @@ const MENU_FALLBACK_MESSAGE =
 const MENU_EMPTY_MESSAGE = 'Menü bilgisi henüz eklenmemiş.';
 const PREORDER_EMPTY_MESSAGE = 'Henüz ürün seçmediniz.';
 const PREORDER_RESERVATION_REQUIRED_MESSAGE = 'Önce rezervasyon oluşturun.';
+const PREORDER_STATUS_FALLBACK_MESSAGE = 'Canlı mutfak durumu yakında aktif olacak.';
+
+const KDS_TIMELINE_STEPS = [
+  { key: 'submitted', label: 'Alındı' },
+  { key: 'scheduled', label: 'Planlandı' },
+  { key: 'preparing', label: 'Hazırlanıyor' },
+  { key: 'ready', label: 'Hazır' }
+];
+
+const KDS_STATUS_ORDER = ['submitted', 'scheduled', 'preparing', 'ready', 'served'];
 
 const preorderCart = createCart();
 
@@ -70,6 +82,12 @@ let isPreorderSubmitting = false;
 
 /** @type {boolean} */
 let preorderComplete = false;
+
+/** @type {string} */
+let currentPreorderId = '';
+
+/** @type {boolean} */
+let isPreorderStatusLoading = false;
 
 /**
  * @param {string} id
@@ -275,6 +293,48 @@ export function formatPreorderTotalLabel(totalAmount, currency = 'TRY') {
  * @param {unknown} error
  * @returns {string}
  */
+export function formatPreorderEtaMessage(etaMinutes) {
+  if (etaMinutes == null || !Number.isFinite(etaMinutes)) return '';
+  return `Tahmini hazır olma: ${etaMinutes} dakika`;
+}
+
+/**
+ * @param {string} status
+ * @returns {number}
+ */
+export function getKdsTimelineIndex(status) {
+  const key = String(status || '').trim().toLowerCase();
+  if (key === 'cancelled') return -1;
+  if (key === 'served') return KDS_TIMELINE_STEPS.length;
+  const index = KDS_STATUS_ORDER.indexOf(key);
+  return index >= 0 ? Math.min(index, KDS_TIMELINE_STEPS.length - 1) : 0;
+}
+
+/**
+ * @param {string} status
+ * @returns {string}
+ */
+export function renderKdsTimelineHtml(status) {
+  const currentIndex = getKdsTimelineIndex(status);
+  const isCancelled = String(status || '').trim().toLowerCase() === 'cancelled';
+
+  return KDS_TIMELINE_STEPS.map((step, index) => {
+    let stateClass = '';
+    if (isCancelled) {
+      stateClass = ' is-cancelled';
+    } else if (index < currentIndex) {
+      stateClass = ' is-complete';
+    } else if (index === currentIndex) {
+      stateClass = ' is-current';
+    }
+    return `<li class="preorder-kds-step${stateClass}"><span class="preorder-kds-step__dot" aria-hidden="true"></span><span class="preorder-kds-step__label">${step.label}</span></li>`;
+  }).join('');
+}
+
+/**
+ * @param {unknown} error
+ * @returns {string}
+ */
 export function formatPreorderSubmitError(error) {
   if (error instanceof PreorderValidationError) {
     return error.message;
@@ -431,10 +491,91 @@ function renderPreorderSection() {
 }
 
 /**
+ * @param {'hidden'|'loading'|'fallback'|'content'} state
+ */
+function setPreorderKdsState(state) {
+  const section = $('reservation-preorder-kds');
+  const loading = $('reservation-preorder-kds-loading');
+  const fallback = $('reservation-preorder-kds-fallback');
+  const content = $('reservation-preorder-kds-content');
+  const refreshBtn = /** @type {HTMLButtonElement|null} */ ($('reservation-preorder-kds-refresh'));
+
+  if (section) section.hidden = state === 'hidden';
+  if (loading) loading.hidden = state !== 'loading';
+  if (fallback) {
+    fallback.hidden = state !== 'fallback';
+    if (state === 'fallback') fallback.textContent = PREORDER_STATUS_FALLBACK_MESSAGE;
+  }
+  if (content) content.hidden = state !== 'content';
+
+  if (refreshBtn) {
+    refreshBtn.disabled = state === 'loading' || !currentPreorderId;
+    refreshBtn.setAttribute('aria-disabled', refreshBtn.disabled ? 'true' : 'false');
+  }
+}
+
+/**
+ * @param {import('./restoran-api.js').NormalizedPreorderStatus} status
+ */
+function renderPreorderKdsStatus(status) {
+  const timeline = $('reservation-preorder-kds-timeline');
+  const eta = $('reservation-preorder-kds-eta');
+  const kitchen = $('reservation-preorder-kds-kitchen');
+  const currentLabel = $('reservation-preorder-kds-current');
+
+  if (timeline) {
+    timeline.innerHTML = renderKdsTimelineHtml(status.status);
+  }
+  if (currentLabel) {
+    currentLabel.textContent = formatPreorderStatusLabel(status.status);
+  }
+  if (eta) {
+    const etaMessage = formatPreorderEtaMessage(status.etaMinutes);
+    eta.hidden = !etaMessage;
+    eta.textContent = etaMessage;
+  }
+  if (kitchen) {
+    kitchen.hidden = !status.kitchenMessage;
+    kitchen.textContent = status.kitchenMessage;
+  }
+}
+
+async function loadPreorderStatus() {
+  if (!currentPreorderId) return;
+
+  isPreorderStatusLoading = true;
+  setPreorderKdsState('loading');
+
+  try {
+    const status = await getPreorderStatus(currentPreorderId);
+    renderPreorderKdsStatus(status);
+    setPreorderKdsState('content');
+  } catch {
+    setPreorderKdsState('fallback');
+  } finally {
+    isPreorderStatusLoading = false;
+    const refreshBtn = /** @type {HTMLButtonElement|null} */ ($('reservation-preorder-kds-refresh'));
+    if (refreshBtn && currentPreorderId) {
+      refreshBtn.disabled = false;
+      refreshBtn.setAttribute('aria-disabled', 'false');
+    }
+  }
+}
+
+function bindPreorderStatusRefresh() {
+  const button = $('reservation-preorder-kds-refresh');
+  button?.addEventListener('click', () => {
+    if (isPreorderStatusLoading || !currentPreorderId) return;
+    loadPreorderStatus();
+  });
+}
+
+/**
  * @param {import('./restoran-api.js').NormalizedPreorderResult} result
  */
-function showPreorderSuccess(result) {
+async function showPreorderSuccess(result) {
   preorderComplete = true;
+  currentPreorderId = result.preorderId || '';
 
   const success = $('reservation-preorder-success');
   const preorderId = $('reservation-preorder-success-id');
@@ -458,12 +599,16 @@ function showPreorderSuccess(result) {
     etaRow.hidden = result.etaMinutes == null;
   }
   if (status) {
-    status.textContent = formatReservationStatusLabel(result.status);
+    status.textContent = formatPreorderStatusLabel(result.status);
   }
   if (success) success.hidden = false;
 
   hidePreorderNotice();
   updatePreorderButton();
+
+  if (currentPreorderId) {
+    await loadPreorderStatus();
+  }
 }
 
 /**
@@ -1015,6 +1160,7 @@ async function boot() {
   bindContactForm();
   bindConfirmButton();
   bindPreorderButton();
+  bindPreorderStatusRefresh();
 
   const businessId = parseBusinessIdFromLocation(
     window.location.pathname,

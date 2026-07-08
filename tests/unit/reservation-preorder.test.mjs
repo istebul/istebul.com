@@ -4,8 +4,11 @@ import assert from 'node:assert/strict';
 const { PreorderValidationError } = await import('../../js/restoran/restoran-api.js');
 const {
   buildPreorderRequest,
+  formatPreorderEtaMessage,
   formatPreorderSubmitError,
-  formatPreorderTotalLabel
+  formatPreorderTotalLabel,
+  getKdsTimelineIndex,
+  renderKdsTimelineHtml
 } = await import('../../js/restoran/reservation-page.js');
 
 test('buildPreorderRequest maps cart lines to preorder API input', () => {
@@ -43,4 +46,21 @@ test('formatPreorderSubmitError maps API status errors', () => {
 test('formatPreorderSubmitError maps network errors', () => {
   const message = formatPreorderSubmitError(new TypeError('Failed to fetch'));
   assert.equal(message, 'Bağlantı hatası. Lütfen tekrar deneyin.');
+});
+
+test('formatPreorderEtaMessage formats ETA copy', () => {
+  assert.equal(formatPreorderEtaMessage(20), 'Tahmini hazır olma: 20 dakika');
+  assert.equal(formatPreorderEtaMessage(null), '');
+});
+
+test('getKdsTimelineIndex highlights preparing step', () => {
+  assert.equal(getKdsTimelineIndex('preparing'), 2);
+  assert.equal(getKdsTimelineIndex('ready'), 3);
+  assert.equal(getKdsTimelineIndex('served'), 4);
+});
+
+test('renderKdsTimelineHtml marks current step', () => {
+  const html = renderKdsTimelineHtml('preparing');
+  assert.match(html, /is-current/);
+  assert.match(html, /Hazırlanıyor/);
 });
