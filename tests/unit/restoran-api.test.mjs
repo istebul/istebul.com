@@ -11,12 +11,15 @@ const {
   buildReservationQuery,
   buildRestaurantDetailUrl,
   buildRestaurantMenuUrl,
+  buildPreorderStatusUrl,
   buildRestaurantPreorderUrl,
   buildRestaurantReservationLookupUrl,
   buildRestaurantSlotsUrl,
   createRestaurantPreorder,
   createRestaurantReservation,
+  formatPreorderStatusLabel,
   formatReservationStatusLabel,
+  getPreorderStatus,
   getRestaurantDetail,
   getRestaurantMenu,
   getRestaurantReservation,
@@ -24,6 +27,8 @@ const {
   normalizeGuestCount,
   normalizePreorderPayload,
   normalizePreorderResponse,
+  normalizePreorderStatus,
+  normalizePreorderStatusKey,
   normalizeReservationPayload,
   normalizeReservationResponse,
   normalizeRestaurantDetail,
@@ -927,4 +932,117 @@ test('createRestaurantPreorder throws on API error', async () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('buildPreorderStatusUrl encodes preorder id', () => {
+  const url = buildPreorderStatusUrl('po/99');
+  assert.match(url, /\/public\/preorders\/po%2F99\/status$/);
+});
+
+test('getPreorderStatus throws for missing id', async () => {
+  await assert.rejects(() => getPreorderStatus(''), /Ön sipariş kimliği gerekli/);
+});
+
+test('getPreorderStatus throws on API error', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 503
+  });
+
+  try {
+    await assert.rejects(() => getPreorderStatus('po-1'), /Ön sipariş durumu alınamadı \(503\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('getPreorderStatus requests encoded endpoint with Accept header', async () => {
+  const originalFetch = globalThis.fetch;
+  const payload = {
+    status: 'preparing',
+    id: 'po-9',
+    eta_minutes: 20,
+    kitchen_message: 'Izgara hazırlanıyor'
+  };
+
+  globalThis.fetch = async (url, options) => {
+    const parsed = new URL(String(url));
+    assert.equal(parsed.pathname, '/public/preorders/po%2F9/status');
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers.Accept, 'application/json');
+    return {
+      ok: true,
+      async json() {
+        return payload;
+      }
+    };
+  };
+
+  try {
+    const result = await getPreorderStatus('po/9');
+    assert.equal(result.id, 'po-9');
+    assert.equal(result.status, 'preparing');
+    assert.equal(result.etaMinutes, 20);
+    assert.equal(result.kitchenMessage, 'Izgara hazırlanıyor');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('normalizePreorderStatus maps kitchen status fields', () => {
+  const result = normalizePreorderStatus({
+    id: 'po-1',
+    status: 'ready',
+    eta_minutes: 5,
+    estimated_ready_at: '2026-07-10T20:15:00Z',
+    kitchen_message: 'Servise hazır',
+    updated_at: '2026-07-10T20:10:00Z'
+  });
+
+  assert.equal(result.id, 'po-1');
+  assert.equal(result.status, 'ready');
+  assert.equal(result.etaMinutes, 5);
+  assert.equal(result.estimatedReadyAt, '2026-07-10T20:15:00Z');
+  assert.equal(result.kitchenMessage, 'Servise hazır');
+  assert.equal(result.updatedAt, '2026-07-10T20:10:00Z');
+});
+
+test('normalizePreorderStatus handles nested status wrapper', () => {
+  const result = normalizePreorderStatus({
+    data: {
+      status: {
+        preorder_id: 'po-2',
+        status: 'scheduled',
+        etaMinutes: 15
+      }
+    }
+  });
+
+  assert.equal(result.id, 'po-2');
+  assert.equal(result.status, 'scheduled');
+  assert.equal(result.etaMinutes, 15);
+});
+
+test('normalizePreorderStatus falls back unknown status to submitted', () => {
+  assert.equal(normalizePreorderStatus({ status: 'unknown-phase' }).status, 'submitted');
+  assert.equal(normalizePreorderStatusKey('FOO'), 'submitted');
+});
+
+test('normalizePreorderStatus returns safe defaults for empty payload', () => {
+  const result = normalizePreorderStatus(null);
+  assert.equal(result.id, '');
+  assert.equal(result.status, 'submitted');
+  assert.equal(result.etaMinutes, null);
+  assert.equal(result.estimatedReadyAt, '');
+  assert.equal(result.kitchenMessage, '');
+  assert.equal(result.updatedAt, '');
+});
+
+test('formatPreorderStatusLabel maps known kitchen statuses', () => {
+  assert.equal(formatPreorderStatusLabel('submitted'), 'Alındı');
+  assert.equal(formatPreorderStatusLabel('scheduled'), 'Planlandı');
+  assert.equal(formatPreorderStatusLabel('preparing'), 'Hazırlanıyor');
+  assert.equal(formatPreorderStatusLabel('ready'), 'Hazır');
+  assert.equal(formatPreorderStatusLabel('weird'), 'Alındı');
 });
