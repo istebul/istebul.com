@@ -3,9 +3,9 @@ import {
   normalizeRestaurantTenant
 } from './tenant.js';
 import {
-  GARSON_ADMIN_DEMO_SESSION_KEY,
   GARSON_ADMIN_LOGIN_PATH
 } from './admin-portal.js';
+import { resolveGarsonPanelAccess } from './auth-service.js';
 import { formatPreorderStatusLabel } from './restoran-api.js';
 
 export const DEMO_RESTAURANT_ID = 'a0000000-0000-4000-8000-00000000cafe';
@@ -733,15 +733,46 @@ export function renderManagementSubNavHtml(active) {
 }
 
 /**
- * @returns {boolean}
+ * @param {'menu'|'reservations'|'orders'} page
  */
-function isDemoAdminSessionActive() {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage.getItem(GARSON_ADMIN_DEMO_SESSION_KEY) === '1';
-  } catch {
-    return false;
+async function bootManagementPage(page) {
+  const access = await resolveGarsonPanelAccess();
+
+  if (access.mode === 'none') {
+    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
+    return;
   }
+
+  const content = document.getElementById('garson-management-content');
+  if (content) {
+    content.innerHTML = '<p class="garson-management-empty">Veriler yükleniyor…</p>';
+  }
+
+  const demoModel = getMockDemoManagementModel();
+  const context = access.context;
+  const restaurantId = context?.restaurantId || demoModel.restaurantId;
+  const slug = context?.slug || demoModel.slug;
+  const restaurantName = context?.restaurantName || 'Demo Cafe';
+
+  const { loadRestaurantManagementData } = await import('./data-service.js');
+  const data = await loadRestaurantManagementData({
+    restaurantId,
+    slug
+  });
+
+  renderManagementPageContent(page, {
+    restaurantId,
+    slug,
+    restaurantName,
+    menu: data.menu,
+    reservations: data.reservations,
+    orders: data.orders
+  });
+
+  const badge = document.getElementById('garson-management-demo-badge');
+  if (badge) badge.hidden = access.mode === 'live';
+
+  document.body.classList.add('ib-ready');
 }
 
 /**
@@ -778,9 +809,10 @@ export function renderManagementPageContent(page, model) {
   }
   if (subnav) subnav.innerHTML = renderManagementSubNavHtml(page);
 
-  const usesLiveData = [model.menu, model.reservations, model.orders].some(
-    (result) => result.source === 'supabase'
-  );
+  const usesLiveData =
+    model.menu.source === 'supabase' ||
+    model.reservations.source === 'supabase' ||
+    model.orders.source === 'supabase';
   if (badge) badge.hidden = usesLiveData;
 
   if (!content) return;
@@ -798,31 +830,6 @@ export function renderManagementPageContent(page, model) {
   if (page === 'orders') bodyHtml = renderManagementOrdersHtml(model.orders.data);
 
   content.innerHTML = `${notice}${bodyHtml}`;
-}
-
-/**
- * @param {'menu'|'reservations'|'orders'} page
- */
-async function bootManagementPage(page) {
-  if (!isDemoAdminSessionActive()) {
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-    return;
-  }
-
-  const content = document.getElementById('garson-management-content');
-  if (content) {
-    content.innerHTML = '<p class="garson-management-empty">Veriler yükleniyor…</p>';
-  }
-
-  const demoModel = getMockDemoManagementModel();
-  const { loadRestaurantManagementData } = await import('./data-service.js');
-  const model = await loadRestaurantManagementData({
-    restaurantId: demoModel.restaurantId,
-    slug: demoModel.slug
-  });
-
-  renderManagementPageContent(page, model);
-  document.body.classList.add('ib-ready');
 }
 
 function boot() {

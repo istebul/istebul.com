@@ -5,10 +5,16 @@ import {
   normalizeRestaurantSettings,
   normalizeRestaurantTenant
 } from './tenant.js';
+import {
+  GARSON_ADMIN_DEMO_SESSION_KEY,
+  activateDemoAdminSession,
+  loginRestaurantUser,
+  logoutRestaurantUser,
+  resolveGarsonPanelAccess
+} from './auth-service.js';
 
 export const GARSON_ADMIN_LOGIN_PATH = '/garson/giris/';
 export const GARSON_ADMIN_PANEL_PATH = '/garson/panel/';
-export const GARSON_ADMIN_DEMO_SESSION_KEY = 'garsonai_admin_demo_session';
 
 /** @type {Record<string, string>} */
 export const ADMIN_RESTAURANT_STATUS_LABELS = {
@@ -378,30 +384,6 @@ export function renderAdminSectionsHtml(restaurant, settings) {
 }
 
 /**
- * @returns {boolean}
- */
-export function isDemoAdminSessionActive() {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage.getItem(GARSON_ADMIN_DEMO_SESSION_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-/**
- * @returns {void}
- */
-export function activateDemoAdminSession() {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(GARSON_ADMIN_DEMO_SESSION_KEY, '1');
-  } catch {
-    // ignore storage failures in demo mode
-  }
-}
-
-/**
  * @param {HTMLFormElement} form
  * @returns {boolean}
  */
@@ -433,29 +415,59 @@ function bootLoginPage() {
   const form = document.getElementById('garson-admin-login-form');
   const demoBtn = document.getElementById('garson-admin-demo-login');
   const notice = document.getElementById('garson-admin-login-notice');
+  const submitBtn = form?.querySelector('button[type="submit"]');
 
   demoBtn?.addEventListener('click', () => {
     activateDemoAdminSession();
     window.location.assign(GARSON_ADMIN_PANEL_PATH);
   });
 
-  form?.addEventListener('submit', (event) => {
+  form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(form instanceof HTMLFormElement)) return;
-    if (!handleAdminLoginSubmit(form)) return;
+    if (!form.reportValidity()) return;
+
+    const emailInput = form.querySelector('#garson-admin-email');
+    const passwordInput = form.querySelector('#garson-admin-password');
+    const email =
+      emailInput instanceof HTMLInputElement ? emailInput.value.trim() : '';
+    const password =
+      passwordInput instanceof HTMLInputElement ? passwordInput.value : '';
+
+    if (notice) {
+      notice.hidden = true;
+      notice.textContent = '';
+    }
+
+    const idleLabel = submitBtn?.textContent || 'Giriş yap';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Giriş yapılıyor…';
+    }
+
+    const result = await loginRestaurantUser(email, password);
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = idleLabel;
+    }
+
+    if (result.ok) {
+      window.location.assign(GARSON_ADMIN_PANEL_PATH);
+      return;
+    }
+
     if (notice) {
       notice.hidden = false;
-      notice.textContent =
-        'Demo modu: Supabase Auth bağlantısı yakında. Şimdilik panele yönlendiriliyorsunuz.';
+      notice.textContent = result.error || 'Giriş yapılamadı.';
     }
-    window.setTimeout(() => {
-      window.location.assign(GARSON_ADMIN_PANEL_PATH);
-    }, 350);
   });
 }
 
-function bootPanelPage() {
-  if (!isDemoAdminSessionActive()) {
+async function bootPanelPage() {
+  const access = await resolveGarsonPanelAccess();
+
+  if (access.mode === 'none') {
     window.location.assign(GARSON_ADMIN_LOGIN_PATH);
     return;
   }
@@ -467,17 +479,41 @@ function bootPanelPage() {
   const navRoot = document.getElementById('garson-admin-nav');
   const sectionsRoot = document.getElementById('garson-admin-sections');
   const badge = document.getElementById('garson-admin-demo-badge');
+  const logoutLink = document.querySelector('a[href="/garson/giris/"]');
 
-  if (title) title.textContent = model.restaurant.name;
+  const context = access.context;
+  const restaurant =
+    access.mode === 'live' && context
+      ? normalizeAdminRestaurant(
+          {
+            id: context.restaurantId,
+            name: context.restaurantName,
+            slug: context.slug
+          },
+          { role: context.role }
+        )
+      : model.restaurant;
+
+  if (title) title.textContent = restaurant.name;
   if (subtitle) {
-    subtitle.textContent = `${model.restaurant.planLabel} · ${model.restaurant.roleLabel}`;
+    subtitle.textContent = `${restaurant.planLabel} · ${restaurant.roleLabel}`;
   }
-  if (statsRoot) statsRoot.innerHTML = renderAdminStatCardsHtml(model.restaurant, model.stats);
-  if (navRoot) navRoot.innerHTML = renderAdminNavigationHtml(model.navigation);
+  if (statsRoot) statsRoot.innerHTML = renderAdminStatCardsHtml(restaurant, model.stats);
+  if (navRoot) {
+    navRoot.innerHTML = renderAdminNavigationHtml(
+      normalizeAdminNavigation({ restaurant: { slug: restaurant.slug } })
+    );
+  }
   if (sectionsRoot) {
-    sectionsRoot.innerHTML = renderAdminSectionsHtml(model.restaurant, model.settings);
+    sectionsRoot.innerHTML = renderAdminSectionsHtml(restaurant, model.settings);
   }
-  if (badge) badge.hidden = false;
+  if (badge) badge.hidden = access.mode === 'live';
+
+  logoutLink?.addEventListener('click', async (event) => {
+    event.preventDefault();
+    await logoutRestaurantUser();
+    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
+  });
 
   document.body.classList.add('ib-ready');
 }
