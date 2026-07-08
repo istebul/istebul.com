@@ -79,6 +79,30 @@
         <div id="reservation-menu-content" class="restoran-menu__content" hidden></div>
       </section>
 
+      <section class="reservation-preorder" id="reservation-preorder-section" hidden aria-labelledby="reservation-preorder-title">
+        <h2 id="reservation-preorder-title" class="reservation-slots__title">Ön Sipariş</h2>
+        <div id="reservation-preorder-empty" class="restoran-preorder__empty" hidden role="status">
+          Henüz ürün seçmediniz.
+        </div>
+        <div id="reservation-preorder-content" class="restoran-preorder__content" hidden>
+          <ul id="reservation-preorder-list" class="restoran-preorder__list" aria-label="Ön sipariş ürünleri"></ul>
+          <dl class="restoran-preorder__totals">
+            <div class="restoran-preorder__total-row">
+              <dt>Toplam ürün</dt>
+              <dd id="reservation-preorder-total-qty">0</dd>
+            </div>
+            <div class="restoran-preorder__total-row restoran-preorder__total-row--grand">
+              <dt>Genel toplam</dt>
+              <dd id="reservation-preorder-grand-total">—</dd>
+            </div>
+          </dl>
+        </div>
+        <p id="reservation-preorder-notice" class="reservation-cta-notice" hidden role="status" aria-live="polite"></p>
+        <button type="button" class="btn btn-primary" id="reservation-preorder-btn" disabled aria-disabled="true">
+          Ürün seç
+        </button>
+      </section>
+
       <section class="reservation-slots" id="reservation-slots-section" hidden aria-labelledby="reservation-slots-title">
         <h2 id="reservation-slots-title" class="reservation-slots__title">Uygun saatler</h2>
         <div id="reservation-slots-status" class="restoran-status" hidden role="status" aria-live="polite"></div>

@@ -570,6 +570,169 @@ body.restoran-page .vacation-hero-badge {
   padding: 0.5rem 0.85rem;
   font-size: 0.82rem;
   white-space: nowrap;
+}
+
+.restoran-menu-item__actions {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+.restoran-menu-item__cart {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.restoran-menu-item__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.restoran-menu-item__qty-btn {
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  background: #fff;
+  color: #c2410c;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.restoran-menu-item__qty-value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-menu-item__note-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--vacation-on-surface-muted);
+}
+
+.restoran-menu-item__note {
+  width: 100%;
+  min-height: 38px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--vacation-on-surface);
+  background: #fff;
+}
+
+.reservation-preorder {
+  margin: 0 0 1.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.restoran-preorder__empty {
+  margin: 0 0 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(234, 88, 12, 0.08);
+  border: 1px dashed rgba(234, 88, 12, 0.28);
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.92rem;
+}
+
+.restoran-preorder__content {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.restoran-preorder__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.restoran-preorder-line {
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.restoran-preorder-line__main {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.restoran-preorder-line__name {
+  font-weight: 600;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-preorder-line__qty {
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.9rem;
+}
+
+.restoran-preorder-line__prices {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.restoran-preorder-line__unit {
+  color: var(--vacation-on-surface-muted);
+}
+
+.restoran-preorder-line__subtotal {
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.restoran-preorder-line__note {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: var(--vacation-on-surface-muted);
+}
+
+.restoran-preorder__totals {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.restoran-preorder__total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.restoran-preorder__total-row dt {
+  margin: 0;
+  color: var(--vacation-on-surface-muted);
+}
+
+.restoran-preorder__total-row dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--vacation-on-surface);
+}
+
+.restoran-preorder__total-row--grand dd {
+  color: #c2410c;
+  font-size: 1rem;
+}
+
+#reservation-preorder-btn[disabled] {
   opacity: 0.65;
   cursor: not-allowed;
 }

@@ -13,6 +13,7 @@ import {
   ReservationValidationError,
   resolveSlotDate
 } from './restoran-api.js';
+import { createCart } from './preorder-cart.js';
 
 const FALLBACK_MESSAGE =
   'GarsonAI rezervasyon altyapısı hazırlanıyor. Bu restoran için rezervasyon yakında aktif olacak.';
@@ -23,6 +24,13 @@ const SLOTS_UNAVAILABLE_POST_MESSAGE =
 const MENU_FALLBACK_MESSAGE =
   'Bu restoran için menü yakında aktif olacak.';
 const MENU_EMPTY_MESSAGE = 'Menü bilgisi henüz eklenmemiş.';
+const PREORDER_CONTINUE_MESSAGE = 'Ön sipariş gönderme adımı yakında aktif olacak.';
+const PREORDER_EMPTY_MESSAGE = 'Henüz ürün seçmediniz.';
+
+const preorderCart = createCart();
+
+/** @type {import('./restoran-api.js').RestaurantMenuCategory[]} */
+let menuCategories = [];
 
 /** @type {import('./restoran-api.js').RestaurantSlot[]} */
 let currentSlots = [];
@@ -229,9 +237,227 @@ function setMenuState(state, message = '') {
 }
 
 /**
+ * @param {string} itemId
+ * @returns {import('./preorder-cart.js').CartLine|null}
+ */
+function getCartLineForId(itemId) {
+  return preorderCart.getItems().find((line) => line.id === itemId) ?? null;
+}
+
+/**
+ * @param {import('./restoran-api.js').RestaurantMenuItem} item
+ * @returns {import('./preorder-cart.js').CartLine|null}
+ */
+function getCartLineForItem(item) {
+  return getCartLineForId(item.id);
+}
+
+function refreshCartUi() {
+  renderPreorderSection();
+  if (menuCategories.length) {
+    renderMenuCategories(menuCategories);
+  }
+}
+
+function renderPreorderSection() {
+  const section = $('reservation-preorder-section');
+  const empty = $('reservation-preorder-empty');
+  const content = $('reservation-preorder-content');
+  const list = $('reservation-preorder-list');
+  const totalQty = $('reservation-preorder-total-qty');
+  const grandTotal = $('reservation-preorder-grand-total');
+  const button = /** @type {HTMLButtonElement|null} */ ($('reservation-preorder-btn'));
+  const notice = $('reservation-preorder-notice');
+
+  if (!section) return;
+
+  section.hidden = false;
+  const summary = preorderCart.getSummary();
+  const isEmpty = summary.lineCount === 0;
+
+  if (empty) empty.hidden = !isEmpty;
+  if (content) content.hidden = isEmpty;
+
+  if (isEmpty) {
+    if (empty) empty.textContent = PREORDER_EMPTY_MESSAGE;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute('aria-disabled', 'true');
+      button.textContent = 'Ürün seç';
+    }
+    if (notice) notice.hidden = true;
+    return;
+  }
+
+  if (list) {
+    list.innerHTML = summary.lines
+      .map(
+        (line) => `
+        <li class="restoran-preorder-line">
+          <div class="restoran-preorder-line__main">
+            <span class="restoran-preorder-line__name">${escapeHtml(line.name)}</span>
+            <span class="restoran-preorder-line__qty">× ${line.qty}</span>
+          </div>
+          <div class="restoran-preorder-line__prices">
+            <span class="restoran-preorder-line__unit">${escapeHtml(line.unitPriceLabel || '—')}</span>
+            <span class="restoran-preorder-line__subtotal">${escapeHtml(line.lineTotalLabel || '—')}</span>
+          </div>
+          ${line.note ? `<p class="restoran-preorder-line__note">${escapeHtml(line.note)}</p>` : ''}
+        </li>`
+      )
+      .join('');
+  }
+
+  if (totalQty) totalQty.textContent = String(summary.totalQty);
+  if (grandTotal) grandTotal.textContent = summary.grandTotalLabel || '—';
+
+  if (button) {
+    button.disabled = false;
+    button.setAttribute('aria-disabled', 'false');
+    button.textContent = 'Ön siparişe devam et (yakında)';
+  }
+
+  if (notice) notice.hidden = true;
+}
+
+/**
+ * @param {import('./restoran-api.js').RestaurantMenuItem} item
+ * @returns {string}
+ */
+function renderMenuItemControls(item) {
+  if (!item.available) return '';
+
+  const cartLine = getCartLineForItem(item);
+  const qty = cartLine?.qty ?? 0;
+  const note = cartLine?.note ?? '';
+
+  const qtyControls =
+    qty > 0
+      ? `
+        <div class="restoran-menu-item__cart" data-menu-item-id="${escapeHtml(item.id)}">
+          <div class="restoran-menu-item__qty" role="group" aria-label="${escapeHtml(item.name)} adet">
+            <button type="button" class="restoran-menu-item__qty-btn" data-cart-action="decrease" data-item-id="${escapeHtml(item.id)}" aria-label="Adedi azalt">−</button>
+            <span class="restoran-menu-item__qty-value" id="menu-qty-${escapeHtml(item.id)}">${qty}</span>
+            <button type="button" class="restoran-menu-item__qty-btn" data-cart-action="increase" data-item-id="${escapeHtml(item.id)}" aria-label="Adedi artır">+</button>
+          </div>
+          <label class="restoran-menu-item__note-label" for="menu-note-${escapeHtml(item.id)}">Ürün notu</label>
+          <input
+            type="text"
+            class="restoran-menu-item__note"
+            id="menu-note-${escapeHtml(item.id)}"
+            data-cart-action="note"
+            data-item-id="${escapeHtml(item.id)}"
+            value="${escapeHtml(note)}"
+            placeholder="Örn. az pişmiş, sossuz">
+        </div>`
+      : '';
+
+  const addButton =
+    qty > 0
+      ? ''
+      : `<button type="button" class="btn btn-primary restoran-menu-item__cta" data-cart-action="add" data-item-id="${escapeHtml(item.id)}">Sepete ekle</button>`;
+
+  return `${qtyControls}${addButton}`;
+}
+
+function bindMenuCartEvents() {
+  const content = $('reservation-menu-content');
+  if (!content || content.dataset.cartBound === 'true') return;
+
+  content.dataset.cartBound = 'true';
+  content.addEventListener('click', (event) => {
+    const target = /** @type {HTMLElement|null} */ (event.target instanceof HTMLElement ? event.target : null);
+    const button = target?.closest('[data-cart-action]');
+    if (!button || !(button instanceof HTMLElement)) return;
+
+    const action = button.getAttribute('data-cart-action');
+    const itemId = button.getAttribute('data-item-id');
+    if (!itemId) return;
+
+    const menuItem = findMenuItemById(itemId);
+    if (!menuItem) return;
+
+    if (action === 'add') {
+      preorderCart.addItem({
+        id: menuItem.id,
+        name: menuItem.name,
+        price: menuItem.price,
+        priceLabel: menuItem.priceLabel,
+        currency: menuItem.currency
+      });
+      refreshCartUi();
+      return;
+    }
+
+    if (action === 'increase') {
+      if (getCartLineForItem(menuItem)) {
+        preorderCart.increaseQty(itemId);
+      } else {
+        preorderCart.addItem({
+          id: menuItem.id,
+          name: menuItem.name,
+          price: menuItem.price,
+          priceLabel: menuItem.priceLabel,
+          currency: menuItem.currency
+        });
+      }
+      refreshCartUi();
+      return;
+    }
+
+    if (action === 'decrease') {
+      preorderCart.decreaseQty(itemId);
+      refreshCartUi();
+    }
+  });
+
+  content.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (target.getAttribute('data-cart-action') !== 'note') return;
+
+    const itemId = target.getAttribute('data-item-id');
+    if (!itemId) return;
+
+    if (getCartLineForId(itemId)) {
+      preorderCart.updateItemNote(itemId, target.value);
+      renderPreorderSection();
+    }
+  });
+}
+
+/**
+ * @param {string} itemId
+ * @returns {import('./restoran-api.js').RestaurantMenuItem|null}
+ */
+function findMenuItemById(itemId) {
+  for (const category of menuCategories) {
+    const item = category.items.find((entry) => entry.id === itemId);
+    if (item) return item;
+  }
+  return null;
+}
+
+function bindPreorderButton() {
+  const button = $('reservation-preorder-btn');
+  button?.addEventListener('click', () => {
+    const summary = preorderCart.getSummary();
+    if (summary.lineCount === 0) return;
+
+    const notice = $('reservation-preorder-notice');
+    if (!notice) return;
+
+    notice.hidden = false;
+    notice.className = 'reservation-cta-notice';
+    notice.textContent = PREORDER_CONTINUE_MESSAGE;
+  });
+}
+
+/**
  * @param {import('./restoran-api.js').RestaurantMenuCategory[]} categories
  */
 function renderMenuCategories(categories) {
+  menuCategories = categories;
   const content = $('reservation-menu-content');
   if (!content) return;
 
@@ -273,7 +499,7 @@ function renderMenuCategories(categories) {
             : '';
 
           return `
-            <article class="restoran-menu-item${item.available ? '' : ' is-unavailable'}">
+            <article class="restoran-menu-item${item.available ? '' : ' is-unavailable'}" data-menu-item-id="${escapeHtml(item.id)}">
               <div class="restoran-menu-item__body">
                 <h4 class="restoran-menu-item__name">${escapeHtml(item.name)}</h4>
                 ${descriptionHtml}
@@ -281,9 +507,9 @@ function renderMenuCategories(categories) {
                 ${allergensHtml}
                 ${unavailableHtml}
               </div>
-              <button type="button" class="btn restoran-menu-item__cta" disabled aria-disabled="true">
-                Sepete ekle (yakında)
-              </button>
+              <div class="restoran-menu-item__actions">
+                ${renderMenuItemControls(item)}
+              </div>
             </article>`;
         })
         .join('');
@@ -296,6 +522,8 @@ function renderMenuCategories(categories) {
         </section>`;
     })
     .join('');
+
+  bindMenuCartEvents();
 }
 
 /**
@@ -316,6 +544,7 @@ async function loadMenu(businessId) {
 
     renderMenuCategories(categories);
     setMenuState('content');
+    renderPreorderSection();
   } catch {
     setMenuState('error');
   }
@@ -547,6 +776,8 @@ function renderFallback(context) {
   if (contactForm) contactForm.hidden = true;
 
   setMenuState('hidden');
+  const preorderSection = $('reservation-preorder-section');
+  if (preorderSection) preorderSection.hidden = true;
 
   const fallbackSummary = $('reservation-context-summary-fallback');
   if (fallbackSummary) fallbackSummary.textContent = formatContextSummary(context);
@@ -617,6 +848,7 @@ async function boot() {
   document.body.classList.add('ib-ready');
   bindContactForm();
   bindConfirmButton();
+  bindPreorderButton();
 
   const businessId = parseBusinessIdFromLocation(
     window.location.pathname,
@@ -642,7 +874,8 @@ async function boot() {
     }
 
     renderDetail(detail, context);
-    await Promise.all([loadSlots(businessId, context), loadMenu(businessId)]);
+  renderPreorderSection();
+  await Promise.all([loadSlots(businessId, context), loadMenu(businessId)]);
   } catch {
     renderFallback(context);
   }
@@ -662,5 +895,7 @@ export {
   SLOTS_FALLBACK_MESSAGE,
   SLOTS_UNAVAILABLE_POST_MESSAGE,
   MENU_FALLBACK_MESSAGE,
-  MENU_EMPTY_MESSAGE
+  MENU_EMPTY_MESSAGE,
+  PREORDER_CONTINUE_MESSAGE,
+  PREORDER_EMPTY_MESSAGE
 };
