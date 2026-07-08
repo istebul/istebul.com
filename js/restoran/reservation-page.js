@@ -1,7 +1,9 @@
 import {
   buildGoogleCalendarUrl,
   buildReservationConfirmUrl,
+  createRestaurantPreorder,
   createRestaurantReservation,
+  formatReservationStatusLabel,
   getRestaurantDetail,
   getRestaurantMenu,
   getRestaurantSlots,
@@ -10,6 +12,7 @@ import {
   normalizeRestaurantSlots,
   parseBusinessIdFromLocation,
   parseReservationContext,
+  PreorderValidationError,
   ReservationValidationError,
   resolveSlotDate
 } from './restoran-api.js';
@@ -24,8 +27,8 @@ const SLOTS_UNAVAILABLE_POST_MESSAGE =
 const MENU_FALLBACK_MESSAGE =
   'Bu restoran için menü yakında aktif olacak.';
 const MENU_EMPTY_MESSAGE = 'Menü bilgisi henüz eklenmemiş.';
-const PREORDER_CONTINUE_MESSAGE = 'Ön sipariş gönderme adımı yakında aktif olacak.';
 const PREORDER_EMPTY_MESSAGE = 'Henüz ürün seçmediniz.';
+const PREORDER_RESERVATION_REQUIRED_MESSAGE = 'Önce rezervasyon oluşturun.';
 
 const preorderCart = createCart();
 
@@ -58,6 +61,15 @@ let isSubmitting = false;
 
 /** @type {boolean} */
 let reservationComplete = false;
+
+/** @type {string} */
+let currentReservationId = '';
+
+/** @type {boolean} */
+let isPreorderSubmitting = false;
+
+/** @type {boolean} */
+let preorderComplete = false;
 
 /**
  * @param {string} id
@@ -213,6 +225,74 @@ function hideCtaNotice() {
 }
 
 /**
+ * @param {string} message
+ * @param {'info'|'error'} [tone]
+ */
+function showPreorderNotice(message, tone = 'info') {
+  const notice = $('reservation-preorder-notice');
+  if (!notice) return;
+  notice.hidden = false;
+  notice.className = `reservation-cta-notice reservation-cta-notice--${tone}`;
+  notice.textContent = message;
+}
+
+function hidePreorderNotice() {
+  const notice = $('reservation-preorder-notice');
+  if (!notice) return;
+  notice.hidden = true;
+  notice.textContent = '';
+}
+
+/**
+ * @param {string} reservationId
+ * @param {Array<{ id: string, qty: number, note?: string }>} cartItems
+ * @returns {{ reservationId: string, items: Array<{ menuItemId: string, qty: number, note?: string }> }}
+ */
+export function buildPreorderRequest(reservationId, cartItems) {
+  return {
+    reservationId: String(reservationId || '').trim(),
+    items: cartItems.map((item) => ({
+      menuItemId: item.id,
+      qty: item.qty,
+      note: item.note || undefined
+    }))
+  };
+}
+
+/**
+ * @param {number|null} totalAmount
+ * @param {string} [currency]
+ * @returns {string}
+ */
+export function formatPreorderTotalLabel(totalAmount, currency = 'TRY') {
+  if (totalAmount == null || !Number.isFinite(totalAmount)) return '—';
+  const symbol = currency === 'TRY' ? 'TL' : currency;
+  const formatted = Number.isInteger(totalAmount) ? String(totalAmount) : String(totalAmount);
+  return `${formatted} ${symbol}`;
+}
+
+/**
+ * @param {unknown} error
+ * @returns {string}
+ */
+export function formatPreorderSubmitError(error) {
+  if (error instanceof PreorderValidationError) {
+    return error.message;
+  }
+  if (error instanceof Error) {
+    const statusMatch = error.message.match(/\((\d{3})\)/);
+    if (statusMatch) {
+      return `Ön sipariş oluşturulamadı (HTTP ${statusMatch[1]}). Lütfen tekrar deneyin.`;
+    }
+    if (error.name === 'TypeError' || /failed to fetch/i.test(error.message)) {
+      return 'Bağlantı hatası. Lütfen tekrar deneyin.';
+    }
+    return error.message || 'Ön sipariş oluşturulamadı. Lütfen tekrar deneyin.';
+  }
+  return 'Ön sipariş oluşturulamadı. Lütfen tekrar deneyin.';
+}
+
+/**
  * @param {'hidden'|'loading'|'error'|'empty'|'content'} state
  * @param {string} [message]
  */
@@ -259,6 +339,46 @@ function refreshCartUi() {
   }
 }
 
+function updatePreorderButton() {
+  const button = /** @type {HTMLButtonElement|null} */ ($('reservation-preorder-btn'));
+  if (!button) return;
+
+  const summary = preorderCart.getSummary();
+  const isEmpty = summary.lineCount === 0;
+
+  if (preorderComplete) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Ön sipariş gönderildi';
+    return;
+  }
+
+  if (isPreorderSubmitting) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Ön sipariş gönderiliyor…';
+    return;
+  }
+
+  if (isEmpty) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = 'Ürün seç';
+    return;
+  }
+
+  if (!currentReservationId) {
+    button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    button.textContent = PREORDER_RESERVATION_REQUIRED_MESSAGE;
+    return;
+  }
+
+  button.disabled = false;
+  button.setAttribute('aria-disabled', 'false');
+  button.textContent = 'Ön siparişi gönder';
+}
+
 function renderPreorderSection() {
   const section = $('reservation-preorder-section');
   const empty = $('reservation-preorder-empty');
@@ -280,12 +400,8 @@ function renderPreorderSection() {
 
   if (isEmpty) {
     if (empty) empty.textContent = PREORDER_EMPTY_MESSAGE;
-    if (button) {
-      button.disabled = true;
-      button.setAttribute('aria-disabled', 'true');
-      button.textContent = 'Ürün seç';
-    }
     if (notice) notice.hidden = true;
+    updatePreorderButton();
     return;
   }
 
@@ -311,13 +427,43 @@ function renderPreorderSection() {
   if (totalQty) totalQty.textContent = String(summary.totalQty);
   if (grandTotal) grandTotal.textContent = summary.grandTotalLabel || '—';
 
-  if (button) {
-    button.disabled = false;
-    button.setAttribute('aria-disabled', 'false');
-    button.textContent = 'Ön siparişe devam et (yakında)';
-  }
+  updatePreorderButton();
+}
 
-  if (notice) notice.hidden = true;
+/**
+ * @param {import('./restoran-api.js').NormalizedPreorderResult} result
+ */
+function showPreorderSuccess(result) {
+  preorderComplete = true;
+
+  const success = $('reservation-preorder-success');
+  const preorderId = $('reservation-preorder-success-id');
+  const itemCount = $('reservation-preorder-success-items');
+  const total = $('reservation-preorder-success-total');
+  const eta = $('reservation-preorder-success-eta');
+  const etaRow = $('reservation-preorder-success-eta-row');
+  const status = $('reservation-preorder-success-status');
+
+  if (preorderId) {
+    preorderId.textContent = result.preorderId || '—';
+  }
+  if (itemCount) itemCount.textContent = String(result.itemCount ?? 0);
+  if (total) {
+    total.textContent = formatPreorderTotalLabel(result.totalAmount, result.currency);
+  }
+  if (eta) {
+    eta.textContent = result.etaMinutes != null ? `~${result.etaMinutes} dk` : '—';
+  }
+  if (etaRow) {
+    etaRow.hidden = result.etaMinutes == null;
+  }
+  if (status) {
+    status.textContent = formatReservationStatusLabel(result.status);
+  }
+  if (success) success.hidden = false;
+
+  hidePreorderNotice();
+  updatePreorderButton();
 }
 
 /**
@@ -440,17 +586,35 @@ function findMenuItemById(itemId) {
 
 function bindPreorderButton() {
   const button = $('reservation-preorder-btn');
-  button?.addEventListener('click', () => {
-    const summary = preorderCart.getSummary();
-    if (summary.lineCount === 0) return;
+  button?.addEventListener('click', handlePreorderSubmit);
+}
 
-    const notice = $('reservation-preorder-notice');
-    if (!notice) return;
+async function handlePreorderSubmit() {
+  if (preorderComplete || isPreorderSubmitting) return;
 
-    notice.hidden = false;
-    notice.className = 'reservation-cta-notice';
-    notice.textContent = PREORDER_CONTINUE_MESSAGE;
-  });
+  const summary = preorderCart.getSummary();
+  if (summary.lineCount === 0) return;
+
+  if (!currentReservationId) {
+    showPreorderNotice(PREORDER_RESERVATION_REQUIRED_MESSAGE, 'error');
+    return;
+  }
+
+  hidePreorderNotice();
+  isPreorderSubmitting = true;
+  updatePreorderButton();
+
+  try {
+    const result = await createRestaurantPreorder(
+      buildPreorderRequest(currentReservationId, preorderCart.getItems())
+    );
+    isPreorderSubmitting = false;
+    showPreorderSuccess(result);
+  } catch (error) {
+    isPreorderSubmitting = false;
+    updatePreorderButton();
+    showPreorderNotice(formatPreorderSubmitError(error), 'error');
+  }
 }
 
 /**
@@ -729,6 +893,8 @@ function showReservationSuccess(result) {
   }
 
   hideCtaNotice();
+  currentReservationId = result.id || '';
+  renderPreorderSection();
 }
 
 /**
@@ -874,17 +1040,19 @@ async function boot() {
     }
 
     renderDetail(detail, context);
-  renderPreorderSection();
-  await Promise.all([loadSlots(businessId, context), loadMenu(businessId)]);
+    renderPreorderSection();
+    await Promise.all([loadSlots(businessId, context), loadMenu(businessId)]);
   } catch {
     renderFallback(context);
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
-} else {
-  boot();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 }
 
 export {
@@ -896,6 +1064,6 @@ export {
   SLOTS_UNAVAILABLE_POST_MESSAGE,
   MENU_FALLBACK_MESSAGE,
   MENU_EMPTY_MESSAGE,
-  PREORDER_CONTINUE_MESSAGE,
-  PREORDER_EMPTY_MESSAGE
+  PREORDER_EMPTY_MESSAGE,
+  PREORDER_RESERVATION_REQUIRED_MESSAGE
 };

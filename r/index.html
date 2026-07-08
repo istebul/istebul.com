@@ -101,6 +101,32 @@
         <button type="button" class="btn btn-primary" id="reservation-preorder-btn" disabled aria-disabled="true">
           Ürün seç
         </button>
+
+        <section id="reservation-preorder-success" class="reservation-preorder-success" hidden aria-live="polite">
+          <h3 class="reservation-preorder-success__title">Ön sipariş oluşturuldu</h3>
+          <dl class="reservation-preorder-success__details">
+            <div class="reservation-preorder-success__row">
+              <dt>Sipariş numarası</dt>
+              <dd id="reservation-preorder-success-id">—</dd>
+            </div>
+            <div class="reservation-preorder-success__row">
+              <dt>Ürün sayısı</dt>
+              <dd id="reservation-preorder-success-items">0</dd>
+            </div>
+            <div class="reservation-preorder-success__row">
+              <dt>Toplam tutar</dt>
+              <dd id="reservation-preorder-success-total">—</dd>
+            </div>
+            <div class="reservation-preorder-success__row" id="reservation-preorder-success-eta-row">
+              <dt>ETA</dt>
+              <dd id="reservation-preorder-success-eta">—</dd>
+            </div>
+            <div class="reservation-preorder-success__row">
+              <dt>Durum</dt>
+              <dd id="reservation-preorder-success-status">—</dd>
+            </div>
+          </dl>
+        </section>
       </section>
 
       <section class="reservation-slots" id="reservation-slots-section" hidden aria-labelledby="reservation-slots-title">
