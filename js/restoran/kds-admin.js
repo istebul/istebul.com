@@ -123,7 +123,7 @@ export function renderKitchenOrderCardHtml(order) {
  * @returns {string}
  */
 export function parseKitchenBusinessId(search = '') {
-  return parseBusinessIdFromLocation('/garson/', search.startsWith('?') ? search : `?${search}`);
+  return parseBusinessIdFromLocation('/garson/mutfak/', search.startsWith('?') ? search : `?${search}`);
 }
 
 /** @type {string} */

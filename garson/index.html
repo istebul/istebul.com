@@ -10,73 +10,103 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
   <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
-  <title>GarsonAI Mutfak | isteBul</title>
-  <meta name="description" content="GarsonAI mutfak ekranı — gelen ön siparişleri yönetin.">
-  <meta name="robots" content="noindex, follow">
+  <title>GarsonAI | Restoranınızın yapay zekâ destekli dijital garsonu</title>
+  <meta name="description" content="GarsonAI ile online rezervasyon, menü yönetimi, ön sipariş ve mutfak ekranı tek platformda. Restoranınızı dijital garsonla hızlandırın.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://www.istebul.com/garson/">
+  <meta property="og:title" content="GarsonAI | Dijital garson platformu">
+  <meta property="og:description" content="Rezervasyon, ön sipariş ve mutfak ekranı — restoran operasyonlarını tek yerden yönetin.">
+  <meta property="og:url" content="https://www.istebul.com/garson/">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/restoran-page.css">
-  <script src="/env.js" defer></script>
-  <script type="module" src="/js/restoran/kds-admin.js"></script>
 </head>
-<body class="vacation-page restoran-page kds-admin-page">
+<body class="vacation-page restoran-page garson-launch-page">
   <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
-    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+    <a class="logo ib-vertical-brand" href="/garson/" aria-label="GarsonAI ana sayfa">
       <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
       <span class="ib-vertical-brand__word">isteBul</span>
       <span class="ib-vertical-brand__badge">GarsonAI</span>
     </a>
-    <nav id="kds-admin-nav" aria-label="Ana navigasyon">
+    <nav id="garson-launch-nav" aria-label="GarsonAI navigasyonu">
       <div class="ib-vertical-nav-primary">
-        <a href="/">Ana sayfa</a>
-        <a href="/restoran/">Restoran keşfi</a>
+        <a href="/garson/demo/">Demo</a>
+        <a href="/garson/basvuru/">Başvuru</a>
+        <a href="/restoran/">Müşteri keşfi</a>
       </div>
     </nav>
   </header>
 
-  <main class="vacation-container kds-admin-main" id="kds-admin-main">
-    <div class="kds-admin-toolbar">
-      <div>
-        <p class="kds-admin-toolbar__lead">GarsonAI operasyon</p>
-        <h1 class="kds-admin-toolbar__title">GarsonAI Mutfak</h1>
+  <main class="garson-launch-main">
+    <section class="garson-launch-hero vacation-container" aria-labelledby="garson-hero-title">
+      <p class="garson-launch-hero__eyebrow">isteBul GarsonAI SaaS</p>
+      <h1 id="garson-hero-title" class="garson-launch-hero__title">Restoranınızın yapay zekâ destekli dijital garsonu</h1>
+      <p class="garson-launch-hero__lead">
+        Rezervasyon, menü, ön sipariş ve mutfak ekranını tek akışta birleştirin.
+        Misafir deneyimini hızlandırın, operasyonu sadeleştirin.
+      </p>
+      <div class="garson-launch-hero__cta">
+        <a class="vacation-btn vacation-btn--primary" href="/garson/demo/">Demo iste</a>
+        <a class="vacation-btn vacation-btn--secondary" href="/garson/basvuru/">Restoranımı başlat</a>
       </div>
-      <button type="button" class="vacation-btn vacation-btn--secondary kds-admin-toolbar__refresh" id="kds-admin-refresh">
-        Yenile
-      </button>
-    </div>
+    </section>
 
-    <div id="kds-admin-status" class="restoran-status restoran-status--loading" hidden role="status" aria-live="polite">
-      Mutfak kuyruğu yükleniyor…
-    </div>
+    <section class="garson-launch-features vacation-container" aria-labelledby="garson-features-title">
+      <h2 id="garson-features-title" class="garson-launch-section__title">Tek platformda restoran operasyonu</h2>
+      <ul class="garson-launch-features__grid">
+        <li class="garson-launch-feature-card">
+          <h3>Online rezervasyon</h3>
+          <p>Müşterileriniz tarih, saat ve kişi sayısını seçerek masa ayırtır.</p>
+        </li>
+        <li class="garson-launch-feature-card">
+          <h3>Menü yönetimi</h3>
+          <p>Ürünlerinizi rezervasyon akışında görünür kılın, seçim kolaylaşsın.</p>
+        </li>
+        <li class="garson-launch-feature-card">
+          <h3>Ön sipariş</h3>
+          <p>Misafirler gelmeden yemeklerini sepete ekler; mutfak önceden hazırlanır.</p>
+        </li>
+        <li class="garson-launch-feature-card">
+          <h3>Mutfak ekranı</h3>
+          <p>KDS Lite ile siparişleri kolonlarda takip edin, durumu tek tıkla güncelleyin.</p>
+        </li>
+        <li class="garson-launch-feature-card garson-launch-feature-card--wide">
+          <h3>WhatsApp entegrasyon hazır altyapısı</h3>
+          <p>Rezervasyon ve sipariş bildirimleri için hazır entegrasyon katmanı — hızlı devreye alma.</p>
+        </li>
+      </ul>
+    </section>
 
-    <div id="kds-admin-missing" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite">
-      <p id="kds-admin-missing-text">Restoran kimliği gerekli. URL'ye ?businessId= ekleyin.</p>
-    </div>
+    <section class="garson-launch-steps vacation-container" aria-labelledby="garson-steps-title">
+      <h2 id="garson-steps-title" class="garson-launch-section__title">Nasıl çalışır?</h2>
+      <ol class="garson-launch-steps__list">
+        <li class="garson-launch-step">
+          <span class="garson-launch-step__num" aria-hidden="true">1</span>
+          <p>Müşteri rezervasyon yapar</p>
+        </li>
+        <li class="garson-launch-step">
+          <span class="garson-launch-step__num" aria-hidden="true">2</span>
+          <p>Yemeklerini önceden seçer</p>
+        </li>
+        <li class="garson-launch-step">
+          <span class="garson-launch-step__num" aria-hidden="true">3</span>
+          <p>Mutfak hazırlar</p>
+        </li>
+        <li class="garson-launch-step">
+          <span class="garson-launch-step__num" aria-hidden="true">4</span>
+          <p>Servis hızlanır</p>
+        </li>
+      </ol>
+    </section>
 
-    <div id="kds-admin-fallback" class="restoran-menu__status restoran-menu__empty" hidden role="status" aria-live="polite">
-      <p id="kds-admin-fallback-text">Canlı mutfak ekranı yakında aktif olacak.</p>
-    </div>
-
-    <p id="kds-admin-empty" class="kds-admin-empty" hidden role="status" aria-live="polite"></p>
-
-    <section id="kds-admin-board" class="kds-admin-board" hidden aria-label="Mutfak sipariş panosu">
-      <div class="kds-admin-column">
-        <h2 class="kds-admin-column__title">Yeni Siparişler</h2>
-        <p id="kds-admin-column-new-empty" class="kds-admin-column__empty">Sipariş yok</p>
-        <div id="kds-admin-column-new" class="kds-admin-column__list"></div>
-      </div>
-      <div class="kds-admin-column">
-        <h2 class="kds-admin-column__title">Hazırlanıyor</h2>
-        <p id="kds-admin-column-preparing-empty" class="kds-admin-column__empty">Sipariş yok</p>
-        <div id="kds-admin-column-preparing" class="kds-admin-column__list"></div>
-      </div>
-      <div class="kds-admin-column">
-        <h2 class="kds-admin-column__title">Hazır</h2>
-        <p id="kds-admin-column-ready-empty" class="kds-admin-column__empty">Sipariş yok</p>
-        <div id="kds-admin-column-ready" class="kds-admin-column__list"></div>
+    <section class="garson-launch-bottom-cta vacation-container" aria-label="Hızlı başlangıç">
+      <p class="garson-launch-bottom-cta__text">GarsonAI'yi canlı deneyin veya restoranınız için başvurun.</p>
+      <div class="garson-launch-hero__cta">
+        <a class="vacation-btn vacation-btn--primary" href="/garson/demo/">Demo iste</a>
+        <a class="vacation-btn vacation-btn--secondary" href="/garson/basvuru/">Restoranımı başlat</a>
       </div>
     </section>
   </main>
