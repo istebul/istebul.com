@@ -745,15 +745,20 @@ function isDemoAdminSessionActive() {
 }
 
 /**
- * @param {'menu'|'reservations'|'orders'} page
+ * @param {string|null|undefined} message
+ * @returns {string}
  */
-function bootManagementPage(page) {
-  if (!isDemoAdminSessionActive()) {
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-    return;
-  }
+export function renderManagementNoticeHtml(message) {
+  const text = String(message || '').trim();
+  if (!text) return '';
+  return `<p class="garson-management-notice" role="status">${text}</p>`;
+}
 
-  const model = getMockDemoManagementModel();
+/**
+ * @param {'menu'|'reservations'|'orders'} page
+ * @param {{ restaurantId: string, slug: string, restaurantName: string, menu: { source: string, data: NormalizedAdminMenu, error: string|null, isEmpty: boolean }, reservations: { source: string, data: NormalizedAdminReservations, error: string|null, isEmpty: boolean }, orders: { source: string, data: NormalizedAdminOrders, error: string|null, isEmpty: boolean } }} model
+ */
+export function renderManagementPageContent(page, model) {
   const title = document.getElementById('garson-management-title');
   const subtitle = document.getElementById('garson-management-subtitle');
   const subnav = document.getElementById('garson-management-subnav');
@@ -768,18 +773,55 @@ function bootManagementPage(page) {
     };
     title.textContent = titles[page];
   }
-  if (subtitle) subtitle.textContent = `Demo Cafe · ${model.restaurantId}`;
+  if (subtitle) {
+    subtitle.textContent = `${model.restaurantName} · ${model.restaurantId}`;
+  }
   if (subnav) subnav.innerHTML = renderManagementSubNavHtml(page);
-  if (badge) badge.hidden = false;
 
-  if (content) {
-    if (page === 'menu') content.innerHTML = renderManagementMenuHtml(model.menu);
-    if (page === 'reservations') {
-      content.innerHTML = renderManagementReservationsHtml(model.reservations);
-    }
-    if (page === 'orders') content.innerHTML = renderManagementOrdersHtml(model.orders);
+  const usesLiveData = [model.menu, model.reservations, model.orders].some(
+    (result) => result.source === 'supabase'
+  );
+  if (badge) badge.hidden = usesLiveData;
+
+  if (!content) return;
+
+  const pageResult =
+    page === 'menu' ? model.menu : page === 'reservations' ? model.reservations : model.orders;
+
+  const notice = renderManagementNoticeHtml(pageResult.error);
+  let bodyHtml = '';
+
+  if (page === 'menu') bodyHtml = renderManagementMenuHtml(model.menu.data);
+  if (page === 'reservations') {
+    bodyHtml = renderManagementReservationsHtml(model.reservations.data);
+  }
+  if (page === 'orders') bodyHtml = renderManagementOrdersHtml(model.orders.data);
+
+  content.innerHTML = `${notice}${bodyHtml}`;
+}
+
+/**
+ * @param {'menu'|'reservations'|'orders'} page
+ */
+async function bootManagementPage(page) {
+  if (!isDemoAdminSessionActive()) {
+    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
+    return;
   }
 
+  const content = document.getElementById('garson-management-content');
+  if (content) {
+    content.innerHTML = '<p class="garson-management-empty">Veriler yükleniyor…</p>';
+  }
+
+  const demoModel = getMockDemoManagementModel();
+  const { loadRestaurantManagementData } = await import('./data-service.js');
+  const model = await loadRestaurantManagementData({
+    restaurantId: demoModel.restaurantId,
+    slug: demoModel.slug
+  });
+
+  renderManagementPageContent(page, model);
   document.body.classList.add('ib-ready');
 }
 
