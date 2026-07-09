@@ -11,3 +11,4 @@ test-results/
 .vscode/
 npm-debug.log*
 dist/
+env.js
