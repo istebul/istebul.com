@@ -1,9 +1,7 @@
 /**
  * GarsonAI restaurant auth + tenant session layer (Supabase Auth + restaurant_users).
  */
-import { createClient } from '@supabase/supabase-js';
-import config from '../core/config.js';
-import { isSupabaseConfigured } from '../core/supabase.js';
+import { isSupabaseConfigured, getSupabaseClient } from '../core/supabase.js';
 import { mapAuthError } from '../features/auth/auth-errors.js';
 import {
   DEMO_RESTAURANT_SLUG,
@@ -96,14 +94,7 @@ export function getGarsonAuthClient(options = {}) {
     return garsonSupabaseSingleton;
   }
 
-  garsonSupabaseSingleton = createClient(config.supabase.url, config.supabase.anonKey, {
-    auth: {
-      storageKey: GARSON_AUTH_STORAGE_KEY,
-      detectSessionInUrl: true,
-      persistSession: true,
-      autoRefreshToken: true
-    }
-  });
+  garsonSupabaseSingleton = getSupabaseClient();
 
   return garsonSupabaseSingleton;
 }

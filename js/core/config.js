@@ -1,5 +1,5 @@
 // Configuration
-const browserEnv = typeof window !== 'undefined' ? window.__env || window.env || {} : {};
+const browserEnv = typeof window !== 'undefined' ? window.__ENV__ || window.__env || window.env || {} : {};
 const nodeEnv = typeof process !== 'undefined' && process.env ? process.env : {};
 
 const ENV_ALIASES = {
