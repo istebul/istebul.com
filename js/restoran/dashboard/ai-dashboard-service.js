@@ -270,6 +270,72 @@ export function buildDemoDashboardDataset(restaurantId) {
 }
 
 /**
+ * @param {{ restaurantId?: string, client?: import('@supabase/supabase-js').SupabaseClient, now?: Date, useSupabase?: boolean }} [options]
+ * @returns {Promise<{ source: 'supabase'|'mock'|'fallback', orders: unknown[], products: unknown[], customers: unknown[] }>}
+ */
+export async function loadProductionDashboardDataset(options = {}) {
+  const restaurantId = String(options.restaurantId || '').trim();
+  if (!restaurantId) {
+    throw new RestaurantDashboardError('Restoran kimliği gerekli.');
+  }
+
+  const {
+    getRestaurantOrderData,
+    getRestaurantMenuData,
+    getRestaurantCustomerData,
+    isGarsonSupabaseClientAvailable,
+    getGarsonDataClient
+  } = await import('../data-service.js');
+
+  const client = options.client || getGarsonDataClient(options);
+  const supabaseReady = isGarsonSupabaseClientAvailable(client, options);
+
+  if (!supabaseReady) {
+    const demo = buildDemoDashboardDataset(restaurantId);
+    return { source: 'mock', ...demo };
+  }
+
+  const [ordersResult, menuResult, customersResult] = await Promise.all([
+    getRestaurantOrderData({ restaurantId, client, useSupabase: true }),
+    getRestaurantMenuData({ restaurantId, client, useSupabase: true }),
+    getRestaurantCustomerData({ restaurantId, client, useSupabase: true })
+  ]);
+
+  const source =
+    ordersResult.source === 'supabase' ||
+    menuResult.source === 'supabase' ||
+    customersResult.source === 'supabase'
+      ? 'supabase'
+      : ordersResult.source === 'fallback' ||
+          menuResult.source === 'fallback' ||
+          customersResult.source === 'fallback'
+        ? 'fallback'
+        : 'mock';
+
+  const orders = enrichOrdersForIntelligence(
+    ordersResult.data.orders || [],
+    restaurantId
+  );
+  const products = flattenProductsFromMenu(menuResult.data);
+  const customers = (customersResult.data.customers || []).map((customer) => ({
+    id: customer.id,
+    restaurantId: customer.restaurantId,
+    name: customer.name,
+    phone: customer.phone,
+    totalOrders: customer.totalOrders,
+    totalSpent: customer.totalSpent,
+    lastOrderAt: customer.lastOrderAt
+  }));
+
+  if (!orders.length && !products.length && !customers.length && source !== 'supabase') {
+    const demo = buildDemoDashboardDataset(restaurantId);
+    return { source: 'mock', ...demo };
+  }
+
+  return { source, orders, products, customers };
+}
+
+/**
  * @param {{ restaurantId?: string, orders?: unknown[], products?: unknown[], customers?: unknown[], now?: Date }} input
  * @returns {RestaurantDashboardReport}
  */
@@ -336,4 +402,21 @@ export function loadRestaurantDashboard(input = {}) {
       highlights: advice.slice(0, 5)
     }
   };
+}
+
+/**
+ * @param {{ restaurantId?: string, client?: import('@supabase/supabase-js').SupabaseClient, now?: Date, useSupabase?: boolean }} [options]
+ * @returns {Promise<RestaurantDashboardReport>}
+ */
+export async function loadRestaurantDashboardLive(options = {}) {
+  const restaurantId = String(options.restaurantId || '').trim();
+  const dataset = await loadProductionDashboardDataset(options);
+
+  return loadRestaurantDashboard({
+    restaurantId,
+    orders: dataset.orders,
+    products: dataset.products,
+    customers: dataset.customers,
+    now: options.now
+  });
 }

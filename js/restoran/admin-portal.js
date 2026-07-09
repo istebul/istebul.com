@@ -14,9 +14,8 @@ import {
 } from './auth-service.js';
 import {
   buildDemoDashboardDataset,
-  enrichOrdersForIntelligence,
-  flattenProductsFromMenu,
-  loadRestaurantDashboard
+  loadRestaurantDashboard,
+  loadRestaurantDashboardLive
 } from './dashboard/ai-dashboard-service.js';
 import { renderAdminAiStatCardsHtml } from './dashboard/restaurant-ai-widgets.js';
 
@@ -432,16 +431,8 @@ export async function loadPanelAiDashboard(options) {
       : new Date(DEMO_DASHBOARD_REFERENCE_DATE);
 
   if (options.mode === 'live') {
-    const { loadRestaurantManagementData } = await import('./data-service.js');
-    const data = await loadRestaurantManagementData({ restaurantId });
-    const orders = enrichOrdersForIntelligence(data.orders.data.orders || [], restaurantId);
-    const products = flattenProductsFromMenu(data.menu.data);
-
-    return loadRestaurantDashboard({
+    return loadRestaurantDashboardLive({
       restaurantId,
-      orders,
-      products,
-      customers: [],
       now
     });
   }

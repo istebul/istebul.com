@@ -91,9 +91,36 @@ export async function updateRestaurant(options) {
     throw new RestaurantDatabaseError(getDatabaseErrorMessage(error));
   }
 
-  if (!data) {
-    throw new RestaurantDatabaseError('Restoran güncellenemedi.');
+  return normalizeRestaurantRow(/** @type {Record<string, unknown>} */ (data));
+}
+
+/**
+ * @param {{ slug?: string, client?: import('@supabase/supabase-js').SupabaseClient }} options
+ * @returns {Promise<Record<string, unknown>|null>}
+ */
+export async function getRestaurantBySlug(options) {
+  const slug = String(options.slug || '').trim().toLowerCase();
+  if (!slug) {
+    throw new RestaurantDatabaseError('Restoran slug gerekli.');
   }
 
-  return normalizeRestaurantRow(/** @type {Record<string, unknown>} */ (data));
+  const client = options.client || getSupabaseClient();
+
+  if (!isDatabaseClientAvailable(client)) {
+    throw new RestaurantDatabaseError('Veritabanı bağlantısı kullanılamıyor.');
+  }
+
+  const { data, error } = await client
+    .from('restaurants')
+    .select(
+      'id, name, slug, phone, address, status, plan, subscription_plan, created_at'
+    )
+    .eq('slug', slug)
+    .maybeSingle();
+
+  if (error) {
+    throw new RestaurantDatabaseError(getDatabaseErrorMessage(error));
+  }
+
+  return data ? normalizeRestaurantRow(/** @type {Record<string, unknown>} */ (data)) : null;
 }
