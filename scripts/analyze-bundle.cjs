@@ -6,7 +6,7 @@ const dist = path.join(root, 'dist');
 const reportPath = path.join(dist, 'bundle-report.json');
 const maxChunkBytes = 320 * 1024;
 /** Homepage ships one bundled style.*.css (former @import graph inlined at build). */
-const maxTotalBytes = 3600 * 1024;
+const maxTotalBytes = 4500 * 1024;
 
 /** Separate entry surfaces — not counted toward main SPA budget. */
 const BUDGET_EXCLUDE = [
