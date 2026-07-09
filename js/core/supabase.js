@@ -1,5 +1,5 @@
 import config from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.105.4';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = config.supabase.url;
 const supabaseKey = config.supabase.anonKey;
