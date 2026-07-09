@@ -541,3 +541,21 @@ export async function resolveGarsonPanelAccess(options = {}) {
     error: current.error
   };
 }
+
+/**
+ * Creates restaurant onboarding after business registration.
+ *
+ * @param {Object} params
+ * @param {string} params.businessId
+ * @param {string} [params.restaurantName]
+ * @param {string} [params.phone]
+ */
+export async function completeRestaurantRegistration(params) {
+  const { setupRestaurantOnboarding } = await import('./onboarding-service.js');
+
+  return setupRestaurantOnboarding({
+    businessId: params.businessId,
+    restaurantName: params.restaurantName,
+    phone: params.phone
+  });
+}
