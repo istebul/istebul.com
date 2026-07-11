@@ -4,6 +4,8 @@
 export {
   RestaurantDashboardError,
   loadRestaurantDashboard,
+  loadRestaurantDashboardLive,
+  loadProductionDashboardDataset,
   buildDemoDashboardDataset,
   enrichOrdersForIntelligence,
   flattenProductsFromMenu,

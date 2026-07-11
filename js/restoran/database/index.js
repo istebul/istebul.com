@@ -12,9 +12,9 @@ export {
   normalizeOrderRow
 } from './tenant-utils.js';
 
-export { getRestaurant, updateRestaurant } from './restaurant-repository.js';
+export { getRestaurant, updateRestaurant, getRestaurantBySlug } from './restaurant-repository.js';
 export { createOrder, updateOrderStatus, getRestaurantOrders } from './order-repository.js';
-export { upsertCustomer, getCustomerHistory } from './customer-repository.js';
+export { upsertCustomer, getCustomerHistory, getRestaurantCustomers } from './customer-repository.js';
 export { getActiveMenu } from './menu-repository.js';
 
 export {

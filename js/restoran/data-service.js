@@ -11,6 +11,13 @@ import {
   normalizeAdminOrders,
   normalizeAdminReservations
 } from './admin-management.js';
+import { getRestaurant as repoGetRestaurant, getRestaurantBySlug } from './database/restaurant-repository.js';
+import {
+  getRestaurantOrders,
+  updateOrderStatus as repoUpdateOrderStatus
+} from './database/order-repository.js';
+import { getActiveMenu } from './database/menu-repository.js';
+import { getRestaurantCustomers } from './database/customer-repository.js';
 
 export const GARSON_DATA_PERMISSION_ERROR =
   'Bu işlem için yetkiniz bulunmuyor. Lütfen yönetici hesabınızla tekrar deneyin.';
@@ -127,6 +134,97 @@ export function getGarsonDataClient(options = {}) {
  */
 export function applyRestaurantFilter(records, restaurantId) {
   return filterRestaurantData(records, restaurantId);
+}
+
+/**
+ * @param {Record<string, unknown>} order
+ * @returns {Record<string, unknown>}
+ */
+export function mapRepositoryOrderToAdminRow(order) {
+  return {
+    id: order.id,
+    restaurant_id: order.restaurantId,
+    order_no: order.orderNo,
+    items: order.items,
+    total: order.totalAmount,
+    total_amount: order.totalAmount,
+    kitchen_status: order.kitchenStatus || order.status,
+    status: order.status,
+    created_at: order.createdAt,
+    source: order.source,
+    customer_id: order.customerId
+  };
+}
+
+/**
+ * @param {Record<string, unknown>[]} items
+ * @param {string} restaurantId
+ * @returns {unknown[]}
+ */
+export function mapMenuItemsToCategories(items, restaurantId) {
+  /** @type {Map<string, { id: string, restaurant_id: string, name: string, items: unknown[] }>} */
+  const grouped = new Map();
+
+  for (const item of items) {
+    const category = String(item.category || 'Genel');
+    if (!grouped.has(category)) {
+      grouped.set(category, {
+        id: `cat-${category.toLowerCase().replace(/\s+/g, '-')}`,
+        restaurant_id: restaurantId,
+        name: category,
+        items: []
+      });
+    }
+
+    grouped.get(category)?.items.push({
+      id: item.id,
+      restaurant_id: item.restaurantId,
+      name: item.name,
+      price: item.price,
+      active: item.active,
+      stock_status: 'in_stock',
+      description: item.description
+    });
+  }
+
+  return [...grouped.values()];
+}
+
+/**
+ * @param {import('@supabase/supabase-js').SupabaseClient} client
+ * @param {string} restaurantId
+ * @returns {Promise<unknown[]|null>}
+ */
+async function fetchOrdersViaRepository(client, restaurantId) {
+  try {
+    const rows = await getRestaurantOrders({ restaurantId, client });
+    return rows.map((order) =>
+      mapRepositoryOrderToAdminRow(/** @type {Record<string, unknown>} */ (order))
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {string} slug
+ * @param {GarsonDataOptions} [options]
+ * @returns {Promise<string>}
+ */
+export async function resolveGarsonRestaurantIdBySlug(slug, options = {}) {
+  const normalized = String(slug || '').trim().toLowerCase();
+  if (!normalized) return '';
+  if (normalized === DEMO_RESTAURANT_SLUG) return DEMO_RESTAURANT_ID;
+
+  const client = getGarsonDataClient(options);
+  if (!isGarsonSupabaseClientAvailable(client, options)) return '';
+
+  try {
+    const row = await getRestaurantBySlug({ slug: normalized, client });
+    return row?.id ? String(row.id) : '';
+  } catch {
+    return '';
+  }
 }
 
 /**
@@ -294,14 +392,31 @@ export async function getRestaurantMenuData(options = {}) {
   }
 
   try {
-    const categoryResult = await fetchMenuCategoriesFromSupabase(client, restaurantId);
-    let categories = categoryResult.categories;
-    let error = categoryResult.error;
+    let categories = null;
+    let error = null;
+
+    try {
+      const menuItems = await getActiveMenu({ restaurantId, client });
+      if (menuItems.length) {
+        categories = mapMenuItemsToCategories(
+          menuItems.map((item) => /** @type {Record<string, unknown>} */ (item)),
+          restaurantId
+        );
+      }
+    } catch {
+      categories = null;
+    }
 
     if (!categories?.length) {
-      const productResult = await fetchProductsAsMenuFromSupabase(client, restaurantId);
-      categories = productResult.categories;
-      error = productResult.error || error;
+      const categoryResult = await fetchMenuCategoriesFromSupabase(client, restaurantId);
+      categories = categoryResult.categories;
+      error = categoryResult.error;
+
+      if (!categories?.length) {
+        const productResult = await fetchProductsAsMenuFromSupabase(client, restaurantId);
+        categories = productResult.categories;
+        error = productResult.error || error;
+      }
     }
 
     if (error && classifyGarsonDataError(error) === 'permission') {
@@ -450,7 +565,15 @@ export async function getRestaurantOrderData(options = {}) {
   }
 
   try {
-    const { rows, error } = await fetchOrdersFromSupabase(client, restaurantId);
+    const repoRows = await fetchOrdersViaRepository(client, restaurantId);
+    const legacy = await fetchOrdersFromSupabase(client, restaurantId);
+    const rows =
+      repoRows && repoRows.length
+        ? repoRows
+        : legacy.rows && legacy.rows.length
+          ? legacy.rows
+          : repoRows || legacy.rows || [];
+    const error = legacy.error;
 
     if (error && classifyGarsonDataError(error) === 'permission') {
       return buildOrderResult([], restaurantId, slug, 'supabase', { error });
@@ -478,6 +601,60 @@ export async function getRestaurantOrderData(options = {}) {
       data: mock.orders,
       error: GARSON_DATA_NETWORK_ERROR,
       isEmpty: !mock.orders.orders.length
+    };
+  }
+}
+
+/**
+ * @param {GarsonDataOptions} [options]
+ * @returns {Promise<GarsonDataResult>}
+ */
+export async function getRestaurantCustomerData(options = {}) {
+  const restaurantId = resolveGarsonRestaurantId(options.restaurantId);
+  const client = getGarsonDataClient(options);
+
+  if (!isGarsonSupabaseClientAvailable(client, options)) {
+    return {
+      source: 'mock',
+      data: { restaurantId, customers: [] },
+      error: null,
+      isEmpty: true
+    };
+  }
+
+  try {
+    const customers = await getRestaurantCustomers({ restaurantId, client });
+    const normalized = customers.map((customer) => ({
+      id: customer.id,
+      restaurantId: customer.restaurantId,
+      name: customer.name,
+      phone: customer.phone,
+      totalOrders: customer.totalOrders,
+      totalSpent: customer.totalSpent,
+      lastOrderAt: customer.lastOrderAt
+    }));
+
+    return {
+      source: 'supabase',
+      data: { restaurantId, customers: normalized },
+      error: null,
+      isEmpty: !normalized.length
+    };
+  } catch (error) {
+    if (classifyGarsonDataError(error) === 'permission') {
+      return {
+        source: 'supabase',
+        data: { restaurantId, customers: [] },
+        error: GARSON_DATA_PERMISSION_ERROR,
+        isEmpty: true
+      };
+    }
+
+    return {
+      source: 'fallback',
+      data: { restaurantId, customers: [] },
+      error: GARSON_DATA_NETWORK_ERROR,
+      isEmpty: true
     };
   }
 }
@@ -607,6 +784,18 @@ export async function updateRestaurantOrderStatus(options = {}) {
   const patch = { kitchen_status: status, status };
 
   try {
+    try {
+      await repoUpdateOrderStatus({
+        restaurantId,
+        orderId,
+        status,
+        client
+      });
+      return getRestaurantOrderData({ restaurantId, slug, client });
+    } catch {
+      // fall back to legacy orders/preorders tables
+    }
+
     let error = null;
 
     const orderUpdate = await client
@@ -682,18 +871,23 @@ export async function loadRestaurantManagementData(options = {}) {
 
   if (isGarsonSupabaseClientAvailable(client, options)) {
     try {
-      const { data } = await client
-        .from('restaurants')
-        .select('id, name, slug')
-        .eq('id', restaurantId)
-        .maybeSingle();
-
-      if (data && typeof data === 'object') {
-        const row = /** @type {Record<string, unknown>} */ (data);
-        restaurantName = String(row.name || restaurantName).trim() || restaurantName;
-      }
+      const row = await repoGetRestaurant({ restaurantId, client });
+      restaurantName = String(row.name || restaurantName).trim() || restaurantName;
     } catch {
-      // keep demo label on read failure
+      try {
+        const { data } = await client
+          .from('restaurants')
+          .select('id, name, slug')
+          .eq('id', restaurantId)
+          .maybeSingle();
+
+        if (data && typeof data === 'object') {
+          const legacyRow = /** @type {Record<string, unknown>} */ (data);
+          restaurantName = String(legacyRow.name || restaurantName).trim() || restaurantName;
+        }
+      } catch {
+        // keep demo label on read failure
+      }
     }
   }
 

@@ -5,6 +5,8 @@ import {
   parseBusinessIdFromLocation,
   updateKitchenOrderStatus
 } from './restoran-api.js';
+import { bindKitchenOrderRealtime } from './kitchen-realtime-bridge.js';
+import { isGarsonSupabaseClientAvailable, getGarsonDataClient } from './data-service.js';
 
 const FALLBACK_MESSAGE = 'Canlı mutfak ekranı yakında aktif olacak.';
 const MISSING_BUSINESS_MESSAGE = 'Restoran kimliği gerekli. URL\'ye ?businessId= ekleyin.';
@@ -134,6 +136,9 @@ let isLoading = false;
 
 /** @type {boolean} */
 let isUpdating = false;
+
+/** @type {import('./kitchen-realtime-bridge.js').KitchenRealtimeBinding|null} */
+let kitchenRealtimeBinding = null;
 
 /**
  * @param {string} id
@@ -278,6 +283,19 @@ async function boot() {
 
   bindEvents();
   await loadKitchenQueue();
+
+  const client = getGarsonDataClient();
+  if (isGarsonSupabaseClientAvailable(client)) {
+    try {
+      kitchenRealtimeBinding = await bindKitchenOrderRealtime({
+        slug: currentBusinessId,
+        client,
+        onRefresh: loadKitchenQueue
+      });
+    } catch {
+      kitchenRealtimeBinding = null;
+    }
+  }
 }
 
 if (typeof document !== 'undefined') {

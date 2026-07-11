@@ -72,6 +72,45 @@ export function processWhatsAppOrderMessage(input = {}) {
   };
 }
 
+/**
+ * @param {import('./order-builder.js').WhatsAppOrder|null} whatsappOrder
+ * @param {{ client?: import('@supabase/supabase-js').SupabaseClient, useSupabase?: boolean, customerId?: string }} [options]
+ * @returns {Promise<{ persisted: boolean, source: 'supabase'|'mock', order: Record<string, unknown>|import('./order-builder.js').WhatsAppOrder|null }>}
+ */
+export async function persistWhatsAppOrder(whatsappOrder, options = {}) {
+  if (!whatsappOrder) {
+    return { persisted: false, source: 'mock', order: null };
+  }
+
+  const { createOrder } = await import('../database/order-repository.js');
+  const { isGarsonSupabaseClientAvailable, getGarsonDataClient } = await import('../data-service.js');
+
+  const client = options.client || getGarsonDataClient(options);
+  if (!isGarsonSupabaseClientAvailable(client, options)) {
+    return { persisted: false, source: 'mock', order: whatsappOrder };
+  }
+
+  const saved = await createOrder({
+    restaurantId: whatsappOrder.restaurantId,
+    client,
+    order: {
+      status: whatsappOrder.status,
+      totalAmount: whatsappOrder.total,
+      source: whatsappOrder.source || 'whatsapp',
+      customerId: options.customerId
+    },
+    items: (whatsappOrder.items || []).map((item) => ({
+      menuItemId: item.menuItemId,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      note: item.note
+    }))
+  });
+
+  return { persisted: true, source: 'supabase', order: saved };
+}
+
 export { detectIntent, isOrderIntent, WHATSAPP_INTENTS } from './intent-detector.js';
 export { parseWhatsAppMessage, extractOrderItems, normalizeOrderMessage } from './message-parser.js';
 export {

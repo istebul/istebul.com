@@ -125,3 +125,33 @@ export async function getCustomerHistory(options) {
     )
   };
 }
+
+/**
+ * @param {CustomerRepositoryOptions & { limit?: number }} options
+ * @returns {Promise<Record<string, unknown>[]>}
+ */
+export async function getRestaurantCustomers(options) {
+  const restaurantId = requireRestaurantId(options.restaurantId);
+  const client = options.client || getSupabaseClient();
+  const limit =
+    Number.isFinite(options.limit) && options.limit > 0 ? Math.floor(options.limit) : 500;
+
+  if (!isDatabaseClientAvailable(client)) {
+    throw new RestaurantDatabaseError('Veritabanı bağlantısı kullanılamıyor.');
+  }
+
+  const { data, error } = await client
+    .from('customers')
+    .select('id, restaurant_id, name, phone, total_orders, total_spent, last_order_at')
+    .eq('restaurant_id', restaurantId)
+    .order('last_order_at', { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  if (error) {
+    throw new RestaurantDatabaseError(getDatabaseErrorMessage(error));
+  }
+
+  return (data || []).map((row) =>
+    normalizeCustomerRow(/** @type {Record<string, unknown>} */ (row))
+  );
+}

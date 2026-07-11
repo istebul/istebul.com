@@ -8,9 +8,9 @@ import {
 import { resolveGarsonPanelAccess } from '../auth-service.js';
 import {
   buildDemoDashboardDataset,
-  enrichOrdersForIntelligence,
-  flattenProductsFromMenu,
-  loadRestaurantDashboard
+  loadProductionDashboardDataset,
+  loadRestaurantDashboard,
+  loadRestaurantDashboardLive
 } from './ai-dashboard-service.js';
 import { renderAiDashboardPageHtml } from './restaurant-ai-widgets.js';
 
@@ -37,31 +37,22 @@ async function bootAiDashboardPage() {
   if (subtitle) subtitle.textContent = `${restaurantName} · ${restaurantId}`;
   if (badge) badge.hidden = access.mode === 'live';
 
-  let orders = [];
-  let products = [];
-  let customers = [];
+  let dashboard;
 
   if (access.mode === 'live' && restaurantId) {
-    const { loadRestaurantManagementData } = await import('../data-service.js');
-    const data = await loadRestaurantManagementData({
+    dashboard = await loadRestaurantDashboardLive({
       restaurantId,
-      slug: context?.slug
+      now: new Date()
     });
-    orders = enrichOrdersForIntelligence(data.orders.data.orders || [], restaurantId);
-    products = flattenProductsFromMenu(data.menu.data);
   } else {
     const demo = buildDemoDashboardDataset(restaurantId);
-    orders = demo.orders;
-    products = demo.products;
-    customers = demo.customers;
+    dashboard = loadRestaurantDashboard({
+      restaurantId,
+      orders: demo.orders,
+      products: demo.products,
+      customers: demo.customers
+    });
   }
-
-  const dashboard = loadRestaurantDashboard({
-    restaurantId,
-    orders,
-    products,
-    customers
-  });
 
   if (content) {
     content.innerHTML = renderAiDashboardPageHtml(dashboard);
