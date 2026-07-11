@@ -37,6 +37,7 @@
     { "loc": "/yardim.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/karar-moat.html", "priority": "0.45", "changefreq": "monthly" },
     { "loc": "/sigorta/", "priority": "0.85", "changefreq": "weekly" },
-    { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" }
+    { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" },
+    { "loc": "/garson/", "priority": "0.75", "changefreq": "weekly" }
   ]
 }

@@ -29,6 +29,7 @@ const HOMEPAGE_EXTENSION = [
   'css/site-social-links-v1.css',
   'css/perf-home-v1.css',
   'css/home-economic-indicators.css',
+  'css/home-garsonai-promo-v1.css',
   'css/ai-platform-surface.css'
 ];
 

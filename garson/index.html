@@ -13,16 +13,31 @@
   <title>GarsonAI | Restoranınızın yapay zekâ destekli dijital garsonu</title>
   <meta name="description" content="GarsonAI ile online rezervasyon, menü yönetimi, ön sipariş ve mutfak ekranı tek platformda. Restoranınızı dijital garsonla hızlandırın.">
   <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="googlebot" content="index, follow">
   <link rel="canonical" href="https://www.istebul.com/garson/">
+  <link rel="alternate" hreflang="tr" href="https://www.istebul.com/garson/">
+  <link rel="alternate" hreflang="x-default" href="https://www.istebul.com/garson/">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:site_name" content="isteBul">
   <meta property="og:title" content="GarsonAI | Dijital garson platformu">
   <meta property="og:description" content="Rezervasyon, ön sipariş ve mutfak ekranı — restoran operasyonlarını tek yerden yönetin.">
+  <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/garson/">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GarsonAI | Dijital garson platformu">
+  <meta name="twitter:description" content="Rezervasyon, ön sipariş ve mutfak ekranı — restoran operasyonlarını tek yerden yönetin.">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.png">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/restoran-page.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.istebul.com/#organization","name":"isteBul","url":"https://www.istebul.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana sayfa","item":"https://www.istebul.com/"},{"@type":"ListItem","position":2,"name":"GarsonAI","item":"https://www.istebul.com/garson/"}]},{"@type":"Product","name":"GarsonAI","description":"Restoranlar için yapay zekâ destekli dijital garson SaaS platformu. Online rezervasyon, menü yönetimi, ön sipariş ve mutfak ekranı tek akışta.","brand":{"@type":"Brand","name":"isteBul"},"category":"Restaurant Management Software","url":"https://www.istebul.com/garson/","image":"https://www.istebul.com/assets/images/og-image.png","offers":{"@type":"Offer","url":"https://www.istebul.com/garson/basvuru/","priceCurrency":"TRY","availability":"https://schema.org/PreOrder","description":"Erken erişim fiyatlandırması başvuru sonrası paylaşılır."}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"GarsonAI nedir?","acceptedAnswer":{"@type":"Answer","text":"GarsonAI, restoranların rezervasyon, menü, ön sipariş ve mutfak operasyonlarını tek platformda yönetmesini sağlayan isteBul SaaS ürünüdür."}},{"@type":"Question","name":"Demo restoran var mı?","acceptedAnswer":{"@type":"Answer","text":"Evet. Demo restoran ve mutfak ekranı bağlantıları /garson/demo/ sayfasında sunulur."}},{"@type":"Question","name":"WhatsApp entegrasyonu nasıl çalışır?","acceptedAnswer":{"@type":"Answer","text":"Rezervasyon ve sipariş bildirimleri için hazır entegrasyon katmanı sunulur; canlı aktivasyon restoran başvurusu sonrası yapılır."}},{"@type":"Question","name":"Müşteri keşfi ile GarsonAI farkı nedir?","acceptedAnswer":{"@type":"Answer","text":"isteBul restoran keşfi (/restoran/) müşteri arayüzüdür. GarsonAI (/garson/) restoran işletmeleri için operasyon ve yönetim SaaS platformudur."}}]}]}</script>
 </head>
 <body class="vacation-page restoran-page garson-launch-page">
   <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
@@ -31,8 +46,12 @@
       <span class="ib-vertical-brand__word">isteBul</span>
       <span class="ib-vertical-brand__badge">GarsonAI</span>
     </a>
+    <button class="vacation-nav-toggle" type="button" id="garson-launch-nav-toggle" aria-controls="garson-launch-nav" aria-expanded="false">Menü</button>
     <nav id="garson-launch-nav" aria-label="GarsonAI navigasyonu">
       <div class="ib-vertical-nav-primary">
+        <a href="/">Ana sayfa</a>
+        <a href="/garson/#garson-features">Özellikler</a>
+        <a href="/garson/#garson-pricing">Fiyatlandırma</a>
         <a href="/garson/demo/">Demo</a>
         <a href="/garson/basvuru/">Başvuru</a>
         <a href="/restoran/">Müşteri keşfi</a>
@@ -40,66 +59,183 @@
     </nav>
   </header>
 
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> › <span>GarsonAI</span>
+    </nav>
+  </div>
+
   <main class="garson-launch-main">
     <section class="garson-launch-hero vacation-container" aria-labelledby="garson-hero-title">
-      <p class="garson-launch-hero__eyebrow">isteBul GarsonAI SaaS</p>
-      <h1 id="garson-hero-title" class="garson-launch-hero__title">Restoranınızın yapay zekâ destekli dijital garsonu</h1>
-      <p class="garson-launch-hero__lead">
-        Rezervasyon, menü, ön sipariş ve mutfak ekranını tek akışta birleştirin.
-        Misafir deneyimini hızlandırın, operasyonu sadeleştirin.
-      </p>
-      <div class="garson-launch-hero__cta">
-        <a class="vacation-btn vacation-btn--primary" href="/garson/demo/">Demo iste</a>
-        <a class="vacation-btn vacation-btn--secondary" href="/garson/basvuru/">Restoranımı başlat</a>
+      <div class="garson-launch-hero__grid">
+        <div class="garson-launch-hero__copy">
+          <p class="garson-launch-hero__eyebrow">isteBul GarsonAI SaaS</p>
+          <h1 id="garson-hero-title" class="garson-launch-hero__title">Restoranınızın yapay zekâ destekli dijital garsonu</h1>
+          <p class="garson-launch-hero__lead">
+            Rezervasyon, menü, ön sipariş ve mutfak ekranını tek akışta birleştirin.
+            Misafir deneyimini hızlandırın, operasyonu sadeleştirin.
+          </p>
+          <div class="garson-launch-hero__cta">
+            <a class="vacation-btn vacation-btn--primary" href="/garson/demo/">Demo iste</a>
+            <a class="vacation-btn vacation-btn--secondary" href="/garson/basvuru/">Restoranımı başlat</a>
+          </div>
+          <ul class="garson-launch-hero__trust" aria-label="Platform güveni">
+            <li>KVKK uyumlu altyapı</li>
+            <li>Canlı demo restoran</li>
+            <li>Mutfak ekranı dahil</li>
+          </ul>
+        </div>
+        <aside class="garson-launch-hero__panel" aria-label="GarsonAI operasyon özeti">
+          <p class="garson-launch-hero__panel-kicker">Operasyon paneli</p>
+          <div class="garson-launch-hero__stats">
+            <article>
+              <strong>24</strong>
+              <span>Bugünkü rezervasyon</span>
+            </article>
+            <article>
+              <strong>18</strong>
+              <span>Ön sipariş</span>
+            </article>
+            <article>
+              <strong>6</strong>
+              <span>Mutfak kuyruğu</span>
+            </article>
+          </div>
+          <p class="garson-launch-hero__panel-note">Örnek gösterim — gerçek veriler restoran panelinizde canlı akar.</p>
+        </aside>
       </div>
     </section>
 
-    <section class="garson-launch-features vacation-container" aria-labelledby="garson-features-title">
+    <section id="garson-features" class="garson-launch-features vacation-container" aria-labelledby="garson-features-title">
       <h2 id="garson-features-title" class="garson-launch-section__title">Tek platformda restoran operasyonu</h2>
+      <p class="garson-launch-section__lead">Rezervasyondan mutfağa kadar tüm akış tek SaaS ürününde — ek entegrasyon karmaşası olmadan.</p>
       <ul class="garson-launch-features__grid">
         <li class="garson-launch-feature-card">
+          <span class="garson-launch-feature-card__icon" aria-hidden="true">📅</span>
           <h3>Online rezervasyon</h3>
           <p>Müşterileriniz tarih, saat ve kişi sayısını seçerek masa ayırtır.</p>
         </li>
         <li class="garson-launch-feature-card">
+          <span class="garson-launch-feature-card__icon" aria-hidden="true">📋</span>
           <h3>Menü yönetimi</h3>
           <p>Ürünlerinizi rezervasyon akışında görünür kılın, seçim kolaylaşsın.</p>
         </li>
         <li class="garson-launch-feature-card">
+          <span class="garson-launch-feature-card__icon" aria-hidden="true">🛒</span>
           <h3>Ön sipariş</h3>
           <p>Misafirler gelmeden yemeklerini sepete ekler; mutfak önceden hazırlanır.</p>
         </li>
         <li class="garson-launch-feature-card">
+          <span class="garson-launch-feature-card__icon" aria-hidden="true">👨‍🍳</span>
           <h3>Mutfak ekranı</h3>
           <p>KDS Lite ile siparişleri kolonlarda takip edin, durumu tek tıkla güncelleyin.</p>
         </li>
         <li class="garson-launch-feature-card garson-launch-feature-card--wide">
+          <span class="garson-launch-feature-card__icon" aria-hidden="true">💬</span>
           <h3>WhatsApp entegrasyon hazır altyapısı</h3>
           <p>Rezervasyon ve sipariş bildirimleri için hazır entegrasyon katmanı — hızlı devreye alma.</p>
+        </li>
+        <li class="garson-launch-feature-card">
+          <span class="garson-launch-feature-card__icon" aria-hidden="true">🧠</span>
+          <h3>AI zeka merkezi</h3>
+          <p>Satış, mutfak ve müşteri analizi ile büyüme önerileri — operasyonel içgörüler.</p>
         </li>
       </ul>
     </section>
 
-    <section class="garson-launch-steps vacation-container" aria-labelledby="garson-steps-title">
+    <section id="garson-steps" class="garson-launch-steps vacation-container" aria-labelledby="garson-steps-title">
       <h2 id="garson-steps-title" class="garson-launch-section__title">Nasıl çalışır?</h2>
+      <p class="garson-launch-section__lead">Misafir deneyiminden mutfak operasyonuna dört adımda uçtan uca akış.</p>
       <ol class="garson-launch-steps__list">
         <li class="garson-launch-step">
           <span class="garson-launch-step__num" aria-hidden="true">1</span>
-          <p>Müşteri rezervasyon yapar</p>
+          <h3 class="garson-launch-step__title">Müşteri rezervasyon yapar</h3>
+          <p>Tarih, saat ve kişi sayısı seçilir; masa müsaitliği anında doğrulanır.</p>
         </li>
         <li class="garson-launch-step">
           <span class="garson-launch-step__num" aria-hidden="true">2</span>
-          <p>Yemeklerini önceden seçer</p>
+          <h3 class="garson-launch-step__title">Yemeklerini önceden seçer</h3>
+          <p>Menüden ön sipariş eklenir; mutfak hazırlık süresi önceden planlanır.</p>
         </li>
         <li class="garson-launch-step">
           <span class="garson-launch-step__num" aria-hidden="true">3</span>
-          <p>Mutfak hazırlar</p>
+          <h3 class="garson-launch-step__title">Mutfak hazırlar</h3>
+          <p>KDS ekranında siparişler kolonlarda izlenir, durum güncellenir.</p>
         </li>
         <li class="garson-launch-step">
           <span class="garson-launch-step__num" aria-hidden="true">4</span>
-          <p>Servis hızlanır</p>
+          <h3 class="garson-launch-step__title">Servis hızlanır</h3>
+          <p>Misafir masaya oturduğunda yemekler hazır; servis süresi kısalır.</p>
         </li>
       </ol>
+    </section>
+
+    <section id="garson-pricing" class="garson-launch-pricing vacation-container" aria-labelledby="garson-pricing-title">
+      <h2 id="garson-pricing-title" class="garson-launch-section__title">Fiyatlandırma önizlemesi</h2>
+      <p class="garson-launch-section__lead">Restoranınızın ölçeğine göre esnek planlar — erken erişim başvurusu ile özel fiyat.</p>
+      <div class="garson-launch-pricing__grid">
+        <article class="garson-launch-pricing-card">
+          <span class="garson-launch-pricing-card__badge">Deneme</span>
+          <h3>Başlangıç</h3>
+          <p class="garson-launch-pricing-card__price">Ücretsiz demo</p>
+          <ul class="garson-launch-pricing-card__features">
+            <li>Demo restoran erişimi</li>
+            <li>Mutfak ekranı önizlemesi</li>
+            <li>Rezervasyon akışı testi</li>
+          </ul>
+          <a class="vacation-btn vacation-btn--secondary" href="/garson/demo/">Demo iste</a>
+        </article>
+        <article class="garson-launch-pricing-card garson-launch-pricing-card--featured">
+          <span class="garson-launch-pricing-card__badge">En popüler</span>
+          <h3>Profesyonel</h3>
+          <p class="garson-launch-pricing-card__price">Erken erişim</p>
+          <ul class="garson-launch-pricing-card__features">
+            <li>Online rezervasyon</li>
+            <li>Menü ve ön sipariş</li>
+            <li>Mutfak ekranı (KDS)</li>
+            <li>WhatsApp bildirim altyapısı</li>
+          </ul>
+          <a class="vacation-btn vacation-btn--primary" href="/garson/basvuru/">Restoranımı başlat</a>
+        </article>
+        <article class="garson-launch-pricing-card">
+          <span class="garson-launch-pricing-card__badge">Kurumsal</span>
+          <h3>Çoklu şube</h3>
+          <p class="garson-launch-pricing-card__price">Özel teklif</p>
+          <ul class="garson-launch-pricing-card__features">
+            <li>Çoklu restoran yönetimi</li>
+            <li>Öncelikli destek</li>
+            <li>Özel onboarding</li>
+          </ul>
+          <a class="vacation-btn vacation-btn--secondary" href="/iletisim.html">İletişime geç</a>
+        </article>
+      </div>
+      <p class="garson-launch-pricing__note">Fiyatlar bilgilendirme amaçlıdır; bağlayıcı teklif başvuru sonrası paylaşılır.</p>
+    </section>
+
+    <section id="garson-faq" class="garson-launch-faq vacation-container" aria-labelledby="garson-faq-title">
+      <h2 id="garson-faq-title" class="garson-launch-section__title">Sık sorulan sorular</h2>
+      <div class="garson-launch-faq__list">
+        <details class="garson-launch-faq__item">
+          <summary>GarsonAI nedir?</summary>
+          <p>GarsonAI, restoranların rezervasyon, menü, ön sipariş ve mutfak operasyonlarını tek platformda yönetmesini sağlayan isteBul SaaS ürünüdür.</p>
+        </details>
+        <details class="garson-launch-faq__item">
+          <summary>Demo restoran var mı?</summary>
+          <p>Evet. Demo restoran ve mutfak ekranı bağlantıları <a href="/garson/demo/">/garson/demo/</a> sayfasında sunulur.</p>
+        </details>
+        <details class="garson-launch-faq__item">
+          <summary>WhatsApp entegrasyonu nasıl çalışır?</summary>
+          <p>Rezervasyon ve sipariş bildirimleri için hazır entegrasyon katmanı sunulur; canlı aktivasyon restoran başvurusu sonrası yapılır.</p>
+        </details>
+        <details class="garson-launch-faq__item">
+          <summary>Müşteri keşfi ile GarsonAI farkı nedir?</summary>
+          <p>isteBul restoran keşfi (<a href="/restoran/">/restoran/</a>) müşteri arayüzüdür. GarsonAI restoran işletmeleri için operasyon ve yönetim SaaS platformudur.</p>
+        </details>
+        <details class="garson-launch-faq__item">
+          <summary>Kurulum ne kadar sürer?</summary>
+          <p>Demo hesabı anında açılır. Canlı restoran aktivasyonu başvuru ve onboarding sürecine bağlıdır; pilot restoranlar için hızlandırılmış kurulum sunulur.</p>
+        </details>
+      </div>
     </section>
 
     <section class="garson-launch-bottom-cta vacation-container" aria-label="Hızlı başlangıç">
@@ -110,5 +246,36 @@
       </div>
     </section>
   </main>
+
+  <footer class="vacation-footer garson-launch-footer">
+    <nav class="garson-launch-footer__nav" aria-label="GarsonAI alt bağlantılar">
+      <a href="/garson/">GarsonAI</a>
+      <a href="/garson/demo/">Demo</a>
+      <a href="/garson/basvuru/">Başvuru</a>
+      <a href="/restoran/">Müşteri keşfi</a>
+      <a href="/">isteBul ana sayfa</a>
+    </nav>
+    <p class="site-footer-legal">
+      <a href="/gizlilik.html">Gizlilik</a> ·
+      <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> ·
+      <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
+    </p>
+    <p class="garson-launch-footer__copy">© <span id="garson-year">2026</span> isteBul · GarsonAI</p>
+  </footer>
+
+  <script>
+    (function () {
+      var toggle = document.getElementById('garson-launch-nav-toggle');
+      var nav = document.getElementById('garson-launch-nav');
+      if (toggle && nav) {
+        toggle.addEventListener('click', function () {
+          var open = nav.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+      var year = document.getElementById('garson-year');
+      if (year) year.textContent = String(new Date().getFullYear());
+    })();
+  </script>
 </body>
 </html>
