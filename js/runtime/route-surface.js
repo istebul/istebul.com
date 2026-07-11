@@ -14,6 +14,7 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
     'how-it-works',
     'home-vertical-focus',
     'home-features-strip',
+    'home-garsonai',
     'pricing',
     'partner-enterprise',
     'landing-faq'

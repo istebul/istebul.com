@@ -5650,6 +5650,7 @@ const MARKETING_SECTION_IDS = new Set([
     'home-auto-bridge',
     'how-it-works',
     'home-vertical-focus',
+    'home-garsonai',
     'pricing',
     'partner-enterprise',
     'landing-faq',

@@ -36,7 +36,19 @@ test('garson landing page exists with hero copy', () => {
   assert.match(html, /Mutfak ekranı/);
   assert.match(html, /WhatsApp entegrasyon hazır altyapısı/);
   assert.match(html, /Müşteri rezervasyon yapar/);
+  assert.match(html, /Fiyatlandırma önizlemesi/);
+  assert.match(html, /Sık sorulan sorular/);
+  assert.match(html, /"@type":"Product"/);
+  assert.match(html, /property="og:image"/);
+  assert.match(html, /twitter:card/);
   assert.doesNotMatch(html, /kds-admin\.js/);
+});
+
+test('homepage exposes GarsonAI marketing links', () => {
+  const html = readPage('index.html');
+  assert.match(html, /href="\/garson\/"/);
+  assert.match(html, /id="home-garsonai"/);
+  assert.match(html, /GarsonAI — restoran operasyon platformu/);
 });
 
 test('garson mutfak route exists and keeps KDS script', () => {

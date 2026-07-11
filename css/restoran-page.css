@@ -1002,6 +1002,38 @@ body.restoran-page .vacation-hero-badge {
   color: var(--vacation-on-surface-muted);
 }
 
+.vacation-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.vacation-btn:active {
+  transform: scale(0.98);
+}
+
+.vacation-btn--primary {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.28);
+}
+
+.vacation-btn--secondary {
+  background: #fff;
+  color: #c2410c;
+  border-color: color-mix(in srgb, #ea580c 35%, var(--vacation-border));
+}
+
 .garson-launch-main {
   padding-bottom: 2.5rem;
 }
@@ -1009,6 +1041,81 @@ body.restoran-page .vacation-hero-badge {
 .garson-launch-hero {
   padding-top: 1.5rem;
   padding-bottom: 2rem;
+}
+
+.garson-launch-hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+}
+
+.garson-launch-hero__panel {
+  border: 1px solid var(--vacation-border);
+  border-radius: 16px;
+  background: linear-gradient(160deg, #fff7ed 0%, #ffffff 100%);
+  padding: 1.1rem;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.garson-launch-hero__panel-kicker {
+  margin: 0 0 0.75rem;
+  color: #c2410c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.garson-launch-hero__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.garson-launch-hero__stats article {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--vacation-border);
+}
+
+.garson-launch-hero__stats strong {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #ea580c;
+}
+
+.garson-launch-hero__stats span {
+  font-size: 0.72rem;
+  color: var(--vacation-on-surface-muted);
+  line-height: 1.35;
+}
+
+.garson-launch-hero__panel-note {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--vacation-on-surface-muted);
+  line-height: 1.45;
+}
+
+.garson-launch-hero__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--vacation-on-surface-muted);
+}
+
+.garson-launch-hero__trust li::before {
+  content: '✓ ';
+  color: #ea580c;
+  font-weight: 700;
 }
 
 .garson-launch-hero__eyebrow {
@@ -1042,8 +1149,16 @@ body.restoran-page .vacation-hero-badge {
 }
 
 .garson-launch-section__title {
-  margin: 0 0 1rem;
+  margin: 0 0 0.5rem;
   font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+}
+
+.garson-launch-section__lead {
+  margin: 0 0 1.25rem;
+  max-width: 58ch;
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
 .garson-launch-features {
@@ -1065,6 +1180,13 @@ body.restoran-page .vacation-hero-badge {
   background: #fff;
   padding: 1rem;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.garson-launch-feature-card__icon {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .garson-launch-feature-card h2,
@@ -1119,10 +1241,166 @@ body.restoran-page .vacation-hero-badge {
   font-weight: 700;
 }
 
+.garson-launch-step__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .garson-launch-step p {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.45;
+  color: var(--vacation-on-surface-muted);
+}
+
+.garson-launch-pricing {
+  padding-bottom: 2rem;
+}
+
+.garson-launch-pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.garson-launch-pricing-card {
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+  border: 1px solid var(--vacation-border);
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem;
+}
+
+.garson-launch-pricing-card--featured {
+  border-color: color-mix(in srgb, #ea580c 40%, var(--vacation-border));
+  background: linear-gradient(160deg, #fff7ed 0%, #ffffff 100%);
+  box-shadow: 0 12px 28px rgba(234, 88, 12, 0.1);
+}
+
+.garson-launch-pricing-card__badge {
+  justify-self: start;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #ea580c 12%, transparent);
+  color: #c2410c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.garson-launch-pricing-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.garson-launch-pricing-card__price {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ea580c;
+}
+
+.garson-launch-pricing-card__features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--vacation-on-surface-muted);
+}
+
+.garson-launch-pricing-card__features li::before {
+  content: '✓ ';
+  color: #ea580c;
+  font-weight: 700;
+}
+
+.garson-launch-pricing__note {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+  color: var(--vacation-on-surface-muted);
+}
+
+.garson-launch-faq {
+  padding-bottom: 2rem;
+}
+
+.garson-launch-faq__list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.garson-launch-faq__item {
+  border: 1px solid var(--vacation-border);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.65rem 0.85rem;
+}
+
+.garson-launch-faq__item summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  list-style: none;
+}
+
+.garson-launch-faq__item summary::-webkit-details-marker {
+  display: none;
+}
+
+.garson-launch-faq__item summary::after {
+  content: '+';
+  float: right;
+  color: #ea580c;
+  font-weight: 700;
+}
+
+.garson-launch-faq__item[open] summary::after {
+  content: '−';
+}
+
+.garson-launch-faq__item p {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--vacation-on-surface-muted);
+}
+
+.garson-launch-footer {
+  margin-top: 1rem;
+  padding: 1.25rem 1rem 1.5rem;
+  border-top: 1px solid var(--vacation-border);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.garson-launch-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.garson-launch-footer__nav a {
+  color: var(--vacation-on-surface);
+  text-decoration: none;
+}
+
+.garson-launch-footer__nav a:hover {
+  color: #ea580c;
+}
+
+.garson-launch-footer__copy {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--vacation-on-surface-muted);
 }
 
 .garson-launch-bottom-cta {
@@ -1208,11 +1486,29 @@ body.restoran-page .vacation-hero-badge {
   font-size: 0.95rem;
 }
 
-#restoran-nav.is-open {
+#restoran-nav.is-open,
+#garson-launch-nav.is-open {
   display: flex;
 }
 
 @media (max-width: 850px) {
+  #garson-launch-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid var(--vacation-border);
+  }
+
+  #garson-launch-nav.is-open {
+    display: flex;
+  }
+
   #restoran-nav {
     display: none;
     position: absolute;
@@ -1240,6 +1536,15 @@ body.restoran-page .vacation-hero-badge {
   }
 
   .kds-admin-board {
+    grid-template-columns: 1fr;
+  }
+
+  .garson-launch-hero__grid,
+  .garson-launch-pricing__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .garson-launch-hero__stats {
     grid-template-columns: 1fr;
   }
 

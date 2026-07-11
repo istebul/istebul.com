@@ -1,0 +1,112 @@
+/**
+ * Homepage GarsonAI SaaS promo — orange accent aligned with restoran vertical.
+ * Scope: #home-garsonai
+ */
+
+html.ib-ds-v4.ib-premium-v7 #home-garsonai {
+  padding: clamp(2rem, 4vw, 3rem) 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: center;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid color-mix(in srgb, #ea580c 24%, var(--border-color));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #ea580c 7%, var(--surface-color)),
+    var(--surface-color)
+  );
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #ea580c 12%, transparent);
+  color: #c2410c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-garsonai-title {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+  line-height: 1.2;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-lead {
+  margin: 0 0 1rem;
+  max-width: 48ch;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-features li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-features li::before {
+  content: '✓';
+  color: #ea580c;
+  font-weight: 700;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-actions {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-actions .btn-garson {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.28);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-actions .btn-garson:hover {
+  filter: brightness(1.04);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-hint {
+  margin: 0;
+  max-width: 24rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+  html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-panel {
+    grid-template-columns: 1fr;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-actions {
+    width: 100%;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 .ib-home-garsonai-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
