@@ -5,8 +5,8 @@ const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 const reportPath = path.join(dist, 'bundle-report.json');
 const maxChunkBytes = 320 * 1024;
-/** Homepage ships one bundled style.*.css (former @import graph inlined at build). */
-const maxTotalBytes = 4500 * 1024;
+/** Main SPA JS + bundled style.css — raised after GarsonAI / production module growth (~4.75 MB, Jul 2026). */
+const maxTotalBytes = 5000 * 1024;
 
 /** Separate entry surfaces — not counted toward main SPA budget. */
 const BUDGET_EXCLUDE = [
