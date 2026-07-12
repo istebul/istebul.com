@@ -1,0 +1,693 @@
+/**
+ * GarsonAI Demo & Mutfak Enterprise UI — /garson/demo/ · /garson/mutfak/
+ * Depends on garsonai-design-system-v1.css + garsonai-landing-v1.css
+ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Demo page ── */
+
+.garsonai-demo-page .gai-demo-hero {
+  padding-bottom: var(--gai-space-10);
+}
+
+.gai-demo-checklist {
+  display: grid;
+  gap: var(--gai-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gai-demo-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gai-space-3);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-base);
+  line-height: var(--gai-leading-normal);
+}
+
+.gai-demo-checklist__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  border-radius: var(--gai-radius-full);
+  background: var(--gai-success-soft);
+  color: var(--gai-success);
+  font-size: var(--gai-text-xs);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.gai-demo-actions {
+  padding: var(--gai-space-12) 0 var(--gai-space-8);
+}
+
+.gai-demo-actions__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gai-space-6);
+}
+
+.gai-enterprise-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-xl);
+  background: var(--gai-bg-card);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition:
+    border-color var(--gai-duration) var(--gai-ease),
+    box-shadow var(--gai-duration) var(--gai-ease),
+    transform var(--gai-duration) var(--gai-ease);
+}
+
+.gai-enterprise-card:hover {
+  border-color: rgba(249, 115, 22, 0.35);
+  box-shadow: var(--gai-shadow-lg);
+  transform: translateY(-4px);
+}
+
+.gai-enterprise-card__visual {
+  position: relative;
+  min-height: 200px;
+  background:
+    linear-gradient(180deg, rgba(7, 11, 20, 0.1) 0%, rgba(7, 11, 20, 0.75) 100%),
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(249, 115, 22, 0.18) 0%, transparent 70%),
+    linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.gai-enterprise-card__visual--kitchen {
+  background:
+    linear-gradient(180deg, rgba(7, 11, 20, 0.1) 0%, rgba(7, 11, 20, 0.75) 100%),
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(59, 130, 246, 0.16) 0%, transparent 70%),
+    linear-gradient(135deg, #172554 0%, #0f172a 100%);
+}
+
+.gai-enterprise-card__visual-overlay {
+  position: absolute;
+  inset: auto var(--gai-space-5) var(--gai-space-5);
+  display: grid;
+  gap: var(--gai-space-2);
+}
+
+.gai-enterprise-card__visual-title {
+  margin: 0;
+  font-size: var(--gai-text-xl);
+  font-weight: 700;
+  color: var(--gai-text);
+}
+
+.gai-enterprise-card__visual-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gai-space-2);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+}
+
+.gai-enterprise-card__tag {
+  position: absolute;
+  top: var(--gai-space-4);
+  left: var(--gai-space-4);
+}
+
+.gai-enterprise-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--gai-space-4);
+  padding: var(--gai-space-6);
+}
+
+.gai-enterprise-card__body h2 {
+  margin: 0;
+  font-size: var(--gai-text-2xl);
+  font-weight: 700;
+  line-height: var(--gai-leading-tight);
+}
+
+.gai-enterprise-card__body p {
+  margin: 0;
+  flex: 1;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-base);
+  line-height: var(--gai-leading-normal);
+}
+
+.gai-enterprise-card__hint {
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-sm);
+}
+
+.gai-demo-features {
+  padding-bottom: var(--gai-space-16);
+}
+
+.gai-demo-features__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gai-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── Mutfak page ── */
+
+.garsonai-mutfak-page {
+  min-height: 100vh;
+}
+
+.garsonai-mutfak-page .gai-mutfak-main {
+  padding-bottom: var(--gai-space-12);
+}
+
+.gai-mutfak-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gai-space-6);
+  padding: var(--gai-space-10) 0 var(--gai-space-6);
+}
+
+.gai-mutfak-hero__copy {
+  display: grid;
+  gap: var(--gai-space-3);
+  max-width: 52ch;
+}
+
+.gai-mutfak-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gai-space-2);
+  margin: 0;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+  font-weight: 600;
+}
+
+.gai-mutfak-hero__live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gai-space-2);
+  padding: var(--gai-space-1) var(--gai-space-3);
+  border-radius: var(--gai-radius-full);
+  background: var(--gai-success-soft);
+  color: #86efac;
+  font-size: var(--gai-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--gai-tracking-wide);
+  text-transform: uppercase;
+}
+
+.gai-mutfak-hero__live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gai-success);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+  animation: gai-live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gai-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
+
+.gai-mutfak-hero__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  line-height: var(--gai-leading-tight);
+  letter-spacing: -0.03em;
+}
+
+.gai-mutfak-hero__lead {
+  margin: 0;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-lg);
+  line-height: var(--gai-leading-normal);
+}
+
+.gai-mutfak-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gai-space-2);
+}
+
+.gai-mutfak-toolbar__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gai-space-2);
+}
+
+.gai-mutfak-filter {
+  min-height: 36px;
+  padding: 0 var(--gai-space-3);
+  border: 1px solid var(--gai-border-strong);
+  border-radius: var(--gai-radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--gai-text-muted);
+  font-family: inherit;
+  font-size: var(--gai-text-sm);
+  font-weight: 500;
+}
+
+.gai-mutfak-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--gai-space-3);
+  margin-bottom: var(--gai-space-6);
+}
+
+.gai-mutfak-kpi {
+  padding: var(--gai-space-4) var(--gai-space-5);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-lg);
+  background: var(--gai-bg-card);
+  backdrop-filter: blur(8px);
+  transition:
+    border-color var(--gai-duration-fast) var(--gai-ease),
+    transform var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-mutfak-kpi:hover {
+  border-color: var(--gai-border-strong);
+  transform: translateY(-2px);
+}
+
+.gai-mutfak-kpi__label {
+  display: block;
+  margin-bottom: var(--gai-space-2);
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--gai-tracking-wide);
+  text-transform: uppercase;
+}
+
+.gai-mutfak-kpi__value {
+  font-size: var(--gai-text-2xl);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gai-mutfak-kpi--new .gai-mutfak-kpi__value { color: var(--gai-accent); }
+.gai-mutfak-kpi--preparing .gai-mutfak-kpi__value { color: var(--gai-warning); }
+.gai-mutfak-kpi--ready .gai-mutfak-kpi__value { color: var(--gai-info); }
+.gai-mutfak-kpi--delivered .gai-mutfak-kpi__value { color: var(--gai-success); }
+.gai-mutfak-kpi--total .gai-mutfak-kpi__value { color: var(--gai-text); }
+
+/* Status panels */
+
+.garsonai-mutfak-page .gai-mutfak-status {
+  margin-bottom: var(--gai-space-4);
+  padding: var(--gai-space-4) var(--gai-space-5);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-lg);
+  background: var(--gai-bg-card);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+}
+
+.garsonai-mutfak-page .gai-mutfak-status--loading {
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.garsonai-mutfak-page .gai-mutfak-status--empty {
+  display: grid;
+  gap: var(--gai-space-2);
+  text-align: center;
+}
+
+.garsonai-mutfak-page .gai-mutfak-status--empty::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--gai-space-2);
+  border-radius: var(--gai-radius-md);
+  background: var(--gai-primary-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2393c5fd'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'/%3E%3C/svg%3E") center / 24px no-repeat;
+}
+
+.garsonai-mutfak-page #kds-admin-empty {
+  font-size: 0;
+  line-height: 0;
+}
+
+.garsonai-mutfak-page #kds-admin-empty::before {
+  content: 'Şu anda bekleyen sipariş bulunmuyor.';
+  display: block;
+  font-size: var(--gai-text-lg);
+  font-weight: 700;
+  line-height: var(--gai-leading-tight);
+  color: var(--gai-text);
+}
+
+.garsonai-mutfak-page #kds-admin-empty::after {
+  content: 'Yeni siparişler geldiğinde bu ekran otomatik güncellenecektir.';
+  display: block;
+  margin-top: var(--gai-space-2);
+  font-size: var(--gai-text-sm);
+  line-height: var(--gai-leading-normal);
+  color: var(--gai-text-muted);
+}
+
+/* KDS board — enterprise kanban */
+
+.garsonai-mutfak-page .kds-admin-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gai-space-4);
+  align-items: start;
+}
+
+.garsonai-mutfak-page .kds-admin-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gai-space-3);
+  min-height: 320px;
+  padding: var(--gai-space-4);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-lg);
+  background: var(--gai-bg-card);
+  backdrop-filter: blur(10px);
+  transition:
+    border-color var(--gai-duration) var(--gai-ease),
+    box-shadow var(--gai-duration) var(--gai-ease);
+}
+
+.garsonai-mutfak-page .kds-admin-column:hover {
+  border-color: var(--gai-border-strong);
+  box-shadow: var(--gai-shadow-sm);
+}
+
+.garsonai-mutfak-page .kds-admin-column:nth-child(1) {
+  border-top: 3px solid var(--gai-accent);
+}
+
+.garsonai-mutfak-page .kds-admin-column:nth-child(2) {
+  border-top: 3px solid var(--gai-warning);
+}
+
+.garsonai-mutfak-page .kds-admin-column:nth-child(3) {
+  border-top: 3px solid var(--gai-info);
+}
+
+.garsonai-mutfak-page .kds-admin-column__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding-bottom: var(--gai-space-3);
+  border-bottom: 1px solid var(--gai-border);
+  font-size: var(--gai-text-base);
+  font-weight: 700;
+  color: var(--gai-text);
+}
+
+.garsonai-mutfak-page .kds-admin-column__title::after {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 var(--gai-space-2);
+  border-radius: var(--gai-radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-xs);
+  font-weight: 700;
+}
+
+.garsonai-mutfak-page .kds-admin-column:nth-child(1) .kds-admin-column__title::after {
+  content: attr(data-count);
+}
+
+.garsonai-mutfak-page .kds-admin-column:nth-child(2) .kds-admin-column__title::after {
+  content: attr(data-count);
+}
+
+.garsonai-mutfak-page .kds-admin-column:nth-child(3) .kds-admin-column__title::after {
+  content: attr(data-count);
+}
+
+.garsonai-mutfak-page .kds-admin-column__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gai-space-3);
+}
+
+.garsonai-mutfak-page .kds-admin-column__empty {
+  display: grid;
+  gap: var(--gai-space-2);
+  margin: 0;
+  padding: var(--gai-space-8) var(--gai-space-4);
+  border: 1px dashed var(--gai-border);
+  border-radius: var(--gai-radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  text-align: center;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
+
+.garsonai-mutfak-page .kds-admin-column__empty::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto var(--gai-space-2);
+  border-radius: var(--gai-radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 24px;
+  background-color: var(--gai-text-dim);
+}
+
+.garsonai-mutfak-page .kds-admin-column__empty::after {
+  content: 'Şu anda bekleyen sipariş bulunmuyor.';
+  display: block;
+  font-size: var(--gai-text-sm);
+  font-weight: 600;
+  line-height: var(--gai-leading-normal);
+  color: var(--gai-text-muted);
+}
+
+/* Order cards */
+
+.garsonai-mutfak-page .kds-admin-card {
+  padding: var(--gai-space-4);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color var(--gai-duration-fast) var(--gai-ease),
+    box-shadow var(--gai-duration-fast) var(--gai-ease),
+    transform var(--gai-duration-fast) var(--gai-ease);
+}
+
+.garsonai-mutfak-page .kds-admin-card:hover {
+  border-color: var(--gai-border-strong);
+  box-shadow: var(--gai-shadow-sm);
+  transform: translateY(-2px);
+}
+
+.garsonai-mutfak-page .kds-admin-card__header {
+  margin-bottom: var(--gai-space-3);
+}
+
+.garsonai-mutfak-page .kds-admin-card__customer {
+  margin: 0;
+  font-size: var(--gai-text-base);
+  font-weight: 700;
+  color: var(--gai-text);
+}
+
+.garsonai-mutfak-page .kds-admin-card__time {
+  margin: var(--gai-space-1) 0 0;
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+}
+
+.garsonai-mutfak-page .kds-admin-card__items {
+  margin: 0 0 var(--gai-space-3);
+  padding-left: 1.1rem;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+  line-height: 1.45;
+}
+
+.garsonai-mutfak-page .kds-admin-card__note {
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+}
+
+.garsonai-mutfak-page .kds-admin-card__eta {
+  margin: 0 0 var(--gai-space-2);
+  color: var(--gai-accent);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+}
+
+.garsonai-mutfak-page .kds-admin-card__status {
+  margin: 0 0 var(--gai-space-3);
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--gai-tracking-wide);
+  text-transform: uppercase;
+}
+
+/* vacation-btn → GarsonAI button skin (engine markup preserved) */
+
+.garsonai-mutfak-page .vacation-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gai-space-2);
+  min-height: 40px;
+  padding: 0 var(--gai-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--gai-radius-md);
+  font-family: inherit;
+  font-size: var(--gai-text-sm);
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--gai-duration-fast) var(--gai-ease),
+    border-color var(--gai-duration-fast) var(--gai-ease),
+    box-shadow var(--gai-duration-fast) var(--gai-ease),
+    transform var(--gai-duration-fast) var(--gai-ease);
+}
+
+.garsonai-mutfak-page .vacation-btn--primary,
+.garsonai-mutfak-page .kds-admin-card__action {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gai-accent) 0%, var(--gai-accent-hover) 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
+}
+
+.garsonai-mutfak-page .vacation-btn--primary:hover:not(:disabled),
+.garsonai-mutfak-page .kds-admin-card__action:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.35);
+  transform: translateY(-1px);
+}
+
+.garsonai-mutfak-page .vacation-btn--secondary {
+  background: transparent;
+  color: var(--gai-text);
+  border-color: var(--gai-border-strong);
+}
+
+.garsonai-mutfak-page .vacation-btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.garsonai-mutfak-page .vacation-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Footer (shared) */
+
+.garsonai-pages-footer {
+  padding: var(--gai-space-10) 0 var(--gai-space-8);
+  border-top: 1px solid var(--gai-border);
+}
+
+.garsonai-pages-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gai-space-4);
+  margin-bottom: var(--gai-space-4);
+}
+
+.garsonai-pages-footer__nav a {
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+  text-decoration: none;
+}
+
+.garsonai-pages-footer__nav a:hover {
+  color: var(--gai-text);
+}
+
+.garsonai-pages-footer__copy {
+  margin: 0;
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-sm);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1024px) {
+  .gai-demo-features__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gai-mutfak-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .gai-demo-actions__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gai-demo-features__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gai-mutfak-hero {
+    flex-direction: column;
+  }
+
+  .gai-mutfak-toolbar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .gai-mutfak-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .garsonai-mutfak-page .kds-admin-board {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .gai-mutfak-kpis {
+    grid-template-columns: 1fr;
+  }
+}

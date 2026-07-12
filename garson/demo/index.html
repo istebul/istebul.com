@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ea580c">
+  <meta name="theme-color" content="#070b14">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
@@ -16,46 +16,261 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
-  <link rel="stylesheet" href="/css/tatil.css">
-  <link rel="stylesheet" href="/css/vertical-themes.css">
-  <link rel="stylesheet" href="/css/restoran-page.css">
+  <link rel="stylesheet" href="/css/garsonai-design-system-v1.css">
+  <link rel="stylesheet" href="/css/garsonai-landing-v1.css">
+  <link rel="stylesheet" href="/css/garsonai-demo-mutfak-v1.css">
 </head>
-<body class="vacation-page restoran-page garson-launch-page">
-  <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
-    <a class="logo ib-vertical-brand" href="/garson/" aria-label="GarsonAI ana sayfa">
-      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
-      <span class="ib-vertical-brand__word">isteBul</span>
-      <span class="ib-vertical-brand__badge">GarsonAI</span>
-    </a>
-    <nav aria-label="GarsonAI navigasyonu">
-      <div class="ib-vertical-nav-primary">
-        <a href="/garson/">Ana sayfa</a>
-        <a href="/garson/basvuru/">Başvuru</a>
+<body class="garsonai-page garsonai-demo-page">
+
+  <div class="gai-announce" role="region" aria-label="Duyuru">
+    <div class="gai-announce__inner">
+      <div class="gai-announce__left">
+        <span class="gai-badge gai-badge--new">Yeni</span>
+        <span class="gai-announce__text">GarsonAI artık isteBul ailesinin bir parçası</span>
+        <a class="gai-announce__link" href="/garson/#garson-features">Daha fazla bilgi →</a>
       </div>
-    </nav>
+      <nav class="gai-announce__right" aria-label="Hızlı bağlantılar">
+        <a href="/garson/#garson-features">Özellikler</a>
+        <a href="/garson/#garson-pricing">Fiyatlandırma</a>
+        <a href="/garson/demo/">Demo</a>
+        <a href="/garson/giris/">Müşteri Girişi</a>
+      </nav>
+    </div>
+  </div>
+
+  <header class="gai-header">
+    <div class="gai-header__shell">
+      <a class="gai-header__brand" href="/garson/" aria-label="GarsonAI ana sayfa">
+        <img class="gai-header__logo" src="/assets/brand/istebul-icon.svg" alt="" width="36" height="36" decoding="async">
+        <span class="gai-header__wordmark"><span>isteBul</span><span>GarsonAI</span></span>
+      </a>
+
+      <nav id="garson-launch-nav" class="gai-header__nav" aria-label="GarsonAI navigasyonu">
+        <a href="/garson/">Ana Sayfa</a>
+        <a href="/garson/demo/">Demo</a>
+        <a href="/garson/#garson-features">Özellikler</a>
+        <a href="/garson/#garson-pricing">Fiyatlandırma</a>
+      </nav>
+
+      <div class="gai-header__actions">
+        <a class="gai-btn gai-btn--secondary gai-btn--sm" href="/garson/giris/">Giriş</a>
+        <a class="gai-btn gai-btn--accent gai-btn--sm" href="/garson/basvuru/">Restoranı Başlat</a>
+        <button class="gai-header__toggle" type="button" id="garson-launch-nav-toggle" aria-controls="garson-launch-nav" aria-expanded="false" aria-label="Menü">☰</button>
+      </div>
+    </div>
   </header>
 
-  <main class="vacation-container garson-launch-main garson-demo-main">
-    <section class="garson-launch-hero garson-demo-hero" aria-labelledby="garson-demo-title">
-      <p class="garson-launch-hero__eyebrow">Canlı demo</p>
-      <h1 id="garson-demo-title" class="garson-launch-hero__title">GarsonAI'yi deneyin</h1>
-      <p class="garson-launch-hero__lead">
-        Müşteri rezervasyon akışını ve mutfak ekranını demo restoran üzerinden inceleyin.
-      </p>
+  <main class="garson-launch-main">
+    <section class="gai-hero gai-container gai-demo-hero" aria-labelledby="garson-demo-title">
+      <nav class="gai-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Ana sayfa</a> › <a href="/garson/">GarsonAI</a> › <span>Demo</span>
+      </nav>
+
+      <div class="gai-hero__grid">
+        <div class="gai-hero__copy">
+          <p class="gai-badge gai-badge--new gai-hero__badge">Canlı Demo</p>
+          <h1 id="garson-demo-title" class="gai-hero__title">
+            GarsonAI'yi Gerçek Restoran Deneyimiyle <em>Test Edin</em>
+          </h1>
+          <p class="gai-hero__lead">
+            Gerçek sipariş akışını, rezervasyonu ve mutfak operasyonunu tek platform üzerinde deneyimleyin.
+          </p>
+          <ul class="gai-demo-checklist" aria-label="Demo avantajları">
+            <li><span class="gai-demo-checklist__icon" aria-hidden="true">✓</span> WhatsApp siparişi</li>
+            <li><span class="gai-demo-checklist__icon" aria-hidden="true">✓</span> AI sipariş analizi</li>
+            <li><span class="gai-demo-checklist__icon" aria-hidden="true">✓</span> KDS mutfak ekranı</li>
+            <li><span class="gai-demo-checklist__icon" aria-hidden="true">✓</span> Gerçek zamanlı güncelleme</li>
+          </ul>
+        </div>
+
+        <aside class="gai-dashboard" aria-label="Operasyon paneli önizlemesi">
+          <div class="gai-dashboard__chrome">
+            <div class="gai-dashboard__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span class="gai-dashboard__title">Operasyon Dashboard — Demo Restoran</span>
+          </div>
+          <div class="gai-dashboard__body">
+            <div class="gai-dashboard__kpis">
+              <article class="gai-dashboard__kpi">
+                <div class="gai-dashboard__kpi-head">
+                  <span class="gai-dashboard__kpi-label">Bugünkü Sipariş</span>
+                  <span class="gai-dashboard__kpi-icon gai-dashboard__kpi-icon--orange" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+                  </span>
+                </div>
+                <div class="gai-dashboard__kpi-value">47</div>
+                <div class="gai-dashboard__kpi-trend gai-dashboard__kpi-trend--up">↑ 18%</div>
+              </article>
+              <article class="gai-dashboard__kpi">
+                <div class="gai-dashboard__kpi-head">
+                  <span class="gai-dashboard__kpi-label">Aktif Masa</span>
+                  <span class="gai-dashboard__kpi-icon gai-dashboard__kpi-icon--blue" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 00-1 1v1H9a1 1 0 100 2h2v1a1 1 0 102 0V6h2a1 1 0 100-2h-1V3a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  </span>
+                </div>
+                <div class="gai-dashboard__kpi-value">12</div>
+                <div class="gai-dashboard__kpi-trend gai-dashboard__kpi-trend--up">↑ 4%</div>
+              </article>
+              <article class="gai-dashboard__kpi">
+                <div class="gai-dashboard__kpi-head">
+                  <span class="gai-dashboard__kpi-label">Rezervasyon</span>
+                  <span class="gai-dashboard__kpi-icon gai-dashboard__kpi-icon--green" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z"/></svg>
+                  </span>
+                </div>
+                <div class="gai-dashboard__kpi-value">24</div>
+                <div class="gai-dashboard__kpi-trend gai-dashboard__kpi-trend--up">↑ 12%</div>
+              </article>
+            </div>
+
+            <div class="gai-dashboard__chart" aria-hidden="true">
+              <div class="gai-dashboard__chart-head">
+                <span class="gai-dashboard__chart-title">Hazırlanan Sipariş</span>
+                <span class="gai-badge gai-badge--success">Canlı</span>
+              </div>
+              <div class="gai-dashboard__chart-bars">
+                <div class="gai-dashboard__chart-bar"></div>
+                <div class="gai-dashboard__chart-bar"></div>
+                <div class="gai-dashboard__chart-bar"></div>
+                <div class="gai-dashboard__chart-bar"></div>
+                <div class="gai-dashboard__chart-bar"></div>
+                <div class="gai-dashboard__chart-bar"></div>
+                <div class="gai-dashboard__chart-bar"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="gai-dashboard__orders-head">
+                <span class="gai-dashboard__orders-title">Son Siparişler</span>
+                <span class="gai-badge gai-badge--info">Canlı</span>
+              </div>
+              <div class="gai-dashboard__orders">
+                <div class="gai-dashboard__order">
+                  <span class="gai-dashboard__order-id">#1028</span>
+                  <span class="gai-dashboard__order-name">Ahmet Y. — Karışık Pizza</span>
+                  <span class="gai-dashboard__order-time">2 dk</span>
+                  <span class="gai-badge gai-badge--new">Yeni</span>
+                </div>
+                <div class="gai-dashboard__order">
+                  <span class="gai-dashboard__order-id">#1027</span>
+                  <span class="gai-dashboard__order-name">Elif S. — Menü seti</span>
+                  <span class="gai-dashboard__order-time">8 dk</span>
+                  <span class="gai-badge gai-badge--warning">Hazırlanıyor</span>
+                </div>
+                <div class="gai-dashboard__order">
+                  <span class="gai-dashboard__order-id">#1026</span>
+                  <span class="gai-dashboard__order-name">Mehmet D. — Paket servis</span>
+                  <span class="gai-dashboard__order-time">14 dk</span>
+                  <span class="gai-badge gai-badge--success">Hazır</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </section>
 
-    <section class="garson-demo-cards" aria-label="Demo bağlantıları">
-      <article class="garson-launch-feature-card garson-demo-card">
-        <h2>Demo restoran</h2>
-        <p>Rezervasyon, menü ve ön sipariş müşteri deneyimini görün.</p>
-        <a class="vacation-btn vacation-btn--primary" href="/r/demo-cafe">Demo restorana git</a>
-      </article>
-      <article class="garson-launch-feature-card garson-demo-card">
-        <h2>Mutfak demosu</h2>
-        <p>KDS Lite mutfak ekranında sipariş kuyruğunu yönetin.</p>
-        <a class="vacation-btn vacation-btn--secondary" href="/garson/mutfak/?businessId=demo-cafe">Mutfak ekranını aç</a>
-      </article>
+    <section class="gai-demo-actions gai-container" aria-label="Demo deneyimleri">
+      <div class="gai-demo-actions__grid">
+        <article class="gai-enterprise-card">
+          <div class="gai-enterprise-card__visual">
+            <span class="gai-badge gai-badge--new gai-enterprise-card__tag">Önerilen</span>
+            <div class="gai-enterprise-card__visual-overlay">
+              <h2 class="gai-enterprise-card__visual-title">Demo Restoran</h2>
+              <div class="gai-enterprise-card__visual-meta">
+                <span>★ 4.8 (128)</span>
+                <span class="gai-badge gai-badge--success">Açık</span>
+              </div>
+            </div>
+          </div>
+          <div class="gai-enterprise-card__body">
+            <h2>Demo Restoran</h2>
+            <p>Rezervasyon, menü ve ön sipariş müşteri deneyimini gerçek restoran akışıyla görün.</p>
+            <a class="gai-btn gai-btn--accent" href="/r/demo-cafe">Demo Restorana Git</a>
+            <span class="gai-enterprise-card__hint">Müşteri olarak giriş yapın</span>
+          </div>
+        </article>
+
+        <article class="gai-enterprise-card">
+          <div class="gai-enterprise-card__visual gai-enterprise-card__visual--kitchen">
+            <div class="gai-enterprise-card__visual-overlay">
+              <h2 class="gai-enterprise-card__visual-title">KDS Lite Mutfak</h2>
+              <div class="gai-enterprise-card__visual-meta">
+                <span>Canlı mutfak akışı</span>
+                <span class="gai-badge gai-badge--success">Aktif</span>
+              </div>
+            </div>
+          </div>
+          <div class="gai-enterprise-card__body">
+            <h2>KDS Lite</h2>
+            <p>KDS Lite mutfak ekranında sipariş kuyruğunu yönetin ve durum güncellemelerini canlı izleyin.</p>
+            <a class="gai-btn gai-btn--secondary" href="/garson/mutfak/?businessId=demo-cafe">Mutfak Ekranını Aç</a>
+            <span class="gai-enterprise-card__hint">Yönetici olarak giriş yapın</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="gai-demo-features gai-container" aria-labelledby="garson-demo-features-title">
+      <h2 id="garson-demo-features-title" class="gai-section-title">Demo platform özellikleri</h2>
+      <p class="gai-section-lead">Gerçek restoran operasyonlarını güvenli demo ortamında deneyimleyin.</p>
+      <ul class="gai-demo-features__grid">
+        <li class="gai-feature-card">
+          <div class="gai-feature-card__icon gai-feature-card__icon--green" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+          </div>
+          <h3>Gerçek Zamanlı</h3>
+          <p>Sipariş ve mutfak durumu anlık güncellenir; demo akışı canlı operasyon hissi verir.</p>
+        </li>
+        <li class="gai-feature-card">
+          <div class="gai-feature-card__icon gai-feature-card__icon--purple" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2z" clip-rule="evenodd"/></svg>
+          </div>
+          <h3>Yapay Zeka</h3>
+          <p>AI sipariş analizi ve akıllı öneriler demo restoranda önizlenebilir.</p>
+        </li>
+        <li class="gai-feature-card">
+          <div class="gai-feature-card__icon gai-feature-card__icon--orange" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3-3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 0a1 1 0 100 2h.01a1 1 0 100-2H9zm2 0a1 1 0 100 2h.01a1 1 0 100-2h-.01z" clip-rule="evenodd"/></svg>
+          </div>
+          <h3>KDS Lite</h3>
+          <p>Profesyonel mutfak ekranı ile sipariş kuyruğunu kolon bazlı yönetin.</p>
+        </li>
+        <li class="gai-feature-card">
+          <div class="gai-feature-card__icon gai-feature-card__icon--cyan" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          </div>
+          <h3>Kurumsal Güvenlik</h3>
+          <p>KVKK uyumlu altyapı ve güvenli demo ortamı ile risk almadan deneyin.</p>
+        </li>
+      </ul>
     </section>
   </main>
+
+  <footer class="garsonai-pages-footer">
+    <div class="gai-container">
+      <nav class="garsonai-pages-footer__nav" aria-label="GarsonAI alt bağlantılar">
+        <a href="/garson/">GarsonAI</a>
+        <a href="/garson/demo/">Demo</a>
+        <a href="/garson/basvuru/">Başvuru</a>
+        <a href="/">isteBul ana sayfa</a>
+      </nav>
+      <p class="garsonai-pages-footer__copy">© <span id="garson-year">2026</span> isteBul · GarsonAI</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var toggle = document.getElementById('garson-launch-nav-toggle');
+      var nav = document.getElementById('garson-launch-nav');
+      if (toggle && nav) {
+        toggle.addEventListener('click', function () {
+          var open = nav.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+      var year = document.getElementById('garson-year');
+      if (year) year.textContent = String(new Date().getFullYear());
+    })();
+  </script>
 </body>
 </html>
