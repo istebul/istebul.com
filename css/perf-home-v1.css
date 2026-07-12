@@ -14,6 +14,10 @@ html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-guides-strip {
   contain-intrinsic-size: 1px 720px;
 }
 
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-garsonai {
+  contain-intrinsic-size: 1px 320px;
+}
+
 html.ib-ds-v4.ib-premium-v7 #home.ib-hero-premium-dark {
   contain: layout style paint;
 }
@@ -32,5 +36,9 @@ html.ib-ds-v4.ib-premium-v7 #home-category-grid {
   html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #landing-faq,
   html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-guides-strip {
     contain-intrinsic-size: 1px 560px;
+  }
+
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-garsonai {
+    contain-intrinsic-size: 1px 280px;
   }
 }
