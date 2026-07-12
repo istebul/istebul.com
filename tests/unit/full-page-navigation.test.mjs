@@ -14,6 +14,9 @@ test('isFullPageNavigation detects Auto and partner HTML', () => {
   assert.equal(isFullPageNavigation('/konut'), true);
   assert.equal(isFullPageNavigation('/rehber/suv-mi-sedan-mi/'), true);
   assert.equal(isFullPageNavigation('/rehber/tco-rehberi'), true);
+  assert.equal(isFullPageNavigation('/garson/'), true);
+  assert.equal(isFullPageNavigation('/garson/demo/'), true);
+  assert.equal(isFullPageNavigation('/garson/panel/'), true);
 });
 
 test('resolveFullPageNavigation normalizes Auto trailing slash', () => {
@@ -21,4 +24,7 @@ test('resolveFullPageNavigation normalizes Auto trailing slash', () => {
   assert.equal(resolveFullPageNavigation('/partner-olun'), '/partner-olun.html');
   assert.equal(resolveFullPageNavigation('/rehber/finansman-rehberi'), '/rehber/finansman-rehberi/');
   assert.equal(resolveFullPageNavigation('/rehber/'), '/rehber/');
+  assert.equal(resolveFullPageNavigation('/garson'), '/garson/');
+  assert.equal(resolveFullPageNavigation('/garson/'), '/garson/');
+  assert.equal(resolveFullPageNavigation('/garson/demo'), '/garson/demo/');
 });

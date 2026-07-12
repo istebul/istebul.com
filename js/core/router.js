@@ -277,7 +277,7 @@ export class Router {
         const path = stripped.replace(/\/$/, '') || '/';
 
         const fullPageTarget = resolveFullPageNavigation(path);
-        if (fullPageTarget && fullPageTarget !== rawPath) {
+        if (fullPageTarget) {
             window.location.replace(fullPageTarget);
             return;
         }
