@@ -110,10 +110,6 @@ export async function processWebhookPost(rawBody, signatureHeader, options = {})
     };
   }
 
-  for (const key of dedupeKeys) {
-    markEventProcessed(key);
-  }
-
   try {
     const pipeline = await runWhatsAppOrderPipeline(payload, {
       client: options.client,
@@ -123,6 +119,10 @@ export async function processWebhookPost(rawBody, signatureHeader, options = {})
       config,
       restaurantMap: config.restaurantMap
     });
+
+    for (const key of dedupeKeys) {
+      markEventProcessed(key);
+    }
 
     logAudit('whatsapp_webhook_processed', {
       processed: pipeline.processed,

@@ -56,6 +56,7 @@ export class WhatsAppCloudApiClient {
         body: JSON.stringify(payload)
       },
       {
+        maxAttempts: 1,
         onRetry: (error, attempt) => {
           logRetry('whatsapp_api_retry', {
             attempt,
@@ -71,7 +72,12 @@ export class WhatsAppCloudApiClient {
     if (!response.ok) {
       logError('whatsapp_api_error', {
         status: response.status,
-        body
+        errorType: /** @type {Record<string, unknown>} */ (
+          /** @type {Record<string, unknown>} */ (body).error || {}
+        ).type,
+        errorCode: /** @type {Record<string, unknown>} */ (
+          /** @type {Record<string, unknown>} */ (body).error || {}
+        ).code
       });
       throw new WhatsAppCloudApiError('WhatsApp API isteği başarısız oldu.', {
         status: response.status,
