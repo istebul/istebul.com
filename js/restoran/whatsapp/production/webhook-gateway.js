@@ -22,6 +22,7 @@ import {
 } from './dedupe.js';
 import { loadWhatsAppProductionConfig } from './config.js';
 import { resolveRestaurantFromPhoneNumberId } from './restaurant-routing.js';
+import { logAudit } from './logging.js';
 import { verifyWebhookSignature } from './signature.js';
 
 export const WEBHOOK_GATEWAY_VERSION = 'p6-e.1.0.0';
@@ -182,16 +183,7 @@ export function getWebhookGatewayMetrics() {
  * @param {{ restaurant_id?: string, message_id?: string, latency?: number, result?: string }} fields
  */
 export function logGatewayEvent(event, fields = {}) {
-  const payload = {
-    ts: new Date().toISOString(),
-    service: 'garson-whatsapp-webhook-gateway',
-    event,
-    ...(fields.restaurant_id ? { restaurant_id: fields.restaurant_id } : {}),
-    ...(fields.message_id ? { message_id: fields.message_id } : {}),
-    ...(fields.latency != null ? { latency: fields.latency } : {}),
-    ...(fields.result ? { result: fields.result } : {})
-  };
-  console.log(JSON.stringify(payload));
+  logAudit(event, fields);
 }
 
 /**
