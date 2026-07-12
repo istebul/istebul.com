@@ -30,23 +30,12 @@ export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home-guides-strip'
 ]);
 
-/** Promo blocks revealed with marketing shell (outside lean HOMEPAGE_SECTION_IDS contract). */
-const HOMEPAGE_PROMO_SECTION_IDS = Object.freeze(['home-garsonai']);
-
-function isHomeMarketingSection(sectionId) {
-    return (
-        HOMEPAGE_SECTION_IDS.includes(sectionId) ||
-        HOMEPAGE_PROMO_SECTION_IDS.includes(sectionId)
-    );
-}
-
 /** Hash targets on the marketing page. */
 export const MARKETING_HASH_IDS = Object.freeze([
     'home',
     'home-economic-indicators',
     'home-vertical-focus',
     'home-features-strip',
-    'home-garsonai',
     'how-it-works',
     'pricing',
     'partner-enterprise',
@@ -191,7 +180,7 @@ export class Router {
         });
 
         document.querySelectorAll('section[id]').forEach((section) => {
-            const isMarketing = isHomeMarketingSection(section.id);
+            const isMarketing = HOMEPAGE_SECTION_IDS.includes(section.id);
             if (isMarketing && !section.hasAttribute('data-landing-excluded')) {
                 section.classList.remove('hidden');
                 section.removeAttribute('hidden');
@@ -424,7 +413,7 @@ export class Router {
 
             if (
                 section.hasAttribute('data-private-section') ||
-                isHomeMarketingSection(section.id)
+                HOMEPAGE_SECTION_IDS.includes(section.id)
             ) {
                 section.classList.add('hidden');
                 section.setAttribute('hidden', '');
@@ -471,7 +460,7 @@ export class Router {
             section.style.setProperty('display', 'none', 'important');
         });
 
-        [...HOMEPAGE_SECTION_IDS, ...HOMEPAGE_PROMO_SECTION_IDS].forEach((sectionId) => {
+        HOMEPAGE_SECTION_IDS.forEach((sectionId) => {
             const marketingSection = document.getElementById(sectionId);
             if (!marketingSection) return;
             marketingSection.style.setProperty('display', 'none', 'important');
