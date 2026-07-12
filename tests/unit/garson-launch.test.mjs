@@ -44,13 +44,13 @@ test('garson landing page exists with hero copy', () => {
   assert.doesNotMatch(html, /kds-admin\.js/);
 });
 
-test('homepage exposes GarsonAI marketing links', () => {
+test('homepage keeps GarsonAI nav link without teaser section', () => {
   const html = readPage('index.html');
   assert.match(html, /href="\/garson\/"/);
-  assert.match(html, /id="home-garsonai"/);
-  assert.match(html, /GarsonAI — restoran operasyon platformu/);
-  assert.match(html, /GarsonAI'yi Keşfet/);
-  assert.match(html, /ib-home-garsonai-preview/);
+  assert.match(html, /nav-dropdown-link[^>]*>GarsonAI</);
+  assert.doesNotMatch(html, /id="home-garsonai"/);
+  assert.doesNotMatch(html, /GarsonAI'yi Keşfet/);
+  assert.doesNotMatch(html, /ib-home-garsonai/);
   assert.doesNotMatch(html, /garson\/demo/);
   assert.doesNotMatch(html, /\/restoran\//);
 });
