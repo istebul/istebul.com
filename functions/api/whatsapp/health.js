@@ -14,9 +14,6 @@ const corsHeaders = {
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: corsHeaders });
 
-/** @param {Record<string, string>} env @param {string} key */
-const envPresent = (env, key) => Boolean(String(env[key] || '').trim());
-
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: corsHeaders });
 }
@@ -30,10 +27,11 @@ export async function onRequestGet(context) {
       ...health,
       supabaseConfigured,
       debug: {
-        verifyTokenPresent: envPresent(env, 'WHATSAPP_VERIFY_TOKEN'),
-        accessTokenPresent: envPresent(env, 'WHATSAPP_ACCESS_TOKEN'),
-        businessAccountPresent: envPresent(env, 'WHATSAPP_BUSINESS_ACCOUNT_ID'),
-        metaSecretPresent: envPresent(env, 'META_APP_SECRET')
+        verifyTokenPresent: Boolean(env.WHATSAPP_VERIFY_TOKEN),
+        accessTokenPresent: Boolean(env.WHATSAPP_ACCESS_TOKEN),
+        phoneNumberPresent: Boolean(env.WHATSAPP_PHONE_NUMBER_ID),
+        businessAccountPresent: Boolean(env.WHATSAPP_BUSINESS_ACCOUNT_ID),
+        metaSecretPresent: Boolean(env.META_APP_SECRET)
       }
     },
     health.configured ? 200 : 503
