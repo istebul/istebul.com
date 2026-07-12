@@ -1,0 +1,658 @@
+/**
+ * GarsonAI Enterprise Auth & Onboarding — /garson/giris/ · /garson/basvuru/
+ * Depends on garsonai-design-system-v1.css + garsonai-landing-v1.css
+ */
+
+.gai-auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.gai-auth-page .gai-auth-main {
+  flex: 1;
+  padding: var(--gai-space-8) var(--gai-space-4) var(--gai-space-12);
+}
+
+.gai-auth-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--gai-space-10);
+  align-items: center;
+  width: var(--gai-container);
+  margin-inline: auto;
+}
+
+.gai-auth-split--reverse {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.gai-auth-copy {
+  animation: gai-fade-up 0.6s var(--gai-ease) both;
+}
+
+.gai-auth-copy__badge {
+  margin-bottom: var(--gai-space-4);
+}
+
+.gai-auth-copy__title {
+  margin: 0 0 var(--gai-space-4);
+  font-size: clamp(var(--gai-text-3xl), 4vw, var(--gai-text-5xl));
+  font-weight: 800;
+  line-height: var(--gai-leading-tight);
+  letter-spacing: -0.03em;
+}
+
+.gai-auth-copy__title span {
+  display: block;
+  color: var(--gai-accent);
+}
+
+.gai-auth-copy__lead {
+  margin: 0 0 var(--gai-space-6);
+  max-width: 46ch;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-lg);
+  line-height: var(--gai-leading-normal);
+}
+
+.gai-auth-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gai-space-3);
+  margin: var(--gai-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gai-auth-trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gai-space-2);
+  padding: var(--gai-space-2) var(--gai-space-3);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-full);
+  background: var(--gai-bg-card);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+}
+
+.gai-auth-trust svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--gai-success);
+}
+
+/* ── Glass form card ── */
+
+.gai-glass-card {
+  padding: var(--gai-space-8);
+  border: 1px solid var(--gai-border-strong);
+  border-radius: var(--gai-radius-xl);
+  background: var(--gai-bg-glass);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow: var(--gai-shadow-lg);
+  animation: gai-fade-up 0.6s var(--gai-ease) 0.1s both;
+}
+
+.gai-glass-card__title {
+  margin: 0 0 var(--gai-space-2);
+  font-size: var(--gai-text-xl);
+  font-weight: 700;
+}
+
+.gai-glass-card__subtitle {
+  margin: 0 0 var(--gai-space-6);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+}
+
+/* ── Form fields with icons ── */
+
+.gai-field {
+  display: grid;
+  gap: var(--gai-space-2);
+  margin-bottom: var(--gai-space-4);
+}
+
+.gai-field label {
+  font-size: var(--gai-text-sm);
+  font-weight: 600;
+  color: var(--gai-text);
+}
+
+.gai-field__control {
+  position: relative;
+}
+
+.gai-field__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--gai-space-4);
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--gai-text-dim);
+  pointer-events: none;
+  transition: color var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-field__control:focus-within .gai-field__icon {
+  color: var(--gai-primary);
+}
+
+.gai-field input,
+.gai-field select,
+.gai-field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--gai-space-4);
+  padding-left: calc(var(--gai-space-4) + 28px);
+  border: 1px solid var(--gai-border-strong);
+  border-radius: var(--gai-radius-md);
+  background: var(--gai-bg-elevated);
+  color: var(--gai-text);
+  font-family: inherit;
+  font-size: var(--gai-text-base);
+  transition:
+    border-color var(--gai-duration-fast) var(--gai-ease),
+    box-shadow var(--gai-duration-fast) var(--gai-ease),
+    transform var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-field textarea {
+  min-height: 112px;
+  padding-top: var(--gai-space-3);
+  resize: vertical;
+}
+
+.gai-field select {
+  padding-left: var(--gai-space-4);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 20 20'%3E%3Cpath d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--gai-space-4) center;
+  padding-right: var(--gai-space-8);
+}
+
+.gai-field input:focus,
+.gai-field select:focus,
+.gai-field textarea:focus {
+  outline: none;
+  border-color: var(--gai-primary);
+  box-shadow: 0 0 0 3px var(--gai-primary-soft);
+  transform: translateY(-1px);
+}
+
+.gai-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--gai-space-3);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--gai-radius-sm);
+  background: transparent;
+  color: var(--gai-text-dim);
+  cursor: pointer;
+  transition: color var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-field__toggle:hover {
+  color: var(--gai-text);
+}
+
+.gai-field__toggle:focus-visible {
+  outline: 2px solid var(--gai-primary);
+  outline-offset: 2px;
+}
+
+.gai-field--no-icon input,
+.gai-field--no-icon select,
+.gai-field--no-icon textarea {
+  padding-left: var(--gai-space-4);
+}
+
+.gai-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gai-space-4);
+  margin-bottom: var(--gai-space-5);
+}
+
+.gai-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gai-space-2);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+  cursor: pointer;
+}
+
+.gai-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gai-primary);
+}
+
+.gai-link-muted {
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+  text-decoration: none;
+  transition: color var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-link-muted:hover {
+  color: var(--gai-accent);
+}
+
+.gai-form-actions {
+  display: grid;
+  gap: var(--gai-space-3);
+}
+
+.gai-form-actions .gai-btn {
+  width: 100%;
+}
+
+.gai-btn--glow:hover {
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.35), var(--gai-shadow-md);
+}
+
+.gai-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.gai-btn.is-loading::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  margin-left: var(--gai-space-2);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: gai-spin 0.7s linear infinite;
+}
+
+@keyframes gai-spin {
+  to { transform: rotate(360deg); }
+}
+
+.gai-notice {
+  margin-top: var(--gai-space-4);
+  padding: var(--gai-space-3) var(--gai-space-4);
+  border-radius: var(--gai-radius-md);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #fca5a5;
+  font-size: var(--gai-text-sm);
+}
+
+.gai-success-banner {
+  margin-top: var(--gai-space-4);
+  padding: var(--gai-space-4);
+  border-radius: var(--gai-radius-md);
+  background: var(--gai-success-soft);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+  font-size: var(--gai-text-sm);
+  animation: gai-success-pop 0.5s var(--gai-ease);
+}
+
+@keyframes gai-success-pop {
+  0% { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Login dashboard mockup ── */
+
+.gai-login-dashboard {
+  position: relative;
+  animation: gai-fade-up 0.6s var(--gai-ease) 0.2s both;
+}
+
+.gai-login-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gai-space-3);
+}
+
+.gai-login-stat {
+  padding: var(--gai-space-4);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-lg);
+  background: var(--gai-bg-card);
+  transition:
+    transform var(--gai-duration) var(--gai-ease),
+    box-shadow var(--gai-duration) var(--gai-ease);
+}
+
+.gai-login-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--gai-shadow-md);
+}
+
+.gai-login-stat__label {
+  display: block;
+  margin-bottom: var(--gai-space-2);
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--gai-tracking-wide);
+}
+
+.gai-login-stat__value {
+  font-size: var(--gai-text-2xl);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.gai-login-stat__hint {
+  display: block;
+  margin-top: var(--gai-space-2);
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-xs);
+}
+
+.gai-login-stat--wide {
+  grid-column: 1 / -1;
+}
+
+.gai-login-stat--accent {
+  border-color: rgba(249, 115, 22, 0.35);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), var(--gai-bg-card));
+}
+
+.gai-login-stat--primary {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), var(--gai-bg-card));
+}
+
+.gai-login-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gai-space-2);
+  margin-top: var(--gai-space-4);
+  padding: var(--gai-space-2) var(--gai-space-3);
+  border-radius: var(--gai-radius-full);
+  background: var(--gai-success-soft);
+  color: #86efac;
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+}
+
+.gai-login-pulse::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gai-success);
+  animation: gai-pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes gai-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ── Onboarding timeline ── */
+
+.gai-onboard-visual {
+  animation: gai-fade-up 0.6s var(--gai-ease) 0.15s both;
+}
+
+.gai-timeline {
+  margin: 0 0 var(--gai-space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.gai-timeline__item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--gai-space-4);
+  padding-bottom: var(--gai-space-5);
+  position: relative;
+}
+
+.gai-timeline__item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 40px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gai-primary), transparent);
+}
+
+.gai-timeline__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gai-primary-soft);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+  font-size: var(--gai-text-sm);
+  font-weight: 700;
+}
+
+.gai-timeline__item--active .gai-timeline__num {
+  background: var(--gai-accent-soft);
+  border-color: rgba(249, 115, 22, 0.4);
+  color: var(--gai-accent);
+}
+
+.gai-timeline__title {
+  margin: 0 0 var(--gai-space-1);
+  font-size: var(--gai-text-base);
+  font-weight: 700;
+}
+
+.gai-timeline__desc {
+  margin: 0;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+}
+
+.gai-info-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gai-space-3);
+}
+
+.gai-info-card {
+  padding: var(--gai-space-4);
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-md);
+  background: var(--gai-bg-card);
+  transition: transform var(--gai-duration) var(--gai-ease);
+}
+
+.gai-info-card:hover {
+  transform: translateY(-2px);
+}
+
+.gai-info-card__label {
+  display: block;
+  margin-bottom: var(--gai-space-1);
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--gai-tracking-wide);
+}
+
+.gai-info-card__value {
+  font-size: var(--gai-text-lg);
+  font-weight: 800;
+  color: var(--gai-text);
+}
+
+.gai-info-card--highlight .gai-info-card__value {
+  color: var(--gai-accent);
+}
+
+/* ── Form grid (basvuru) ── */
+
+.gai-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gai-space-4) var(--gai-space-5);
+}
+
+.gai-form-grid .gai-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ── Footer ── */
+
+.gai-auth-footer {
+  padding: var(--gai-space-6) var(--gai-space-4);
+  border-top: 1px solid var(--gai-border);
+  background: var(--gai-bg-elevated);
+}
+
+.gai-auth-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gai-space-4) var(--gai-space-6);
+  margin-bottom: var(--gai-space-3);
+}
+
+.gai-auth-footer__nav a {
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-sm);
+  text-decoration: none;
+  transition: color var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-auth-footer__nav a:hover {
+  color: var(--gai-accent);
+}
+
+.gai-auth-footer__copy {
+  margin: 0;
+  text-align: center;
+  color: var(--gai-text-dim);
+  font-size: var(--gai-text-xs);
+}
+
+.gai-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes gai-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 960px) {
+  .gai-auth-split,
+  .gai-auth-split--reverse {
+    grid-template-columns: 1fr;
+    gap: var(--gai-space-8);
+  }
+
+  .gai-login-dashboard {
+    order: -1;
+  }
+
+  .gai-onboard-visual {
+    order: -1;
+  }
+
+  #garson-auth-nav.is-open {
+    display: flex;
+    position: absolute;
+    top: calc(100% + var(--gai-space-2));
+    left: var(--gai-space-4);
+    right: var(--gai-space-4);
+    flex-direction: column;
+    gap: var(--gai-space-1);
+    padding: var(--gai-space-4);
+    border: 1px solid var(--gai-border);
+    border-radius: var(--gai-radius-lg);
+    background: var(--gai-bg-elevated);
+    box-shadow: var(--gai-shadow-md);
+    z-index: 40;
+  }
+
+  #garson-auth-nav.is-open a {
+    padding: var(--gai-space-3);
+    border-radius: var(--gai-radius-sm);
+    color: var(--gai-text-muted);
+    text-decoration: none;
+    font-size: var(--gai-text-sm);
+  }
+
+  #garson-auth-nav.is-open a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--gai-text);
+  }
+}
+
+@media (max-width: 640px) {
+  .gai-auth-page .gai-auth-main {
+    padding: var(--gai-space-6) var(--gai-space-3) var(--gai-space-10);
+  }
+
+  .gai-glass-card {
+    padding: var(--gai-space-6);
+  }
+
+  .gai-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gai-login-dashboard__grid,
+  .gai-info-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .gai-field-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gai-auth-copy,
+  .gai-glass-card,
+  .gai-login-dashboard,
+  .gai-onboard-visual,
+  .gai-login-pulse::before {
+    animation: none !important;
+  }
+}
