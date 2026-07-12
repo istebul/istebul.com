@@ -33,6 +33,7 @@
       </div>
       <nav class="gai-announce__right" aria-label="Hızlı bağlantılar">
         <a href="/garson/#garson-features">Özellikler</a>
+        <a href="/garson/#garson-pricing">Fiyatlandırma</a>
         <a href="/garson/demo/">Demo</a>
         <a href="/garson/giris/">Müşteri Girişi</a>
       </nav>
@@ -47,61 +48,60 @@
       </a>
 
       <nav id="garson-launch-nav" class="gai-header__nav" aria-label="GarsonAI navigasyonu">
-        <a href="/garson/">Ana Sayfa</a>
-        <a href="/garson/demo/">Demo</a>
         <a href="/garson/#garson-features">Özellikler</a>
+        <a href="/garson/#garson-steps">Çözümler</a>
+        <a href="/garson/#garson-pricing">Fiyatlandırma</a>
+        <a href="/garson/#garson-faq">Kaynaklar</a>
+        <a href="/garson/demo/">Demo</a>
       </nav>
 
       <div class="gai-header__actions">
-        <a class="gai-btn gai-btn--secondary gai-btn--sm" href="/garson/giris/">Giriş</a>
-        <a class="gai-btn gai-btn--accent gai-btn--sm" href="/garson/basvuru/">Restoranı Başlat</a>
+        <a class="gai-btn gai-btn--secondary gai-btn--sm" href="/garson/giris/">Giriş Yap</a>
+        <a class="gai-btn gai-btn--accent gai-btn--sm" href="/garson/basvuru/">Restoranını Başlat</a>
         <button class="gai-header__toggle" type="button" id="garson-launch-nav-toggle" aria-controls="garson-launch-nav" aria-expanded="false" aria-label="Menü">☰</button>
       </div>
     </div>
   </header>
 
   <main class="gai-container gai-mutfak-main" id="kds-admin-main">
-    <div class="gai-mutfak-hero">
-      <div class="gai-mutfak-hero__copy">
-        <p class="gai-mutfak-hero__eyebrow">
-          <span class="gai-mutfak-hero__live">
-            <span class="gai-mutfak-hero__live-dot" aria-hidden="true"></span>
-            Canlı
-          </span>
-          Canlı Operasyon
-        </p>
-        <h1 class="gai-mutfak-hero__title">GarsonAI Mutfak</h1>
-        <p class="gai-mutfak-hero__lead">Sipariş kuyruğunu yönetin ve durum güncelleyin.</p>
-      </div>
+    <section class="gai-mutfak-hero gai-animate-in" aria-labelledby="gai-mutfak-title">
+      <div class="gai-mutfak-hero__grid">
+        <div class="gai-mutfak-hero__copy">
+          <p class="gai-badge gai-badge--success gai-mutfak-hero__badge">Canlı Operasyon</p>
+          <h1 id="gai-mutfak-title" class="gai-mutfak-hero__title">GarsonAI Mutfak Operasyon Merkezi</h1>
+          <p class="gai-mutfak-hero__lead">Restoranınızdaki tüm siparişleri tek ekrandan yönetin.</p>
+        </div>
 
-      <div class="gai-mutfak-toolbar" aria-label="Mutfak araçları">
-        <div class="gai-mutfak-toolbar__group">
+        <div class="gai-mutfak-toolbar" aria-label="Mutfak araçları">
+          <button type="button" class="gai-glass-btn kds-admin-toolbar__refresh" id="kds-admin-refresh">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+            Yenile
+          </button>
           <label class="visually-hidden" for="kds-admin-filter">Filtre</label>
-          <select class="gai-mutfak-filter" id="kds-admin-filter" aria-label="Sipariş filtresi">
-            <option value="all">Tümü</option>
+          <select class="gai-glass-btn gai-glass-btn--select" id="kds-admin-filter" aria-label="Sipariş filtresi">
+            <option value="all">Filtre</option>
             <option value="dine-in">Masa</option>
             <option value="takeaway">Paket</option>
           </select>
-          <button type="button" class="gai-btn gai-btn--ghost gai-btn--sm" id="kds-admin-sound" aria-pressed="true" aria-label="Ses açık">
-            Ses Açık
+          <button type="button" class="gai-glass-btn" id="kds-admin-sound" aria-pressed="true" aria-label="Ses açık">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.617 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.617l3.766-3.793a1 1 0 011.617.793zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <span id="kds-admin-sound-label">Ses</span>
           </button>
-          <button type="button" class="gai-btn gai-btn--ghost gai-btn--sm" id="kds-admin-fullscreen" aria-label="Tam ekran">
+          <button type="button" class="gai-glass-btn" id="kds-admin-fullscreen" aria-label="Tam ekran">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd"/></svg>
             Tam Ekran
           </button>
         </div>
-        <button type="button" class="gai-btn gai-btn--accent gai-btn--sm kds-admin-toolbar__refresh" id="kds-admin-refresh">
-          Yenile
-        </button>
       </div>
-    </div>
+    </section>
 
-    <div class="gai-mutfak-kpis" aria-label="Canlı KPI" id="kds-admin-kpis">
-      <article class="gai-mutfak-kpi gai-mutfak-kpi--new">
-        <span class="gai-mutfak-kpi__label">Yeni Sipariş</span>
-        <span class="gai-mutfak-kpi__value" id="kds-kpi-new">0</span>
+    <div class="gai-mutfak-kpis gai-animate-in gai-animate-in--delay-1" aria-label="Canlı KPI" id="kds-admin-kpis">
+      <article class="gai-mutfak-kpi gai-mutfak-kpi--today">
+        <span class="gai-mutfak-kpi__label">Bugünkü Sipariş</span>
+        <span class="gai-mutfak-kpi__value" id="kds-kpi-today">0</span>
       </article>
       <article class="gai-mutfak-kpi gai-mutfak-kpi--preparing">
-        <span class="gai-mutfak-kpi__label">Hazırlanıyor</span>
+        <span class="gai-mutfak-kpi__label">Hazırlanan</span>
         <span class="gai-mutfak-kpi__value" id="kds-kpi-preparing">0</span>
       </article>
       <article class="gai-mutfak-kpi gai-mutfak-kpi--ready">
@@ -112,9 +112,13 @@
         <span class="gai-mutfak-kpi__label">Teslim</span>
         <span class="gai-mutfak-kpi__value" id="kds-kpi-delivered">0</span>
       </article>
-      <article class="gai-mutfak-kpi gai-mutfak-kpi--total">
-        <span class="gai-mutfak-kpi__label">Toplam Sipariş</span>
-        <span class="gai-mutfak-kpi__value" id="kds-kpi-total">0</span>
+      <article class="gai-mutfak-kpi gai-mutfak-kpi--avg">
+        <span class="gai-mutfak-kpi__label">Ortalama Hazırlama Süresi</span>
+        <span class="gai-mutfak-kpi__value" id="kds-kpi-avg">—</span>
+      </article>
+      <article class="gai-mutfak-kpi gai-mutfak-kpi--staff">
+        <span class="gai-mutfak-kpi__label">Canlı Personel</span>
+        <span class="gai-mutfak-kpi__value" id="kds-kpi-staff">—</span>
       </article>
     </div>
 
@@ -130,11 +134,14 @@
       <p id="kds-admin-fallback-text">Canlı mutfak ekranı yakında aktif olacak.</p>
     </div>
 
-    <p id="kds-admin-empty" class="gai-mutfak-status gai-mutfak-status--empty kds-admin-empty" hidden role="status" aria-live="polite"></p>
+    <div class="gai-mutfak-empty-wrap" id="kds-admin-empty-wrap" hidden>
+      <p id="kds-admin-empty" class="gai-mutfak-status gai-mutfak-status--empty kds-admin-empty" hidden role="status" aria-live="polite"></p>
+      <button type="button" class="gai-btn gai-btn--accent gai-btn--sm" id="kds-demo-orders-cta" hidden>Demo Siparişlerini Göster</button>
+    </div>
 
-    <section id="kds-admin-board" class="kds-admin-board" hidden aria-label="Mutfak sipariş panosu">
+    <section id="kds-admin-board" class="kds-admin-board gai-animate-in gai-animate-in--delay-2" hidden aria-label="Mutfak sipariş panosu">
       <div class="kds-admin-column">
-        <h2 class="kds-admin-column__title" data-count="0">Yeni Siparişler</h2>
+        <h2 class="kds-admin-column__title" data-count="0">Yeni</h2>
         <p id="kds-admin-column-new-empty" class="kds-admin-column__empty">Sipariş yok</p>
         <div id="kds-admin-column-new" class="kds-admin-column__list"></div>
       </div>
@@ -151,15 +158,21 @@
     </section>
   </main>
 
-  <footer class="garsonai-pages-footer">
+  <footer class="garson-launch-footer">
     <div class="gai-container">
-      <nav class="garsonai-pages-footer__nav" aria-label="GarsonAI alt bağlantılar">
+      <nav class="garson-launch-footer__nav" aria-label="GarsonAI alt bağlantılar">
         <a href="/garson/">GarsonAI</a>
         <a href="/garson/demo/">Demo</a>
         <a href="/garson/basvuru/">Başvuru</a>
+        <a href="/restoran/">Müşteri keşfi</a>
         <a href="/">isteBul ana sayfa</a>
       </nav>
-      <p class="garsonai-pages-footer__copy">© <span id="garson-year">2026</span> isteBul · GarsonAI</p>
+      <p class="site-footer-legal">
+        <a href="/gizlilik.html">Gizlilik</a> ·
+        <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> ·
+        <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
+      </p>
+      <p class="garson-launch-footer__copy">© <span id="garson-year">2026</span> isteBul · GarsonAI</p>
     </div>
   </footer>
 
@@ -178,11 +191,12 @@
       if (year) year.textContent = String(new Date().getFullYear());
 
       var soundBtn = document.getElementById('kds-admin-sound');
+      var soundLabel = document.getElementById('kds-admin-sound-label');
       if (soundBtn) {
         soundBtn.addEventListener('click', function () {
           var on = soundBtn.getAttribute('aria-pressed') !== 'true';
           soundBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-          soundBtn.textContent = on ? 'Ses Açık' : 'Ses Kapalı';
+          if (soundLabel) soundLabel.textContent = 'Ses';
         });
       }
 
@@ -198,6 +212,8 @@
         });
       }
 
+      var isDemoMode = /(?:\?|&)businessId=demo-cafe(?:&|$)/.test(window.location.search);
+
       function countColumn(id) {
         var list = document.getElementById(id);
         if (!list) return 0;
@@ -205,33 +221,74 @@
       }
 
       function updateKpis() {
-        var cols = [
-          { list: 'kds-admin-column-new', kpi: 'kds-kpi-new', title: 0 },
-          { list: 'kds-admin-column-preparing', kpi: 'kds-kpi-preparing', title: 1 },
-          { list: 'kds-admin-column-ready', kpi: 'kds-kpi-ready', title: 2 }
-        ];
-        var total = 0;
-        var titles = document.querySelectorAll('.kds-admin-column__title');
+        var newCount = countColumn('kds-admin-column-new');
+        var preparingCount = countColumn('kds-admin-column-preparing');
+        var readyCount = countColumn('kds-admin-column-ready');
+        var activeTotal = newCount + preparingCount + readyCount;
 
-        cols.forEach(function (col, index) {
-          var count = countColumn(col.list);
-          total += count;
-          var kpiEl = document.getElementById(col.kpi);
-          if (kpiEl) kpiEl.textContent = String(count);
+        var todayEl = document.getElementById('kds-kpi-today');
+        var preparingEl = document.getElementById('kds-kpi-preparing');
+        var readyEl = document.getElementById('kds-kpi-ready');
+        var deliveredEl = document.getElementById('kds-kpi-delivered');
+        var avgEl = document.getElementById('kds-kpi-avg');
+        var staffEl = document.getElementById('kds-kpi-staff');
+
+        if (todayEl) todayEl.textContent = String(isDemoMode && !activeTotal ? 126 : activeTotal);
+        if (preparingEl) preparingEl.textContent = String(preparingCount);
+        if (readyEl) readyEl.textContent = String(readyCount);
+        if (deliveredEl) deliveredEl.textContent = String(isDemoMode && !activeTotal ? 118 : 0);
+        if (avgEl) avgEl.textContent = activeTotal ? '12 dk' : '—';
+        if (staffEl) staffEl.textContent = isDemoMode ? '4' : '—';
+
+        var titles = document.querySelectorAll('.kds-admin-column__title');
+        var counts = [newCount, preparingCount, readyCount];
+        counts.forEach(function (count, index) {
           if (titles[index]) titles[index].setAttribute('data-count', String(count));
         });
+      }
 
-        var totalEl = document.getElementById('kds-kpi-total');
-        if (totalEl) totalEl.textContent = String(total);
+      function syncEmptyState() {
+        var empty = document.getElementById('kds-admin-empty');
+        var wrap = document.getElementById('kds-admin-empty-wrap');
+        var demoCta = document.getElementById('kds-demo-orders-cta');
+        if (!empty || !wrap) return;
+
+        var showEmpty = !empty.hidden;
+        wrap.hidden = !showEmpty;
+        if (demoCta) demoCta.hidden = !(showEmpty && isDemoMode);
+      }
+
+      var demoCta = document.getElementById('kds-demo-orders-cta');
+      if (demoCta) {
+        demoCta.addEventListener('click', function () {
+          var refresh = document.getElementById('kds-admin-refresh');
+          if (refresh) refresh.click();
+        });
       }
 
       var board = document.getElementById('kds-admin-board');
       if (board && typeof MutationObserver !== 'undefined') {
-        var observer = new MutationObserver(updateKpis);
+        var observer = new MutationObserver(function () {
+          updateKpis();
+          syncEmptyState();
+        });
         observer.observe(board, { childList: true, subtree: true });
       }
-      document.addEventListener('DOMContentLoaded', updateKpis);
-      window.setInterval(updateKpis, 2000);
+
+      var emptyEl = document.getElementById('kds-admin-empty');
+      if (emptyEl && typeof MutationObserver !== 'undefined') {
+        var emptyObserver = new MutationObserver(syncEmptyState);
+        emptyObserver.observe(emptyEl, { attributes: true, attributeFilter: ['hidden'] });
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        updateKpis();
+        syncEmptyState();
+      });
+      window.setInterval(function () {
+        updateKpis();
+        syncEmptyState();
+      }, 2000);
     })();
   </script>
 </body>
