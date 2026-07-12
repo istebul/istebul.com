@@ -6,18 +6,12 @@ import {
   normalizeRestaurantTenant
 } from './tenant.js';
 import {
-  GARSON_ADMIN_DEMO_SESSION_KEY,
   activateDemoAdminSession,
-  loginRestaurantUser,
-  logoutRestaurantUser,
-  resolveGarsonPanelAccess
+  loginRestaurantUser
 } from './auth-service.js';
-import {
-  buildDemoDashboardDataset,
-  loadRestaurantDashboard,
-  loadRestaurantDashboardLive
-} from './dashboard/ai-dashboard-service.js';
-import { renderAdminAiStatCardsHtml } from './dashboard/restaurant-ai-widgets.js';
+import { getMockDemoTenantPayload } from './admin/shared/demo-data.js';
+
+export { getMockDemoTenantPayload };
 
 export const GARSON_ADMIN_LOGIN_PATH = '/garson/giris/';
 export const GARSON_ADMIN_PANEL_PATH = '/garson/panel/';
@@ -95,41 +89,6 @@ export const ADMIN_STAT_CARD_IDS = [
  * @property {string} href
  * @property {boolean} external
  */
-
-/**
- * @returns {Record<string, unknown>}
- */
-export function getMockDemoTenantPayload() {
-  return {
-    restaurant: {
-      id: 'a0000000-0000-4000-8000-00000000cafe',
-      name: 'Demo Cafe',
-      slug: DEMO_RESTAURANT_SLUG,
-      status: 'active',
-      plan: 'pilot',
-      onboarding_status: 'completed',
-      created_at: '2026-07-08T12:00:00Z'
-    },
-    settings: {
-      restaurant_id: 'a0000000-0000-4000-8000-00000000cafe',
-      whatsapp_enabled: true,
-      preorder_enabled: true,
-      kitchen_enabled: true,
-      ai_enabled: true
-    },
-    user: {
-      restaurant_id: 'a0000000-0000-4000-8000-00000000cafe',
-      user_id: 'demo-owner',
-      role: 'owner'
-    },
-    stats: {
-      today_reservations: 12,
-      active_preorders: 4,
-      kitchen_queue_count: 3,
-      kitchen_status: 'preparing'
-    }
-  };
-}
 
 /**
  * @param {unknown} payload
@@ -424,6 +383,12 @@ export function buildDemoAdminDashboardModel() {
  * @returns {Promise<import('./dashboard/ai-dashboard-service.js').RestaurantDashboardReport>}
  */
 export async function loadPanelAiDashboard(options) {
+  const {
+    buildDemoDashboardDataset,
+    loadRestaurantDashboard,
+    loadRestaurantDashboardLive
+  } = await import('./dashboard/ai-dashboard-service.js');
+
   const restaurantId = String(options.restaurantId || '').trim();
   const now =
     options.mode === 'live'
@@ -500,85 +465,10 @@ function bootLoginPage() {
   });
 }
 
-async function bootPanelPage() {
-  const access = await resolveGarsonPanelAccess();
-
-  if (access.mode === 'none') {
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-    return;
-  }
-
-  const model = buildDemoAdminDashboardModel();
-  const title = document.getElementById('garson-admin-panel-title');
-  const subtitle = document.getElementById('garson-admin-panel-subtitle');
-  const statsRoot = document.getElementById('garson-admin-stats');
-  const navRoot = document.getElementById('garson-admin-nav');
-  const sectionsRoot = document.getElementById('garson-admin-sections');
-  const badge = document.getElementById('garson-admin-demo-badge');
-  const logoutLink = document.querySelector('a[href="/garson/giris/"]');
-
-  const context = access.context;
-  const restaurant =
-    access.mode === 'live' && context
-      ? normalizeAdminRestaurant(
-          {
-            id: context.restaurantId,
-            name: context.restaurantName,
-            slug: context.slug
-          },
-          { role: context.role }
-        )
-      : model.restaurant;
-
-  if (title) title.textContent = restaurant.name;
-  if (subtitle) {
-    subtitle.textContent = `${restaurant.planLabel} · ${restaurant.roleLabel}`;
-  }
-  if (statsRoot) statsRoot.innerHTML = renderAdminStatCardsHtml(restaurant, model.stats);
-
-  const aiStatsRoot = document.getElementById('garson-admin-ai-stats');
-  if (aiStatsRoot) {
-    try {
-      const aiDashboard = await loadPanelAiDashboard({
-        restaurantId: restaurant.restaurantId,
-        mode: access.mode === 'live' ? 'live' : 'demo'
-      });
-      aiStatsRoot.innerHTML = renderAdminAiStatCardsHtml(aiDashboard);
-    } catch {
-      aiStatsRoot.innerHTML =
-        '<p class="garson-management-empty">AI özet verisi şu anda yüklenemedi.</p>';
-    }
-  }
-
-  if (navRoot) {
-    navRoot.innerHTML = renderAdminNavigationHtml(
-      normalizeAdminNavigation({ restaurant: { slug: restaurant.slug } })
-    );
-  }
-  if (sectionsRoot) {
-    sectionsRoot.innerHTML = renderAdminSectionsHtml(restaurant, model.settings);
-  }
-  if (badge) badge.hidden = access.mode === 'live';
-
-  logoutLink?.addEventListener('click', async (event) => {
-    event.preventDefault();
-    await logoutRestaurantUser();
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-  });
-
-  document.body.classList.add('ib-ready');
-}
-
 function boot() {
-  if (document.getElementById('garson-admin-login-form')) {
-    document.body.classList.add('ib-ready');
-    bootLoginPage();
-    return;
-  }
-
-  if (document.getElementById('garson-admin-panel')) {
-    bootPanelPage();
-  }
+  if (!document.getElementById('garson-admin-login-form')) return;
+  document.body.classList.add('ib-ready');
+  bootLoginPage();
 }
 
 if (typeof document !== 'undefined') {

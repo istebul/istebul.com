@@ -3,68 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ea580c">
+  <meta name="theme-color" content="#070b14">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
   <title>GarsonAI Panel | isteBul</title>
-  <meta name="description" content="GarsonAI restoran yönetim paneli — rezervasyon, ön sipariş ve mutfak özeti.">
+  <meta name="description" content="GarsonAI restoran yönetim paneli — operasyon merkezi.">
   <meta name="robots" content="noindex, follow">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
-  <link rel="stylesheet" href="/css/tatil.css">
-  <link rel="stylesheet" href="/css/vertical-themes.css">
-  <link rel="stylesheet" href="/css/restoran-page.css">
+  <link rel="stylesheet" href="/css/garsonai-design-system-v1.css">
+  <link rel="stylesheet" href="/css/garsonai-admin-v1.css">
   <script src="/env.js" defer></script>
-  <script type="module" src="/js/restoran/admin-portal.js"></script>
+  <script type="module" src="/js/restoran/admin/bootstrap.js"></script>
 </head>
-<body class="vacation-page restoran-page garson-admin-page">
-  <header class="vacation-header ib-vertical-header ib-vertical-header--restoran">
-    <a class="logo ib-vertical-brand" href="/garson/" aria-label="GarsonAI ana sayfa">
-      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
-      <span class="ib-vertical-brand__word">isteBul</span>
-      <span class="ib-vertical-brand__badge">GarsonAI</span>
-    </a>
-    <nav aria-label="GarsonAI navigasyonu">
-      <div class="ib-vertical-nav-primary">
-        <a href="/garson/panel/" aria-current="page">Panel</a>
-        <a href="/garson/zeka/">Zeka</a>
-        <a href="/garson/panel/menu/">Menü</a>
-        <a href="/garson/panel/rezervasyonlar/">Rezervasyonlar</a>
-        <a href="/garson/panel/siparisler/">Siparişler</a>
-        <a href="/garson/mutfak/?businessId=demo-cafe">Mutfak</a>
-        <a href="/garson/giris/">Çıkış</a>
+<body class="garsonai-page garsonai-admin-page garson-admin-page">
+  <div class="gai-admin-shell" data-admin-page="dashboard">
+    <aside class="gai-admin-sidebar" aria-label="Panel menüsü">
+      <a class="gai-admin-sidebar__brand" href="/garson/">
+        <img class="gai-admin-sidebar__logo" src="/assets/brand/istebul-icon.svg" alt="" width="32" height="32" decoding="async">
+        <span class="gai-admin-sidebar__title"><span>isteBul</span> <span>GarsonAI</span></span>
+      </a>
+      <nav class="gai-admin-nav" data-admin-nav aria-label="Modüller"></nav>
+      <div class="gai-admin-sidebar__footer">
+        <a class="gai-btn gai-btn--secondary gai-btn--sm" href="/garson/zeka/">Zeka merkezi</a>
+        <button type="button" class="gai-btn gai-btn--ghost gai-btn--sm" data-admin-logout>Çıkış yap</button>
       </div>
-    </nav>
-  </header>
-
-  <main class="vacation-container garson-admin-main" id="garson-admin-panel">
-    <div class="garson-admin-toolbar">
-      <div>
-        <p class="garson-admin-toolbar__eyebrow">GarsonAI SaaS</p>
-        <h1 id="garson-admin-panel-title" class="garson-admin-toolbar__title">Restoran paneli</h1>
-        <p id="garson-admin-panel-subtitle" class="garson-admin-toolbar__subtitle">—</p>
-      </div>
-      <span id="garson-admin-demo-badge" class="garson-admin-demo-badge" hidden>Demo modu</span>
-    </div>
-
-    <section class="garson-admin-stats" id="garson-admin-stats" aria-label="Özet kartlar"></section>
-
-    <section class="garson-ai-panel" aria-labelledby="garson-ai-panel-title">
-      <div class="garson-ai-panel__header">
-        <h2 id="garson-ai-panel-title" class="garson-ai-panel__title">AI özet</h2>
-        <a class="vacation-btn vacation-btn--secondary garson-ai-panel__link" href="/garson/zeka/">Zeka merkezini aç</a>
-      </div>
-      <div class="garson-admin-stats garson-ai-stats" id="garson-admin-ai-stats" aria-label="AI özet kartları"></div>
-    </section>
-
-    <nav class="garson-admin-nav" id="garson-admin-nav" aria-label="Panel bölümleri"></nav>
-
-    <div class="garson-admin-sections" id="garson-admin-sections"></div>
-  </main>
+    </aside>
+    <main class="gai-admin-main" id="garson-admin-panel">
+      <span id="garson-admin-demo-badge" class="gai-badge gai-badge--warning" hidden>Demo modu</span>
+      <div data-admin-content aria-live="polite"></div>
+      <section id="garson-admin-stats" class="gai-admin-stats-placeholder" hidden aria-hidden="true"></section>
+      <div id="garson-admin-sections" hidden aria-hidden="true"></div>
+    </main>
+  </div>
 </body>
 </html>

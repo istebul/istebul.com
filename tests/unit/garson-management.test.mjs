@@ -25,7 +25,7 @@ function readPage(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8');
 }
 
-test('management routes exist with admin-management script', () => {
+test('management routes exist with lazy-loaded admin bootstrap script', () => {
   assert.equal(fs.existsSync(path.join(root, 'garson/panel/menu/index.html')), true);
   assert.equal(fs.existsSync(path.join(root, 'garson/panel/rezervasyonlar/index.html')), true);
   assert.equal(fs.existsSync(path.join(root, 'garson/panel/siparisler/index.html')), true);
@@ -34,7 +34,7 @@ test('management routes exist with admin-management script', () => {
   const reservations = readPage('garson/panel/rezervasyonlar/index.html');
   const orders = readPage('garson/panel/siparisler/index.html');
 
-  assert.match(menu, /admin-management\.js/);
+  assert.match(menu, /admin\/bootstrap\.js/);
   assert.match(menu, /data-page="menu"/);
   assert.match(reservations, /data-page="reservations"/);
   assert.match(orders, /data-page="orders"/);
