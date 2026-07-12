@@ -33,8 +33,7 @@ export const WEBHOOK_GATEWAY_REQUIRED_ENV = Object.freeze([
   'WHATSAPP_PHONE_NUMBER_ID',
   'WHATSAPP_BUSINESS_ACCOUNT_ID',
   'META_APP_SECRET',
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY'
+  'SUPABASE_URL'
 ]);
 
 const VERIFY_TOKEN_KEYS = ['WHATSAPP_VERIFY_TOKEN', 'META_WHATSAPP_VERIFY_TOKEN'];
@@ -54,7 +53,6 @@ const META_APP_SECRET_KEYS = [
   'META_WHATSAPP_APP_SECRET'
 ];
 const SUPABASE_URL_KEYS = ['SUPABASE_URL', 'VITE_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL'];
-const SUPABASE_SERVICE_ROLE_KEYS = ['SUPABASE_SERVICE_ROLE_KEY'];
 
 const GATEWAY_METRICS_KEY = '__garsonWhatsAppWebhookGatewayMetrics__';
 const GATEWAY_START_KEY = '__garsonWhatsAppWebhookGatewayStart__';
@@ -101,8 +99,7 @@ export function validateWebhookGatewayEnvironment(options = {}) {
     phoneNumberId: readEnvValue(env, PHONE_NUMBER_KEYS),
     businessAccountId: readEnvValue(env, BUSINESS_ACCOUNT_KEYS),
     metaAppSecret: readEnvValue(env, META_APP_SECRET_KEYS),
-    supabaseUrl: readEnvValue(env, SUPABASE_URL_KEYS),
-    supabaseServiceRoleKey: readEnvValue(env, SUPABASE_SERVICE_ROLE_KEYS)
+    supabaseUrl: readEnvValue(env, SUPABASE_URL_KEYS)
   };
 
   if (!values.verifyToken) missing.push('WHATSAPP_VERIFY_TOKEN');
@@ -111,7 +108,6 @@ export function validateWebhookGatewayEnvironment(options = {}) {
   if (!values.businessAccountId) missing.push('WHATSAPP_BUSINESS_ACCOUNT_ID');
   if (!values.metaAppSecret) missing.push('META_APP_SECRET');
   if (!values.supabaseUrl) missing.push('SUPABASE_URL');
-  if (!values.supabaseServiceRoleKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
 
   return { ok: missing.length === 0, missing, values };
 }

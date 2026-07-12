@@ -143,8 +143,7 @@ test('WEBHOOK_GATEWAY_REQUIRED_ENV lists all production gateway secrets', () => 
     'WHATSAPP_PHONE_NUMBER_ID',
     'WHATSAPP_BUSINESS_ACCOUNT_ID',
     'META_APP_SECRET',
-    'SUPABASE_URL',
-    'SUPABASE_SERVICE_ROLE_KEY'
+    'SUPABASE_URL'
   ]);
 });
 
@@ -157,7 +156,7 @@ test('validateWebhookGatewayEnvironment checks required production secrets', () 
   assert.equal(missing.ok, false);
   assert.ok(missing.missing.includes('META_APP_SECRET'));
   assert.ok(missing.missing.includes('WHATSAPP_BUSINESS_ACCOUNT_ID'));
-  assert.ok(missing.missing.includes('SUPABASE_SERVICE_ROLE_KEY'));
+  assert.ok(missing.missing.includes('SUPABASE_URL'));
 });
 
 test('handleWebhookGatewayVerification validates Meta subscription handshake', () => {

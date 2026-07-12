@@ -21,5 +21,6 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   const env = /** @type {Record<string, string>} */ (context.env || {});
   const health = buildWebhookGatewayHealthResponse(env);
-  return json(health, health.configured ? 200 : 503);
+  const supabaseConfigured = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
+  return json({ ...health, supabaseConfigured }, health.configured ? 200 : 503);
 }
