@@ -32,7 +32,8 @@ export async function onRequestGet(context) {
         phoneNumberPresent: Boolean(env.WHATSAPP_PHONE_NUMBER_ID),
         businessAccountPresent: Boolean(env.WHATSAPP_BUSINESS_ACCOUNT_ID),
         metaSecretPresent: Boolean(env.META_APP_SECRET)
-      }
+      },
+      envKeys: Object.keys(env).sort()
     },
     health.configured ? 200 : 503
   );
