@@ -736,6 +736,18 @@ export function renderManagementSubNavHtml(active) {
  * @param {'menu'|'reservations'|'orders'} page
  */
 async function bootManagementPage(page) {
+  const root = document.getElementById('garson-management-root');
+  if (root?.classList.contains('gai-admin-shell')) {
+    const { bootAdminPage } = await import('./admin/index.js');
+    const pageMap = {
+      menu: 'menu',
+      reservations: 'rezervasyonlar',
+      orders: 'siparisler'
+    };
+    await bootAdminPage(root, pageMap[page] || page);
+    return;
+  }
+
   const access = await resolveGarsonPanelAccess();
 
   if (access.mode === 'none') {

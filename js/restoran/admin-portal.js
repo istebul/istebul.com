@@ -508,61 +508,32 @@ async function bootPanelPage() {
     return;
   }
 
-  const model = buildDemoAdminDashboardModel();
-  const title = document.getElementById('garson-admin-panel-title');
-  const subtitle = document.getElementById('garson-admin-panel-subtitle');
-  const statsRoot = document.getElementById('garson-admin-stats');
-  const navRoot = document.getElementById('garson-admin-nav');
-  const sectionsRoot = document.getElementById('garson-admin-sections');
+  const panelRoot = document.getElementById('garson-admin-panel');
+  if (!panelRoot) return;
+
+  const { mountDashboardPage } = await import('./admin/dashboard/index.js');
+  const { resolveAdminPanelContext } = await import('./admin/shared/context.js');
+  const { renderAdminSidebarNav } = await import('./admin/shared/shell.js');
+  const { logoutRestaurantUser: signOut } = await import('./auth-service.js');
+
+  const context = await resolveAdminPanelContext();
+  if (!context) {
+    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
+    return;
+  }
+
+  const nav = document.querySelector('[data-admin-nav]');
+  if (nav) nav.innerHTML = renderAdminSidebarNav('dashboard');
+
+  const content = panelRoot.querySelector('[data-admin-content]') || panelRoot;
+  await mountDashboardPage(/** @type {HTMLElement} */ (content), context);
+
   const badge = document.getElementById('garson-admin-demo-badge');
-  const logoutLink = document.querySelector('a[href="/garson/giris/"]');
-
-  const context = access.context;
-  const restaurant =
-    access.mode === 'live' && context
-      ? normalizeAdminRestaurant(
-          {
-            id: context.restaurantId,
-            name: context.restaurantName,
-            slug: context.slug
-          },
-          { role: context.role }
-        )
-      : model.restaurant;
-
-  if (title) title.textContent = restaurant.name;
-  if (subtitle) {
-    subtitle.textContent = `${restaurant.planLabel} · ${restaurant.roleLabel}`;
-  }
-  if (statsRoot) statsRoot.innerHTML = renderAdminStatCardsHtml(restaurant, model.stats);
-
-  const aiStatsRoot = document.getElementById('garson-admin-ai-stats');
-  if (aiStatsRoot) {
-    try {
-      const aiDashboard = await loadPanelAiDashboard({
-        restaurantId: restaurant.restaurantId,
-        mode: access.mode === 'live' ? 'live' : 'demo'
-      });
-      aiStatsRoot.innerHTML = renderAdminAiStatCardsHtml(aiDashboard);
-    } catch {
-      aiStatsRoot.innerHTML =
-        '<p class="garson-management-empty">AI özet verisi şu anda yüklenemedi.</p>';
-    }
-  }
-
-  if (navRoot) {
-    navRoot.innerHTML = renderAdminNavigationHtml(
-      normalizeAdminNavigation({ restaurant: { slug: restaurant.slug } })
-    );
-  }
-  if (sectionsRoot) {
-    sectionsRoot.innerHTML = renderAdminSectionsHtml(restaurant, model.settings);
-  }
   if (badge) badge.hidden = access.mode === 'live';
 
-  logoutLink?.addEventListener('click', async (event) => {
+  document.querySelector('[data-admin-logout]')?.addEventListener('click', async (event) => {
     event.preventDefault();
-    await logoutRestaurantUser();
+    await signOut();
     window.location.assign(GARSON_ADMIN_LOGIN_PATH);
   });
 
