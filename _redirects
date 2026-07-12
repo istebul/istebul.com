@@ -111,6 +111,9 @@
 # --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
 /api/* /api/:splat 200
 
+# --- GarsonAI API (Pages Functions) ---
+/garson/api/* /garson/api/:splat 200
+
 # --- PWA alias redirects (before SPA fallback) ---
 /service-worker.js /sw.js 301
 /manifest.webmanifest /manifest.json 301
