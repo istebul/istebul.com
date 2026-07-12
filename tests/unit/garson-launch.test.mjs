@@ -49,6 +49,10 @@ test('homepage exposes GarsonAI marketing links', () => {
   assert.match(html, /href="\/garson\/"/);
   assert.match(html, /id="home-garsonai"/);
   assert.match(html, /GarsonAI — restoran operasyon platformu/);
+  assert.match(html, /GarsonAI'yi Keşfet/);
+  assert.match(html, /ib-home-garsonai-preview/);
+  assert.doesNotMatch(html, /garson\/demo/);
+  assert.doesNotMatch(html, /\/restoran\//);
 });
 
 test('garson mutfak route exists and keeps KDS script', () => {
