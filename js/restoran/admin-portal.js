@@ -6,18 +6,12 @@ import {
   normalizeRestaurantTenant
 } from './tenant.js';
 import {
-  GARSON_ADMIN_DEMO_SESSION_KEY,
   activateDemoAdminSession,
-  loginRestaurantUser,
-  logoutRestaurantUser,
-  resolveGarsonPanelAccess
+  loginRestaurantUser
 } from './auth-service.js';
-import {
-  buildDemoDashboardDataset,
-  loadRestaurantDashboard,
-  loadRestaurantDashboardLive
-} from './dashboard/ai-dashboard-service.js';
-import { renderAdminAiStatCardsHtml } from './dashboard/restaurant-ai-widgets.js';
+import { getMockDemoTenantPayload } from './admin/shared/demo-data.js';
+
+export { getMockDemoTenantPayload };
 
 export const GARSON_ADMIN_LOGIN_PATH = '/garson/giris/';
 export const GARSON_ADMIN_PANEL_PATH = '/garson/panel/';
@@ -95,41 +89,6 @@ export const ADMIN_STAT_CARD_IDS = [
  * @property {string} href
  * @property {boolean} external
  */
-
-/**
- * @returns {Record<string, unknown>}
- */
-export function getMockDemoTenantPayload() {
-  return {
-    restaurant: {
-      id: 'a0000000-0000-4000-8000-00000000cafe',
-      name: 'Demo Cafe',
-      slug: DEMO_RESTAURANT_SLUG,
-      status: 'active',
-      plan: 'pilot',
-      onboarding_status: 'completed',
-      created_at: '2026-07-08T12:00:00Z'
-    },
-    settings: {
-      restaurant_id: 'a0000000-0000-4000-8000-00000000cafe',
-      whatsapp_enabled: true,
-      preorder_enabled: true,
-      kitchen_enabled: true,
-      ai_enabled: true
-    },
-    user: {
-      restaurant_id: 'a0000000-0000-4000-8000-00000000cafe',
-      user_id: 'demo-owner',
-      role: 'owner'
-    },
-    stats: {
-      today_reservations: 12,
-      active_preorders: 4,
-      kitchen_queue_count: 3,
-      kitchen_status: 'preparing'
-    }
-  };
-}
 
 /**
  * @param {unknown} payload
@@ -424,6 +383,12 @@ export function buildDemoAdminDashboardModel() {
  * @returns {Promise<import('./dashboard/ai-dashboard-service.js').RestaurantDashboardReport>}
  */
 export async function loadPanelAiDashboard(options) {
+  const {
+    buildDemoDashboardDataset,
+    loadRestaurantDashboard,
+    loadRestaurantDashboardLive
+  } = await import('./dashboard/ai-dashboard-service.js');
+
   const restaurantId = String(options.restaurantId || '').trim();
   const now =
     options.mode === 'live'
@@ -500,56 +465,10 @@ function bootLoginPage() {
   });
 }
 
-async function bootPanelPage() {
-  const access = await resolveGarsonPanelAccess();
-
-  if (access.mode === 'none') {
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-    return;
-  }
-
-  const panelRoot = document.getElementById('garson-admin-panel');
-  if (!panelRoot) return;
-
-  const { mountDashboardPage } = await import('./admin/dashboard/index.js');
-  const { resolveAdminPanelContext } = await import('./admin/shared/context.js');
-  const { renderAdminSidebarNav } = await import('./admin/shared/shell.js');
-  const { logoutRestaurantUser: signOut } = await import('./auth-service.js');
-
-  const context = await resolveAdminPanelContext();
-  if (!context) {
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-    return;
-  }
-
-  const nav = document.querySelector('[data-admin-nav]');
-  if (nav) nav.innerHTML = renderAdminSidebarNav('dashboard');
-
-  const content = panelRoot.querySelector('[data-admin-content]') || panelRoot;
-  await mountDashboardPage(/** @type {HTMLElement} */ (content), context);
-
-  const badge = document.getElementById('garson-admin-demo-badge');
-  if (badge) badge.hidden = access.mode === 'live';
-
-  document.querySelector('[data-admin-logout]')?.addEventListener('click', async (event) => {
-    event.preventDefault();
-    await signOut();
-    window.location.assign(GARSON_ADMIN_LOGIN_PATH);
-  });
-
-  document.body.classList.add('ib-ready');
-}
-
 function boot() {
-  if (document.getElementById('garson-admin-login-form')) {
-    document.body.classList.add('ib-ready');
-    bootLoginPage();
-    return;
-  }
-
-  if (document.getElementById('garson-admin-panel')) {
-    bootPanelPage();
-  }
+  if (!document.getElementById('garson-admin-login-form')) return;
+  document.body.classList.add('ib-ready');
+  bootLoginPage();
 }
 
 if (typeof document !== 'undefined') {

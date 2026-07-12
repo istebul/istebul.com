@@ -12,7 +12,7 @@ import {
 } from '../../dashboard/ai-dashboard-service.js';
 import { analyzePeakHours } from '../../intelligence/peak-hours.js';
 import { normalizeRestaurantSettings } from '../../tenant.js';
-import { getMockDemoTenantPayload } from '../../admin-portal.js';
+import { getMockDemoTenantPayload } from '../shared/demo-data.js';
 import { KITCHEN_STATUS_LABELS } from '../shared/constants.js';
 import { formatCurrencyTry } from '../shared/format.js';
 

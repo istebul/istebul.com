@@ -31,6 +31,8 @@ test('admin module tree exists with all P5-D modules', () => {
     'ayarlar/index.js',
     'shared/constants.js',
     'shared/table.js',
+    'shared/demo-data.js',
+    'bootstrap.js',
     'index.js'
   ];
 

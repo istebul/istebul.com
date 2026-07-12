@@ -37,7 +37,7 @@ test('garson admin panel route exists with dashboard shell', () => {
   const html = readPage('garson/panel/index.html');
   assert.match(html, /garson-admin-stats/);
   assert.match(html, /garson-admin-sections/);
-  assert.match(html, /admin-portal\.js/);
+  assert.match(html, /admin\/bootstrap\.js/);
 });
 
 test('admin portal paths match SaaS routes', () => {

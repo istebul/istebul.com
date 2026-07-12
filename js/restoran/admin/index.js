@@ -2,34 +2,37 @@ import { requireAdminPanelContext } from './shared/context.js';
 import { renderAdminSidebarNav } from './shared/shell.js';
 import { logoutRestaurantUser } from '../auth-service.js';
 import { GARSON_ADMIN_LOGIN_PATH } from './shared/constants.js';
-import { mountDashboardPage } from './dashboard/index.js';
-import { mountOrdersPage } from './siparisler/index.js';
-import { mountReservationsPage } from './rezervasyonlar/index.js';
-import { mountCustomersPage } from './musteriler/index.js';
-import { mountMenuPage } from './menu/index.js';
-import { mountTablesPage } from './masalar/index.js';
-import { mountKitchenPage } from './mutfak/index.js';
-import { mountWhatsappPage } from './whatsapp/index.js';
-import { mountAnalyticsPage } from './analitik/index.js';
-import { mountNotificationsPage } from './bildirimler/index.js';
-import { mountSettingsPage } from './ayarlar/index.js';
+
+/** @type {Record<string, () => Promise<(root: HTMLElement, context: import('./shared/context.js').AdminPanelContext) => Promise<void>>>} */
+const ADMIN_PAGE_LOADERS = {
+  dashboard: () => import('./dashboard/index.js').then((module) => module.mountDashboardPage),
+  siparisler: () => import('./siparisler/index.js').then((module) => module.mountOrdersPage),
+  orders: () => import('./siparisler/index.js').then((module) => module.mountOrdersPage),
+  rezervasyonlar: () =>
+    import('./rezervasyonlar/index.js').then((module) => module.mountReservationsPage),
+  reservations: () =>
+    import('./rezervasyonlar/index.js').then((module) => module.mountReservationsPage),
+  musteriler: () => import('./musteriler/index.js').then((module) => module.mountCustomersPage),
+  menu: () => import('./menu/index.js').then((module) => module.mountMenuPage),
+  masalar: () => import('./masalar/index.js').then((module) => module.mountTablesPage),
+  mutfak: () => import('./mutfak/index.js').then((module) => module.mountKitchenPage),
+  whatsapp: () => import('./whatsapp/index.js').then((module) => module.mountWhatsappPage),
+  analitik: () => import('./analitik/index.js').then((module) => module.mountAnalyticsPage),
+  bildirimler: () =>
+    import('./bildirimler/index.js').then((module) => module.mountNotificationsPage),
+  ayarlar: () => import('./ayarlar/index.js').then((module) => module.mountSettingsPage)
+};
 
 /** @type {Record<string, (root: HTMLElement, context: import('./shared/context.js').AdminPanelContext) => Promise<void>>} */
-export const ADMIN_PAGE_MOUNTERS = {
-  dashboard: mountDashboardPage,
-  siparisler: mountOrdersPage,
-  orders: mountOrdersPage,
-  rezervasyonlar: mountReservationsPage,
-  reservations: mountReservationsPage,
-  musteriler: mountCustomersPage,
-  menu: mountMenuPage,
-  masalar: mountTablesPage,
-  mutfak: mountKitchenPage,
-  whatsapp: mountWhatsappPage,
-  analitik: mountAnalyticsPage,
-  bildirimler: mountNotificationsPage,
-  ayarlar: mountSettingsPage
-};
+export const ADMIN_PAGE_MOUNTERS = Object.fromEntries(
+  Object.entries(ADMIN_PAGE_LOADERS).map(([pageId, loader]) => [
+    pageId,
+    async (root, context) => {
+      const mount = await loader();
+      await mount(root, context);
+    }
+  ])
+);
 
 /**
  * @param {string} pageId
@@ -72,43 +75,4 @@ export async function bootAdminPage(root, pageId) {
     await logoutRestaurantUser();
     window.location.assign(GARSON_ADMIN_LOGIN_PATH);
   });
-}
-
-function detectPageId() {
-  const root = document.querySelector('[data-admin-page]');
-  if (root instanceof HTMLElement && root.dataset.adminPage) {
-    return root.dataset.adminPage;
-  }
-
-  const legacy = document.querySelector('[data-page]');
-  if (legacy instanceof HTMLElement && legacy.dataset.page) {
-    const map = {
-      menu: 'menu',
-      reservations: 'rezervasyonlar',
-      orders: 'siparisler'
-    };
-    return map[legacy.dataset.page] || legacy.dataset.page;
-  }
-
-  if (document.getElementById('garson-admin-panel')) return 'dashboard';
-  return '';
-}
-
-function boot() {
-  const pageId = detectPageId();
-  const root =
-    document.querySelector('[data-admin-page]') ||
-    document.getElementById('garson-admin-panel') ||
-    document.getElementById('garson-management-root');
-
-  if (!root || !pageId) return;
-  bootAdminPage(/** @type {HTMLElement} */ (root), pageId).catch(() => {});
-}
-
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
 }

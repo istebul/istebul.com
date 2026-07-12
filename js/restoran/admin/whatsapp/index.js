@@ -1,5 +1,5 @@
 import { getGarsonDataClient, isGarsonSupabaseClientAvailable } from '../../data-service.js';
-import { getMockDemoTenantPayload } from '../../admin-portal.js';
+import { getMockDemoTenantPayload } from '../shared/demo-data.js';
 import { normalizeRestaurantSettings } from '../../tenant.js';
 import { escapeHtml, formatDateTr } from '../shared/format.js';
 import { renderMetricGrid } from '../shared/cards.js';

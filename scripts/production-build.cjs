@@ -21,7 +21,7 @@ const copyDataSubdir = (subdir) => {
 };
 const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
-const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'restoran/index.html', 'r/index.html', 'r/onay/index.html', 'garson/index.html', 'garson/mutfak/index.html', 'garson/basvuru/index.html', 'garson/demo/index.html', 'garson/giris/index.html', 'garson/panel/index.html', 'garson/panel/menu/index.html', 'garson/panel/rezervasyonlar/index.html', 'garson/panel/siparisler/index.html', 'garson/zeka/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'gdpr.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
+const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'restoran/index.html', 'r/index.html', 'r/onay/index.html', 'garson/index.html', 'garson/mutfak/index.html', 'garson/basvuru/index.html', 'garson/demo/index.html', 'garson/giris/index.html', 'garson/panel/index.html', 'garson/panel/menu/index.html', 'garson/panel/rezervasyonlar/index.html', 'garson/panel/siparisler/index.html', 'garson/panel/musteriler/index.html', 'garson/panel/masalar/index.html', 'garson/panel/mutfak/index.html', 'garson/panel/whatsapp/index.html', 'garson/panel/analitik/index.html', 'garson/panel/bildirimler/index.html', 'garson/panel/ayarlar/index.html', 'garson/zeka/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'gdpr.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
     'css/admin-internal-dashboards.css',
     'css/admin-ops-ai-assistant.css', 'css/admin-ai-listings.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css', 'admin/ai-listings.html', 'admin/forbidden.html'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
@@ -584,6 +584,47 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   fs.writeFileSync(htmlPath, minifyHtml(html));
 }
 
+/** GarsonAI admin panel — code-split entry under js/chunks/ (excluded from main SPA budget). */
+function bundleGarsonAdminPanelPages(entryRel, htmlRels, scriptPattern) {
+  const entrySrc = path.join(root, entryRel);
+  if (!fs.existsSync(entrySrc)) return;
+
+  const outdir = path.join(dist, 'js/chunks/garson-admin-panel');
+  fs.mkdirSync(outdir, { recursive: true });
+
+  esbuild.buildSync({
+    entryPoints: [entrySrc],
+    bundle: true,
+    splitting: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    entryNames: 'bootstrap-[hash]',
+    chunkNames: 'chunk-[hash]',
+    outdir
+  });
+
+  const entryFile = fs
+    .readdirSync(outdir)
+    .find((name) => /^bootstrap-[A-Z0-9]+\.js$/.test(name));
+  if (!entryFile) {
+    throw new Error('Garson admin panel bootstrap bundle was not generated.');
+  }
+
+  const scriptUrl = `/js/chunks/garson-admin-panel/${entryFile}`;
+
+  htmlRels.forEach((htmlRel) => {
+    const htmlPath = path.join(dist, htmlRel);
+    if (!fs.existsSync(htmlPath)) return;
+
+    let html = fs.readFileSync(htmlPath, 'utf8');
+    html = html.replace(scriptPattern, scriptUrl);
+    fs.writeFileSync(htmlPath, minifyHtml(html));
+  });
+}
+
 bundleVerticalPage(
   'js/finans/finans-app.js',
   'finans/index.html',
@@ -648,32 +689,22 @@ bundleVerticalPage(
   /\/js\/restoran\/admin-portal\.js/g
 );
 
-bundleVerticalPage(
-  'js/restoran/admin-portal.js',
-  'garson/panel/index.html',
-  'garson-admin-panel-runtime',
-  /\/js\/restoran\/admin-portal\.js/g
-);
-
-bundleVerticalPage(
-  'js/restoran/admin-management.js',
-  'garson/panel/menu/index.html',
-  'garson-management-menu-runtime',
-  /\/js\/restoran\/admin-management\.js/g
-);
-
-bundleVerticalPage(
-  'js/restoran/admin-management.js',
-  'garson/panel/rezervasyonlar/index.html',
-  'garson-management-reservations-runtime',
-  /\/js\/restoran\/admin-management\.js/g
-);
-
-bundleVerticalPage(
-  'js/restoran/admin-management.js',
-  'garson/panel/siparisler/index.html',
-  'garson-management-orders-runtime',
-  /\/js\/restoran\/admin-management\.js/g
+bundleGarsonAdminPanelPages(
+  'js/restoran/admin/bootstrap.js',
+  [
+    'garson/panel/index.html',
+    'garson/panel/menu/index.html',
+    'garson/panel/rezervasyonlar/index.html',
+    'garson/panel/siparisler/index.html',
+    'garson/panel/musteriler/index.html',
+    'garson/panel/masalar/index.html',
+    'garson/panel/mutfak/index.html',
+    'garson/panel/whatsapp/index.html',
+    'garson/panel/analitik/index.html',
+    'garson/panel/bildirimler/index.html',
+    'garson/panel/ayarlar/index.html'
+  ],
+  /\/js\/restoran\/admin\/bootstrap\.js/g
 );
 
 bundleVerticalPage(

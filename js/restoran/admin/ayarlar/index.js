@@ -1,6 +1,6 @@
 import { getRestaurant } from '../../database/restaurant-repository.js';
 import { getGarsonDataClient, isGarsonSupabaseClientAvailable } from '../../data-service.js';
-import { getMockDemoTenantPayload } from '../../admin-portal.js';
+import { getMockDemoTenantPayload } from '../shared/demo-data.js';
 import { normalizeRestaurantSettings, normalizeRestaurantTenant } from '../../tenant.js';
 import { escapeHtml } from '../shared/format.js';
 import { renderPageHeader, renderPanelSection } from '../shared/shell.js';
