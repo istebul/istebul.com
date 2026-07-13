@@ -225,8 +225,8 @@ export function assertWebhookGatewayEnvironment(env = {}) {
  * @param {Record<string, string>} env
  */
 export function handleWebhookGatewayVerification(query = {}, env = {}) {
-  const validation = validateWebhookGatewayEnvironment({ env });
-  if (!validation.ok) {
+  const expectedVerifyToken = readEnvValue(env, VERIFY_TOKEN_KEYS);
+  if (!expectedVerifyToken) {
     throw new WhatsAppWebhookGatewayError(
       'WhatsApp webhook gateway yapılandırması eksik.',
       500,
@@ -238,7 +238,7 @@ export function handleWebhookGatewayVerification(query = {}, env = {}) {
     mode: query.mode,
     verifyToken: query.verifyToken,
     challenge: query.challenge,
-    expectedToken: validation.values.verifyToken
+    expectedToken: expectedVerifyToken
   });
 
   if (!result.verified) {

@@ -190,7 +190,7 @@ test('handleWebhookGatewayVerification rejects invalid verify token with 403', (
   );
 });
 
-test('handleWebhookGatewayVerification returns 500 when env is missing', () => {
+test('handleWebhookGatewayVerification returns 500 when verify token env is missing', () => {
   assert.throws(
     () =>
       handleWebhookGatewayVerification(
@@ -206,6 +206,19 @@ test('handleWebhookGatewayVerification returns 500 when env is missing', () => {
       error.status === 500 &&
       error.code === 'server_misconfigured'
   );
+});
+
+test('handleWebhookGatewayVerification does not require full production env on GET', () => {
+  const ok = handleWebhookGatewayVerification(
+    {
+      mode: 'subscribe',
+      verifyToken: 'garson-verify-token',
+      challenge: 'challenge-123'
+    },
+    { WHATSAPP_VERIFY_TOKEN: 'garson-verify-token' }
+  );
+  assert.equal(ok.status, 200);
+  assert.equal(ok.body, 'challenge-123');
 });
 
 test('processWebhookGatewayPost rejects invalid signatures with 403', async () => {
