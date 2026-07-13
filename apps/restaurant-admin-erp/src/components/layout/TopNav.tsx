@@ -48,8 +48,8 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <Badge variant="outline" className="hidden sm:inline-flex">
-          Mock veri
+        <Badge variant="success" className="hidden sm:inline-flex">
+          Canlı veri
         </Badge>
 
         <DropdownMenu>
@@ -57,7 +57,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
             <Button variant="outline" className="max-w-[220px] justify-between gap-2">
               <span className="truncate text-left">
                 <span className="block text-xs text-muted-foreground">Restoran</span>
-                <span className="block truncate text-sm font-medium">{tenant.name}</span>
+                <span className="block truncate text-sm font-medium">{tenant?.name ?? 'Restoran seçin'}</span>
               </span>
               <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
             </Button>
@@ -73,7 +73,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
               >
                 <span className="font-medium">{item.name}</span>
                 <span className="text-xs text-muted-foreground">
-                  {item.city} · {item.plan} · {item.restaurant_id}
+                  {item.city} · {item.plan}
                 </span>
               </DropdownMenuItem>
             ))}
