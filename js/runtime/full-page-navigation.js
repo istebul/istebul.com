@@ -25,7 +25,8 @@ const STATIC_ALIASES = Object.freeze({
   '/finansman': '/finans/',
   '/sigorta': '/sigorta/',
   '/kasko': '/kasko/',
-  '/restoran': '/restoran/'
+  '/restoran': '/restoran/',
+  '/business': '/business/'
 });
 
 /**
