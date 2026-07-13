@@ -85,6 +85,31 @@ function readEnvValue(env, keys) {
 }
 
 /**
+ * @param {Record<string, string>} env
+ */
+export function buildWebhookGatewayEnvPresenceDebug(env = {}) {
+  return {
+    verifyTokenPresent: Boolean(readEnvValue(env, VERIFY_TOKEN_KEYS)),
+    accessTokenPresent: Boolean(readEnvValue(env, ACCESS_TOKEN_KEYS)),
+    phoneNumberPresent: Boolean(readEnvValue(env, PHONE_NUMBER_KEYS)),
+    businessAccountPresent: Boolean(readEnvValue(env, BUSINESS_ACCOUNT_KEYS)),
+    metaSecretPresent: Boolean(readEnvValue(env, META_APP_SECRET_KEYS)),
+    supabaseUrlPresent: Boolean(readEnvValue(env, SUPABASE_URL_KEYS))
+  };
+}
+
+/**
+ * @param {Record<string, string>} env
+ * @param {{ ok: boolean, missing: string[] }} validation
+ */
+function logWebhookGatewayEnvValidationFailure(env, validation) {
+  logGatewayEvent('whatsapp_webhook_env_validation_failed', {
+    result: validation.missing.join(','),
+    ...buildWebhookGatewayEnvPresenceDebug(env)
+  });
+}
+
+/**
  * @param {Record<string, unknown>} [options]
  * @returns {{ ok: boolean, missing: string[], values: Record<string, string> }}
  */
@@ -204,6 +229,7 @@ function recordGatewayOutcome(success, latencyMs) {
 export function assertWebhookGatewayEnvironment(env = {}) {
   const validation = validateWebhookGatewayEnvironment({ env });
   if (!validation.ok) {
+    logWebhookGatewayEnvValidationFailure(env, validation);
     throw new WhatsAppWebhookGatewayError(
       'WhatsApp webhook gateway yapılandırması eksik.',
       500,
@@ -227,6 +253,7 @@ export function assertWebhookGatewayEnvironment(env = {}) {
 export function handleWebhookGatewayVerification(query = {}, env = {}) {
   const validation = validateWebhookGatewayEnvironment({ env });
   if (!validation.ok) {
+    logWebhookGatewayEnvValidationFailure(env, validation);
     throw new WhatsAppWebhookGatewayError(
       'WhatsApp webhook gateway yapılandırması eksik.',
       500,

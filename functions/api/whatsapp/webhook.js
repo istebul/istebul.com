@@ -4,7 +4,9 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import {
+  buildWebhookGatewayEnvPresenceDebug,
   handleWebhookGatewayRequest,
+  validateWebhookGatewayEnvironment,
   WhatsAppWebhookGatewayError
 } from '../../../js/restoran/whatsapp/production/webhook-gateway.js';
 import { jsonApiResponse, logApiEvent } from '../../_shared/api-response.js';
@@ -66,16 +68,22 @@ export async function onRequest(context) {
       });
     }
 
-    return jsonApiResponse(
-      {
-        ok: false,
-        error: {
-          code,
-          message
-        }
-      },
-      status,
-      corsHeaders
-    );
+    const errorBody = {
+      ok: false,
+      error: {
+        code,
+        message
+      }
+    };
+
+    if (code === 'server_misconfigured') {
+      const validation = validateWebhookGatewayEnvironment({ env });
+      errorBody.debug = {
+        missing: validation.missing,
+        envPresence: buildWebhookGatewayEnvPresenceDebug(env)
+      };
+    }
+
+    return jsonApiResponse(errorBody, status, corsHeaders);
   }
 }
