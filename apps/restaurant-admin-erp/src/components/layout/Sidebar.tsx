@@ -9,6 +9,7 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -66,21 +67,17 @@ export function Sidebar({ activeId = 'dashboard', collapsed = false, onNavigate 
             const isActive = item.id === activeId;
             const isDisabled = 'disabled' in item && item.disabled;
 
-            return (
-              <Button
-                key={item.id}
-                variant="ghost"
-                disabled={isDisabled}
-                className={cn(
-                  'w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground',
-                  collapsed && 'justify-center px-0',
-                  isActive && 'bg-sidebar-accent text-white',
-                  isDisabled && 'opacity-50',
-                )}
-                onClick={onNavigate}
-                asChild={!isDisabled && item.href !== '#'}
-              >
-                {isDisabled || item.href === '#' ? (
+            if (isDisabled || item.href === '#') {
+              return (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  disabled
+                  className={cn(
+                    'w-full justify-start gap-3 text-sidebar-foreground opacity-50',
+                    collapsed && 'justify-center px-0',
+                  )}
+                >
                   <span className="flex w-full items-center gap-3">
                     <Icon className="h-4 w-4 shrink-0" aria-hidden />
                     {!collapsed && (
@@ -92,12 +89,26 @@ export function Sidebar({ activeId = 'dashboard', collapsed = false, onNavigate 
                       </>
                     )}
                   </span>
-                ) : (
-                  <a href={item.href} className="flex w-full items-center gap-3">
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
-                  </a>
+                </Button>
+              );
+            }
+
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                className={cn(
+                  'w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground',
+                  collapsed && 'justify-center px-0',
+                  isActive && 'bg-sidebar-accent text-white',
                 )}
+                asChild
+                onClick={onNavigate}
+              >
+                <NavLink to={item.href} className="flex w-full items-center gap-3">
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                  {!collapsed && <span className="truncate">{item.label}</span>}
+                </NavLink>
               </Button>
             );
           })}
@@ -110,7 +121,7 @@ export function Sidebar({ activeId = 'dashboard', collapsed = false, onNavigate 
           animate={{ opacity: 1 }}
           className="border-t border-sidebar-border p-4"
         >
-          <p className="text-xs text-sidebar-foreground/60">P7-B · Canlı Supabase verisi</p>
+          <p className="text-xs text-sidebar-foreground/60">P7-C · Canlı Supabase verisi</p>
           <p className="mt-1 text-xs text-sidebar-foreground/40">Production panelden bağımsız</p>
         </motion.div>
       )}
