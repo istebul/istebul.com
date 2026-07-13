@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import {
   BarChart3,
+  CalendarDays,
   LayoutDashboard,
   Package,
   Settings,
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils';
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   ShoppingBag,
+  CalendarDays,
   UtensilsCrossed,
   Package,
   Users,
