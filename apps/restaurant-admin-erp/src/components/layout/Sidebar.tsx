@@ -123,7 +123,7 @@ export function Sidebar({ activeId = 'dashboard', collapsed = false, onNavigate 
           animate={{ opacity: 1 }}
           className="border-t border-sidebar-border p-4"
         >
-          <p className="text-xs text-sidebar-foreground/60">P7-E · Canlı Supabase verisi</p>
+          <p className="text-xs text-sidebar-foreground/60">P7 ERP · Canlı Supabase verisi</p>
           <p className="mt-1 text-xs text-sidebar-foreground/40">Production panelden bağımsız</p>
         </motion.div>
       )}

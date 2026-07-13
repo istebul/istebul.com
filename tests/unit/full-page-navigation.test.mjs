@@ -12,6 +12,7 @@ test('isFullPageNavigation detects Auto and partner HTML', () => {
   assert.equal(isFullPageNavigation('/ilanlar'), false);
   assert.equal(isFullPageNavigation('/metodoloji'), true);
   assert.equal(isFullPageNavigation('/konut'), true);
+  assert.equal(isFullPageNavigation('/business'), true);
   assert.equal(isFullPageNavigation('/rehber/suv-mi-sedan-mi/'), true);
   assert.equal(isFullPageNavigation('/rehber/tco-rehberi'), true);
   assert.equal(isFullPageNavigation('/garson/'), true);
@@ -27,4 +28,5 @@ test('resolveFullPageNavigation normalizes Auto trailing slash', () => {
   assert.equal(resolveFullPageNavigation('/garson'), '/garson/');
   assert.equal(resolveFullPageNavigation('/garson/'), '/garson/');
   assert.equal(resolveFullPageNavigation('/garson/demo'), '/garson/demo/');
+  assert.equal(resolveFullPageNavigation('/business'), '/business/');
 });
