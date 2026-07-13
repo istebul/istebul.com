@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { ERP_NAV_ITEMS } from '@/data/mock-data';
+import { ERP_NAV_ITEMS } from '@/data/nav-config';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -110,7 +110,7 @@ export function Sidebar({ activeId = 'dashboard', collapsed = false, onNavigate 
           animate={{ opacity: 1 }}
           className="border-t border-sidebar-border p-4"
         >
-          <p className="text-xs text-sidebar-foreground/60">P7-A · Mock ERP altyapısı</p>
+          <p className="text-xs text-sidebar-foreground/60">P7-B · Canlı Supabase verisi</p>
           <p className="mt-1 text-xs text-sidebar-foreground/40">Production panelden bağımsız</p>
         </motion.div>
       )}
