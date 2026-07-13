@@ -403,6 +403,164 @@ export function extractInboundMessageKeys(payload) {
 }
 
 /**
+ * @typedef {Object} WebhookPostAuditContext
+ * @property {string} eventType
+ * @property {string} messageId
+ * @property {string} from
+ * @property {string} phoneNumberId
+ * @property {string} restaurantId
+ */
+
+/**
+ * @param {unknown} payload
+ * @param {{ env?: Record<string, string> }} [options]
+ * @returns {WebhookPostAuditContext}
+ */
+export function extractWebhookPostAuditContext(payload, options = {}) {
+  const env = /** @type {Record<string, string>} */ (options.env || {});
+  const config = loadWhatsAppProductionConfig({ env });
+  const classified = classifyWebhookPayload(payload, config.restaurantMap);
+
+  const root = /** @type {Record<string, unknown>} */ (
+    payload && typeof payload === 'object' ? payload : {}
+  );
+  const entries = Array.isArray(root.entry) ? root.entry : [];
+
+  for (const entry of entries) {
+    const entryRow = /** @type {Record<string, unknown>} */ (
+      entry && typeof entry === 'object' ? entry : {}
+    );
+    const changes = Array.isArray(entryRow.changes) ? entryRow.changes : [];
+
+    for (const change of changes) {
+      const changeRow = /** @type {Record<string, unknown>} */ (
+        change && typeof change === 'object' ? change : {}
+      );
+      const field = String(changeRow.field || '').trim();
+      const value = /** @type {Record<string, unknown>} */ (
+        changeRow.value && typeof changeRow.value === 'object' ? changeRow.value : {}
+      );
+      const metadata = /** @type {Record<string, unknown>} */ (value.metadata || {});
+      const phoneNumberId = String(metadata.phone_number_id ?? '').trim();
+      let restaurantId = '';
+      if (phoneNumberId) {
+        try {
+          restaurantId = resolveRestaurantFromPhoneNumberId({
+            phoneNumberId,
+            metadata,
+            restaurantMap: config.restaurantMap
+          });
+        } catch {
+          restaurantId = '';
+        }
+      }
+
+      const messages = Array.isArray(value.messages) ? value.messages : [];
+      if (messages.length > 0) {
+        const row = /** @type {Record<string, unknown>} */ (
+          messages[0] && typeof messages[0] === 'object' ? messages[0] : {}
+        );
+        return {
+          eventType: 'messages',
+          messageId: String(row.id ?? '').trim(),
+          from: String(row.from ?? '').trim(),
+          phoneNumberId,
+          restaurantId
+        };
+      }
+
+      if (field === 'message_template_status_update') {
+        return {
+          eventType: 'template',
+          messageId: String(value.message_template_id ?? '').trim(),
+          from: '',
+          phoneNumberId,
+          restaurantId
+        };
+      }
+
+      const statuses = Array.isArray(value.statuses) ? value.statuses : [];
+      if (statuses.length > 0) {
+        const row = /** @type {Record<string, unknown>} */ (
+          statuses[0] && typeof statuses[0] === 'object' ? statuses[0] : {}
+        );
+        return {
+          eventType: 'statuses',
+          messageId: String(row.id ?? '').trim(),
+          from: String(row.recipient_id ?? '').trim(),
+          phoneNumberId,
+          restaurantId
+        };
+      }
+    }
+  }
+
+  if (classified.templateUpdates.length > 0) {
+    const first = classified.templateUpdates[0];
+    return {
+      eventType: 'template',
+      messageId: first.messageTemplateId,
+      from: '',
+      phoneNumberId: first.phoneNumberId,
+      restaurantId: first.restaurantId
+    };
+  }
+
+  if (classified.statuses.length > 0) {
+    const first = classified.statuses[0];
+    return {
+      eventType: 'statuses',
+      messageId: first.messageId,
+      from: first.recipientId,
+      phoneNumberId: first.phoneNumberId,
+      restaurantId: first.restaurantId
+    };
+  }
+
+  return {
+    eventType: '',
+    messageId: '',
+    from: '',
+    phoneNumberId: '',
+    restaurantId: ''
+  };
+}
+
+/**
+ * @param {WebhookPostAuditContext} auditContext
+ * @param {string} branch
+ * @param {number} processed
+ */
+function logWebhookPostAudit(auditContext, branch, processed) {
+  logAudit('whatsapp_webhook_post_audit', {
+    branch,
+    eventType: auditContext.eventType,
+    messageId: auditContext.messageId,
+    from: auditContext.from,
+    phoneNumberId: auditContext.phoneNumberId,
+    restaurantId: auditContext.restaurantId,
+    processed
+  });
+}
+
+/**
+ * @param {WebhookPostAuditContext} auditContext
+ * @param {string} branch
+ * @param {number} processed
+ */
+function buildWebhookPostAuditPayload(auditContext, branch, processed) {
+  return {
+    branch,
+    eventType: auditContext.eventType,
+    messageId: auditContext.messageId,
+    from: auditContext.from,
+    phoneNumberId: auditContext.phoneNumberId,
+    restaurantId: auditContext.restaurantId,
+    processed
+  };
+}
+
+/**
  * @param {unknown} menuData
  */
 function normalizeMenuForPipeline(menuData) {
@@ -741,6 +899,8 @@ export async function processWebhookGatewayPost(rawBody, signatureHeader, option
     throw new WhatsAppWebhookGatewayError('Geçersiz JSON webhook gövdesi.', 400, 'bad_request');
   }
 
+  const auditContext = extractWebhookPostAuditContext(payload, { env });
+
   const dedupeKeys = extractInboundMessageKeys(payload);
   const duplicateKeys = dedupeKeys.filter((key) => isDuplicateEvent(key));
   if (duplicateKeys.length > 0 && duplicateKeys.length === dedupeKeys.length) {
@@ -748,10 +908,14 @@ export async function processWebhookGatewayPost(rawBody, signatureHeader, option
       latency: Date.now() - startedAt,
       result: 'duplicate'
     });
+    const branch = 'duplicate';
+    const processed = 0;
+    logWebhookPostAudit(auditContext, branch, processed);
     return {
       status: 200,
       body: { ok: true, duplicate: true, processed: 0 },
-      branch: 'duplicate'
+      branch,
+      audit: buildWebhookPostAuditPayload(auditContext, branch, processed)
     };
   }
 
@@ -765,14 +929,19 @@ export async function processWebhookGatewayPost(rawBody, signatureHeader, option
     result: 'ok'
   });
 
+  const branch = resolvePipelineDiagnosticBranch(pipeline);
+  const processed = pipeline.processed;
+  logWebhookPostAudit(auditContext, branch, processed);
+
   return {
     status: 200,
     body: {
       ok: true,
-      processed: pipeline.processed,
+      processed,
       duplicate: false
     },
-    branch: resolvePipelineDiagnosticBranch(pipeline)
+    branch,
+    audit: buildWebhookPostAuditPayload(auditContext, branch, processed)
   };
 }
 
@@ -803,6 +972,9 @@ export async function handleWebhookGatewayRequest(request, options = {}) {
     const headers = { 'Content-Type': 'application/json; charset=utf-8' };
     if (result.branch) {
       headers['X-Garson-Webhook-Branch'] = result.branch;
+    }
+    if (result.audit) {
+      headers['X-Garson-Webhook-Audit'] = JSON.stringify(result.audit);
     }
     return new Response(JSON.stringify(result.body), {
       status: result.status,

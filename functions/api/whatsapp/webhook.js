@@ -16,6 +16,7 @@ const corsHeaders = {
 };
 
 const WEBHOOK_BRANCH_HEADER = 'X-Garson-Webhook-Branch';
+const WEBHOOK_AUDIT_HEADER = 'X-Garson-Webhook-Audit';
 
 /**
  * @param {Record<string, string>} env
@@ -34,7 +35,7 @@ function getSupabaseClient(env) {
  * @returns {boolean}
  */
 function isWebhookResponseDebugEnabled(env) {
-  return env.DEBUG_WEBHOOK_RESPONSE === 'true' || env.APP_ENV !== 'production';
+  return env.DEBUG_WEBHOOK_RESPONSE === 'true';
 }
 
 /**
@@ -71,7 +72,18 @@ async function maybeAttachWebhookPostDebug(response, request, env) {
   }
 
   const branch = headers.get(WEBHOOK_BRANCH_HEADER);
+  const auditRaw = headers.get(WEBHOOK_AUDIT_HEADER);
   headers.delete(WEBHOOK_BRANCH_HEADER);
+  headers.delete(WEBHOOK_AUDIT_HEADER);
+
+  let audit = null;
+  if (auditRaw) {
+    try {
+      audit = JSON.parse(auditRaw);
+    } catch {
+      audit = null;
+    }
+  }
 
   try {
     const body = await response.json();
@@ -79,11 +91,11 @@ async function maybeAttachWebhookPostDebug(response, request, env) {
       JSON.stringify({
         ...body,
         debug: {
-          status: response.status,
-          processed: body.processed ?? null,
-          duplicate: body.duplicate ?? false,
-          ok: body.ok ?? false,
-          branch
+          branch: audit?.branch ?? branch ?? null,
+          eventType: audit?.eventType ?? null,
+          messageId: audit?.messageId ?? null,
+          restaurantId: audit?.restaurantId ?? null,
+          processed: body.processed ?? audit?.processed ?? null
         }
       }),
       {
