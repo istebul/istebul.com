@@ -66,16 +66,26 @@ export async function onRequest(context) {
       });
     }
 
-    return jsonApiResponse(
-      {
-        ok: false,
-        error: {
-          code,
-          message
-        }
-      },
-      status,
-      corsHeaders
-    );
+    const errorBody = {
+      ok: false,
+      error: {
+        code,
+        message
+      }
+    };
+
+    if (code === 'server_misconfigured') {
+      errorBody.debug = {
+        envKeys: Object.keys(env).sort(),
+        verifyTokenPresent: Boolean(env.WHATSAPP_VERIFY_TOKEN),
+        accessTokenPresent: Boolean(env.WHATSAPP_ACCESS_TOKEN),
+        phoneNumberPresent: Boolean(env.WHATSAPP_PHONE_NUMBER_ID),
+        businessAccountPresent: Boolean(env.WHATSAPP_BUSINESS_ACCOUNT_ID),
+        metaSecretPresent: Boolean(env.META_APP_SECRET),
+        supabaseUrlPresent: Boolean(env.SUPABASE_URL)
+      };
+    }
+
+    return jsonApiResponse(errorBody, status, corsHeaders);
   }
 }
