@@ -1013,3 +1013,9 @@ if (fs.existsSync(adminIndexPath)) {
 
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
+
+const erpBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-restaurant-admin-erp.cjs')], {
+  cwd: root,
+  stdio: 'inherit',
+});
+if (erpBuild.status !== 0) process.exit(erpBuild.status || 1);
