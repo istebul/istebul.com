@@ -1,8 +1,8 @@
-/** ERP navigation config — no mock dashboard data. */
+/** ERP navigation config */
 
 export const ERP_NAV_ITEMS = [
-  { id: 'dashboard', label: 'Özet', href: '/garson/erp/', icon: 'LayoutDashboard' },
-  { id: 'orders', label: 'Siparişler', href: '#', icon: 'ShoppingBag', disabled: true },
+  { id: 'dashboard', label: 'Özet', href: '/', icon: 'LayoutDashboard' },
+  { id: 'orders', label: 'Siparişler', href: '/orders', icon: 'ShoppingBag' },
   { id: 'inventory', label: 'Stok', href: '#', icon: 'Package', disabled: true },
   { id: 'staff', label: 'Personel', href: '#', icon: 'Users', disabled: true },
   { id: 'finance', label: 'Finans', href: '#', icon: 'Wallet', disabled: true },

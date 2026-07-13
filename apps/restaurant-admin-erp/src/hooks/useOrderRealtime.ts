@@ -4,17 +4,19 @@ import { getSupabaseClient } from '@/lib/supabase';
 interface UseOrderRealtimeOptions {
   restaurantId: string;
   enabled?: boolean;
+  channelSuffix?: string;
   onChange: () => void;
   onStatus?: (status: string) => void;
 }
 
-function buildChannelName(restaurantId: string): string {
-  return `garson:${restaurantId}:erp-dashboard`;
+function buildChannelName(restaurantId: string, suffix: string): string {
+  return `garson:${restaurantId}:${suffix}`;
 }
 
 export function useOrderRealtime({
   restaurantId,
   enabled = true,
+  channelSuffix = 'erp-dashboard',
   onChange,
   onStatus,
 }: UseOrderRealtimeOptions) {
@@ -30,7 +32,7 @@ export function useOrderRealtime({
       return undefined;
     }
 
-    const channelName = buildChannelName(restaurantId);
+    const channelName = buildChannelName(restaurantId, channelSuffix);
     const filter = `restaurant_id=eq.${restaurantId}`;
 
     const channel = client
@@ -57,5 +59,5 @@ export function useOrderRealtime({
     return () => {
       void client.removeChannel(channel);
     };
-  }, [enabled, restaurantId, onStatus]);
+  }, [enabled, restaurantId, channelSuffix, onStatus]);
 }
