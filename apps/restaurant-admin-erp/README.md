@@ -12,15 +12,21 @@ Additive React admin shell for GarsonAI. **Does not modify** the existing P6 pro
 - Framer Motion
 - Recharts
 
-## Route
+## Routes
 
-Production build output: `/garson/erp/`
+| Path | Module |
+|------|--------|
+| `/garson/erp/` | Dashboard (P7-B) |
+| `/garson/erp/orders` | Orders (P7-C) |
+| `/garson/erp/menu` | Menu listing (P7-D) |
 
 ## Data
 
 - **P7-B:** Dashboard reads live Supabase data filtered by `restaurant_id`
+- **P7-C:** Orders list/detail/status with realtime
+- **P7-D:** Menu categories + items listing (read-only; CRUD later)
 - Tenant list from `restaurant_users` + `restaurants` (shared Garson auth session)
-- Realtime channel on `orders` table (`garson:{restaurant_id}:erp-dashboard`)
+- Realtime channels: `erp-dashboard`, `erp-orders`, `erp-menu`
 
 ## Development
 

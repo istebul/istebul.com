@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 interface RealtimeStatusProps {
   status: string;
+  tables?: string;
 }
 
 function getStatusMeta(status: string) {
@@ -17,10 +18,10 @@ function getStatusMeta(status: string) {
   if (key === 'UNAVAILABLE') {
     return { label: 'Realtime kapalı', variant: 'secondary' as const, description: 'Supabase istemcisi kullanılamıyor' };
   }
-  return { label: 'Bağlanıyor', variant: 'outline' as const, description: 'Sipariş kanalı hazırlanıyor' };
+  return { label: 'Bağlanıyor', variant: 'outline' as const, description: 'Realtime kanalı hazırlanıyor' };
 }
 
-export function RealtimeStatus({ status }: RealtimeStatusProps) {
+export function RealtimeStatus({ status, tables = 'orders' }: RealtimeStatusProps) {
   const meta = getStatusMeta(status);
 
   return (
@@ -36,7 +37,7 @@ export function RealtimeStatus({ status }: RealtimeStatusProps) {
           </div>
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground">
-          Kanal: <code className="rounded bg-muted px-1 py-0.5">orders</code> · Filtre:{' '}
+          Kanal: <code className="rounded bg-muted px-1 py-0.5">{tables}</code> · Filtre:{' '}
           <code className="rounded bg-muted px-1 py-0.5">restaurant_id</code>
         </CardContent>
       </Card>
