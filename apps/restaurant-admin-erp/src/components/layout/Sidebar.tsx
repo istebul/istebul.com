@@ -6,6 +6,7 @@ import {
   Settings,
   ShoppingBag,
   Users,
+  UtensilsCrossed,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -20,6 +21,7 @@ import { cn } from '@/lib/utils';
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   ShoppingBag,
+  UtensilsCrossed,
   Package,
   Users,
   Wallet,
@@ -121,7 +123,7 @@ export function Sidebar({ activeId = 'dashboard', collapsed = false, onNavigate 
           animate={{ opacity: 1 }}
           className="border-t border-sidebar-border p-4"
         >
-          <p className="text-xs text-sidebar-foreground/60">P7-C · Canlı Supabase verisi</p>
+          <p className="text-xs text-sidebar-foreground/60">P7-D · Canlı Supabase verisi</p>
           <p className="mt-1 text-xs text-sidebar-foreground/40">Production panelden bağımsız</p>
         </motion.div>
       )}

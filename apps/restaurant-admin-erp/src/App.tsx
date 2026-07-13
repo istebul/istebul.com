@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { MenuPage } from '@/pages/MenuPage';
 import { OrdersPage } from '@/pages/OrdersPage';
 
 export default function App() {
@@ -20,6 +21,14 @@ export default function App() {
           element={
             <AdminLayout activeNavId="orders">
               <OrdersPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/menu"
+          element={
+            <AdminLayout activeNavId="menu">
+              <MenuPage />
             </AdminLayout>
           }
         />
