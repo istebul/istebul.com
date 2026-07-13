@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { InventoryPage } from '@/pages/InventoryPage';
 import { MenuPage } from '@/pages/MenuPage';
 import { OrdersPage } from '@/pages/OrdersPage';
 
@@ -29,6 +30,14 @@ export default function App() {
           element={
             <AdminLayout activeNavId="menu">
               <MenuPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            <AdminLayout activeNavId="inventory">
+              <InventoryPage />
             </AdminLayout>
           }
         />
