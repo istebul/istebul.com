@@ -673,6 +673,33 @@ export async function runWebhookGatewayPipeline(payload, options = {}) {
 }
 
 /**
+ * @param {{ messages?: Array<{ result?: string }>, statuses?: Array<{ type?: string, status?: string }> }} pipeline
+ * @returns {'status_event'|'template_event'|'inbound_message'|'ignored'}
+ */
+export function resolvePipelineDiagnosticBranch(pipeline) {
+  const messages = Array.isArray(pipeline.messages) ? pipeline.messages : [];
+  const statuses = Array.isArray(pipeline.statuses) ? pipeline.statuses : [];
+
+  if (
+    messages.some((item) =>
+      ['processed', 'fallback', 'reply_failed', 'notification_failed'].includes(String(item.result || ''))
+    )
+  ) {
+    return 'inbound_message';
+  }
+  if (messages.some((item) => item.result === 'ignored')) {
+    return 'ignored';
+  }
+  if (statuses.some((item) => item.type === 'message_template_status_update')) {
+    return 'template_event';
+  }
+  if (statuses.length > 0) {
+    return 'status_event';
+  }
+  return 'status_event';
+}
+
+/**
  * @typedef {Object} ProcessWebhookGatewayPostOptions
  * @property {import('@supabase/supabase-js').SupabaseClient} [client]
  * @property {boolean} [useSupabase]
@@ -723,7 +750,8 @@ export async function processWebhookGatewayPost(rawBody, signatureHeader, option
     });
     return {
       status: 200,
-      body: { ok: true, duplicate: true, processed: 0 }
+      body: { ok: true, duplicate: true, processed: 0 },
+      branch: 'duplicate'
     };
   }
 
@@ -743,7 +771,8 @@ export async function processWebhookGatewayPost(rawBody, signatureHeader, option
       ok: true,
       processed: pipeline.processed,
       duplicate: false
-    }
+    },
+    branch: resolvePipelineDiagnosticBranch(pipeline)
   };
 }
 
@@ -771,9 +800,13 @@ export async function handleWebhookGatewayRequest(request, options = {}) {
     const rawBody = await request.text();
     const signature = request.headers.get('x-hub-signature-256') || '';
     const result = await processWebhookGatewayPost(rawBody, signature, options);
+    const headers = { 'Content-Type': 'application/json; charset=utf-8' };
+    if (result.branch) {
+      headers['X-Garson-Webhook-Branch'] = result.branch;
+    }
     return new Response(JSON.stringify(result.body), {
       status: result.status,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+      headers
     });
   }
 

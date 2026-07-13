@@ -15,6 +15,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, X-Hub-Signature-256'
 };
 
+const WEBHOOK_BRANCH_HEADER = 'X-Garson-Webhook-Branch';
+
 /**
  * @param {Record<string, string>} env
  */
@@ -25,6 +27,76 @@ function getSupabaseClient(env) {
   return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false }
   });
+}
+
+/**
+ * @param {Record<string, string>} env
+ * @returns {boolean}
+ */
+function isWebhookResponseDebugEnabled(env) {
+  return env.DEBUG_WEBHOOK_RESPONSE === 'true' || env.APP_ENV !== 'production';
+}
+
+/**
+ * @param {unknown} error
+ * @returns {string|null}
+ */
+function resolveWebhookErrorBranch(error) {
+  if (!(error instanceof WhatsAppWebhookGatewayError)) {
+    return null;
+  }
+  if (error.status === 403 && error.code === 'forbidden') {
+    return 'signature_failed';
+  }
+  if (error.status === 400 && error.code === 'bad_request') {
+    return 'invalid_json';
+  }
+  return null;
+}
+
+/**
+ * @param {Response} response
+ * @param {Request} request
+ * @param {Record<string, string>} env
+ * @returns {Promise<Response>}
+ */
+async function maybeAttachWebhookPostDebug(response, request, env) {
+  if (request.method !== 'POST' || !isWebhookResponseDebugEnabled(env)) {
+    return response;
+  }
+
+  const headers = new Headers(response.headers);
+  for (const [key, value] of Object.entries(corsHeaders)) {
+    headers.set(key, value);
+  }
+
+  const branch = headers.get(WEBHOOK_BRANCH_HEADER);
+  headers.delete(WEBHOOK_BRANCH_HEADER);
+
+  try {
+    const body = await response.json();
+    return new Response(
+      JSON.stringify({
+        ...body,
+        debug: {
+          status: response.status,
+          processed: body.processed ?? null,
+          duplicate: body.duplicate ?? false,
+          ok: body.ok ?? false,
+          branch
+        }
+      }),
+      {
+        status: response.status,
+        headers
+      }
+    );
+  } catch {
+    return new Response(response.body, {
+      status: response.status,
+      headers
+    });
+  }
 }
 
 export async function onRequestOptions() {
@@ -44,15 +116,7 @@ export async function onRequest(context) {
       sendReply: true
     });
 
-    const headers = new Headers(response.headers);
-    for (const [key, value] of Object.entries(corsHeaders)) {
-      headers.set(key, value);
-    }
-
-    return new Response(response.body, {
-      status: response.status,
-      headers
-    });
+    return maybeAttachWebhookPostDebug(response, context.request, env);
   } catch (error) {
     const status = error instanceof WhatsAppWebhookGatewayError ? error.status : 500;
     const code =
@@ -84,6 +148,20 @@ export async function onRequest(context) {
         metaSecretPresent: Boolean(env.META_APP_SECRET),
         supabaseUrlPresent: Boolean(env.SUPABASE_URL)
       };
+    } else if (
+      context.request.method === 'POST' &&
+      isWebhookResponseDebugEnabled(env)
+    ) {
+      const branch = resolveWebhookErrorBranch(error);
+      if (branch) {
+        errorBody.debug = {
+          status,
+          processed: null,
+          duplicate: false,
+          ok: false,
+          branch
+        };
+      }
     }
 
     return jsonApiResponse(errorBody, status, corsHeaders);
