@@ -1,6 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { formatCurrencyTry } from '@/lib/format';
 import { isTableAvailableForSelection } from '@/lib/journey';
+import {
+  createReservationAccessToken,
+  getSupabaseClientWithReservationToken,
+} from '@/lib/supabase';
 
 export class CxDataError extends Error {
   constructor(message: string) {
@@ -359,13 +363,19 @@ export async function submitCustomerReservation(
   client: SupabaseClient | null,
   input: SubmitReservationInput,
 ): Promise<SubmitReservationResult> {
-  const db = requireClient(client);
+  requireClient(client);
   const restaurantId = String(input.restaurantId || '').trim();
   if (!restaurantId) throw new CxDataError('restaurant_id zorunlu.');
   if (!input.customerName.trim()) throw new CxDataError('Müşteri adı gerekli.');
   if (!input.tableId) throw new CxDataError('Masa seçimi gerekli.');
 
-  const { data: reservation, error: reservationError } = await db
+  // P7-KA: token-gated reservation read — client token + header for RLS SELECT/RETURNING.
+  const accessToken = createReservationAccessToken();
+  const requestToken = createReservationAccessToken();
+  const scoped = getSupabaseClientWithReservationToken(accessToken);
+  if (!scoped) throw new CxDataError('Supabase token istemcisi oluşturulamadı.');
+
+  const { data: reservation, error: reservationError } = await scoped
     .from('reservations')
     .insert({
       restaurant_id: restaurantId,
@@ -380,6 +390,8 @@ export async function submitCustomerReservation(
       has_preorder: input.cart.length > 0,
       notes: input.notes || null,
       party_source: 'reservation',
+      access_token: accessToken,
+      reservation_request_token: requestToken,
     })
     .select('id')
     .maybeSingle();
@@ -390,7 +402,7 @@ export async function submitCustomerReservation(
 
   const reservationId = reservation.id as string;
 
-  const { error: linkError } = await db.from('reservation_tables').insert({
+  const { error: linkError } = await scoped.from('reservation_tables').insert({
     restaurant_id: restaurantId,
     reservation_id: reservationId,
     table_id: input.tableId,
@@ -411,31 +423,28 @@ export async function submitCustomerReservation(
     }));
     const total = lineItems.reduce((sum, item) => sum + item.line_total, 0);
 
-    const { data: preorder, error: preorderError } = await db
-      .from('preorders')
-      .insert({
-        restaurant_id: restaurantId,
-        reservation_id: reservationId,
-        customer_name: input.customerName.trim(),
-        customer_phone: input.customerPhone.trim() || null,
-        status: 'submitted',
-        kitchen_status: 'submitted',
-        items: lineItems,
-        line_items: lineItems,
-        total,
-        total_amount: total,
-        notes: input.notes || null,
-      })
-      .select('id')
-      .maybeSingle();
+    const { error: preorderError } = await scoped.from('preorders').insert({
+      restaurant_id: restaurantId,
+      reservation_id: reservationId,
+      customer_name: input.customerName.trim(),
+      customer_phone: input.customerPhone.trim() || null,
+      status: 'submitted',
+      kitchen_status: 'submitted',
+      items: lineItems,
+      line_items: lineItems,
+      total,
+      total_amount: total,
+      notes: input.notes || null,
+    });
 
     if (preorderError) {
       throw new CxDataError(preorderError.message || 'Ön sipariş kaydedilemedi.');
     }
-    preorderId = preorder?.id || null;
+    // No anon SELECT on preorders (P7-KA) — id intentionally omitted.
+    preorderId = null;
   }
 
-  const { error: guaranteeError } = await db.from('reservation_guarantees').insert({
+  const { error: guaranteeError } = await scoped.from('reservation_guarantees').insert({
     restaurant_id: restaurantId,
     reservation_id: reservationId,
     reservation_guarantee_amount: input.guaranteeAmount,
