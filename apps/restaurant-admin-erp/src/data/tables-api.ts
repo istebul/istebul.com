@@ -399,8 +399,8 @@ export async function fetchTablesPageData(
       assignedWaiter: table.assigned_waiter,
       notes: table.notes || reservation?.notes || null,
       orderSummary: mapOrderSummary(order),
-      posX: table.pos_x == null ? null : Number(table.pos_x),
-      posY: table.pos_y == null ? null : Number(table.pos_y),
+      posX: table.pos_x === null || table.pos_x === undefined ? null : Number(table.pos_x),
+      posY: table.pos_y === null || table.pos_y === undefined ? null : Number(table.pos_y),
       layoutMeta: table.layout_meta || {},
     };
   });

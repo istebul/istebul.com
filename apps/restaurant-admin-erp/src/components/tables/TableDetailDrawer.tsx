@@ -70,7 +70,7 @@ export function TableDetailDrawer({ open, item, onClose }: TableDetailDrawerProp
                 <Row label="Saat" value={item.reservedAt || '—'} />
                 <Row
                   label="Kişi sayısı"
-                  value={item.guestCount != null ? String(item.guestCount) : '—'}
+                  value={item.guestCount !== null && item.guestCount !== undefined ? String(item.guestCount) : '—'}
                 />
                 <Row label="Masa" value={item.name} />
                 <Row label="Salon" value={item.salon} />
