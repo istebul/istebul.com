@@ -2,20 +2,29 @@
 
 Platform Shell’e ait yeniden kullanılabilir **ortak** bileşen iskeleti.
 
-## Gelecek adaylar (henüz yok)
+## Durum
 
-| Aday | Türkçe UI karşılığı | Not |
-|------|---------------------|-----|
-| Platform gezinmesi | Gezinme / Üst menü | Ürün panellerine gömülmez |
-| Platform alt bilgisi | Alt bilgi | İnce legal + ürün linkleri |
-| Ürün kartı | Ürün kartı | Yalnızca yönlendirme; iş kuralı yok |
-| Ortak banner | Duyuru bandı | Platform geneli |
-| Ortak duyurular | Duyurular | Ürün içi duyuru motoru değil |
-| Ortak bildirimler | Bildirimler | İleride opsiyonel altyapı |
+| Alan | Durum |
+|------|--------|
+| Bileşen klasör iskeleti | Hazır (PR-003) |
+| Çalışan UI kodu | **Yok** |
+| Runtime / HTML import | **Yok** — `index.ts` bilinçli olarak boş dışa aktarım |
+
+## Bileşen klasörleri
+
+| Klasör | Gelecekteki görev |
+|--------|------------------|
+| `PlatformHero/` | Platform Landing kahraman alanı |
+| `PlatformÜstBilgi/` | Platform üst bilgi / gezinme |
+| `PlatformAltBilgi/` | Platform alt bilgi |
+| `PlatformÜrünKartları/` | Tek ürün tanıtım kartı |
+| `PlatformÜrünIzgarası/` | Ürün kartları düzeni |
+
+Giriş yüzeyi: `index.ts` (henüz hiçbir yerden import edilmemeli).
 
 ## Kurallar
 
-- Bu klasörde **çalışan bileşen kodu yoktur** (PR-001).
 - GarsonAI (`.gai-*`), Business veya İSTEBUL AI home bileşenleri buraya taşınmaz.
-- Ortak UI, ürün iş mantığı taşımaz.
-- Yeni UI framework eklenmez; bağlanacağı zaman platform / marka diline uyulur.
+- Ortak UI ürün iş mantığı taşımaz.
+- Yeni UI framework eklenmez.
+- Kullanıcıya görünen metinler Türkçe olacaktır.
