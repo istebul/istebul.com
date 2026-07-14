@@ -5,6 +5,7 @@ import { InventoryPage } from '@/pages/InventoryPage';
 import { MenuPage } from '@/pages/MenuPage';
 import { OrdersPage } from '@/pages/OrdersPage';
 import { ReservationsPage } from '@/pages/ReservationsPage';
+import { TablesPage } from '@/pages/TablesPage';
 
 export default function App() {
   return (
@@ -31,6 +32,14 @@ export default function App() {
           element={
             <AdminLayout activeNavId="reservations">
               <ReservationsPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/tables"
+          element={
+            <AdminLayout activeNavId="tables">
+              <TablesPage />
             </AdminLayout>
           }
         />
