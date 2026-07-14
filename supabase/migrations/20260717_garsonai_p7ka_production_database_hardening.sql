@@ -182,6 +182,9 @@ CREATE POLICY "garson cx public reservation tables insert"
       SELECT 1 FROM public.reservations r
       WHERE r.id = reservation_id
         AND r.restaurant_id = restaurant_id
+        AND r.access_token IS NOT NULL
+        AND length(btrim(r.access_token)) >= 32
+        AND r.access_token = public.garson_request_header('x-garson-reservation-token')
     )
     AND EXISTS (
       SELECT 1 FROM public.restaurant_tables t
@@ -204,6 +207,9 @@ CREATE POLICY "garson cx public preorder insert"
       SELECT 1 FROM public.reservations r
       WHERE r.id = reservation_id
         AND r.restaurant_id = restaurant_id
+        AND r.access_token IS NOT NULL
+        AND length(btrim(r.access_token)) >= 32
+        AND r.access_token = public.garson_request_header('x-garson-reservation-token')
     )
   );
 
@@ -216,14 +222,15 @@ CREATE POLICY "garson cx public guarantee insert"
     restaurant_id IN (SELECT id FROM public.restaurants WHERE status = 'active')
     AND reservation_id IS NOT NULL
     AND reservation_guarantee_amount >= 0
-    AND reservation_guarantee_status IN (
-      'none', 'pending', 'authorized', 'captured', 'released',
-      'refunded', 'cancelled', 'expired', 'failed'
-    )
+    -- Anon may only create unpaid foundation rows (no paid-status spoof).
+    AND reservation_guarantee_status IN ('none', 'pending')
     AND EXISTS (
       SELECT 1 FROM public.reservations r
       WHERE r.id = reservation_id
         AND r.restaurant_id = restaurant_id
+        AND r.access_token IS NOT NULL
+        AND length(btrim(r.access_token)) >= 32
+        AND r.access_token = public.garson_request_header('x-garson-reservation-token')
     )
   );
 
@@ -377,6 +384,65 @@ CREATE TRIGGER trg_garson_payment_transactions_tenant
   BEFORE INSERT OR UPDATE ON public.payment_transactions
   FOR EACH ROW
   EXECUTE FUNCTION public.garson_enforce_payment_transactions_tenant();
+
+CREATE OR REPLACE FUNCTION public.garson_enforce_preorders_tenant()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  ref_rid uuid;
+BEGIN
+  IF NEW.reservation_id IS NOT NULL THEN
+    SELECT restaurant_id INTO ref_rid FROM public.reservations WHERE id = NEW.reservation_id;
+    IF ref_rid IS NULL OR ref_rid IS DISTINCT FROM NEW.restaurant_id THEN
+      RAISE EXCEPTION 'garson_tenant_integrity: preorders.reservation_id restaurant_id mismatch';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_garson_preorders_tenant ON public.preorders;
+CREATE TRIGGER trg_garson_preorders_tenant
+  BEFORE INSERT OR UPDATE ON public.preorders
+  FOR EACH ROW
+  EXECUTE FUNCTION public.garson_enforce_preorders_tenant();
+
+CREATE OR REPLACE FUNCTION public.garson_enforce_reservation_guarantees_tenant()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  ref_rid uuid;
+BEGIN
+  SELECT restaurant_id INTO ref_rid FROM public.reservations WHERE id = NEW.reservation_id;
+  IF ref_rid IS NULL OR ref_rid IS DISTINCT FROM NEW.restaurant_id THEN
+    RAISE EXCEPTION 'garson_tenant_integrity: reservation_guarantees.reservation_id restaurant_id mismatch';
+  END IF;
+
+  IF NEW.payment_policy_id IS NOT NULL THEN
+    SELECT restaurant_id INTO ref_rid FROM public.payment_policies WHERE id = NEW.payment_policy_id;
+    IF ref_rid IS NULL OR ref_rid IS DISTINCT FROM NEW.restaurant_id THEN
+      RAISE EXCEPTION 'garson_tenant_integrity: reservation_guarantees.payment_policy_id restaurant_id mismatch';
+    END IF;
+  END IF;
+
+  IF NEW.payment_transaction_id IS NOT NULL THEN
+    SELECT restaurant_id INTO ref_rid FROM public.payment_transactions WHERE id = NEW.payment_transaction_id;
+    IF ref_rid IS NULL OR ref_rid IS DISTINCT FROM NEW.restaurant_id THEN
+      RAISE EXCEPTION 'garson_tenant_integrity: reservation_guarantees.payment_transaction_id restaurant_id mismatch';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_garson_reservation_guarantees_tenant ON public.reservation_guarantees;
+CREATE TRIGGER trg_garson_reservation_guarantees_tenant
+  BEFORE INSERT OR UPDATE ON public.reservation_guarantees
+  FOR EACH ROW
+  EXECUTE FUNCTION public.garson_enforce_reservation_guarantees_tenant();
 
 -- ===========================================================================
 -- 5) MEDIUM: updated_at triggers on P7 tables

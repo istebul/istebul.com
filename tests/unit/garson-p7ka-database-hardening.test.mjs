@@ -36,7 +36,14 @@ test('P7-KA hardens anon inserts and adds cross-tenant integrity triggers', () =
   assert.match(sql, /garson_enforce_orders_table_tenant/i);
   assert.match(sql, /garson_enforce_inventory_category_tenant/i);
   assert.match(sql, /garson_enforce_payment_transactions_tenant/i);
+  assert.match(sql, /garson_enforce_preorders_tenant/i);
+  assert.match(sql, /garson_enforce_reservation_guarantees_tenant/i);
   assert.match(sql, /garson_tenant_integrity/i);
+  assert.match(
+    sql,
+    /reservation_tables[\s\S]*x-garson-reservation-token[\s\S]*garson cx public preorder insert/i,
+  );
+  assert.match(sql, /reservation_guarantee_status IN \('none', 'pending'\)/i);
 });
 
 test('P7-KA adds updated_at triggers, indexes, payment uniques, guarantee status sync', () => {
