@@ -49,9 +49,10 @@ test('P7-KA adds updated_at triggers, indexes, payment uniques, guarantee status
   assert.match(sql, /reservation_guarantees_status_check/i);
   assert.match(sql, /'refunded'[\s\S]*'cancelled'[\s\S]*'expired'/i);
   assert.match(sql, /ALTER PUBLICATION supabase_realtime ADD TABLE/i);
-  assert.doesNotMatch(sql, /DROP TABLE/i);
-  assert.doesNotMatch(sql, /DELETE FROM/i);
-  assert.doesNotMatch(sql, /TRUNCATE/i);
+  // Ignore SQL comments (header may mention "No DROP TABLE"); forbid executable statements.
+  assert.doesNotMatch(sql, /^\s*DROP\s+TABLE\b/im);
+  assert.doesNotMatch(sql, /^\s*DELETE\s+FROM\b/im);
+  assert.doesNotMatch(sql, /^\s*TRUNCATE\b/im);
 });
 
 test('P7-KA CX security wiring uses reservation access token header (no UI screen changes)', () => {
