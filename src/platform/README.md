@@ -11,11 +11,19 @@ parçaların oturacağı yerdir.
 | Alan | Durum |
 |------|--------|
 | Klasör iskeleti | Hazır (PR-001) |
-| Çalışan UI / route bağlantısı | **Yok** — kullanıcıya görünmez |
-| GarsonAI / Business / İSTEBUL AI | Dokunulmaz; ürün koduna import yok |
+| Ürün kimliği veri katmanı | Hazır (PR-002) — `constants/`, `types/`, `config/` |
+| Çalışan UI / route bağlantısı | **Yok** — kullanıcıya görünmez (`PLATFORM_CATALOG.wiredToRuntime === false`) |
+| GarsonAI / Business / İSTEBUL AI | Dokunulmaz; ürün kodundan import yok |
 
 Bu katman **etkin değildir**. HTML girişi, `js/app.js`, build bundle listesi veya
 Cloudflare yönlendirmesi bu PR kapsamında bağlanmaz.
+
+### Kimlik girişi (henüz bağlanmadı)
+
+```ts
+// Gelecek PR’lar için — şimdilik hiçbir yerden import edilmemeli
+import { PLATFORM_CATALOG, PLATFORM_PRODUCTS } from './index';
+```
 
 ## Neden `src/platform/`?
 

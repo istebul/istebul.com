@@ -1,15 +1,14 @@
 # types
 
-Platform Shell tip sözleşmeleri için yer tutucu.
+Platform Shell tip sözleşmeleri.
 
-## Gelecek adaylar (henüz yok)
+## Bu PR’da (PR-002)
 
-- `PlatformProduct` — ürün kimliği, görünen ad, giriş yolu, durum
-- `PlatformShellProps` — kabuk düzeni sözleşmesi
-- Banner / duyuru / bildirim DTO iskeletleri (iş kuralı olmadan)
+| Dosya | İçerik |
+|-------|--------|
+| `platform-product.ts` | `PlatformProduct`, `PlatformIdentity`, durum / görünürlük birlikleri |
 
 ## Kurallar
 
-- PR-001’de tip dosyası **yoktur**.
-- Tipler eklendiğinde ürün domain modellerini (rezervasyon, skor, ERP sipariş vb.) içermemelidir.
-- Ürün özel tipler ilgili ürün dizininde kalır (`src/business/types`, Garson yüzeyleri, AI `js/`).
+- Ürün domain modelleri (rezervasyon, skor, ERP sipariş) burada tanımlanmaz.
+- Tipler saf sözleşmedir; çalışma zamanı bağı yoktur.

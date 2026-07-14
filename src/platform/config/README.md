@@ -1,18 +1,15 @@
 # config
 
-Platform Shell yapılandırması için yer tutucu.
+Platform Shell yapılandırması ve platform kimliği.
 
-## Gelecek adaylar (henüz yok)
+## Bu PR’da (PR-002)
 
-| Anahtar örneği | Amaç |
-|----------------|------|
-| Kabuk etkinlik bayrağı | Platform Landing / shell’i bilinçli açma (varsayılan kapalı) |
-| Hub meta | Başlık, kısa açıklama (Türkçe) |
-| Ürün giriş yolları | Salt yönlendirme metadata (route rewrite değil) |
+| Dosya | İçerik |
+|-------|--------|
+| `platform-identity.ts` | `PLATFORM_IDENTITY`, `PLATFORM_CATALOG` (`wiredToRuntime: false`) |
 
 ## Kurallar
 
-- PR-001’de yapılandırma dosyası veya çalışan bayrak **yoktur**.
-- Varsayılan: kabuk **kapalı / bağlı değil** — kullanıcıya görünmez.
+- Varsayılan: katalog **çalışma zamanına bağlı değildir**.
 - Bu klasör `_redirects`, `wrangler.toml`, `server.cjs` veya SEO dosyalarını değiştirmez.
-- Ortak kimlik / abonelik yapılandırması ileride ayrı onay ve ayrı PR ister.
+- Etkin UI bağlantısı ayrı onaylı PR ister.
