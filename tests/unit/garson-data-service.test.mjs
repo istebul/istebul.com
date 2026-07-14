@@ -9,6 +9,7 @@ const {
 const { DEMO_RESTAURANT_SLUG } = await import('../../js/restoran/tenant.js');
 
 const {
+  GARSON_DATA_MENU_EMPTY_MESSAGE,
   GARSON_DATA_NETWORK_ERROR,
   GARSON_DATA_PERMISSION_ERROR,
   applyRestaurantFilter,
@@ -137,6 +138,33 @@ test('getRestaurantMenuData falls back to mock when Supabase client is unavailab
   assert.equal(result.error, null);
   assert.equal(result.data.restaurantId, DEMO_RESTAURANT_ID);
   assert.ok(result.data.categories.length >= 2);
+});
+
+test('getRestaurantMenuData returns empty-menu message without querying products', async () => {
+  const queried = [];
+  const client = createMockSupabaseClient({
+    menu_categories: [],
+    menu_items: [],
+    restaurants: [{ id: DEMO_RESTAURANT_ID, name: 'Demo Cafe', slug: DEMO_RESTAURANT_SLUG }]
+  });
+  const originalFrom = client.from.bind(client);
+  client.from = (table) => {
+    queried.push(table);
+    return originalFrom(table);
+  };
+
+  const result = await getRestaurantMenuData({
+    restaurantId: DEMO_RESTAURANT_ID,
+    client,
+    ...SUPABASE_OPTS
+  });
+
+  assert.equal(result.source, 'supabase');
+  assert.equal(result.isEmpty, true);
+  assert.equal(result.error, GARSON_DATA_MENU_EMPTY_MESSAGE);
+  assert.equal(result.data.categories.length, 0);
+  assert.equal(queried.includes('products'), false);
+  assert.equal(queried.some((table) => table === 'menu_items' || table === 'menu_categories'), true);
 });
 
 test('getRestaurantMenuData maps Supabase menu categories and filters restaurant_id', async () => {
