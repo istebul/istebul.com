@@ -22,7 +22,10 @@ function erpSpaRouteCopies(routes: string[]): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), erpSpaRouteCopies(['orders', 'reservations', 'menu', 'inventory'])],
+  plugins: [
+    react(),
+    erpSpaRouteCopies(['orders', 'reservations', 'tables', 'menu', 'inventory']),
+  ],
   base: '/garson/erp/',
   resolve: {
     alias: {
