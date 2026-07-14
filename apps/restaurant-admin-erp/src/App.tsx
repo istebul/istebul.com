@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { CheckinPage } from '@/pages/CheckinPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { InventoryPage } from '@/pages/InventoryPage';
 import { MenuPage } from '@/pages/MenuPage';
@@ -40,6 +41,14 @@ export default function App() {
           element={
             <AdminLayout activeNavId="tables">
               <TablesPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/checkin"
+          element={
+            <AdminLayout activeNavId="checkin">
+              <CheckinPage />
             </AdminLayout>
           }
         />
