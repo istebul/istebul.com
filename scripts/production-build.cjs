@@ -1019,3 +1019,9 @@ const erpBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-res
   stdio: 'inherit',
 });
 if (erpBuild.status !== 0) process.exit(erpBuild.status || 1);
+
+const cxBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-restaurant-customer-cx.cjs')], {
+  cwd: root,
+  stdio: 'inherit',
+});
+if (cxBuild.status !== 0) process.exit(cxBuild.status || 1);

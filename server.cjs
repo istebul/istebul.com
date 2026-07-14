@@ -53,6 +53,15 @@ app.use(express.static(path.join(__dirname), {
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0
 }));
 
+// P7-J CX Vite assets (built to dist/r/cx-assets)
+app.use(
+  '/r/cx-assets',
+  express.static(path.join(__dirname, 'dist', 'r', 'cx-assets'), {
+    etag: true,
+    maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
+  }),
+);
+
 if (process.env.NODE_ENV === 'production') {
   app.use(helmet.hsts({
     maxAge: 31536000,
@@ -99,10 +108,13 @@ app.get('*', (req, res, next) => {
     }
   }
 
+  // P7-J Customer Experience Platform SPA (/r/{slug}). Prefer built dist; keep /r/onay above.
   if (raw === '/r' || raw === '/r/' || raw.startsWith('/r/')) {
+    const cxIndex = path.join(__dirname, 'dist', 'r', 'index.html');
     const reservationIndex = path.join(__dirname, 'r', 'index.html');
-    if (fs.existsSync(reservationIndex)) {
-      return res.sendFile(reservationIndex);
+    const file = fs.existsSync(cxIndex) ? cxIndex : reservationIndex;
+    if (fs.existsSync(file)) {
+      return res.sendFile(file);
     }
   }
 
