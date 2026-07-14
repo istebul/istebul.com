@@ -25,6 +25,9 @@ export const GARSON_DATA_PERMISSION_ERROR =
 export const GARSON_DATA_NETWORK_ERROR =
   'Veri servisine bağlanılamadı. Demo verileri gösteriliyor.';
 
+/** Empty canonical menu (menu_items / menu_categories) — no legacy products fallback. */
+export const GARSON_DATA_MENU_EMPTY_MESSAGE = 'Henüz menü oluşturulmamış.';
+
 /**
  * @typedef {'supabase'|'mock'|'fallback'} GarsonDataSource
  */
@@ -338,42 +341,8 @@ async function fetchMenuCategoriesFromSupabase(client, restaurantId) {
 }
 
 /**
- * @param {import('@supabase/supabase-js').SupabaseClient} client
- * @param {string} restaurantId
- * @returns {Promise<{ categories: unknown[]|null, error: unknown|null }>}
- */
-async function fetchProductsAsMenuFromSupabase(client, restaurantId) {
-  const { data, error } = await client
-    .from('products')
-    .select('id, restaurant_id, category_id, name, price, active, is_active, stock_status')
-    .eq('restaurant_id', restaurantId);
-
-  if (error || !Array.isArray(data) || !data.length) {
-    return { categories: null, error };
-  }
-
-  const filtered = applyRestaurantFilter(data, restaurantId);
-  /** @type {Map<string, { id: string, restaurant_id: string, name: string, items: unknown[] }>} */
-  const grouped = new Map();
-
-  for (const product of filtered) {
-    const row = /** @type {Record<string, unknown>} */ (product);
-    const categoryId = String(row.category_id ?? 'uncategorized').trim() || 'uncategorized';
-    if (!grouped.has(categoryId)) {
-      grouped.set(categoryId, {
-        id: categoryId,
-        restaurant_id: restaurantId,
-        name: categoryId === 'uncategorized' ? 'Ürünler' : `Kategori ${categoryId}`,
-        items: []
-      });
-    }
-    grouped.get(categoryId)?.items.push(row);
-  }
-
-  return { categories: [...grouped.values()], error: null };
-}
-
-/**
+ * Canonical menu loader: menu_items → menu_categories only (no legacy products table).
+ *
  * @param {GarsonDataOptions} [options]
  * @returns {Promise<GarsonDataResult>}
  */
@@ -411,12 +380,6 @@ export async function getRestaurantMenuData(options = {}) {
       const categoryResult = await fetchMenuCategoriesFromSupabase(client, restaurantId);
       categories = categoryResult.categories;
       error = categoryResult.error;
-
-      if (!categories?.length) {
-        const productResult = await fetchProductsAsMenuFromSupabase(client, restaurantId);
-        categories = productResult.categories;
-        error = productResult.error || error;
-      }
     }
 
     if (error && classifyGarsonDataError(error) === 'permission') {
@@ -434,6 +397,12 @@ export async function getRestaurantMenuData(options = {}) {
     }
 
     const filtered = applyRestaurantFilter(categories || [], restaurantId);
+    if (!filtered.length && !error) {
+      return buildMenuResult([], restaurantId, 'supabase', {
+        error: { message: GARSON_DATA_MENU_EMPTY_MESSAGE }
+      });
+    }
+
     return buildMenuResult(filtered, restaurantId, 'supabase', { error });
   } catch (error) {
     if (classifyGarsonDataError(error) === 'permission') {
