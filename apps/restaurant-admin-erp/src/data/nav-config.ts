@@ -1,4 +1,4 @@
-/** ERP navigation — Dashboard → Orders → Reservations → Tables → Check-in → Menu → Inventory (P7-H). */
+/** ERP navigation — Dashboard → Orders → Reservations → Tables → Check-in → Payments → Menu → Inventory (P7-I). */
 
 export const ERP_NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', href: '/', icon: 'LayoutDashboard' },
@@ -6,6 +6,7 @@ export const ERP_NAV_ITEMS = [
   { id: 'reservations', label: 'Reservations', href: '/reservations', icon: 'CalendarDays' },
   { id: 'tables', label: 'Tables', href: '/tables', icon: 'LayoutGrid' },
   { id: 'checkin', label: 'Check-in', href: '/checkin', icon: 'UserCheck' },
+  { id: 'payments', label: 'Payments', href: '/payments', icon: 'CreditCard' },
   { id: 'menu', label: 'Menu', href: '/menu', icon: 'UtensilsCrossed' },
   { id: 'inventory', label: 'Inventory', href: '/inventory', icon: 'Package' },
   { id: 'staff', label: 'Personel', href: '#', icon: 'Users', disabled: true },
