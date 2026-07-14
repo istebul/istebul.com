@@ -24,7 +24,15 @@ function erpSpaRouteCopies(routes: string[]): Plugin {
 export default defineConfig({
   plugins: [
     react(),
-    erpSpaRouteCopies(['orders', 'reservations', 'tables', 'checkin', 'menu', 'inventory']),
+    erpSpaRouteCopies([
+      'orders',
+      'reservations',
+      'tables',
+      'checkin',
+      'payments',
+      'menu',
+      'inventory',
+    ]),
   ],
   base: '/garson/erp/',
   resolve: {

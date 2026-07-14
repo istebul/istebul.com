@@ -21,6 +21,7 @@ Additive React admin shell for GarsonAI. **Does not modify** the existing P6 pro
 | `/garson/erp/reservations` | Reservations (P7-F) |
 | `/garson/erp/tables` | Table Planner (P7-G) |
 | `/garson/erp/checkin` | Check-in Engine (P7-H) |
+| `/garson/erp/payments` | Reservation Guarantee & Payment Foundation (P7-I) |
 | `/garson/erp/menu` | Menu listing (P7-D) |
 | `/garson/erp/inventory` | Inventory listing (P7-E) |
 
@@ -31,10 +32,11 @@ Additive React admin shell for GarsonAI. **Does not modify** the existing P6 pro
 - **P7-F:** Reservations KPI/list/drawer + guarantee/preorder/table-planning prep (no payment capture)
 - **P7-G:** Interactive floor plan (salons, table cards, status model, realtime)
 - **P7-H:** Customer journey check-in (today list, walk-in, queue, table assign, no-show/late)
+- **P7-I:** Payment dashboard KPIs, reservation guarantee policy settings, payment transactions drawer, settlement prep, payment provider strategy stubs (no live charge)
 - **P7-D:** Menu categories + items listing (read-only; CRUD later)
 - **P7-E:** Inventory categories + items listing (read-only; no stock decrement)
 - Tenant list from `restaurant_users` + `restaurants` (shared Garson auth session)
-- Realtime channels: `erp-dashboard`, `erp-orders`, `erp-reservations`, `erp-tables`, `erp-checkin`, `erp-menu`, `erp-inventory`
+- Realtime channels: `erp-dashboard`, `erp-orders`, `erp-reservations`, `erp-tables`, `erp-checkin`, `erp-payments`, `erp-menu`, `erp-inventory`
 
 ## Development
 

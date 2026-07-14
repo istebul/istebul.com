@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import {
   BarChart3,
   CalendarDays,
+  CreditCard,
   LayoutDashboard,
   LayoutGrid,
   Package,
@@ -27,6 +28,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   CalendarDays,
   LayoutGrid,
   UserCheck,
+  CreditCard,
   UtensilsCrossed,
   Package,
   Users,
