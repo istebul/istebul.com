@@ -25,7 +25,10 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['apps/restaurant-admin-erp/**/*.{ts,tsx}'],
+      files: [
+        'apps/restaurant-admin-erp/**/*.{ts,tsx}',
+        'apps/restaurant-customer-cx/**/*.{ts,tsx}',
+      ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint', 'react', 'react-hooks'],
       parserOptions: {
