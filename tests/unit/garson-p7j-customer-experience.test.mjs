@@ -62,7 +62,14 @@ test('P7-J build wiring and P6 production sources remain untouched markers', () 
   assert.match(pkg, /dev:cx/);
   assert.match(pkg, /restaurant-customer-cx/);
   assert.match(buildScript, /dist\/r/);
+  // Must preserve production-hashed /r/onay — never re-copy source HTML over dist
+  assert.match(buildScript, /Preserve production-build output under dist\/r\/onay/);
+  assert.doesNotMatch(
+    buildScript,
+    /copyFileSync\(path\.join\(onaySource/,
+  );
   assert.match(prodBuild, /build-restaurant-customer-cx\.cjs/);
+  assert.match(prodBuild, /r\/onay\/index\.html/);
   assert.match(server, /dist.*r.*index\.html|cxIndex|Customer CX/i);
   assert.match(panel, /GarsonAI|garson/i);
 });

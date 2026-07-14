@@ -24,6 +24,14 @@ if (typecheckOnly) {
 const outDir = path.join(root, 'dist', 'r');
 fs.mkdirSync(outDir, { recursive: true });
 
+// Preserve production-build output under dist/r/onay (hashed CSS/JS refs).
+// Never recopy source r/onay over it — that reverts asset fingerprints and breaks
+// dist-asset-integrity-audit.
+const onayDistHtml = path.join(outDir, 'onay', 'index.html');
+const onayBefore = fs.existsSync(onayDistHtml)
+  ? fs.readFileSync(onayDistHtml, 'utf8')
+  : null;
+
 const build = spawnSync(
   process.execPath,
   [path.join(root, 'node_modules/vite/bin/vite.js'), 'build', '--config', path.join(appDir, 'vite.config.ts')],
@@ -34,13 +42,13 @@ if (build.status !== 0) {
   process.exit(build.status || 1);
 }
 
-const onaySource = path.join(root, 'r', 'onay');
-const onayDest = path.join(outDir, 'onay');
-if (fs.existsSync(onaySource)) {
-  fs.mkdirSync(onayDest, { recursive: true });
-  for (const file of fs.readdirSync(onaySource)) {
-    fs.copyFileSync(path.join(onaySource, file), path.join(onayDest, file));
-  }
+if (onayBefore != null) {
+  fs.mkdirSync(path.dirname(onayDistHtml), { recursive: true });
+  fs.writeFileSync(onayDistHtml, onayBefore);
+} else if (!fs.existsSync(onayDistHtml)) {
+  console.warn(
+    '[cx] dist/r/onay/index.html missing — run full npm run build so production-build can hash /r/onay assets.',
+  );
 }
 
 // Directory shells for hosts without rewrite support (Cloudflare still uses /r/* → index.html)

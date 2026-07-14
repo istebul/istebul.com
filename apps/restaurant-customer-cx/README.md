@@ -34,4 +34,5 @@ npm run build:cx
 npm run build
 ```
 
-Output: `dist/r/` (SPA) while preserving `dist/r/onay/`.
+Output: `dist/r/` (SPA shell).  
+`dist/r/onay/` is owned by `production-build.cjs` (hashed CSS/JS). The CX build must not overwrite it with source `r/onay/`.
