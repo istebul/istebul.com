@@ -25,6 +25,20 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['src/ai-core/**/*.ts'],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+      parserOptions: {
+        ecmaVersion: 2021,
+        sourceType: 'module',
+      },
+      extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+        'no-undef': 'off',
+      },
+    },
+    {
       files: [
         'apps/restaurant-admin-erp/**/*.{ts,tsx}',
         'apps/restaurant-customer-cx/**/*.{ts,tsx}',
