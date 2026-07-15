@@ -14,6 +14,7 @@ import {
   InMemoryMemoryStore,
   InMemoryTokenUsageStore,
 } from '../storage/in-memory-stores.ts';
+import type { RestaurantKnowledgeResolverPort } from '../interfaces/RestaurantKnowledgeResolverPort.ts';
 import type { AIProviderBundle } from '../providers/provider-factory.ts';
 import { getAIProvider } from '../providers/provider-factory.ts';
 import type {
@@ -42,6 +43,11 @@ export interface AIOrchestratorOptions {
   auditLogger?: AIAuditLogger;
   memoryStore?: MemoryStore;
   tokenUsageStore?: TokenUsageStore;
+  /**
+   * Optional P8-B Restaurant Knowledge Graph resolver.
+   * When omitted, orchestrate() behaves exactly as P8-A.
+   */
+  knowledgeResolver?: RestaurantKnowledgeResolverPort;
 }
 
 export interface OrchestrateInput {
@@ -85,6 +91,7 @@ export class AIOrchestrator {
   readonly audit: AIAuditLogger;
   readonly contextStore: MemoryStore;
   readonly tokenUsage: TokenUsageStore;
+  readonly knowledgeResolver?: RestaurantKnowledgeResolverPort;
 
   constructor(options: AIOrchestratorOptions = {}) {
     this.config = { ...DEFAULT_AI_CORE_CONFIG, ...options.config };
@@ -100,6 +107,7 @@ export class AIOrchestrator {
       options.auditLogger ||
       new AIAuditLogger({ defaultProvider: this.provider.code });
     this.tokenUsage = options.tokenUsageStore || new InMemoryTokenUsageStore();
+    this.knowledgeResolver = options.knowledgeResolver;
   }
 
   /** Convenience: swap strategy without reconstructing the whole graph. */
@@ -113,6 +121,7 @@ export class AIOrchestrator {
       auditLogger: this.audit,
       memoryStore: this.contextStore,
       tokenUsageStore: this.tokenUsage,
+      knowledgeResolver: this.knowledgeResolver,
     });
   }
 
@@ -168,6 +177,18 @@ export class AIOrchestrator {
     }
     if (customerCtx) {
       systemParts.push(customerContextToPromptBlock(customerCtx));
+    }
+
+    if (this.knowledgeResolver && input.restaurantId) {
+      const knowledge = await this.knowledgeResolver.resolveForOrchestrate({
+        restaurantId: input.restaurantId,
+        userMessage: input.userMessage,
+        moduleId: input.moduleId,
+        tags: input.tags,
+      });
+      if (knowledge?.promptBlock) {
+        systemParts.push(knowledge.promptBlock);
+      }
     }
 
     const messages: ChatMessage[] = [
