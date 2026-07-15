@@ -27,7 +27,7 @@ const CLONED_SECTION_IDS = [
 test('AI clone page keeps noindex and product markers', () => {
   assert.match(aiHtml, /data-ai-landing-clone="1"/);
   assert.match(aiHtml, /data-ib-ai-landing="clone"/);
-  assert.match(aiHtml, /name="robots"[^>]*content="noindex, nofollow"/);
+  assert.match(aiHtml, /name="robots"[^>]*content="index, follow/);
   assert.match(aiHtml, /rel="canonical"[^>]*href="https:\/\/www\.istebul\.com\/ai\/"/);
   assert.match(aiHtml, /js\/ai\/ai-landing-boot\.js/);
   assert.match(aiHtml, /css\/ai\/ai-landing-clone\.css/);
@@ -61,25 +61,25 @@ test('AI clone adapts in-page hash links to /ai surface', () => {
   assert.doesNotMatch(aiHtml, /href="\/#how-it-works"/);
 });
 
-test('home SEO contracts and platform preview remain untouched', () => {
-  assert.match(indexHtml, /id="hero-v4-title"/);
+test('root is Platform Landing; AI SEO lives on /ai after cutover', () => {
+  assert.match(indexHtml, /id="platform-landing"/);
   assert.match(
     indexHtml,
     /rel="canonical"[^>]*href="https:\/\/www\.istebul\.com\/"/
   );
-  assert.match(indexHtml, /src="\/data\/schema\/home-graph\.json"/);
+  assert.match(indexHtml, /src="\/data\/schema\/platform-graph\.json"/);
   assert.doesNotMatch(indexHtml, /data-ai-landing-clone/);
-  assert.match(indexHtml, /href="\/#how-it-works"/);
+  assert.doesNotMatch(indexHtml, /id="hero-v4-title"/);
 
   assert.match(previewHtml, /data-platform-landing-preview="1"/);
   assert.doesNotMatch(previewHtml, /data-ai-landing-clone/);
 });
 
-test('sitemap/robots still do not advertise /ai (no SEO cutover)', () => {
+test('sitemap advertises /ai after SEO cutover; robots stay allow-all', () => {
   const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
   const robots = fs.readFileSync(path.join(root, 'robots.txt'), 'utf8');
-  assert.doesNotMatch(sitemap, /istebul\.com\/ai\/?/);
-  assert.doesNotMatch(robots, /\/ai/);
+  assert.match(sitemap, /istebul\.com\/ai\/?/);
+  assert.match(robots, /Allow:\s*\//);
 });
 
 test('build wires AI landing boot bundle separately from platform preview', () => {

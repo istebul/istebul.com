@@ -22,37 +22,21 @@ import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full
  * Order matches PR-560 visual IA (CSS flex order in istebul-premium-final-v7.css).
  */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
-    'platform-shell-home',
-    'home',
-    'home-vertical-focus',
-    'how-it-works',
-    'home-features-strip',
-    'pricing',
-    'home-economic-indicators',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip'
+    'platform-landing',
+    'neden-istebul'
 ]);
 
-/** Hash targets on the marketing page. */
+/** Hash targets on the Platform Landing page (PR-568). */
 export const MARKETING_HASH_IDS = Object.freeze([
-    'platform-shell-home',
+    'platform-landing',
     'platform-products',
-    'home',
-    'home-vertical-focus',
-    'how-it-works',
-    'home-features-strip',
-    'pricing',
-    'home-economic-indicators',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip'
+    'neden-istebul'
 ]);
 
-/** Legacy hash shortcuts on homepage (long-scroll). */
+/** Legacy hash shortcuts — AI marketing moved to /ai (PR-568). */
 const MARKETING_PATH_ALIASES = Object.freeze({
-    '/metodoloji-ozet': 'how-it-works',
-    '/planlar-ozet': 'pricing'
+    '/metodoloji-ozet': 'neden-istebul',
+    '/planlar-ozet': 'platform-products'
 });
 
 /** Clears inline display overrides (e.g. showHomeSections uses !important). */

@@ -30,6 +30,6 @@ assert.ok(!indexHtml.includes('onload="this.media'), 'index.html must not use fo
 assert.ok(!productionBuild.includes('onload="this.media'), 'production-build must not inject font onload handlers');
 assert.ok(productionBuild.includes('perf-fonts-async.js'), 'production-build must use perf-fonts-async.js');
 assert.ok(indexHtml.includes('site-social-deferred-boot.js'), 'index.html must use external social boot');
-assert.ok(indexHtml.includes('home-graph.json'), 'index.html must use external JSON-LD');
+assert.ok(indexHtml.includes('platform-graph.json'), 'index.html must use external JSON-LD (platform-graph)');
 
 console.log('csp-policy.test.mjs: OK');

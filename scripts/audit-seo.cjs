@@ -80,10 +80,18 @@ function checkPage(rel, checks) {
   if (checks.aiCopy && !/AI|karar|TCO|maliyet/i.test(html.slice(0, 8000))) {
     fail(`${rel}: weak decision-platform messaging in head/hero region`);
   }
+  if (checks.platformCopy && !/İSTEBUL|ISTEBUL|platform|GarsonAI/i.test(html.slice(0, 8000))) {
+    fail(`${rel}: weak platform-landing messaging in head/hero region`);
+  }
 }
 
 checkPage('index.html', {
   canonical: 'https://www.istebul.com/',
+  aiCopy: false,
+  platformCopy: true
+});
+checkPage('ai/index.html', {
+  canonical: 'https://www.istebul.com/ai/',
   aiCopy: true
 });
 checkPage('auto/index.html', {

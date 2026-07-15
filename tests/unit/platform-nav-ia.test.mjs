@@ -19,7 +19,7 @@ function sectionBetween(startMarker, endMarker) {
 
 test('platform products menu lists AI, GarsonAI, Business with existing URLs', () => {
   const platform = sectionBetween('id="nav-platform-list"', 'id="nav-product-menu"');
-  assert.match(platform, /href="\/"/);
+  assert.match(platform, /href="\/ai\/"/);
   assert.match(platform, /href="\/garson\/"/);
   assert.match(platform, /href="\/business\/"/);
   assert.match(platform, /İSTEBUL AI|ISTEBUL AI/);
@@ -36,17 +36,15 @@ test('decision categories menu excludes GarsonAI and Business', () => {
   assert.match(categories, /href="\/konut\/"/);
 });
 
-test('SEO contracts untouched: H1, meta description, home schema script', () => {
-  assert.match(html, /id="hero-v4-title"/);
+test('SEO contracts: Platform Landing owns root, AI H1 not on index', () => {
+  assert.doesNotMatch(html, /id="hero-v4-title"/);
+  assert.match(html, /id="platform-landing"/);
+  assert.match(html, /id="neden-istebul"/);
   assert.match(
     html,
-    /Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz\.<\/span>/
+    /name="description"[^>]*content="[^"]*İSTEBUL/
   );
-  assert.match(
-    html,
-    /name="description"[^>]*content="Araba, konut, tatil, finansman ve sigorta kararlarında/
-  );
-  assert.match(html, /src="\/data\/schema\/home-graph\.json"/);
+  assert.match(html, /src="\/data\/schema\/platform-graph\.json"/);
 });
 
 test('marketing copy exposes platform product IA keys for tr', async () => {

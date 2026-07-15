@@ -306,9 +306,13 @@ pendingStaticFiles.forEach(({ file, source }) => {
       `/js/runtime/route-bootstrap-head.js?v=${bootstrapHash}`
     );
     html = injectPremiumPrerender(html);
-    html = runInjectHomeCategoryPrerender(html);
+    /* PR-568: AI category prerender lives on /ai/, not Platform Landing root */
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
+  }
+
+  if (file === 'ai/index.html') {
+    html = runInjectHomeCategoryPrerender(html);
   }
 
   writeFile(file, minifyHtml(html));

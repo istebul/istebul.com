@@ -31,14 +31,13 @@ if (emptyHash.test(html.replace(/id="switch-to-register"/g, ''))) {
 }
 
 const requiredRoutes = [
+  '/ai/',
   '/karar-asistani',
   '/auto/',
   '/metodoloji',
-  '/karsilastir/',
-  '/planlar',
-  '/#how-it-works',
-  '/#home-vertical-focus',
-  '/#pricing'
+  '/garson/',
+  '/business/',
+  '/planlar'
 ];
 for (const route of requiredRoutes) {
   if (!html.includes(`href="${route}"`) && !html.includes(`href='${route}'`) && !html.includes(`data-home-anchor`)) {
@@ -51,19 +50,18 @@ for (const route of requiredRoutes) {
 
 const marketingCopy = fs.readFileSync(path.join(root, 'js/features/i18n/marketing-copy.js'), 'utf8');
 
-const heroMust = ['Ön değerlendirmeye başla', 'Nasıl Çalışır?'];
-const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Ön değerlendirmeye başla'];
-const categoryCtaMust = ['Tam analize başla'];
-for (const text of [...heroMust, ...navMust]) {
+const platformMust = ['İSTEBUL', 'GarsonAI', 'Neden İSTEBUL', 'Hakkımızda'];
+for (const text of platformMust) {
   if (!html.includes(text)) {
-    console.error('FAIL: homepage missing expected text:', text);
+    console.error('FAIL: platform landing missing expected text:', text);
     failed = true;
   }
 }
 
+const categoryCtaMust = ['Tam analize başla'];
 for (const text of categoryCtaMust) {
   if (!marketingCopy.includes(text)) {
-    console.error('FAIL: homepage category CTA copy missing expected text:', text);
+    console.error('FAIL: category CTA copy missing expected text:', text);
     failed = true;
   }
 }

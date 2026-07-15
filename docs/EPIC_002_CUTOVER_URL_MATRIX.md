@@ -1,7 +1,7 @@
 # EPIC-002 — Platform Cutover URL Matrisi
 
 **Belge türü:** Cutover hazırlık sözleşmesi (PR-567)  
-**Durum:** Prep only — kullanıcı trafiği / SEO / route cutover **yok**  
+**Durum:** PR-568 cutover uygulandı — `/` = Platform Landing, `/ai/` = İSTEBUL AI (indexable)  
 **Kaynak kod:** `src/platform/constants/platform-url-map.ts`
 
 ---

@@ -114,14 +114,14 @@ test('production build lists platform-preview and bundles mount', () => {
   assert.match(build, /platform-shell-preview\.js/);
 });
 
-test('index.html SEO and H1 contracts unchanged by preview PR', () => {
-  assert.match(indexHtml, /id="hero-v4-title"/);
+test('index.html is live Platform Landing; preview remains archive surface', () => {
+  assert.match(indexHtml, /id="platform-landing"/);
   assert.match(
     indexHtml,
     /rel="canonical"[^>]*href="https:\/\/www\.istebul\.com\/"/
   );
-  assert.match(indexHtml, /src="\/data\/schema\/home-graph\.json"/);
-  assert.doesNotMatch(indexHtml, /platform-landing-preview/);
+  assert.match(indexHtml, /src="\/data\/schema\/platform-graph\.json"/);
+  assert.doesNotMatch(indexHtml, /data-platform-landing-preview/);
 });
 
 test('preview product CTA overrides match PR-564 copy', async () => {
@@ -135,7 +135,7 @@ test('preview product CTA overrides match PR-564 copy', async () => {
   assert.equal(byId['istebul-ai'].ctaLabel, 'Karşılaştırmaya Başla');
   assert.equal(byId['istebul-ai'].slogan, 'Bireysel kullanıcılar');
   assert.equal(byId['istebul-ai'].shortDescription, 'Büyük satın alma kararları');
-  assert.equal(byId['istebul-ai'].url, '/');
+  assert.equal(byId['istebul-ai'].url, '/ai/');
 
   assert.equal(byId.garsonai.ctaLabel, 'Restoranımı Dijitalleştir');
   assert.equal(byId.garsonai.slogan, 'Restoranlar');

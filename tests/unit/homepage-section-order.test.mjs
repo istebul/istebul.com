@@ -9,16 +9,8 @@ import path from 'node:path';
 const root = process.cwd();
 
 const EXPECTED_VISUAL_ORDER = [
-  'platform-shell-home',
-  'home',
-  'home-vertical-focus',
-  'how-it-works',
-  'home-features-strip',
-  'pricing',
-  'home-economic-indicators',
-  'partner-enterprise',
-  'landing-faq',
-  'home-guides-strip'
+  'platform-landing',
+  'neden-istebul'
 ];
 
 function orderOf(css, id) {
@@ -27,27 +19,15 @@ function orderOf(css, id) {
   return match ? Number(match[1]) : null;
 }
 
-test('premium CSS encodes PR-560 homepage visual section order', () => {
-  const css = fs.readFileSync(
-    path.join(root, 'css/istebul-premium-final-v7.css'),
-    'utf8'
-  );
-
-  const orders = EXPECTED_VISUAL_ORDER.map((id) => {
-    const value = orderOf(css, id);
-    assert.ok(Number.isFinite(value), `missing flex order for #${id}`);
-    return { id, value };
-  });
-
-  for (let i = 1; i < orders.length; i += 1) {
-    assert.ok(
-      orders[i - 1].value < orders[i].value,
-      `${orders[i - 1].id} (${orders[i - 1].value}) must precede ${orders[i].id} (${orders[i].value})`
-    );
+test('Platform Landing sections exist on index after cutover', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  for (const id of EXPECTED_VISUAL_ORDER) {
+    assert.match(html, new RegExp(`id="${id}"`));
   }
+  assert.doesNotMatch(html, /id="hero-v4-title"/);
 });
 
-test('HOMEPAGE_SECTION_IDS list order matches PR-560 IA', async () => {
+test('HOMEPAGE_SECTION_IDS list matches Platform Landing cutover', async () => {
   const { HOMEPAGE_SECTION_IDS, MARKETING_HASH_IDS } = await import(
     '../../js/core/router.js'
   );
@@ -58,14 +38,13 @@ test('HOMEPAGE_SECTION_IDS list order matches PR-560 IA', async () => {
   assert.ok(MARKETING_HASH_IDS.includes('platform-products'));
 });
 
-test('index.html keeps marketing hashes and does not remove sections', () => {
+test('index.html platform hashes and AI deep-links after cutover', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   for (const id of EXPECTED_VISUAL_ORDER) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(html, /id="hero-v4-title"/);
-  assert.match(html, /href="\/#pricing"/);
-  assert.match(html, /href="\/#landing-faq"|href="#landing-faq"/);
-  assert.match(html, /href="\/#how-it-works"|data-home-anchor="how-it-works"/);
-  assert.match(html, /href="\/#home-vertical-focus"|data-home-anchor="home-vertical-focus"/);
+  assert.doesNotMatch(html, /id="hero-v4-title"/);
+  assert.match(html, /href="\/ai\/#pricing"/);
+  assert.match(html, /href="\/ai\/#how-it-works"/);
+  assert.match(html, /href="\/ai\/#home-vertical-focus"/);
 });
