@@ -1,0 +1,104 @@
+/**
+ * PR-565 — İSTEBUL AI Landing Foundation styles.
+ * Platform CSS (`css/platform-*`) ile ayrı tutulur; homepage bundle import edilmez.
+ */
+
+.ib-ai-landing-foundation-page {
+  --ib-ai-ink: var(--color-text, #111827);
+  --ib-ai-muted: var(--color-muted, #6b7280);
+  --ib-ai-accent: var(--color-accent, #2563eb);
+  --ib-ai-border: var(--color-border, #e5e7eb);
+  --ib-ai-bg: var(--color-bg, #fafaf8);
+  --ib-ai-surface: var(--color-surface, #ffffff);
+  margin: 0;
+  background: var(--ib-ai-bg);
+  color: var(--ib-ai-ink);
+}
+
+.ib-ai-landing-foundation-banner {
+  margin: 0;
+  padding: 0.45rem 1rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.ib-ai-landing-foundation-banner a {
+  color: #93c5fd;
+}
+
+.ib-ai-landing-foundation-page .seo-main {
+  max-width: none;
+  padding: 0;
+}
+
+.ib-ai-landing__section {
+  box-sizing: border-box;
+  width: 100%;
+  border-bottom: 1px solid var(--ib-ai-border);
+  background: var(--ib-ai-bg);
+}
+
+.ib-ai-landing__section--hero {
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.06), transparent 48%),
+    var(--ib-ai-bg);
+}
+
+.ib-ai-landing__section-inner {
+  box-sizing: border-box;
+  width: min(960px, 100%);
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 4vw, 2rem);
+}
+
+.ib-ai-landing__kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ib-ai-accent);
+}
+
+.ib-ai-landing__section h1,
+.ib-ai-landing__section h2 {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-heading, Satoshi, system-ui, sans-serif);
+  letter-spacing: -0.02em;
+}
+
+.ib-ai-landing__section h1 {
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+}
+
+.ib-ai-landing__section h2 {
+  font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+}
+
+.ib-ai-landing__placeholder {
+  margin: 0;
+  max-width: 40rem;
+  color: var(--ib-ai-muted);
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+.ib-ai-landing__section [data-ai-landing-mount] {
+  margin-top: 1rem;
+  min-height: 2.5rem;
+  border: 1px dashed rgba(37, 99, 235, 0.28);
+  border-radius: 12px;
+  background: var(--ib-ai-surface);
+}
+
+.ib-ai-landing__section [data-ai-landing-mount][data-ai-landing-ready='1'] {
+  border-style: solid;
+  border-color: rgba(37, 99, 235, 0.18);
+}
+
+.ib-ai-landing-foundation-footer .seo-footer-grid {
+  gap: 1.25rem;
+}

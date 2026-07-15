@@ -66,6 +66,31 @@ app.get('/js/runtime/platform-shell-preview.js', (_req, res, next) => {
   }
 });
 
+/** PR-565 — serve AI Landing Foundation boot (does not change `/`). */
+app.get('/js/ai/ai-landing-foundation.js', (_req, res, next) => {
+  const fs = require('fs');
+  const distFile = path.join(__dirname, 'dist', 'js', 'ai', 'ai-landing-foundation.js');
+  if (fs.existsSync(distFile)) {
+    res.type('application/javascript');
+    return res.sendFile(distFile);
+  }
+  try {
+    const esbuild = require('esbuild');
+    const result = esbuild.buildSync({
+      entryPoints: [path.join(__dirname, 'js', 'ai', 'ai-landing-foundation.js')],
+      bundle: true,
+      format: 'esm',
+      platform: 'browser',
+      target: 'es2020',
+      write: false
+    });
+    res.type('application/javascript');
+    return res.send(result.outputFiles[0].text);
+  } catch {
+    return next();
+  }
+});
+
 app.use('/js/chunks', express.static(path.join(__dirname, 'dist', 'js', 'chunks'), {
   fallthrough: false,
   setHeaders: (res) => {
@@ -130,6 +155,13 @@ app.get('*', (req, res, next) => {
     const previewIndex = path.join(__dirname, 'platform-preview', 'index.html');
     if (fs.existsSync(previewIndex)) {
       return res.sendFile(previewIndex);
+    }
+  }
+
+  if (raw === '/ai' || raw === '/ai/') {
+    const aiIndex = path.join(__dirname, 'ai', 'index.html');
+    if (fs.existsSync(aiIndex)) {
+      return res.sendFile(aiIndex);
     }
   }
 
