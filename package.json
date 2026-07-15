@@ -57,7 +57,7 @@
     "smoke:edge": "node scripts/smoke-edge-functions.cjs",
     "cf:bot-access": "node scripts/apply-cloudflare-bot-access.cjs --apply",
     "cf:bot-access:dry": "node scripts/apply-cloudflare-bot-access.cjs",
-    "analyze:bundle": "node scripts/production-build.cjs && node scripts/analyze-bundle.cjs",
+    "analyze:bundle": "node scripts/production-build.cjs && node scripts/restore-build-tracked-sources.cjs && node scripts/analyze-bundle.cjs",
     "build:check": "node scripts/check-build-output.cjs && node scripts/dist-inline-handlers-audit.cjs && node scripts/cloudflare-redirects-audit.cjs && node scripts/restore-build-tracked-sources.cjs",
     "audit:launch": "node scripts/final-production-launch-audit.cjs",
     "audit": "node scripts/release-final-audit.cjs",
