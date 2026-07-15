@@ -28,7 +28,7 @@ const mustContain = [
   ['js/auto/auto-app.js', 'initBrandConsistency'],
   ['js/runtime/corporate-ux.js', 'initBrandConsistency'],
   ['js/core/brand-voice.js', 'Tam analize başla'],
-  ['index.html', 'Tam analize başla'],
+  ['ai/index.html', 'Ön değerlendirmeye başla'],
   ['auto/index.html', 'Aracımı Analiz Et'],
   ['auto/index.html', 'Analizi başlat']
 ];

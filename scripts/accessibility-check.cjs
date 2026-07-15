@@ -18,12 +18,14 @@ assert(!index.includes('onload="'), 'Inline onload handlers should be avoided in
 const productionBuild = read('scripts/production-build.cjs');
 assert(!productionBuild.includes('onload="'), 'production-build must not inject inline onload handlers.');
 
-// P0-1 kritik yüzey marker'ları (runtime kontrast guard ile eşleşir)
+// P0-1 kritik yüzey marker'ları (Platform root + AI ürün yüzeyi)
 const criticalMarkers = [
-  ['index.html', 'id="hero-v4-title"'],
-  ['index.html', 'data-hero-cta-primary'],
+  ['index.html', 'id="platform-landing"'],
+  ['index.html', 'id="neden-istebul"'],
   ['index.html', 'id="premium-karar-analizi-root"'],
   ['index.html', 'id="listing-result-count"'],
+  ['ai/index.html', 'id="hero-v4-title"'],
+  ['ai/index.html', 'data-hero-cta-primary'],
   ['auto/index.html', 'data-auto-hero-cta'],
   ['tatil/index.html', 'id="vacation-hero-cta"'],
   ['sigorta/index.html', 'id="sigorta-hero-cta"'],

@@ -182,17 +182,17 @@ function expectAuditClean(audit, contextLabel) {
 
 test.describe('P0-1 contrast/visibility guard', () => {
   for (const viewport of VIEWPORTS) {
-    test(`ana sayfa hero + kategori CTA @ ${viewport.label}`, async ({ page }) => {
+    /* EPIC-002: AI hero + kategori CTA lives on /ai/; root is Platform Landing */
+    test(`AI Landing hero + kategori CTA @ ${viewport.label}`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto('/');
-      await waitForAppRoute(page, 'home');
+      await page.goto('/ai/');
+      await page.waitForSelector('#hero-v4-title', { timeout: 15000 });
       await page.locator('#home-vertical-focus').scrollIntoViewIfNeeded();
-
       await page.waitForSelector('#home-category-grid .ib-cat-mockup__title', { timeout: 15000 });
 
       const audit = await runVisibilityAudit(page, [
-        { selector: '#hero-v4-title', label: 'Ana hero başlık', minContrast: MIN_CONTRAST_LARGE },
-        { selector: '[data-hero-cta-primary]', label: 'Ana hero CTA', minContrast: MIN_CONTRAST_UI },
+        { selector: '#hero-v4-title', label: 'AI hero başlık', minContrast: MIN_CONTRAST_LARGE },
+        { selector: '[data-hero-cta-primary]', label: 'AI hero CTA', minContrast: MIN_CONTRAST_UI },
         { selector: '#home-use-cases-title', label: 'Kategori bölüm başlığı', checkContrast: false },
         {
           selector: '#home-category-grid .ib-cat-mockup__title',
@@ -206,7 +206,7 @@ test.describe('P0-1 contrast/visibility guard', () => {
         }
       ]);
 
-      expectAuditClean(audit, `Ana sayfa @ ${viewport.label}`);
+      expectAuditClean(audit, `AI Landing @ ${viewport.label}`);
     });
   }
 
