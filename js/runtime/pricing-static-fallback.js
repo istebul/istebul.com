@@ -19,17 +19,17 @@ export function renderStaticPricingFallback() {
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Şeffaf metodoloji</span></li>
               </ul>
               <div class="revenue-plan-card-foot">
-                <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_static" data-analytics-placement="pricing_static_free">Ön değerlendirmeye başla</a>
+                <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_static" data-analytics-placement="pricing_static_free">İSTEBUL AI ile başla</a>
               </div>
             </article>
             <article class="revenue-plan-card revenue-plan-card--featured">
               <div class="revenue-plan-card-head">
                 <span class="revenue-plan-badge revenue-plan-badge--popular">En popüler</span>
                 <span class="revenue-trial-badge">Pilot erişim</span>
-                <h3 class="revenue-plan-title">isteBul Pro</h3>
+                <h3 class="revenue-plan-title">İSTEBUL AI Pro</h3>
                 <p class="revenue-plan-price">Erken erişim</p>
               </div>
-              <p class="revenue-plan-desc">Tam karar altyapısı: sınırsız TCO, premium rapor, öncelikli eşleşme</p>
+              <p class="revenue-plan-desc">İSTEBUL AI tam karar altyapısı: sınırsız TCO, premium rapor, öncelikli eşleşme</p>
               <ul class="revenue-plan-features">
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırsız karşılaştırma</span></li>
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Premium karar raporu &amp; derin TCO</span></li>
@@ -38,7 +38,7 @@ export function renderStaticPricingFallback() {
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Ödeme aktivasyonu sonrası</span></li>
               </ul>
               <div class="revenue-plan-card-foot">
-                <a href="/planlar" class="btn btn-primary btn-block" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_static_pro">Pro erken erişim</a>
+                <a href="/planlar" class="btn btn-primary btn-block" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_static_pro">İSTEBUL AI Pro erken erişim</a>
                 <p class="revenue-plan-hint revenue-plan-hint--checkout">Ödeme sağlayıcı aktivasyonu sonrası bilgilendirme</p>
               </div>
             </article>

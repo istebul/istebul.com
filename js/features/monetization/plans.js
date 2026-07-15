@@ -4,7 +4,7 @@ import { BRAND_VOICE } from '../../core/brand-voice.js';
 export const PRICING_MESSAGING = Object.freeze({
   headline: 'Yanlış araç seçimi yıllık maliyette çok daha pahalıya patlar',
   subhead:
-    'Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. isteBul karar altyapısı: ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
+    'Bu planlar İSTEBUL AI karar altyapısına aittir (GarsonAI / İSTEBUL Business değil). Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. Ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
   popularBadge: 'En popüler',
   roiTitle: 'Karar maliyeti hesabı',
   roiDisclaimer:
@@ -26,7 +26,7 @@ export const PLANS = {
   },
   pro: {
     id: 'pro',
-    name: 'isteBul Pro',
+    name: 'İSTEBUL AI Pro',
     priceLabel: 'Erken erişim',
     priceHint: 'Ödeme aktivasyonu sonrası bilgilendirme · pilot erişim sürecinde',
     description: 'Detaylı TCO, senaryo karşılaştırma, gelişmiş AI açıklama ve premium rapor',

@@ -2,7 +2,7 @@
 const tr = {
   popularBadge: 'En popüler',
   subhead:
-    'Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. isteBul karar altyapısı: ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
+    'Bu planlar yalnızca İSTEBUL AI içindir (GarsonAI / İSTEBUL Business değil). Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. Ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
   roiTitle: 'Karar maliyeti hesabı',
   roiLead:
     'Bütçeniz ve makul bir TCO sapması varsayımıyla Pro maliyetini yanlış seçim riskiyle kıyaslayın.',
@@ -37,10 +37,10 @@ const tr = {
   freeName: 'Başlangıç',
   freePrice: 'Ücretsiz',
   freeDesc: 'Temel analiz — TCO özeti ve önizleme; üyelik zorunlu değil',
-  freeCta: 'Ön değerlendirmeye başla',
-  proName: 'isteBul Pro',
+  freeCta: 'İSTEBUL AI ile başla',
+  proName: 'İSTEBUL AI Pro',
   proDesc: 'Detaylı TCO, senaryo karşılaştırma, gelişmiş AI açıklama ve premium rapor',
-  proSecondaryCta: 'Önce ön değerlendirmeye başla',
+  proSecondaryCta: 'Önce İSTEBUL AI ile başla',
   proPriceHint: 'Pilot erişim · aktivasyon sonrası bilgilendirme',
   trialHint: ' · Ödeme aktivasyonu sonrası',
   savingsFact: '12 aylık aylık ödemeye göre {amount} daha az (listelenen fiyat)',
@@ -87,7 +87,7 @@ const tr = {
 const en = {
   popularBadge: 'Most popular',
   subhead:
-    'Without maintenance, fuel, loan, insurance and depreciation together, a “cheap car” gets expensive. isteBul: free baseline analysis; Pro adds scenario comparison and advanced AI explanation.',
+    'These plans are for İSTEBUL AI only (not GarsonAI or İSTEBUL Business). Without maintenance, fuel, loan, insurance and depreciation together, a “cheap car” gets expensive. Free baseline analysis; Pro adds scenario comparison and advanced AI explanation.',
   roiTitle: 'Decision cost calculator',
   roiLead: 'Compare Pro cost to wrong-choice risk using your budget and a reasonable TCO drift assumption.',
   roiDisclaimer:
@@ -121,10 +121,10 @@ const en = {
   freeName: 'Starter',
   freePrice: 'Free',
   freeDesc: 'Basic analysis — TCO summary and preview; no account required',
-  freeCta: 'Start TCO analysis',
-  proName: 'isteBul Pro',
+  freeCta: 'Start with İSTEBUL AI',
+  proName: 'İSTEBUL AI Pro',
   proDesc: 'Detailed TCO, scenario comparison, advanced AI explanation and premium report',
-  proSecondaryCta: 'Try free TCO analysis first',
+  proSecondaryCta: 'Try İSTEBUL AI free analysis first',
   proPriceHint: 'Pilot access · notification after activation',
   trialHint: ' · After payment activation',
   savingsFact: '{amount} less vs 12 monthly payments (listed price)',
