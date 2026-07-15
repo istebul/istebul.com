@@ -96,6 +96,9 @@ export class UIManager {
         const navMoreMenu = document.getElementById('nav-more-menu');
         const navMoreButton = document.getElementById('nav-more-btn');
         const navMoreList = document.getElementById('nav-more-list');
+        const navPlatformMenu = document.getElementById('nav-platform-menu');
+        const navPlatformButton = document.getElementById('nav-platform-btn');
+        const navPlatformList = document.getElementById('nav-platform-list');
         const navProductMenu = document.getElementById('nav-product-menu');
         const navProductButton = document.getElementById('nav-product-btn');
         const navProductList = document.getElementById('nav-product-list');
@@ -113,13 +116,26 @@ export class UIManager {
             list.hidden = isOpen;
         };
         const closeMoreMenu = () => closeDropdown(navMoreButton, navMoreList);
+        const closePlatformMenu = () => closeDropdown(navPlatformButton, navPlatformList);
         const closeProductMenu = () => closeDropdown(navProductButton, navProductList);
+        const closeAllNavDropdowns = () => {
+            closeMoreMenu();
+            closePlatformMenu();
+            closeProductMenu();
+        };
         const toggleMoreMenu = () => {
+            closePlatformMenu();
             closeProductMenu();
             toggleDropdown(navMoreButton, navMoreList);
         };
+        const togglePlatformMenu = () => {
+            closeMoreMenu();
+            closeProductMenu();
+            toggleDropdown(navPlatformButton, navPlatformList);
+        };
         const toggleProductMenu = () => {
             closeMoreMenu();
+            closePlatformMenu();
             toggleDropdown(navProductButton, navProductList);
         };
         const navToggle = document.createElement('button');
@@ -153,8 +169,7 @@ export class UIManager {
             navToggle.setAttribute('aria-expanded', String(isOpen));
             navToggle.setAttribute('aria-label', isOpen ? 'Menüyü kapat' : 'Menüyü aç');
             if (!isOpen) {
-                closeMoreMenu();
-                closeProductMenu();
+                closeAllNavDropdowns();
             }
         });
 
@@ -163,19 +178,12 @@ export class UIManager {
                 event.preventDefault();
                 toggleMoreMenu();
             });
-            document.addEventListener('click', (event) => {
-                if (!navMoreMenu.contains(event.target)) {
-                    closeMoreMenu();
-                }
-                if (navProductMenu && !navProductMenu.contains(event.target)) {
-                    closeProductMenu();
-                }
-            });
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    closeMoreMenu();
-                    closeProductMenu();
-                }
+        }
+
+        if (navPlatformButton && navPlatformList && navPlatformMenu) {
+            navPlatformButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                togglePlatformMenu();
             });
         }
 
@@ -186,6 +194,23 @@ export class UIManager {
             });
         }
 
+        document.addEventListener('click', (event) => {
+            if (navMoreMenu && !navMoreMenu.contains(event.target)) {
+                closeMoreMenu();
+            }
+            if (navPlatformMenu && !navPlatformMenu.contains(event.target)) {
+                closePlatformMenu();
+            }
+            if (navProductMenu && !navProductMenu.contains(event.target)) {
+                closeProductMenu();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeAllNavDropdowns();
+            }
+        });
+
         // Show/hide toggle based on screen size
         const navCompactBreakpoint = 1280;
         const checkScreenSize = () => {
@@ -194,8 +219,7 @@ export class UIManager {
                 navToggle.setAttribute('aria-expanded', 'false');
                 navToggle.setAttribute('aria-label', 'Menüyü aç');
                 navMenu.classList.remove('show');
-                closeMoreMenu();
-                closeProductMenu();
+                closeAllNavDropdowns();
             } else {
                 navToggle.style.display = 'none';
                 navMenu.classList.add('show');

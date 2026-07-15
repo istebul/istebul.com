@@ -161,6 +161,26 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </a>
             <div class="nav-menu" id="nav-menu">
                 <div id="nav-links-anon" class="nav-links-group">
+                    <!-- PR-552: Platform ürün IA — GarsonAI kategori değil; Business görünür -->
+                    <div class="nav-dropdown" id="nav-platform-menu">
+                        <button
+                            type="button"
+                            id="nav-platform-btn"
+                            class="nav-link nav-dropdown-btn"
+                            aria-expanded="false"
+                            aria-controls="nav-platform-list"
+                            aria-haspopup="menu"
+                            data-i18n-aria="nav.productsMenu"
+                            data-i18n="nav.products"
+                        >
+                            Ürünler
+                        </button>
+                        <div id="nav-platform-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
+                            <a href="/" class="nav-dropdown-link" role="menuitem" data-native-route data-i18n="nav.productAi">İSTEBUL AI</a>
+                            <a href="/garson/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.productGarson">GarsonAI</a>
+                            <a href="/business/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.productBusiness">İSTEBUL Business</a>
+                        </div>
+                    </div>
                     <div class="nav-dropdown" id="nav-product-menu">
                         <button
                             type="button"
@@ -169,8 +189,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             aria-expanded="false"
                             aria-controls="nav-product-list"
                             aria-haspopup="menu"
-                            data-i18n-aria="nav.productsMenu"
-                            data-i18n="nav.products"
+                            data-i18n-aria="nav.decisionCategoriesMenu"
+                            data-i18n="nav.decisionCategories"
                         >
                             Karar Kategorileri
                         </button>
@@ -181,7 +201,6 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             <a href="/finans/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catFinans">Finansman Kararı</a>
                             <a href="/sigorta/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catSigorta">Sigorta Kararı</a>
                             <a href="/kasko/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catKasko">Kasko Kararı</a>
-                            <a href="/garson/" class="nav-dropdown-link" role="menuitem">GarsonAI</a>
                             <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem" data-i18n="nav.allCategories">Tüm kategoriler</a>
                         </div>
                     </div>
