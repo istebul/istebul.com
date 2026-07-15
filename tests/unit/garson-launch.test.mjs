@@ -6,12 +6,14 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '../..');
 
 const {
+  GARSON_BASVURU_SUCCESS_MESSAGE,
   GARSON_DEMO_KITCHEN_PATH,
   GARSON_DEMO_RESTAURANT_PATH,
   GARSON_KITCHEN_PATH,
   GARSON_KITCHEN_SCRIPT_PATH,
   GARSON_LANDING_PATH,
-  handleGarsonBasvuruSubmit
+  handleGarsonBasvuruSubmit,
+  validateGarsonBasvuruForm
 } = await import('../../js/restoran/garson-launch.js');
 
 const { parseKitchenBusinessId } = await import('../../js/restoran/kds-admin.js');
@@ -80,13 +82,21 @@ test('demo page exposes restaurant and kitchen demo links', () => {
 test('basvuru page includes static application fields', () => {
   assert.equal(fs.existsSync(path.join(root, 'garson/basvuru/index.html')), true);
   const html = readPage('garson/basvuru/index.html');
-  assert.match(html, /restoran adı/i);
-  assert.match(html, /yetkili kişi/i);
+  assert.match(html, /işletme adı/i);
+  assert.match(html, /yetkili adı soyadı/i);
   assert.match(html, /telefon/i);
-  assert.match(html, /e-posta/i);
   assert.match(html, /şehir/i);
-  assert.match(html, /not/i);
+  assert.match(html, /e-posta/i);
+  assert.match(html, /ek not/i);
+  assert.match(html, /kvkk_consent/);
+  assert.match(html, /href="\/kvkk\.html"/);
+  assert.match(html, /otomatik bir sisteme kaydedilmez/i);
+  assert.match(html, /[İi]steğe bağlı ek bilgiler/);
   assert.match(html, /garson-launch\.js/);
+  // PR-554A: ikincil alanlar zorunlu değil
+  assert.doesNotMatch(html, /name="email"[^>]*required/);
+  assert.doesNotMatch(html, /name="business_type"[^>]*required/);
+  assert.doesNotMatch(html, /name="table_count"[^>]*required/);
 });
 
 test('launch constants match expected GarsonAI routes', () => {
@@ -107,14 +117,96 @@ test('KDS API helpers remain exported after route move', () => {
   assert.equal(typeof normalizeKitchenQueue, 'function');
 });
 
-test('handleGarsonBasvuruSubmit shows success without network', () => {
+function makeInput(name, value = '', extras = {}) {
+  const el = {
+    name,
+    value,
+    checked: Boolean(extras.checked),
+    validity: { valid: extras.valid !== false },
+    custom: '',
+    setCustomValidity(msg) {
+      this.custom = msg || '';
+    },
+    checkValidity() {
+      return this.validity.valid && !this.custom;
+    },
+    focus() {
+      this.focused = true;
+    }
+  };
+  return el;
+}
+
+test('validateGarsonBasvuruForm requires core fields and KVKK in Turkish', () => {
+  const restaurant = makeInput('restaurant_name', '');
+  const contact = makeInput('contact_name', 'Ayşe');
+  const phone = makeInput('phone', '0555');
+  const city = makeInput('city', 'İstanbul');
+  const email = makeInput('email', '');
+  const kvkk = makeInput('kvkk_consent', '1', { checked: false });
+  const elements = {
+    restaurant_name: restaurant,
+    contact_name: contact,
+    phone,
+    city,
+    email,
+    kvkk_consent: kvkk,
+    namedItem(name) {
+      return this[name] || null;
+    }
+  };
   const form = {
-    reportValidity: () => true,
-    reset: () => {}
+    elements,
+    querySelectorAll: () => [restaurant, contact, phone, city, email, kvkk],
+    reportValidity() {
+      return ![restaurant, contact, phone, city, email, kvkk].some((el) => el.custom);
+    }
+  };
+
+  assert.equal(validateGarsonBasvuruForm(/** @type {HTMLFormElement} */ (form)), false);
+  assert.match(restaurant.custom, /işletme/i);
+
+  restaurant.value = 'Demo Cafe';
+  assert.equal(validateGarsonBasvuruForm(/** @type {HTMLFormElement} */ (form)), false);
+  assert.match(kvkk.custom, /KVKK/i);
+
+  kvkk.checked = true;
+  assert.equal(validateGarsonBasvuruForm(/** @type {HTMLFormElement} */ (form)), true);
+});
+
+test('handleGarsonBasvuruSubmit shows honest success without network or reset', () => {
+  const restaurant = makeInput('restaurant_name', 'Demo Cafe');
+  const contact = makeInput('contact_name', 'Ayşe Yılmaz');
+  const phone = makeInput('phone', '05551234567');
+  const city = makeInput('city', 'İstanbul');
+  const email = makeInput('email', '');
+  const kvkk = makeInput('kvkk_consent', '1', { checked: true });
+  let resetCalled = false;
+  const elements = {
+    restaurant_name: restaurant,
+    contact_name: contact,
+    phone,
+    city,
+    email,
+    kvkk_consent: kvkk,
+    namedItem(name) {
+      return this[name] || null;
+    }
+  };
+  const form = {
+    elements,
+    querySelectorAll: () => [restaurant, contact, phone, city, email, kvkk],
+    reportValidity() {
+      return true;
+    },
+    reset() {
+      resetCalled = true;
+    }
   };
 
   let hidden = true;
   let text = '';
+  const classList = new Set();
   const originalGetElementById = globalThis.document?.getElementById;
   globalThis.document = {
     getElementById: () => ({
@@ -129,14 +221,25 @@ test('handleGarsonBasvuruSubmit shows success without network', () => {
       },
       set textContent(value) {
         text = value;
-      }
+      },
+      classList: {
+        add(name) {
+          classList.add(name);
+        }
+      },
+      scrollIntoView() {}
     })
   };
 
   try {
-    handleGarsonBasvuruSubmit(/** @type {HTMLFormElement} */ (form));
+    const ok = handleGarsonBasvuruSubmit(/** @type {HTMLFormElement} */ (form));
+    assert.equal(ok, true);
     assert.equal(hidden, false);
-    assert.match(text, /Başvurunuz alındı/);
+    assert.equal(resetCalled, false);
+    assert.match(text, /otomatik bir sisteme kaydedilmez/i);
+    assert.match(GARSON_BASVURU_SUCCESS_MESSAGE, /otomatik bir sisteme kaydedilmez/i);
+    assert.doesNotMatch(text, /Başvurunuz alındı\. En kısa sürede/);
+    assert.ok(classList.has('is-visible'));
   } finally {
     if (originalGetElementById) {
       globalThis.document = { getElementById: originalGetElementById };
