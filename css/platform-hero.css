@@ -73,7 +73,7 @@
 }
 
 .ib-platform-hero__title {
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
   font-family: var(--ib-ph-font-heading);
   font-size: clamp(1.35rem, 3.2vw, 1.85rem);
   font-weight: 600;
@@ -81,6 +81,17 @@
   line-height: 1.3;
   color: var(--ib-ph-ink);
   animation: ib-platform-hero-enter 520ms var(--ib-ph-ease) 80ms both;
+}
+
+.ib-platform-hero__slogan {
+  margin: 0 0 1rem;
+  font-family: var(--ib-ph-font-heading);
+  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--ib-ph-accent) 70%, var(--ib-ph-ink));
+  animation: ib-platform-hero-enter 520ms var(--ib-ph-ease) 110ms both;
 }
 
 .ib-platform-hero__description {
@@ -98,7 +109,74 @@
   flex-direction: column;
   align-items: center;
   gap: 0.65rem;
+  width: 100%;
   animation: ib-platform-hero-enter 520ms var(--ib-ph-ease) 200ms both;
+}
+
+.ib-platform-hero__product-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 22rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ib-platform-hero__product-action-item {
+  margin: 0;
+}
+
+.ib-platform-hero__product-action {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.ib-platform-hero__cta--product {
+  width: 100%;
+  border-radius: 14px;
+}
+
+.ib-platform-hero__cta--gelistirme {
+  background: color-mix(in srgb, var(--ib-ph-ink) 82%, var(--ib-ph-accent));
+}
+
+.ib-platform-hero__cta--gelistirme:hover {
+  background: var(--ib-ph-ink);
+}
+
+.ib-platform-hero__status {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.ib-platform-hero__status[data-status='gelistirme'] {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.ib-platform-hero__status[data-status='yakinda'] {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.ib-platform-hero--experience .ib-platform-hero__inner {
+  max-width: 48rem;
 }
 
 .ib-platform-hero__cta {
@@ -153,12 +231,35 @@ a.ib-platform-hero__cta:visited {
   color: var(--ib-ph-muted);
 }
 
+@media (min-width: 640px) {
+  .ib-platform-hero__product-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
+    gap: 0.85rem;
+  }
+
+  .ib-platform-hero__product-action {
+    align-items: center;
+  }
+
+  .ib-platform-hero__cta--product {
+    min-height: 3rem;
+    padding-inline: 0.85rem;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
+
 @media (min-width: 768px) {
   .ib-platform-hero__inner {
     text-align: left;
     margin-left: 0;
     margin-right: auto;
     max-width: 42rem;
+  }
+
+  .ib-platform-hero--experience .ib-platform-hero__inner {
+    max-width: 48rem;
   }
 
   .ib-platform-hero__actions {
@@ -169,11 +270,16 @@ a.ib-platform-hero__cta:visited {
     margin-left: 0;
     margin-right: 0;
   }
+
+  .ib-platform-hero__product-actions {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ib-platform-hero__brand,
   .ib-platform-hero__title,
+  .ib-platform-hero__slogan,
   .ib-platform-hero__description,
   .ib-platform-hero__actions {
     animation: none;

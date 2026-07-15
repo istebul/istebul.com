@@ -1,5 +1,5 @@
 /**
- * PR-551 — Platform shell home entegrasyon sözleşmesi.
+ * PR-551 / PR-553 — Platform shell home entegrasyon ve Hero deneyimi sözleşmesi.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,6 +7,89 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+
+/** Minimal DOM stubs for platform DOM factories / mount. */
+function installDomStubs() {
+  class FakeEl {
+    constructor(tag) {
+      this.tagName = String(tag).toUpperCase();
+      this.children = [];
+      this.attrs = {};
+      this.className = '';
+      this.id = '';
+      this.textContent = '';
+      this.href = '';
+      this.type = '';
+      this.dataset = {};
+      this.style = { setProperty() {} };
+    }
+    setAttribute(k, v) {
+      this.attrs[k] = String(v);
+      if (k === 'id') this.id = String(v);
+      if (k.startsWith('data-')) {
+        const key = k
+          .slice(5)
+          .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        this.dataset[key] = String(v);
+      }
+    }
+    getAttribute(k) {
+      return this.attrs[k];
+    }
+    append(...nodes) {
+      this.children.push(...nodes);
+    }
+    replaceChildren(...nodes) {
+      this.children = [...nodes];
+    }
+    addEventListener() {}
+    classList = {
+      _self: this,
+      add(...names) {
+        const set = new Set(String(this._self.className || '').split(/\s+/).filter(Boolean));
+        names.forEach((n) => set.add(n));
+        this._self.className = [...set].join(' ');
+      }
+    };
+  }
+
+  const registry = new Map();
+
+  globalThis.document = {
+    createElement: (tag) => new FakeEl(tag),
+    getElementById: (id) => registry.get(id) || null
+  };
+
+  return {
+    FakeEl,
+    register(id, el) {
+      el.id = id;
+      registry.set(id, el);
+      return el;
+    },
+    collectText(node, acc = []) {
+      if (!node) return acc;
+      if (node.textContent) acc.push(node.textContent);
+      for (const child of node.children || []) this.collectText(child, acc);
+      return acc;
+    },
+    findByAttr(node, attr, value, acc = []) {
+      if (!node) return acc;
+      if (node.attrs?.[attr] === value || node.dataset?.[attr.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase())] === value) {
+        // dataset path above is imperfect; also check attrs
+      }
+      if (node.attrs?.[attr] === value) acc.push(node);
+      for (const child of node.children || []) this.findByAttr(child, attr, value, acc);
+      return acc;
+    },
+    findAll(node, pred, acc = []) {
+      if (!node) return acc;
+      if (pred(node)) acc.push(node);
+      for (const child of node.children || []) this.findAll(child, pred, acc);
+      return acc;
+    }
+  };
+}
 
 test('index.html includes additive platform-shell-home section before AI home', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -48,37 +131,112 @@ test('platform-shell-home runtime module and catalog wire flag', async () => {
 });
 
 test('PlatformHero headingLevel 2 avoids duplicate H1 contract', async () => {
+  const stub = installDomStubs();
   const { createPlatformHeroElement } = await import(
     '../../src/platform/components/PlatformHero/PlatformHero.ts'
   );
 
-  // Minimal browser stubs for DOM factory
-  class FakeEl {
-    constructor(tag) {
-      this.tagName = String(tag).toUpperCase();
-      this.children = [];
-      this.attrs = {};
-      this.className = '';
-      this.id = '';
-      this.textContent = '';
-      this.style = { setProperty() {} };
-    }
-    setAttribute(k, v) {
-      this.attrs[k] = v;
-    }
-    getAttribute(k) {
-      return this.attrs[k];
-    }
-    append(...nodes) {
-      this.children.push(...nodes);
-    }
-    addEventListener() {}
-  }
-
-  globalThis.document = {
-    createElement: (tag) => new FakeEl(tag)
-  };
-
   const el = createPlatformHeroElement({ headingLevel: 2 });
-  assert.equal(el.children[0].children[1].tagName, 'H2');
+  const headings = stub.findAll(el, (n) => n.tagName === 'H2' || n.tagName === 'H1');
+  assert.equal(headings.length, 1);
+  assert.equal(headings[0].tagName, 'H2');
+});
+
+test('PLATFORM_CATALOG products expose required PR-553 CTA labels', async () => {
+  const { PLATFORM_PRODUCTS } = await import(
+    '../../src/platform/constants/platform-products.ts'
+  );
+  const byId = Object.fromEntries(PLATFORM_PRODUCTS.map((p) => [p.id, p]));
+
+  assert.equal(byId['istebul-ai'].ctaLabel, 'Karşılaştırmaya Başla');
+  assert.equal(byId.garsonai.ctaLabel, 'Restoranını Yönet');
+  assert.equal(byId.business.ctaLabel, 'Gelişmeleri İncele');
+  assert.equal(byId.business.status, 'gelistirme');
+  assert.match(byId.business.statusLabel, /Geliştirme/i);
+});
+
+test('PlatformHero experience renders per-product CTAs and Business status', async () => {
+  const stub = installDomStubs();
+  const { createPlatformHeroElement } = await import(
+    '../../src/platform/components/PlatformHero/PlatformHero.ts'
+  );
+  const { listVisiblePlatformProducts } = await import(
+    '../../src/platform/constants/platform-products.ts'
+  );
+  const { PLATFORM_IDENTITY } = await import(
+    '../../src/platform/config/platform-identity.ts'
+  );
+
+  const products = listVisiblePlatformProducts();
+  const el = createPlatformHeroElement({
+    identity: PLATFORM_IDENTITY,
+    headingLevel: 2,
+    products,
+    showProductStatus: true,
+    hideCtaNote: true
+  });
+
+  assert.equal(el.attrs['data-platform-hero-experience'], '1');
+  const texts = stub.collectText(el);
+  assert.ok(texts.includes('Karşılaştırmaya Başla'));
+  assert.ok(texts.includes('Restoranını Yönet'));
+  assert.ok(texts.includes('Gelişmeleri İncele'));
+  assert.ok(texts.some((t) => /Geliştirme/i.test(t)));
+
+  const headings = stub.findAll(el, (n) => n.tagName === 'H1');
+  assert.equal(headings.length, 0, 'experience hero must not emit H1');
+});
+
+test('PlatformÜrünKartı uses catalog ctaLabel and shows gelistirme badge', async () => {
+  const stub = installDomStubs();
+  const { createPlatformUrunKartiElement } = await import(
+    '../../src/platform/components/PlatformÜrünKartı/PlatformUrunKarti.ts'
+  );
+  const { getPlatformProductById } = await import(
+    '../../src/platform/constants/platform-products.ts'
+  );
+
+  const business = getPlatformProductById('business');
+  const card = createPlatformUrunKartiElement({
+    product: business,
+    enableNavigation: true
+  });
+  const texts = stub.collectText(card);
+  assert.ok(texts.includes('Gelişmeleri İncele'));
+  assert.ok(texts.some((t) => /Geliştirme/i.test(t)));
+  assert.equal(card.attrs['data-platform-product-status'], 'gelistirme');
+
+  const ai = getPlatformProductById('istebul-ai');
+  const aiCard = createPlatformUrunKartiElement({
+    product: ai,
+    enableNavigation: true
+  });
+  assert.ok(stub.collectText(aiCard).includes('Karşılaştırmaya Başla'));
+});
+
+test('initPlatformShellHome mounts experience without global İncele override', async () => {
+  const stub = installDomStubs();
+  const mount = stub.register('platform-shell-home-mount', new stub.FakeEl('div'));
+  const section = stub.register('platform-shell-home', new stub.FakeEl('section'));
+
+  const { initPlatformShellHome } = await import('../../js/runtime/platform-shell-home.js');
+  const ok = initPlatformShellHome();
+  assert.equal(ok, true);
+  assert.equal(mount.dataset.platformMounted, '1');
+  assert.equal(mount.dataset.platformExperience, '1');
+  assert.equal(section.dataset.platformShellExperience, '1');
+
+  const texts = stub.collectText(mount);
+  assert.ok(texts.includes('Karşılaştırmaya Başla'));
+  assert.ok(texts.includes('Restoranını Yönet'));
+  assert.ok(texts.includes('Gelişmeleri İncele'));
+  // Global override removed; default “İncele” must not replace product CTAs.
+  assert.equal(
+    texts.filter((t) => t === 'İncele').length,
+    0,
+    'catalog CTAs should win over default İncele'
+  );
+
+  const h1s = stub.findAll(mount, (n) => n.tagName === 'H1');
+  assert.equal(h1s.length, 0);
 });

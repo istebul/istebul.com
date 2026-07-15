@@ -206,6 +206,16 @@
   color: var(--ib-puc-ink);
 }
 
+.ib-platform-urun-karti__slogan {
+  margin: 0;
+  font-family: var(--ib-puc-font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--ib-puc-accent) 65%, var(--ib-puc-ink));
+}
+
 .ib-platform-urun-karti__description {
   margin: 0;
   font-size: 0.95rem;

@@ -55,7 +55,8 @@ export function createPlatformUrunKartiElement(
 
   const statusTone = getPlatformProductStatusTone(product.status);
   const statusLabel = getPlatformProductStatusLabel(product.status, product.statusLabel);
-  const ctaLabel = props.ctaLabel?.trim() || DEFAULT_CTA;
+  const ctaLabel =
+    props.ctaLabel?.trim() || product.ctaLabel?.trim() || DEFAULT_CTA;
   const logoSrc = resolveLogoSrc(product, props.logoSrc);
   const logoAlt = props.logoAlt?.trim() || `${product.name} logosu`;
 
@@ -126,11 +127,19 @@ export function createPlatformUrunKartiElement(
   title.id = `ib-platform-urun-karti-title-${product.id}`;
   title.textContent = product.name;
 
+  body.append(title);
+
+  if (product.slogan?.trim()) {
+    const slogan = document.createElement('p');
+    slogan.className = 'ib-platform-urun-karti__slogan';
+    slogan.textContent = product.slogan.trim();
+    body.append(slogan);
+  }
+
   const description = document.createElement('p');
   description.className = 'ib-platform-urun-karti__description';
   description.textContent = product.shortDescription;
-
-  body.append(title, description);
+  body.append(description);
 
   const footer = document.createElement('footer');
   footer.className = 'ib-platform-urun-karti__footer';
