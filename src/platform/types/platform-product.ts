@@ -10,9 +10,27 @@ export type PlatformProductId = 'istebul-ai' | 'garsonai' | 'business';
 
 /**
  * Ürün yaşam durumu (teknik değer).
- * Kullanıcıya görünen metin için `statusLabel` kullanılır.
+ * Kullanıcıya görünen metin için `statusLabel` veya
+ * `PLATFORM_PRODUCT_STATUS_LABELS` kullanılır.
+ *
+ * | Teknik | Türkçe rozet |
+ * |--------|----------------|
+ * | canli | Canlı |
+ * | gelistirme | Geliştirme Aşamasında |
+ * | yakinda | Yakında |
+ * | beta | Beta |
+ * | bakim | Bakım |
+ * | kapali | Kapalı |
+ * | erken-erisim | Erken erişim (legacy; görsel olarak Yakında ailesi) |
  */
-export type PlatformProductStatus = 'canli' | 'erken-erisim' | 'gelistirme';
+export type PlatformProductStatus =
+  | 'canli'
+  | 'gelistirme'
+  | 'yakinda'
+  | 'beta'
+  | 'bakim'
+  | 'kapali'
+  | 'erken-erisim';
 
 /**
  * Platform yüzeylerindeki görünürlük (teknik değer).

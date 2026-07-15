@@ -13,7 +13,8 @@ parçaların oturacağı yerdir.
 | Klasör iskeleti | Hazır (PR-001) |
 | Ürün kimliği veri katmanı | Hazır (PR-002) — `constants/`, `types/`, `config/` |
 | Ortak bileşen iskeleti | Hazır (PR-003) |
-| PlatformHero UI | Çalışan bileşen (PR-004) — `components/PlatformHero/` — ekrana bağlı değil |
+| PlatformHero UI | Çalışan bileşen (PR-004) — ekrana bağlı değil |
+| PlatformÜrünKartı UI | Çalışan bileşen (PR-005) — ekrana bağlı değil |
 | Çalışan UI / route bağlantısı | **Yok** — kullanıcıya görünmez (`PLATFORM_CATALOG.wiredToRuntime === false`) |
 | GarsonAI / Business / İSTEBUL AI | Dokunulmaz; ürün kodundan import yok |
 

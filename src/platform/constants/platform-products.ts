@@ -59,7 +59,7 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
     url: '/business/',
     logoKey: 'istebul-logo-nav',
     status: 'gelistirme',
-    statusLabel: 'Geliştirme aşamasında',
+    statusLabel: 'Geliştirme Aşamasında',
     order: 3,
     visibility: 'gorunur',
     defaultColor: '#0f172a',

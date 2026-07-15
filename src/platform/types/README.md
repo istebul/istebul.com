@@ -6,7 +6,7 @@ Platform Shell tip sözleşmeleri.
 
 | Dosya | İçerik |
 |-------|--------|
-| `platform-product.ts` | `PlatformProduct`, `PlatformIdentity`, durum / görünürlük birlikleri |
+| `platform-product.ts` | `PlatformProduct`, `PlatformIdentity`, genişletilmiş durum birliği (PR-005) |
 
 ## Kurallar
 

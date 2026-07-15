@@ -1,22 +1,10 @@
 # PlatformÜrünKartları
 
-Tek bir platform ürününü tanıtan kelime kartı bileşeni iskeleti.
+Tek ürün kartı iskeleti (PR-003).
 
-## Sorumluluk (gelecek)
+## Durum
 
-- `PLATFORM_PRODUCTS` kaydından (PR-002) ad, kısa açıklama, slogan, durum, renk, URL göstermek
-- Yalnızca yönlendirme etkileşimi; sipariş, karar skoru veya Business modül iş kuralı yok
-- GarsonAI / Business / İSTEBUL AI ürün UI bileşenlerinin yerine geçmez
+Çalışan uygulama: [`../PlatformÜrünKartı/`](../PlatformÜrünKartı/) (PR-005).
 
-## Durum (PR-003)
-
-| Alan | Durum |
-|------|--------|
-| Klasör / README | Hazır |
-| Çalışan kod | Yok |
-| Ürün kataloğuna runtime import | Yok (bilinçli) |
-
-## Kurallar
-
-- Kart, etkileşim için gerekliyse kullanılır; dekoratif kart kümesi üretilmez.
-- Kullanıcı metinleri Türkçe; durum etiketleri katalogdaki `statusLabel` ile hizalanır.
+Bu klasör tarihsel isim / yönlendirme notu olarak kalır; yeni kod
+`PlatformÜrünKartı` altına eklenir. Izgara düzeni için `PlatformÜrünIzgarası/` kullanılır.
