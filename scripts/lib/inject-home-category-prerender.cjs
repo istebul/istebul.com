@@ -147,7 +147,6 @@ function renderActiveCard(category, index) {
       class="ib-cat-mockup ib-cat-mockup--premium is-active ib-cat-mockup--${escapeHtml(category.id)}"
       data-category-id="${escapeHtml(category.id)}"
       data-native-route
-      role="listitem"
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(category.title)} — ${escapeHtml(category.analyzeAction)}"
     >
@@ -176,7 +175,7 @@ function renderGridInner(categories) {
 
   return `
     <div class="ib-cat-mockup-shell" ${PRERENDER_ATTR}>
-      <div class="ib-cat-mockup-shell__live" role="list" aria-label="${gridAria}">
+      <div class="ib-cat-mockup-shell__live" role="group" aria-label="${gridAria}">
         ${liveHtml}
       </div>
     </div>
