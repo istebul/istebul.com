@@ -409,7 +409,7 @@ export class RevenueManager {
 
     const enterpriseCard = enterprise
       ? `
-        <article class="revenue-plan-card revenue-plan-card--enterprise" role="listitem">
+        <article class="revenue-plan-card revenue-plan-card--enterprise">
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge">${pt('badgeEnterprise', {}, 'Kurumsal')}</span>
             <h3 class="revenue-plan-title">${pt('enterpriseName', {}, enterprise.name)}</h3>
@@ -426,8 +426,8 @@ export class RevenueManager {
     const gridClass = 'revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--cards';
 
     const planCards = `
-      <div class="${gridClass}" role="list" aria-label="${pt('plansAria', {}, 'Plan seçenekleri')}">
-        <article class="revenue-plan-card" role="listitem">
+      <div class="${gridClass}" role="group" aria-label="${pt('plansAria', {}, 'Plan seçenekleri')}">
+        <article class="revenue-plan-card">
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge">${pt('badgeIndividual', {}, 'Bireysel')}</span>
             <h3 class="revenue-plan-title">${pt('freeName', {}, plans.free.name)}</h3>
@@ -439,7 +439,7 @@ export class RevenueManager {
             <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_dynamic" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'Ön değerlendirmeye başla')}</a>
           </div>
         </article>
-        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro role="listitem">
+        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro>
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge revenue-plan-badge--popular">${pt('popularBadge', {}, PRICING_MESSAGING.popularBadge)}</span>
             ${trialBadge}

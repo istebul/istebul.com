@@ -101,7 +101,7 @@ test('injectHomeCategoryPrerender throws when grid marker is missing', async () 
 test('injectHomeCategoryPrerender includes live list shell with role=list', async () => {
   const output = await injectHomeCategoryPrerender(EMPTY_GRID_HTML);
 
-  assert.match(output, /class="ib-cat-mockup-shell__live" role="list"/);
+  assert.match(output, /class="ib-cat-mockup-shell__live" role="group"/);
 });
 
 test('injectHomeCategoryPrerender sets eager/high for first two images and lazy for others', async () => {

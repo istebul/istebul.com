@@ -110,7 +110,6 @@ function renderActiveCard(category, index) {
       class="ib-cat-mockup ib-cat-mockup--premium is-active ib-cat-mockup--${escapeHtml(category.id)}"
       data-category-id="${escapeHtml(category.id)}"
       data-native-route
-      role="listitem"
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — ${escapeHtml(analyzeAction)}"
     >
@@ -141,7 +140,6 @@ function renderComingSoonCard(category, index) {
     <article
       class="ib-cat-mockup ib-cat-mockup--premium is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
       data-category-id="${escapeHtml(category.id)}"
-      role="listitem"
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — ${escapeHtml(soonLabel)}"
     >
@@ -374,12 +372,12 @@ export async function mountHomeCategoryGrid(options = {}) {
   delete grid.dataset.categoryHandlersBound;
   grid.innerHTML = `
     <div class="ib-cat-mockup-shell">
-      <div class="ib-cat-mockup-shell__live" role="list" aria-label="${escapeHtml(gridAria)}">
+      <div class="ib-cat-mockup-shell__live" role="group" aria-label="${escapeHtml(gridAria)}">
         ${liveHtml}
       </div>
       ${
         soonHtml
-          ? `<div class="ib-cat-mockup-shell__soon" role="list" aria-label="${escapeHtml(soonAria)}">${soonHtml}</div>`
+          ? `<div class="ib-cat-mockup-shell__soon" role="group" aria-label="${escapeHtml(soonAria)}">${soonHtml}</div>`
           : ''
       }
     </div>
