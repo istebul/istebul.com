@@ -1,17 +1,18 @@
 /**
  * İSTEBUL Platform — resmî ürün tanımları (tek merkez).
  *
- * PR-002: Saf veri katmanı. Henüz hiçbir çalışan ekran / build / route
- * bu dosyayı import etmez. Gelecekte Platform Landing, kartlar, gezinme,
- * alt bilgi, SEO ve sitemap bu kayıttan beslenebilir.
+ * PR-002: Saf veri katmanı.
+ * PR-567: `url` alanları `platform-url-map` CURRENT fazından türetilir —
+ * canlı davranış korunur; cutover TARGET ayrıdır ve burada kullanılmaz.
  */
 
 import type { PlatformProduct } from '../types/platform-product.ts';
+import { getPlatformProductUrl } from './platform-url-map.ts';
 
 /**
  * Platform ürünleri — sıra `order` alanına göredir.
  *
- * URL alanları mevcut girişleri belgeler; yönlendirme veya HTML değiştirmez.
+ * URL alanları mevcut girişleri belgeler (`current`); yönlendirme veya HTML değiştirmez.
  */
 export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
   Object.freeze({
@@ -22,7 +23,7 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
       'Yapay zekâ destekli karar verme platformu. Araç, konut, tatil, finansman, sigorta ve kasko gibi dikeylerde bilinçli seçim yapmanıza yardımcı olur.',
     shortDescription: 'Yapay zekâ destekli karar verme platformu.',
     slogan: 'Doğru kararı bul.',
-    url: '/',
+    url: getPlatformProductUrl('istebul-ai', 'current'),
     logoKey: 'istebul-logo-nav',
     status: 'canli',
     statusLabel: 'Canlı',
@@ -40,7 +41,7 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
       'Yapay zekâ destekli Restoran İşletim Sistemi. Rezervasyon, menü, sipariş, mutfak ekranı ve işletme operasyonlarını tek akışta yönetir.',
     shortDescription: 'Restoran İşletim Sistemi.',
     slogan: 'Restoranınızın dijital garsonu.',
-    url: '/garson/',
+    url: getPlatformProductUrl('garsonai', 'current'),
     logoKey: 'istebul-icon',
     status: 'canli',
     statusLabel: 'Canlı',
@@ -58,7 +59,7 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
       'İş Zekâsı ve işletme yönetim platformu. Analiz, kontrol paneli, rapor ve doküman merkezleri ile işletme kararlarını desteklemek üzere geliştirilmektedir.',
     shortDescription: 'İş Zekâsı ve işletme yönetim platformu.',
     slogan: 'İşinizi bilinçle yönetin.',
-    url: '/business/',
+    url: getPlatformProductUrl('business', 'current'),
     logoKey: 'istebul-logo-nav',
     status: 'gelistirme',
     statusLabel: 'Geliştirme Aşamasında',

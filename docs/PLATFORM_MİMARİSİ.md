@@ -145,6 +145,15 @@ Ana SPA navigasyonunda GarsonAI bugün “Karar Kategorileri” altında listele
 
 `/` Platform Landing’e alındığında etkilenecekler: SEO canonical, `sitemap.xml`, locale shell’ler (`/en`, `/de`, …), PWA `start_url`, “Ana sayfa” link anlamı, homepage audit / e2e. Bu yüzden yönlendirme matrisiz cutover **yasak** kabul edilir.
 
+### 4.4 Cutover URL matrisi (PR-567 prep)
+
+Canlı (`current`) vs hedef (`target`) URL kaydı ve chrome geçiş noktaları:
+
+- Kod: `src/platform/constants/platform-url-map.ts`
+- Doküman: [`EPIC_002_CUTOVER_URL_MATRIX.md`](./EPIC_002_CUTOVER_URL_MATRIX.md)
+
+Prep PR kullanıcı trafiğini veya SEO’yu değiştirmez; yalnızca merkezi altyapıyı hazırlar.
+
 ---
 
 ## 5. Admin yapıları

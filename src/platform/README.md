@@ -12,6 +12,8 @@ parçaların oturacağı yerdir.
 |------|--------|
 | Klasör iskeleti | Hazır (PR-001) |
 | Ürün kimliği veri katmanı | Hazır (PR-002) — `constants/`, `types/`, `config/` |
+| Merkezi URL haritası + chrome IA fasadı | Hazır (PR-567) — `current` aktif; cutover yok |
+| Cutover URL matrisi | [`docs/EPIC_002_CUTOVER_URL_MATRIX.md`](../../docs/EPIC_002_CUTOVER_URL_MATRIX.md) |
 | Ortak bileşen iskeleti | Hazır (PR-003) |
 | PlatformHero UI | Çalışan bileşen (PR-004) — ekrana bağlı değil |
 | PlatformÜrünKartı UI | Çalışan bileşen (PR-005) — ekrana bağlı değil |
