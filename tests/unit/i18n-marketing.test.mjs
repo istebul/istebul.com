@@ -27,6 +27,10 @@ const REQUIRED_KEYS = [
   'spaPages.planlar.ctaPrimary',
   'faq.q0',
   'footerNav.products',
+  'footerNav.support',
+  'footerNav.helpCenter',
+  'footerNav.categoriesSubhead',
+  'footerNav.plans',
 ];
 
 function getNested(obj, path) {
