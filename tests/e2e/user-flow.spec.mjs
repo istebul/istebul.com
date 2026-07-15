@@ -248,9 +248,10 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('#main-nav')).toBeVisible();
-    await expect(page).toHaveTitle(/isteBul/);
-    await expect(page.locator('#hero-v4-title')).toContainText(/yalnız değilsiniz|not alone/i);
-    await expect(page.locator('#home')).toBeVisible();
+    await expect(page).toHaveTitle(/isteBul|İSTEBUL/i);
+    await expect(page.locator('#platform-landing')).toBeVisible();
+    await expect(page.locator('#neden-istebul')).toBeVisible();
+    await expect(page.locator('#hero-v4-title')).toHaveCount(0);
 
     await page.goto('/secenekler/');
     await waitForSpaReady(page);
@@ -359,7 +360,8 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
-    await expect(page.locator('#hero-v4-title')).toContainText(/yalnız değilsiniz/i);
+    await expect(page.locator('#platform-landing')).toBeVisible();
+    await expect(page.locator('#hero-v4-title')).toHaveCount(0);
 
     const navToggle = page.locator('.nav-toggle');
     if (await navToggle.isVisible().catch(() => false)) {
@@ -2205,9 +2207,17 @@ const forceTurkishHomeLocale = async (page) => {
 };
 
 test.describe('Faz 3D-1A category journey guards', () => {
-  test('ana sayfa karar CTA guard /karar-asistani/ hedeflerini korur', async ({ page }) => {
+  test('Platform nav CTA and AI Landing hero/sticky CTA target /karar-asistani/', async ({ page }) => {
     await forceTurkishHomeLocale(page);
     await page.goto('/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const navCta = page.locator('.nav-cta-decision');
+    await expect(navCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(navCta).toContainText(/Ön değerlendirme/i);
+
+    await page.goto('/ai/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
 
@@ -2216,18 +2226,14 @@ test.describe('Faz 3D-1A category journey guards', () => {
     await expect(heroCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
     await expect(heroCta).toContainText(/Ön değerlendirme/i);
 
-    const navCta = page.locator('.nav-cta-decision');
-    await expect(navCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
-    await expect(navCta).toContainText(/Ön değerlendirme/i);
-
     const stickyCta = page.locator('.cro-sticky-cta a[data-cro-cta-sticky]');
     await expect(stickyCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
     await expect(stickyCta).toContainText(/Ön değerlendirme/i);
   });
 
-  test('ana sayfa kategori kartları guard vertical href canonical', async ({ page }) => {
+  test('AI Landing kategori kartları guard vertical href canonical', async ({ page }) => {
     await forceTurkishHomeLocale(page);
-    await page.goto('/');
+    await page.goto('/ai/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
     await page.locator('#home-vertical-focus').scrollIntoViewIfNeeded();

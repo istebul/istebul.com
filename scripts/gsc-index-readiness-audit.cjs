@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 /**
  * Google Search Console / index readiness — static checks before & after deploy.
+ * Sitemap + Platform/AI surface assertions come from platform-landing-surface-contract.
  */
 const fs = require('fs');
 const path = require('path');
+const {
+  resolveSitemapArtifact,
+  collectSitemapContractFailures,
+  collectPlatformAiSurfaceFailures
+} = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.join(__dirname, '..');
 let failed = 0;
@@ -12,26 +18,26 @@ const fail = (msg) => {
   failed = 1;
 };
 
-const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+const { xml: sitemap, source: sitemapSource } = resolveSitemapArtifact(root);
 const robots = fs.readFileSync(path.join(root, 'robots.txt'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sigorta = fs.readFileSync(path.join(root, 'sigorta/index.html'), 'utf8');
+const aiIndexPath = path.join(root, 'ai/index.html');
+const aiIndex = fs.existsSync(aiIndexPath) ? fs.readFileSync(aiIndexPath, 'utf8') : '';
 
 if (!robots.includes('Sitemap: https://www.istebul.com/sitemap.xml')) {
   fail('robots.txt must declare www sitemap');
 }
 
-for (const loc of [
-  'https://www.istebul.com/',
-  'https://www.istebul.com/ai/',
-  'https://www.istebul.com/sigorta/',
-  'https://www.istebul.com/auto/',
-  'https://www.istebul.com/konut/'
-]) {
-  if (!sitemap.includes(loc)) fail(`sitemap missing ${loc}`);
+for (const msg of collectSitemapContractFailures(sitemap)) {
+  fail(msg);
+}
+for (const msg of collectPlatformAiSurfaceFailures(index, aiIndex)) {
+  fail(msg);
 }
 
 if (!sitemap.includes('<lastmod>')) fail('sitemap should include lastmod');
+console.log(`gsc-index: using sitemap from ${sitemapSource}`);
 
 if (/noindex/i.test(sigorta.match(/<head[\s\S]*?<\/head>/i)?.[0] || '')) {
   fail('sigorta/index.html must not noindex');
@@ -55,8 +61,6 @@ if (!platformSchema.includes('https://www.istebul.com/ai/')) {
   fail('platform schema must link İSTEBUL AI at /ai/');
 }
 
-const aiIndexPath = path.join(root, 'ai/index.html');
-const aiIndex = fs.existsSync(aiIndexPath) ? fs.readFileSync(aiIndexPath, 'utf8') : '';
 const aiSchemaPath = aiIndex.includes('ai-landing-graph.json')
   ? path.join(root, 'data/schema/ai-landing-graph.json')
   : null;
@@ -74,6 +78,10 @@ if (!aiSchema.includes('https://www.istebul.com/sigorta/')) {
 if (!index.includes('rel="sitemap"')) fail('index should link sitemap');
 
 const siteSeo = JSON.parse(fs.readFileSync(path.join(root, 'data/seo/site.json'), 'utf8'));
+const aiEntry = (siteSeo.staticUrls || siteSeo.urls || []).find((u) => u.loc === '/ai/');
+if (!aiEntry) {
+  fail('data/seo/site.json staticUrls must include /ai/ (sitemap SoT)');
+}
 const sigortaEntry = (siteSeo.staticUrls || siteSeo.urls || []).find((u) => u.loc === '/sigorta/');
 if (!sigortaEntry || Number(sigortaEntry.priority) < 0.8) {
   fail('data/seo/site.json sigorta priority should be >= 0.8');

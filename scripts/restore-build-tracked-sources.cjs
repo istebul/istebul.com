@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /**
  * Restore repo-root sources that `npm run build` may rewrite but should not dirty PR branches.
- * Deploy output in dist/ remains authoritative; these tracked paths stay pinned in git.
+ * Deploy output in dist/ remains authoritative for most assets.
+ *
+ * EPIC-002: sitemap.xml is NOT restored. Source of truth is data/seo/site.json →
+ * generateSitemap() writes identical root + dist sitemaps. Restoring the tracked
+ * sitemap previously masked generateSitemap and caused CI(local restore) ≠ Deploy.
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -15,7 +19,6 @@ const BUILD_MUTATED_TRACKED = [
   'hakkimizda.html',
   'iletisim.html',
   'metodoloji/index.html',
-  'sitemap.xml',
   'veri-kaynaklari/index.html',
   'yardim.html'
 ];

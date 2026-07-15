@@ -8,8 +8,8 @@ const waitForAppReady = async (page) => {
   });
 };
 
-test.describe('Marketing shell (anon landing)', () => {
-  test('ana sayfa yalnızca landing bölümlerini gösterir', async ({ page }) => {
+test.describe('Marketing shell (Platform + AI)', () => {
+  test('Platform Landing root shows platform surface (not AI long-scroll)', async ({ page }) => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem('istebul_locale', 'tr');
@@ -21,21 +21,37 @@ test.describe('Marketing shell (anon landing)', () => {
     await waitForAppReady(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'home');
-    await expect(page.getByRole('heading', { name: /yalnız değilsiniz/i })).toBeVisible();
+    await expect(page.locator('#platform-landing')).toBeVisible();
+    await expect(page.locator('#neden-istebul')).toBeVisible();
+    await expect(page.locator('#hero-v4-title')).toHaveCount(0);
+    await expect(page.locator('#pricing')).toHaveCount(0);
+    await expect(page.locator('#landing-faq')).toHaveCount(0);
     await expect(page.locator('#ilanlar')).toBeHidden();
-    await expect(page.locator('#pricing')).toBeVisible();
-    await expect(page.locator('#home-features-strip')).toBeVisible();
-    await expect(page.locator('#sample-preview')).toBeHidden();
-    await expect(page.locator('#trust')).toBeHidden();
-    await expect(page.locator('#home-auto-bridge')).toBeHidden();
-    await expect(page.locator('#landing-faq')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Ön değerlendirme/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /İSTEBUL AI|AI/i }).first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const doc = document.documentElement;
       return doc.scrollWidth > doc.clientWidth + 1;
     });
     expect(overflow).toBe(false);
+  });
+
+  test('AI Landing /ai/ shows AI homepage sections', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem('istebul_locale', 'tr');
+      } catch {
+        // ignore
+      }
+    });
+    await page.goto('/ai/');
+    await waitForAppReady(page);
+
+    await expect(page.getByRole('heading', { name: /yalnız değilsiniz/i })).toBeVisible();
+    await expect(page.locator('#home')).toBeVisible();
+    await expect(page.locator('#pricing')).toBeVisible();
+    await expect(page.locator('#landing-faq')).toBeVisible();
+    await expect(page.getByRole('link', { name: /Ön değerlendirme/i }).first()).toBeVisible();
   });
 
   test('/giris?return= auth modalı ve return yakalama', async ({ page }) => {

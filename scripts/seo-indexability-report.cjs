@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { loadJson, SEO_BUILD_DATE } = require('./lib/seo.cjs');
 const { mergeGuidePage, estimatePageWords, TARGET_GUIDE_WORDS } = require('./lib/seo-guide-expansions.cjs');
-const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
+const { collectPlatformAiSurfaceFailures, resolveSitemapArtifact, collectSitemapContractFailures } = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.join(__dirname, '..');
 const dist = path.join(root, 'dist');
@@ -36,7 +36,7 @@ function countNoindex(files) {
 }
 
 function countSitemapUrls() {
-  const xml = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  const { xml } = resolveSitemapArtifact(root);
   return (xml.match(/<loc>/g) || []).length;
 }
 
@@ -146,10 +146,8 @@ function assertPlatformAiIndexabilityContract() {
   const indexHtml = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
   const aiHtml = fs.existsSync(aiPath) ? fs.readFileSync(aiPath, 'utf8') : '';
   const failures = collectPlatformAiSurfaceFailures(indexHtml, aiHtml);
-  const sitemapXml = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
-  if (!sitemapXml.includes('https://www.istebul.com/ai/')) {
-    failures.push('sitemap missing https://www.istebul.com/ai/');
-  }
+  const { xml: sitemapXml } = resolveSitemapArtifact(root);
+  failures.push(...collectSitemapContractFailures(sitemapXml));
   return failures;
 }
 
@@ -171,7 +169,7 @@ function main() {
   const rootHtml = walkHtml(root).filter((f) => !f.includes(`${path.sep}dist${path.sep}`) && !f.includes('/admin'));
   const noindexPages = countNoindex([...rootHtml, ...distHtml]);
   const sitemapCount = countSitemapUrls();
-  const sitemapXml = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  const { xml: sitemapXml } = resolveSitemapArtifact(root);
   const sitemapLocs = [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
   const canonIssues = canonicalIssues(rootHtml);
   const schema = schemaValidation(distHtml.length ? distHtml : rootHtml);

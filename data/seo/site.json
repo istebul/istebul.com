@@ -11,6 +11,7 @@
   },
   "staticUrls": [
     { "loc": "/", "priority": "1.0", "changefreq": "weekly" },
+    { "loc": "/ai/", "priority": "0.95", "changefreq": "weekly" },
     { "loc": "/auto/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/metodoloji/", "priority": "0.9", "changefreq": "monthly" },
     { "loc": "/veri-kaynaklari/", "priority": "0.75", "changefreq": "monthly" },

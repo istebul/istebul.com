@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
@@ -36,11 +37,8 @@ assert(index.includes('homepage.bundle.css') || index.includes('enterprise-card-
 assert(aiLanding.includes('home-economic-indicators-mount'), 'AI Landing economic indicators mount is missing.');
 assert(aiLanding.includes('home-category-grid'), 'AI Landing category grid is missing.');
 {
-  /* PR-568: root is Platform Landing; AI long-scroll sections live on /ai/ */
-  assert.ok(index.includes('id="platform-landing"'), 'Root must host platform-landing');
-  assert.ok(index.includes('id="neden-istebul"'), 'Root must host neden-istebul');
-  assert.ok(!index.includes('id="hero-v4-title"'), 'AI H1 must not remain on root after cutover');
-  assert.ok(aiLanding.includes('id="hero-v4-title"'), 'AI H1 must live on /ai');
+  const surfaceFailures = collectPlatformAiSurfaceFailures(index, aiLanding);
+  assert.equal(surfaceFailures.length, 0, surfaceFailures.join('; ') || 'release surface OK');
 }
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');

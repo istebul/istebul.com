@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { completeKonutWizard } from './helpers/konut-wizard.mjs';
 
 const PAGES = [
-  { path: '/', heading: /yalnız değilsiniz/i },
+  { path: '/', heading: /İSTEBUL|platform/i },
+  { path: '/ai/', heading: /yalnız değilsiniz/i },
   { path: '/auto/', selector: '#vacation-flow, #auto-flow, .vacation-main, main' },
   { path: '/konut/', selector: 'main' },
   { path: '/tatil/', selector: 'main' },
@@ -11,7 +12,7 @@ const PAGES = [
   { path: '/kasko/', heading: /kasko|veriye dayalı/i }
 ];
 
-const RESPONSIVE_PATHS = ['/', '/auto/'];
+const RESPONSIVE_PATHS = ['/', '/ai/', '/auto/'];
 const VIEWPORTS = [
   { label: 'mobile', width: 390, height: 844 },
   { label: 'tablet', width: 768, height: 1024 }

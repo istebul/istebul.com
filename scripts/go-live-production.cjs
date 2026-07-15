@@ -2,12 +2,16 @@
 /**
  * One-shot production go-live verification (runs locally or in CI).
  * Full deploy to Cloudflare/Supabase is triggered by push → production-deploy.yml.
+ *
+ * EPIC-002: Same post-build contract as npm test SEO/GSC gates (dist-preferred sitemap,
+ * platform-landing-surface-contract). Pass --skip-build when dist/ is already fresh.
  */
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
+const skipBuild = process.argv.includes('--skip-build');
 
 function run(cmd, args, opts = {}) {
   const r = spawnSync(cmd, args, {
@@ -21,20 +25,37 @@ function run(cmd, args, opts = {}) {
 
 console.log('\n=== isteBul go-live production verification ===\n');
 
-run('node', ['scripts/generate-locale-bundles.cjs']);
-run('node', ['scripts/generate-css-bundles.cjs']);
-run('npm', ['run', 'build'], {
-  env: {
-    SUPABASE_URL: process.env.SUPABASE_URL || 'https://hjfrcdstbyonmgatgwcc.supabase.co',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
+if (!skipBuild) {
+  run('node', ['scripts/generate-locale-bundles.cjs']);
+  run('node', ['scripts/generate-css-bundles.cjs']);
+  run('npm', ['run', 'build'], {
+    env: {
+      SUPABASE_URL: process.env.SUPABASE_URL || 'https://hjfrcdstbyonmgatgwcc.supabase.co',
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
+    }
+  });
+} else {
+  console.log('Skipping build (--skip-build); using existing dist/\n');
+  if (!fs.existsSync(path.join(root, 'dist', 'sitemap.xml'))) {
+    console.error('dist/sitemap.xml missing — run a full build before --skip-build');
+    process.exit(1);
   }
-});
+}
+
+const { collectReleaseContractFailures } = require('./lib/platform-landing-surface-contract.cjs');
+const contractFailures = collectReleaseContractFailures(root);
+if (contractFailures.length) {
+  contractFailures.forEach((msg) => console.error('FAIL:', msg));
+  process.exit(1);
+}
+console.log('release-contract: OK (Platform `/` + AI `/ai/` + sitemap SoT)\n');
 
 const checks = [
   'scripts/css-bundles-audit.cjs',
   'scripts/gsc-index-readiness-audit.cjs',
   'scripts/analytics-deploy-readiness-audit.cjs',
   'scripts/audit-seo.cjs',
+  'scripts/seo-indexability-report.cjs',
   'scripts/audit-footer-links.cjs',
   'scripts/audit-rehber-sitemap.cjs',
   'scripts/audit-sitemap-coverage.cjs',

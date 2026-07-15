@@ -83,20 +83,16 @@ const kaskoLive = isRegistryHomeKeyLive(registrySource, 'kasko');
 addCheck('Kasko kategorisi canlı', kaskoLive ? 'PASS' : 'FAIL');
 
 const distPlatformPath = path.join(root, 'dist/index.html');
+const distAiPath = path.join(root, 'dist/ai/index.html');
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 if (!fs.existsSync(distPlatformPath)) {
   addCheck('dist Platform Landing', 'FAIL', 'dist/index.html missing — run npm run build');
+} else if (!fs.existsSync(distAiPath)) {
+  addCheck('dist Platform Landing', 'FAIL', 'dist/ai/index.html missing — run npm run build');
 } else {
   const distPlatform = fs.readFileSync(distPlatformPath, 'utf8');
-  const platformFailures = [];
-  if (!distPlatform.includes('id="platform-landing"')) {
-    platformFailures.push('missing #platform-landing');
-  }
-  if (!distPlatform.includes('id="neden-istebul"')) {
-    platformFailures.push('missing #neden-istebul');
-  }
-  if (distPlatform.includes('id="hero-v4-title"')) {
-    platformFailures.push('AI hero H1 must not remain on Platform root');
-  }
+  const distAi = fs.readFileSync(distAiPath, 'utf8');
+  const platformFailures = collectPlatformAiSurfaceFailures(distPlatform, distAi);
   addCheck(
     'dist Platform Landing',
     platformFailures.length ? 'FAIL' : 'PASS',
@@ -104,7 +100,6 @@ if (!fs.existsSync(distPlatformPath)) {
   );
 }
 
-const distAiPath = path.join(root, 'dist/ai/index.html');
 if (!fs.existsSync(distAiPath)) {
   addCheck('dist AI home-category prerender', 'FAIL', 'dist/ai/index.html missing — run npm run build');
 } else {
