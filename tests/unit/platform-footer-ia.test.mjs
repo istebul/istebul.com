@@ -61,11 +61,11 @@ test('Destek column holds yardım + SSS; Kaynaklar keeps guides', () => {
   const resources = footer.slice(resourcesStart, supportStart);
 
   assert.match(support, /href="\/yardim\.html"/);
-  assert.match(support, /href="\/#landing-faq"/);
+  assert.match(support, /href="\/ai\/#landing-faq"/);
   assert.doesNotMatch(resources, /href="\/yardim\.html"/);
-  assert.doesNotMatch(resources, /href="\/#landing-faq"/);
+  assert.doesNotMatch(resources, /href="\/ai\/#landing-faq"/);
 
-  assert.match(resources, /href="\/#home-guides-strip"/);
+  assert.match(resources, /href="\/ai\/#home-guides-strip"/);
   assert.match(resources, /href="\/rehber\/"/);
   assert.match(resources, /href="\/rehber\/suv-mi-sedan-mi\/"/);
   assert.match(resources, /href="\/metodoloji\/"/);
