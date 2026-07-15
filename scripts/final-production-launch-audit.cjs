@@ -3,6 +3,9 @@
 
 /**
  * Final production launch gate — static checks on dist/ and source invariants.
+ *
+ * EPIC-002 / PR-568: root `/` is Platform Landing; İSTEBUL AI marketing lives on `/ai/`.
+ * Social-proof disclaimer + AI hero metric guards apply to AI Landing, not Platform Landing.
  */
 const fs = require('fs');
 const path = require('path');
@@ -46,20 +49,65 @@ partnerPages.forEach((file) => {
 });
 
 const indexHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-if (!indexHtml.includes('data-social-proof-disclaimer') || indexHtml.includes('data-social-proof-disclaimer hidden')) {
-  fail('index.html social proof disclaimer should be visible by default');
+const aiHtmlPath = path.join(dist, 'ai/index.html');
+if (!fs.existsSync(aiHtmlPath)) {
+  fail('dist/ai/index.html missing — AI product entry required after Platform Cutover');
 } else {
-  ok('index.html social proof disclaimer visible');
+  ok('dist has ai/index.html');
+}
+const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
+
+/* Platform Landing (root `/`) — EPIC-002 cutover surface */
+if (!/id=["']platform-landing["']/.test(indexHtml) && !/data-platform-landing/.test(indexHtml)) {
+  fail('index.html should mount Platform Landing (id=platform-landing)');
+} else {
+  ok('index.html mounts Platform Landing');
+}
+if (!/id=["']neden-istebul["']/.test(indexHtml)) {
+  fail('index.html should include Neden İSTEBUL section');
+} else {
+  ok('index.html includes Neden İSTEBUL');
+}
+if (/id=["']hero-v4-title["']/.test(indexHtml)) {
+  fail('index.html must not keep AI Landing H1 (#hero-v4-title) after cutover');
+} else {
+  ok('index.html does not host AI Landing H1');
+}
+if (!indexHtml.includes('href="/ai/"') && !indexHtml.includes("href='/ai/'")) {
+  fail('index.html Platform Landing chrome should link to /ai/');
+} else {
+  ok('index.html links to İSTEBUL AI at /ai/');
+}
+if (indexHtml.includes('data-social-proof-disclaimer')) {
+  fail('index.html Platform Landing should not host AI social-proof disclaimer (belongs on /ai)');
+} else {
+  ok('index.html does not require AI social-proof disclaimer');
 }
 
-if (indexHtml.match(/data-metric="analyses"[^>]*>12\.400/)) {
-  fail('index.html hero metrics still show inflated analyses count');
-} else {
-  ok('index.html hero metrics use safe example labels');
+/* AI Landing (`/ai/`) — marketing / social-proof contracts */
+if (aiHtml) {
+  if (!aiHtml.includes('data-social-proof-disclaimer') || /data-social-proof-disclaimer[^>]*\bhidden\b/.test(aiHtml)) {
+    fail('ai/index.html social proof disclaimer should be visible by default');
+  } else {
+    ok('ai/index.html social proof disclaimer visible');
+  }
+
+  if (aiHtml.match(/data-metric="analyses"[^>]*>12\.400/)) {
+    fail('ai/index.html hero metrics still show inflated analyses count');
+  } else {
+    ok('ai/index.html hero metrics use safe example labels');
+  }
+
+  if (!/id=["']hero-v4-title["']/.test(aiHtml)) {
+    fail('ai/index.html should keep AI Landing H1 (#hero-v4-title)');
+  } else {
+    ok('ai/index.html keeps AI Landing H1');
+  }
 }
 
 const requiredDist = [
   'auto/index.html',
+  'ai/index.html',
   'env.js',
   'admin-panel.html'
 ];
