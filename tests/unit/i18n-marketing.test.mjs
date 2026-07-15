@@ -7,6 +7,10 @@ const LOCALE_IDS = ['tr', 'en', 'de', 'ar', 'it', 'fr', 'es', 'ja', 'zh'];
 
 const REQUIRED_KEYS = [
   'nav.products',
+  'nav.decisionCategories',
+  'nav.productAi',
+  'nav.productGarson',
+  'nav.productBusiness',
   'nav.resources',
   'footer.newsletterTitle',
   'footer.consentHtml',

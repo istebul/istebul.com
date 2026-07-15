@@ -48,6 +48,13 @@ test('homepage keeps GarsonAI nav link without teaser section', () => {
   const html = readPage('index.html');
   assert.match(html, /href="\/garson\/"/);
   assert.match(html, /nav-dropdown-link[^>]*>GarsonAI</);
+  /* PR-552: GarsonAI platform Ürünler menüsünde; karar kategorilerinde değil */
+  assert.match(html, /id="nav-platform-list"/);
+  const platformStart = html.indexOf('id="nav-platform-list"');
+  const categoriesStart = html.indexOf('id="nav-product-list"');
+  assert.ok(platformStart > 0 && categoriesStart > platformStart);
+  assert.match(html.slice(platformStart, categoriesStart), /GarsonAI/);
+  assert.doesNotMatch(html.slice(categoriesStart, html.indexOf('id="nav-more-menu"')), /GarsonAI/);
   assert.doesNotMatch(html, /id="home-garsonai"/);
   assert.doesNotMatch(html, /GarsonAI'yi Keşfet/);
   assert.doesNotMatch(html, /ib-home-garsonai/);
