@@ -1,5 +1,6 @@
 /**
- * PR-561 — Homepage #pricing section scoped to İSTEBUL AI (copy only).
+ * PR-561 / EPIC-002 — AI Landing #pricing section scoped to İSTEBUL AI (copy only).
+ * After Platform Cutover, pricing lives on /ai/.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,8 +9,8 @@ import path from 'node:path';
 
 const root = process.cwd();
 
-test('index.html pricing teaser states İSTEBUL AI scope without price changes', () => {
-  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+test('ai/index.html pricing teaser states İSTEBUL AI scope without price changes', () => {
+  const html = fs.readFileSync(path.join(root, 'ai/index.html'), 'utf8');
   const start = html.indexOf('id="pricing"');
   const end = html.indexOf('id="partner-enterprise"');
   assert.ok(start > 0 && end > start);

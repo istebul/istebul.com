@@ -22,8 +22,9 @@ if (!/^https:\/\/www\.istebul\.com$/.test(origin)) {
 
 const home = meta.surfaces?.home;
 if (!home?.title || !home.description) fail('home surface missing title/description');
-if (home.title && !/AI|karar/i.test(home.title + home.description)) {
-  fail('home meta should reflect AI decision platform positioning');
+/* EPIC-002: root is Platform Landing; home surface JSON may lag — accept platform or AI decision copy */
+if (home.title && !/AI|karar|platform|İSTEBUL|ISTEBUL/i.test(home.title + home.description)) {
+  fail('home meta should reflect Platform Landing or decision positioning');
 }
 
 const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
@@ -35,6 +36,7 @@ if (!robots.includes('Sitemap: https://www.istebul.com/sitemap.xml')) {
 
 const requiredSitemapPaths = [
   'https://www.istebul.com/',
+  'https://www.istebul.com/ai/',
   'https://www.istebul.com/auto/',
   'https://www.istebul.com/konut/',
   'https://www.istebul.com/tatil/',
@@ -120,6 +122,31 @@ if (!indexHtml.includes('route-bootstrap-head.js')) {
 }
 if (/<script>\s*\/\* ROUTE_BOOTSTRAP_START/i.test(indexHtml)) {
   fail('index.html must not inline route bootstrap script');
+}
+
+/* EPIC-002 indexability: root = Platform Landing; AI long-scroll = /ai/ */
+for (const marker of ['id="platform-landing"', 'id="neden-istebul"']) {
+  if (!indexHtml.includes(marker)) fail(`index.html Platform Landing missing ${marker}`);
+}
+for (const marker of ['id="hero-v4-title"', 'id="how-it-works"', 'id="pricing"', 'id="landing-faq"', 'id="home"']) {
+  if (indexHtml.includes(marker)) {
+    fail(`index.html must not host AI Landing section ${marker} (belongs on /ai/)`);
+  }
+}
+
+const aiHtmlPath = path.join(root, 'ai/index.html');
+if (!fs.existsSync(aiHtmlPath)) {
+  fail('ai/index.html missing — AI product entry required after Platform Cutover');
+} else {
+  const aiHtml = fs.readFileSync(aiHtmlPath, 'utf8');
+  for (const marker of [
+    'id="hero-v4-title"',
+    'id="how-it-works"',
+    'id="pricing"',
+    'id="landing-faq"'
+  ]) {
+    if (!aiHtml.includes(marker)) fail(`ai/index.html missing AI Landing section ${marker}`);
+  }
 }
 
 if (failed) process.exit(1);

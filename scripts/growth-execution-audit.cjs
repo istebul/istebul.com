@@ -49,8 +49,14 @@ if (!analytics.includes('msclkid')) fail('analytics must capture msclkid');
 const admin = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
 if (!admin.includes('Büyüme komuta merkezi')) fail('admin must render Büyüme komuta merkezi');
 
-const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-if (!index.includes('data-hero-cta-primary')) fail('homepage hero must expose experiment selector');
+const aiIndex = fs.readFileSync(path.join(root, 'ai/index.html'), 'utf8');
+if (!aiIndex.includes('data-hero-cta-primary')) {
+  fail('AI landing hero must expose experiment selector');
+}
+const platformIndex = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+if (!platformIndex.includes('id="platform-landing"')) {
+  fail('platform homepage must mount Platform Landing');
+}
 
 if (failed) process.exit(1);
 console.log('Growth execution audit passed.');

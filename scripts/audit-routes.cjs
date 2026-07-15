@@ -51,16 +51,28 @@ if (fs.existsSync(distDir)) {
 }
 
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const routeSections = [
-  'id="home"',
-  'id="how-it-works"',
+const aiHtmlPath = path.join(root, 'ai/index.html');
+if (!fs.existsSync(aiHtmlPath)) {
+  fail('ai/index.html missing — AI product entry required after Platform Cutover');
+}
+const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
+
+/* Platform Landing owns root; AI long-scroll lives under /ai/ */
+const platformSections = [
+  'id="platform-landing"',
+  'id="neden-istebul"',
   'id="page-karar-analizi"',
   'id="ilanlar"',
   'id="compare"',
   'id="profil"'
 ];
-for (const marker of routeSections) {
+for (const marker of platformSections) {
   if (!indexHtml.includes(marker)) fail(`index.html missing section ${marker}`);
+}
+
+const aiSections = ['id="home"', 'id="how-it-works"', 'id="pricing"'];
+for (const marker of aiSections) {
+  if (!aiHtml.includes(marker)) fail(`ai/index.html missing section ${marker}`);
 }
 
 const bootstrapFile = path.join(root, 'js/runtime/route-bootstrap-head.js');
