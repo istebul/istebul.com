@@ -6,7 +6,7 @@
  * alt bilgi, SEO ve sitemap bu kayıttan beslenebilir.
  */
 
-import type { PlatformProduct } from '../types/platform-product';
+import type { PlatformProduct } from '../types/platform-product.ts';
 
 /**
  * Platform ürünleri — sıra `order` alanına göredir.

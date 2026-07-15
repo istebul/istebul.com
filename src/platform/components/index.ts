@@ -13,22 +13,22 @@
 export {
   createPlatformHeroElement,
   PLATFORM_HERO_DEFAULTS
-} from './PlatformHero/PlatformHero';
-export type { PlatformHeroProps } from './PlatformHero/PlatformHero';
+} from './PlatformHero/PlatformHero.ts';
+export type { PlatformHeroProps } from './PlatformHero/PlatformHero.ts';
 
 export {
   createPlatformUrunKartiElement,
   PLATFORM_URUN_KARTI_DEFAULTS
-} from './PlatformÜrünKartı/PlatformUrunKarti';
-export type { PlatformUrunKartiProps } from './PlatformÜrünKartı/PlatformUrunKarti';
+} from './PlatformÜrünKartı/PlatformUrunKarti.ts';
+export type { PlatformUrunKartiProps } from './PlatformÜrünKartı/PlatformUrunKarti.ts';
 
 export {
   createPlatformUrunIzgarasiElement,
   getPlatformUrunIzgarasiViewState,
   PLATFORM_URUN_IZGARASI_DEFAULTS
-} from './PlatformÜrünIzgarası/PlatformUrunIzgarasi';
+} from './PlatformÜrünIzgarası/PlatformUrunIzgarasi.ts';
 export type {
   PlatformUrunIzgarasiProps,
   PlatformUrunIzgarasiColumns,
   PlatformUrunIzgarasiViewState
-} from './PlatformÜrünIzgarası/PlatformUrunIzgarasi';
+} from './PlatformÜrünIzgarası/PlatformUrunIzgarasi.ts';

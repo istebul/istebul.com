@@ -29,7 +29,12 @@ const HOMEPAGE_EXTENSION = [
   'css/site-social-links-v1.css',
   'css/perf-home-v1.css',
   'css/home-economic-indicators.css',
-  'css/ai-platform-surface.css'
+  'css/ai-platform-surface.css',
+  /* PR-551 — Platform shell (home mount; additive) */
+  'css/platform-hero.css',
+  'css/platform-urun-karti.css',
+  'css/platform-urun-izgarasi.css',
+  'css/platform-shell-home.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */

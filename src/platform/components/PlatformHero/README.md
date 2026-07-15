@@ -9,7 +9,7 @@ Platform Landing ilk görünüm alanı (kahraman / hero) için **çalışan** or
 | DOM üreticisi | `PlatformHero.ts` — `createPlatformHeroElement` |
 | Stil | `platform-hero.css` (scoped `.ib-platform-hero`) |
 | Örnek kullanım | [`ÖRNEK_KULLANIM.md`](./ÖRNEK_KULLANIM.md) |
-| HTML / route / home bağlantısı | **Yok** — hiçbir ekran import etmez |
+| HTML / route / home bağlantısı | PR-551: `#platform-shell-home` (H2; mevcut H1 bozulmaz) |
 
 ## Sorumluluk
 

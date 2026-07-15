@@ -1,16 +1,15 @@
 /**
  * İSTEBUL PlatformÜrünKartı — üretim kalitesinde ürün kartı.
  *
- * PR-005: Herhangi bir PlatformProduct nesnesinden DOM üretir.
- * Hiçbir HTML / route / ürün modülü bu dosyayı henüz import etmemelidir.
- * CTA yönlendirme yapmaz.
+ * PR-005/551: Herhangi bir PlatformProduct nesnesinden DOM üretir.
+ * `enableNavigation: true` ile mevcut ürün URL’sine gider (yeni route yok).
  */
 
-import type { PlatformProduct } from '../../types/platform-product';
+import type { PlatformProduct } from '../../types/platform-product.ts';
 import {
   getPlatformProductStatusLabel,
   getPlatformProductStatusTone
-} from '../../constants/platform-product-status';
+} from '../../constants/platform-product-status.ts';
 
 /** Bilinen logo anahtarları → marka varlık yolu (gelecek bağlama için). */
 const LOGO_KEY_HREF: Readonly<Record<string, string>> = Object.freeze({
@@ -21,8 +20,13 @@ const LOGO_KEY_HREF: Readonly<Record<string, string>> = Object.freeze({
 export interface PlatformUrunKartiProps {
   /** Zorunlu — Platform Kimliği ürün modeli (PR-002). */
   product: PlatformProduct;
-  /** Çağrı butonu metni. */
+  /** Çağrı butonu / bağlantı metni. */
   ctaLabel?: string;
+  /**
+   * true ise CTA, `product.url` ile mevcut girişi kullanır (yeni route oluşturmaz).
+   * false ise yönlendirme yoktur.
+   */
+  enableNavigation?: boolean;
   /** Logo `src` override; yoksa `logoKey` çözümlenir. */
   logoSrc?: string;
   /** Logo `alt` override. */
@@ -131,24 +135,37 @@ export function createPlatformUrunKartiElement(
   const footer = document.createElement('footer');
   footer.className = 'ib-platform-urun-karti__footer';
 
-  const cta = document.createElement('button');
-  cta.type = 'button';
-  cta.className = 'ib-platform-urun-karti__cta';
-  cta.textContent = ctaLabel;
-  cta.setAttribute('data-platform-cta', 'product-inspect');
-  cta.setAttribute('data-platform-product-url', product.url);
-  cta.setAttribute('aria-describedby', `ib-platform-urun-karti-cta-note-${product.id}`);
-  /* Yönlendirme yok — cutover / Landing ayrı PR. */
-  cta.addEventListener('click', (event) => {
-    event.preventDefault();
-  });
+  const enableNavigation = Boolean(props.enableNavigation);
+  const ctaNoteId = `ib-platform-urun-karti-cta-note-${product.id}`;
 
-  const ctaNote = document.createElement('span');
-  ctaNote.className = 'ib-platform-urun-karti__cta-note';
-  ctaNote.id = `ib-platform-urun-karti-cta-note-${product.id}`;
-  ctaNote.textContent = 'Yönlendirme henüz etkin değil.';
+  if (enableNavigation) {
+    const cta = document.createElement('a');
+    cta.className = 'ib-platform-urun-karti__cta';
+    cta.href = product.url;
+    cta.textContent = ctaLabel;
+    cta.setAttribute('data-platform-cta', 'product-inspect');
+    cta.setAttribute('data-platform-product-url', product.url);
+    /* Tam sayfa ürün girişleri için native gezinme (SPA yakalaması için data-native-route yok). */
+    footer.append(cta);
+  } else {
+    const cta = document.createElement('button');
+    cta.type = 'button';
+    cta.className = 'ib-platform-urun-karti__cta';
+    cta.textContent = ctaLabel;
+    cta.setAttribute('data-platform-cta', 'product-inspect');
+    cta.setAttribute('data-platform-product-url', product.url);
+    cta.setAttribute('aria-describedby', ctaNoteId);
+    cta.addEventListener('click', (event) => {
+      event.preventDefault();
+    });
 
-  footer.append(cta, ctaNote);
+    const ctaNote = document.createElement('span');
+    ctaNote.className = 'ib-platform-urun-karti__cta-note';
+    ctaNote.id = ctaNoteId;
+    ctaNote.textContent = 'Yönlendirme henüz etkin değil.';
+
+    footer.append(cta, ctaNote);
+  }
 
   article.setAttribute('aria-labelledby', title.id);
   article.append(accent, header, body, footer);

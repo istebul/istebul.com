@@ -5,8 +5,8 @@
  * PR-002 kapsamında hiçbir çalışan yüzey bağlanmaz.
  */
 
-import type { PlatformIdentity } from '../types/platform-product';
-import { PLATFORM_PRODUCTS } from '../constants/platform-products';
+import type { PlatformIdentity } from '../types/platform-product.ts';
+import { PLATFORM_PRODUCTS } from '../constants/platform-products.ts';
 
 /** Platform markasının resmî kimliği (Türkçe kullanıcı metinleri). */
 export const PLATFORM_IDENTITY: Readonly<PlatformIdentity> = Object.freeze({
@@ -30,8 +30,11 @@ export const PLATFORM_CATALOG = Object.freeze({
   products: PLATFORM_PRODUCTS,
   /** Katalog sürümü — veri sözleşmesi değişince artırılır */
   version: 1 as const,
-  /** PR-002: bilinçli olarak kapalı — UI bağlantısı yok */
-  wiredToRuntime: false as const
+  /**
+   * PR-551: ana sayfa üst bandı (`#platform-shell-home`) katalogdan beslenir.
+   * Tam platform cutover değildir; AI home / SEO H1 korunur.
+   */
+  wiredToRuntime: true as const
 });
 
 export default PLATFORM_IDENTITY;
