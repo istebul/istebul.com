@@ -12,8 +12,13 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 /** @type {Array<{ file: string, markers: string[], label?: string }>} */
 const CRITICAL_SURFACES = [
   {
-    label: 'Ana sayfa hero + kategori CTA',
+    label: 'Platform Landing yüzeyleri',
     file: 'index.html',
+    markers: ['id="platform-landing"', 'id="neden-istebul"', 'data-platform-cutover']
+  },
+  {
+    label: 'AI Landing hero + kategori CTA',
+    file: 'ai/index.html',
     markers: ['id="hero-v4-title"', 'data-hero-cta-primary', 'id="home-category-grid"', 'id="home-vertical-focus"']
   },
   {

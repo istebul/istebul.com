@@ -39,15 +39,35 @@ if (/noindex/i.test(sigorta.match(/<head[\s\S]*?<\/head>/i)?.[0] || '')) {
 if (!sigorta.includes('application/ld+json')) fail('sigorta needs structured data');
 if (!sigorta.includes('BreadcrumbList')) fail('sigorta needs BreadcrumbList schema');
 
-const homeSchemaPath = index.includes('home-graph.json')
-  ? path.join(root, 'data/schema/home-graph.json')
+/* Platform Landing owns / (platform-graph); AI category ItemList lives on /ai */
+const platformSchemaPath = index.includes('platform-graph.json')
+  ? path.join(root, 'data/schema/platform-graph.json')
   : null;
-const homeSchema = homeSchemaPath && fs.existsSync(homeSchemaPath)
-  ? fs.readFileSync(homeSchemaPath, 'utf8')
-  : index;
-if (!homeSchema.includes('ItemList')) fail('homepage needs ItemList schema for categories');
-if (!homeSchema.includes('https://www.istebul.com/sigorta/')) {
-  fail('homepage schema must link sigorta');
+const platformSchema =
+  platformSchemaPath && fs.existsSync(platformSchemaPath)
+    ? fs.readFileSync(platformSchemaPath, 'utf8')
+    : index;
+if (!platformSchema.includes('ItemList')) {
+  fail('platform homepage needs ItemList schema for products');
+}
+if (!platformSchema.includes('https://www.istebul.com/ai/')) {
+  fail('platform schema must link İSTEBUL AI at /ai/');
+}
+
+const aiIndexPath = path.join(root, 'ai/index.html');
+const aiIndex = fs.existsSync(aiIndexPath) ? fs.readFileSync(aiIndexPath, 'utf8') : '';
+const aiSchemaPath = aiIndex.includes('ai-landing-graph.json')
+  ? path.join(root, 'data/schema/ai-landing-graph.json')
+  : null;
+const aiSchema =
+  aiSchemaPath && fs.existsSync(aiSchemaPath)
+    ? fs.readFileSync(aiSchemaPath, 'utf8')
+    : aiIndex;
+if (!aiSchema.includes('ItemList')) {
+  fail('AI landing needs ItemList schema for categories');
+}
+if (!aiSchema.includes('https://www.istebul.com/sigorta/')) {
+  fail('AI landing schema must link sigorta');
 }
 
 if (!index.includes('rel="sitemap"')) fail('index should link sitemap');

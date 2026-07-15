@@ -22,9 +22,20 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!index.includes('css/bundles/homepage.bundle.css')) {
   fail('index.html must link css/bundles/homepage.bundle.css');
 }
+/* Platform Landing adds dedicated platform-*.css entry sheets on top of SPA bundles */
 const linkCount = (index.match(/<link rel="stylesheet"/g) || []).length;
-if (linkCount > 4) {
-  fail(`index.html has ${linkCount} stylesheets; expected ≤4 after consolidation`);
+const platformSheetCount = (index.match(/href="\/css\/platform-[^"]+\.css"/g) || []).length;
+const coreSheetCount = linkCount - platformSheetCount;
+if (coreSheetCount > 4) {
+  fail(
+    `index.html has ${coreSheetCount} non-platform stylesheets; expected ≤4 after consolidation (total ${linkCount}, platform ${platformSheetCount})`
+  );
+}
+if (platformSheetCount < 1) {
+  fail('index.html Platform Landing must link at least one /css/platform-*.css stylesheet');
+}
+if (!index.includes('/css/platform-hero.css')) {
+  fail('index.html must link /css/platform-hero.css for Platform Hero');
 }
 
 const sigorta = fs.readFileSync(path.join(root, 'sigorta/index.html'), 'utf8');
