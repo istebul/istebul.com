@@ -9,6 +9,7 @@ Platform Shell’e ait yeniden kullanılabilir **ortak** bileşen iskeleti.
 | Bileşen klasör iskeleti | Hazır (PR-003) |
 | PlatformHero | Çalışan bileşen (PR-004) — ekrana bağlı değil |
 | PlatformÜrünKartı | Çalışan bileşen (PR-005) — ekrana bağlı değil |
+| PlatformÜrünIzgarası | Çalışan bileşen (PR-550) — ekrana bağlı değil |
 | Diğer bileşenler | İskelet (README) |
 | Runtime / HTML import | **Yok** — dışarıdan import edilmemeli |
 
@@ -18,12 +19,12 @@ Platform Shell’e ait yeniden kullanılabilir **ortak** bileşen iskeleti.
 |--------|--------|--------|
 | `PlatformHero/` | Platform Landing kahraman alanı | Çalışan (PR-004) |
 | `PlatformÜrünKartı/` | Tek ürün tanıtım kartı | Çalışan (PR-005) |
+| `PlatformÜrünIzgarası/` | Ürün kartları ızgarası | Çalışan (PR-550) |
 | `PlatformÜrünKartları/` | → `PlatformÜrünKartı` yönlendirme notu | Miras |
 | `PlatformÜstBilgi/` | Platform üst bilgi / gezinme | İskelet |
 | `PlatformAltBilgi/` | Platform alt bilgi | İskelet |
-| `PlatformÜrünIzgarası/` | Ürün kartları düzeni | İskelet |
 
-Giriş yüzeyi: `index.ts` → Hero + ÜrünKartı (henüz hiçbir yerden import edilmemeli).
+Giriş yüzeyi: `index.ts` → Hero + ÜrünKartı + ÜrünIzgarası (henüz hiçbir yerden import edilmemeli).
 
 ## Kurallar
 
