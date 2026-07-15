@@ -14,3 +14,12 @@ test('bundle budget excludes vertical-only entry surfaces from main SPA', () => 
   assert.match(analyzeSource, /js\\\/decision\\\/decision-v3-mount\\.js/);
   assert.match(analyzeSource, /js\\\/runtime\\\/site-analytics-boot\\.js/);
 });
+
+test('bundle budget excludes independent /ai product entry from homepage SPA (EPIC-002)', () => {
+  assert.match(analyzeSource, /js\\\/ai\\\//);
+  assert.match(analyzeSource, /css\\\/ai\\\//);
+  assert.match(analyzeSource, /AI_LANDING_SURFACE/);
+  assert.match(analyzeSource, /surfaces:\s*\{[\s\S]*aiLanding/);
+  // Hard gate limit must stay; multi-entry fix is exclude/reporting only.
+  assert.match(analyzeSource, /maxTotalBytes\s*=\s*5000\s*\*\s*1024/);
+});
