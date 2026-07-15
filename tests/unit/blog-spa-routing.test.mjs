@@ -45,9 +45,9 @@ test('router SPA-navigates /blog from data-native-route links', () => {
   assert.match(router, /clearSectionDisplayOverride/);
 });
 
-test('index route CSS hides marketing hero on premium content pages', () => {
+test('index route CSS hides Platform Landing on premium content pages', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  assert.match(html, /html\[data-ib-route\^="page-"\] #home/);
+  assert.match(html, /html\[data-ib-route\^="page-"\] #platform-landing/);
 });
 
 test('router navigate preserves query string for blog category filters', () => {

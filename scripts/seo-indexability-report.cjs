@@ -43,6 +43,7 @@ function canonicalIssues(files) {
   const issues = [];
   const publicPaths = [
     'index.html',
+    'ai/index.html',
     'auto/index.html',
     'konut/index.html',
     'tatil/index.html',
