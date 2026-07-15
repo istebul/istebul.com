@@ -7,20 +7,21 @@ Platform Shell’e ait yeniden kullanılabilir **ortak** bileşen iskeleti.
 | Alan | Durum |
 |------|--------|
 | Bileşen klasör iskeleti | Hazır (PR-003) |
-| Çalışan UI kodu | **Yok** |
-| Runtime / HTML import | **Yok** — `index.ts` bilinçli olarak boş dışa aktarım |
+| PlatformHero | Çalışan bileşen (PR-004) — ekrana bağlı değil |
+| Diğer bileşenler | İskelet (README) |
+| Runtime / HTML import | **Yok** — dışarıdan import edilmemeli |
 
 ## Bileşen klasörleri
 
-| Klasör | Gelecekteki görev |
-|--------|------------------|
-| `PlatformHero/` | Platform Landing kahraman alanı |
-| `PlatformÜstBilgi/` | Platform üst bilgi / gezinme |
-| `PlatformAltBilgi/` | Platform alt bilgi |
-| `PlatformÜrünKartları/` | Tek ürün tanıtım kartı |
-| `PlatformÜrünIzgarası/` | Ürün kartları düzeni |
+| Klasör | Görev | PR-004 |
+|--------|--------|--------|
+| `PlatformHero/` | Platform Landing kahraman alanı | Çalışan TS + CSS |
+| `PlatformÜstBilgi/` | Platform üst bilgi / gezinme | İskelet |
+| `PlatformAltBilgi/` | Platform alt bilgi | İskelet |
+| `PlatformÜrünKartları/` | Tek ürün tanıtım kartı | İskelet |
+| `PlatformÜrünIzgarası/` | Ürün kartları düzeni | İskelet |
 
-Giriş yüzeyi: `index.ts` (henüz hiçbir yerden import edilmemeli).
+Giriş yüzeyi: `index.ts` → yalnızca `createPlatformHeroElement` (henüz hiçbir yerden import edilmemeli).
 
 ## Kurallar
 
