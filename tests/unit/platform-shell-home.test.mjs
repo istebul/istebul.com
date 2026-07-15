@@ -91,21 +91,13 @@ function installDomStubs() {
   };
 }
 
-test('index.html includes additive platform-shell-home section before AI home', () => {
+test('index.html hosts Platform Landing after cutover', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const platformIdx = html.indexOf('id="platform-shell-home"');
-  const homeIdx = html.indexOf('id="home"');
-  const h1Idx = html.indexOf('id="hero-v4-title"');
-
-  assert.ok(platformIdx > 0, 'platform-shell-home mount present');
-  assert.ok(homeIdx > platformIdx, 'platform shell precedes AI home section');
-  assert.ok(h1Idx > homeIdx, 'existing AI H1 remains inside #home');
-  assert.match(html, /id="hero-v4-title"/);
-  assert.doesNotMatch(
-    html.slice(platformIdx, homeIdx),
-    /<h1[\s>]/i,
-    'platform shell static markup must not introduce an H1'
-  );
+  assert.match(html, /id="platform-landing"/);
+  assert.match(html, /platform-landing-mount/);
+  assert.match(html, /id="neden-istebul"/);
+  assert.doesNotMatch(html, /id="hero-v4-title"/);
+  assert.doesNotMatch(html, /id="platform-shell-home"/);
 });
 
 test('homepage CSS bundle includes platform shell styles', () => {
@@ -119,27 +111,32 @@ test('homepage CSS bundle includes platform shell styles', () => {
   assert.match(bundle, /platform-shell-home\.css/);
 });
 
-test('platform-shell-home runtime module and catalog wire flag', async () => {
-  const mod = await import('../../js/runtime/platform-shell-home.js');
-  assert.equal(typeof mod.initPlatformShellHome, 'function');
+test('platform-shell-landing runtime module and catalog wire flag', async () => {
+  const mod = await import('../../js/runtime/platform-shell-landing.js');
+  assert.equal(typeof mod.initPlatformLanding, 'function');
 
   const { PLATFORM_CATALOG } = await import(
     '../../src/platform/config/platform-identity.ts'
   );
   assert.equal(PLATFORM_CATALOG.wiredToRuntime, true);
+  assert.equal(PLATFORM_CATALOG.cutoverActive, true);
   assert.ok(PLATFORM_CATALOG.products.length >= 3);
+  assert.equal(
+    PLATFORM_CATALOG.products.find((p) => p.id === 'istebul-ai')?.url,
+    '/ai/'
+  );
 });
 
-test('PlatformHero headingLevel 2 avoids duplicate H1 contract', async () => {
+test('PlatformHero headingLevel 1 owns Platform Landing H1', async () => {
   const stub = installDomStubs();
   const { createPlatformHeroElement } = await import(
     '../../src/platform/components/PlatformHero/PlatformHero.ts'
   );
 
-  const el = createPlatformHeroElement({ headingLevel: 2 });
+  const el = createPlatformHeroElement({ headingLevel: 1 });
   const headings = stub.findAll(el, (n) => n.tagName === 'H2' || n.tagName === 'H1');
   assert.equal(headings.length, 1);
-  assert.equal(headings[0].tagName, 'H2');
+  assert.equal(headings[0].tagName, 'H1');
 });
 
 test('PLATFORM_CATALOG products expose required PR-553 CTA labels', async () => {
@@ -184,7 +181,7 @@ test('PlatformHero experience renders per-product CTAs and Business status', asy
   assert.ok(texts.some((t) => /Geliştirme/i.test(t)));
 
   const headings = stub.findAll(el, (n) => n.tagName === 'H1');
-  assert.equal(headings.length, 0, 'experience hero must not emit H1');
+  assert.equal(headings.length, 0, 'shell-style hero may use H2');
 });
 
 test('PlatformÜrünKartı uses catalog ctaLabel and shows gelistirme badge', async () => {
@@ -214,29 +211,28 @@ test('PlatformÜrünKartı uses catalog ctaLabel and shows gelistirme badge', as
   assert.ok(stub.collectText(aiCard).includes('Karşılaştırmaya Başla'));
 });
 
-test('initPlatformShellHome mounts experience without global İncele override', async () => {
+test('initPlatformLanding mounts experience without global İncele override', async () => {
   const stub = installDomStubs();
-  const mount = stub.register('platform-shell-home-mount', new stub.FakeEl('div'));
-  const section = stub.register('platform-shell-home', new stub.FakeEl('section'));
+  globalThis.document.documentElement = { dataset: {} };
+  const mount = stub.register('platform-landing-mount', new stub.FakeEl('div'));
+  const section = stub.register('platform-landing', new stub.FakeEl('section'));
 
-  const { initPlatformShellHome } = await import('../../js/runtime/platform-shell-home.js');
-  const ok = initPlatformShellHome();
+  const { initPlatformLanding } = await import('../../js/runtime/platform-shell-landing.js');
+  const ok = initPlatformLanding();
   assert.equal(ok, true);
-  assert.equal(mount.dataset.platformMounted, '1');
-  assert.equal(mount.dataset.platformExperience, '1');
-  assert.equal(section.dataset.platformShellExperience, '1');
+  assert.equal(mount.dataset.platformLandingMounted, '1');
+  assert.equal(mount.dataset.platformLandingMounted, '1');
+  assert.equal(section.dataset.platformLandingReady, '1');
 
   const texts = stub.collectText(mount);
   assert.ok(texts.includes('Karşılaştırmaya Başla'));
-  assert.ok(texts.includes('Restoranını Yönet'));
-  assert.ok(texts.includes('Gelişmeleri İncele'));
-  // Global override removed; default “İncele” must not replace product CTAs.
-  assert.equal(
-    texts.filter((t) => t === 'İncele').length,
-    0,
-    'catalog CTAs should win over default İncele'
+  assert.ok(texts.includes('Restoranımı Dijitalleştir'));
+  assert.ok(texts.includes('Yol Haritasını İncele'));
+  assert.ok(
+    texts.includes('Karşılaştırmaya Başla') && texts.includes('Restoranımı Dijitalleştir'),
+    'landing overlay CTAs present'
   );
 
   const h1s = stub.findAll(mount, (n) => n.tagName === 'H1');
-  assert.equal(h1s.length, 0);
+  assert.equal(h1s.length, 1, 'Platform Landing owns H1');
 });

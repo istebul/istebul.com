@@ -79,12 +79,11 @@ export const PLATFORM_URL_MAP: Readonly<
   ...PLATFORM_SURFACE_URLS
 });
 
-/** Runtime varsayılanı — cutover PR’ına kadar current. */
-export const PLATFORM_URL_ACTIVE_PHASE: PlatformUrlPhase = 'current';
+/** Runtime varsayılanı — PR-568 Platform Cutover: target. */
+export const PLATFORM_URL_ACTIVE_PHASE: PlatformUrlPhase = 'target';
 
 /**
- * Ürün URL’si. Varsayılan faz `current` (canlı davranış).
- * `target` yalnızca dokümantasyon / gelecek cutover tüketimi içindir.
+ * Ürün URL’si. Varsayılan faz `PLATFORM_URL_ACTIVE_PHASE` (cutover sonrası target).
  */
 export function getPlatformProductUrl(
   id: PlatformProductId,

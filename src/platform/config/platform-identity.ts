@@ -19,7 +19,7 @@ export const PLATFORM_IDENTITY: Readonly<PlatformIdentity> = Object.freeze({
     'İSTEBUL; yapay zekâ destekli dijital ürünler geliştiren bir teknoloji platformudur. İSTEBUL AI, GarsonAI ve İSTEBUL Business bağımsız ürünler olarak yaşar.',
   shortDescription: 'Yapay zekâ destekli dijital ürünler platformu.',
   slogan: 'Doğru ürünle ilerleyin.',
-  url: getPlatformSurfaceUrl('platform-root', 'current'),
+  url: getPlatformSurfaceUrl('platform-root'),
   logoKey: 'istebul-logo-nav'
 });
 
@@ -30,18 +30,15 @@ export const PLATFORM_IDENTITY: Readonly<PlatformIdentity> = Object.freeze({
 export const PLATFORM_CATALOG = Object.freeze({
   identity: PLATFORM_IDENTITY,
   products: PLATFORM_PRODUCTS,
-  /** Katalog sürümü — URL map + internal-link contract eklendi */
-  version: 2 as const,
+  /** Katalog sürümü — PR-568 cutover (active phase = target) */
+  version: 3 as const,
   /**
-   * PR-551: ana sayfa üst bandı (`#platform-shell-home`) katalogdan beslenir.
-   * Tam platform cutover değildir; AI home / SEO H1 korunur.
+   * PR-568: `/` Platform Landing; ürün kartları TARGET URL (AI → /ai/).
    */
   wiredToRuntime: true as const,
-  /**
-   * PR-567: merkezi URL / chrome hazırlığı var; aktif faz `current`.
-   * Target fazına geçiş bu bayrakla yapılmaz — ayrı cutover PR.
-   */
   cutoverPrepared: true as const,
+  /** PR-568 canlı cutover tamamlandı. */
+  cutoverActive: true as const,
   internalLinkPhase: PLATFORM_INTERNAL_LINK_CONTRACT.phase
 });
 

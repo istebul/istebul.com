@@ -34,7 +34,7 @@ test('Ürünler column lists platform products with preserved URLs', () => {
   assert.ok(companyStart > productsStart);
   const products = footer.slice(productsStart, companyStart);
 
-  assert.match(products, /href="\/#home"/);
+  assert.match(products, /href="\/ai\/"/);
   assert.match(products, /href="\/garson\/"/);
   assert.match(products, /href="\/business\/"/);
   assert.match(products, /href="\/planlar"/);
@@ -71,23 +71,20 @@ test('Destek column holds yardım + SSS; Kaynaklar keeps guides', () => {
   assert.match(resources, /href="\/metodoloji\/"/);
 });
 
-test('footer hash anchors resolve on homepage', () => {
-  for (const id of ['home', 'landing-faq', 'home-guides-strip']) {
-    assert.match(html, new RegExp(`id="${id}"`));
-  }
+test('footer product links resolve after cutover', () => {
+  assert.match(html, /id="platform-landing"/);
+  assert.match(html, /href="\/ai\/"/);
+  assert.match(html, /href="\/garson\/"/);
+  assert.match(html, /href="\/business\/"/);
 });
 
-test('SEO contracts untouched: H1, meta description, home schema', () => {
-  assert.match(html, /id="hero-v4-title"/);
+test('SEO contracts: Platform Landing schema on root', () => {
+  assert.match(html, /id="platform-landing"/);
+  assert.match(html, /src="\/data\/schema\/platform-graph\.json"/);
   assert.match(
     html,
-    /Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz\.<\/span>/
+    /rel="canonical"[^>]*href="https:\/\/www\.istebul\.com\/"/
   );
-  assert.match(
-    html,
-    /name="description"[^>]*content="Araba, konut, tatil, finansman ve sigorta kararlarında/
-  );
-  assert.match(html, /src="\/data\/schema\/home-graph\.json"/);
 });
 
 test('footer CSS progresses to five columns at wide breakpoints', () => {

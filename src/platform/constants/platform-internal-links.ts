@@ -86,16 +86,14 @@ export const PLATFORM_INTERNAL_LINK_PHASE: PlatformUrlPhase = PLATFORM_URL_ACTIV
  * İç link sözleşmesi özeti (dokümantasyon / test için).
  */
 export const PLATFORM_INTERNAL_LINK_CONTRACT = Object.freeze({
-  version: 1 as const,
+  version: 2 as const,
   phase: PLATFORM_INTERNAL_LINK_PHASE,
-  rule: 'Prep PR’larında yalnızca current fazı geçerlidir. Target fazına geçiş onaylı cutover PR ister.',
+  rule: 'PR-568: aktif faz target. İSTEBUL AI ürün girişi /ai/; kök / Platform Landing.',
   bindings: PLATFORM_INTERNAL_LINK_BINDINGS,
   nonGoals: Object.freeze([
-    'index.html link rewrite',
-    'robots/sitemap/canonical değişimi',
-    '/ai noindex kaldırma',
-    'traffic redirect',
-    'GarsonAI / Business route rewrite'
+    'GarsonAI route rewrite',
+    'Business route rewrite',
+    'API/backend/database değişiklikleri'
   ])
 });
 

@@ -7,9 +7,7 @@ import {
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
-import { initHomeCategories } from './runtime/home-categories.js';
-import { initPlatformShellHome } from './runtime/platform-shell-home.js';
-import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
+import { initPlatformLanding } from './runtime/platform-shell-landing.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
 import {
@@ -194,9 +192,8 @@ class App {
 
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
-            initPlatformShellHome();
-            initHomeCategories();
-            initHomeEconomicIndicators();
+            // PR-568: / is Platform Landing; AI marketing hydrators live on /ai/
+            initPlatformLanding();
 
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {
