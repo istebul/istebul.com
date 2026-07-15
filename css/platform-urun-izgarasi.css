@@ -1,0 +1,185 @@
+/**
+ * İSTEBUL PlatformÜrünIzgarası — scoped styles (PR-550).
+ * Design System v4 token uyumu. Sayfalara bağlanmaz.
+ */
+
+.ib-platform-urun-izgarasi {
+  --ib-pui-gap: clamp(1rem, 2.5vw, 1.5rem);
+  --ib-pui-ink: var(--color-text, #111827);
+  --ib-pui-muted: var(--color-muted, #6b7280);
+  --ib-pui-surface: var(--color-surface, #ffffff);
+  --ib-pui-border: var(--color-border, #e5e7eb);
+  --ib-pui-bg: var(--color-bg, #fafaf8);
+  --ib-pui-radius: var(--radius-card, 24px);
+  --ib-pui-font-body: var(
+    --font-body,
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif
+  );
+  --ib-pui-font-heading: var(
+    --font-heading,
+    'Satoshi',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif
+  );
+
+  box-sizing: border-box;
+  width: 100%;
+  font-family: var(--ib-pui-font-body);
+  color: var(--ib-pui-ink);
+}
+
+.ib-platform-urun-izgarasi *,
+.ib-platform-urun-izgarasi *::before,
+.ib-platform-urun-izgarasi *::after {
+  box-sizing: border-box;
+}
+
+.ib-platform-urun-izgarasi__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ib-pui-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ib-platform-urun-izgarasi__item {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+}
+
+.ib-platform-urun-izgarasi__item > .ib-platform-urun-karti {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* 2 sütun üst sınır */
+.ib-platform-urun-izgarasi--cols-2 .ib-platform-urun-izgarasi__grid,
+.ib-platform-urun-izgarasi--cols-3 .ib-platform-urun-izgarasi__grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .ib-platform-urun-izgarasi--cols-2 .ib-platform-urun-izgarasi__grid,
+  .ib-platform-urun-izgarasi--cols-3 .ib-platform-urun-izgarasi__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ib-platform-urun-izgarasi--cols-3 .ib-platform-urun-izgarasi__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Explicit 1 column — always single */
+.ib-platform-urun-izgarasi--cols-1 .ib-platform-urun-izgarasi__grid {
+  grid-template-columns: 1fr;
+}
+
+/* —— Boş durum —— */
+.ib-platform-urun-izgarasi__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px dashed var(--ib-pui-border);
+  border-radius: var(--ib-pui-radius);
+  background: color-mix(in srgb, var(--ib-pui-bg) 70%, var(--ib-pui-surface));
+}
+
+.ib-platform-urun-izgarasi__empty-title {
+  margin: 0;
+  font-family: var(--ib-pui-font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ib-pui-ink);
+}
+
+.ib-platform-urun-izgarasi__empty-description {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ib-pui-muted);
+}
+
+/* —— Yükleme iskeleti —— */
+.ib-platform-urun-izgarasi__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 11.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--ib-pui-border);
+  border-radius: var(--ib-pui-radius);
+  background: var(--ib-pui-surface);
+}
+
+.ib-platform-urun-izgarasi__skeleton-line {
+  display: block;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 0%,
+    #f3f4f6 45%,
+    #e5e7eb 100%
+  );
+  background-size: 200% 100%;
+  animation: ib-platform-urun-izgarasi-shimmer 1.2s ease-in-out infinite;
+}
+
+.ib-platform-urun-izgarasi__skeleton-line--title {
+  width: 42%;
+  height: 1rem;
+}
+
+.ib-platform-urun-izgarasi__skeleton-line--body {
+  width: 88%;
+}
+
+.ib-platform-urun-izgarasi__skeleton-line--meta {
+  width: 56%;
+  margin-top: auto;
+}
+
+.ib-platform-urun-izgarasi__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-platform-urun-izgarasi__skeleton-line {
+    animation: none;
+    background: #e5e7eb;
+  }
+}
+
+@keyframes ib-platform-urun-izgarasi-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

@@ -5,8 +5,8 @@
  * Hiçbir HTML / route / ürün modülü bu dosyayı henüz import etmemelidir.
  */
 
-import type { PlatformProduct } from '../../types/platform-product';
-import { createPlatformUrunKartiElement } from '../PlatformÜrünKartı/PlatformUrunKarti';
+import type { PlatformProduct } from '../../types/platform-product.ts';
+import { createPlatformUrunKartiElement } from '../PlatformÜrünKartı/PlatformUrunKarti.ts';
 
 /** Desteklenen maksimum sütun sayısı (responsive üst sınır). */
 export type PlatformUrunIzgarasiColumns = 1 | 2 | 3;
@@ -29,8 +29,13 @@ export interface PlatformUrunIzgarasiProps {
   emptyTitle?: string;
   /** Boş durum açıklaması. */
   emptyDescription?: string;
-  /** Kart CTA metni — yönlendirme kart içinde kapalı kalır. */
+  /** Kart CTA metni. */
   ctaLabel?: string;
+  /**
+   * true ise kartlar `product.url` ile mevcut girişlere gider.
+   * Yeni route oluşturmaz.
+   */
+  enableNavigation?: boolean;
   /** Bölüm erişilebilir adı. */
   ariaLabel?: string;
   /** Başlık kimliği (harici H2 ile ilişkilendirme). */
@@ -177,7 +182,8 @@ export function createPlatformUrunIzgarasiElement(
 
     const card = createPlatformUrunKartiElement({
       product,
-      ctaLabel: props.ctaLabel
+      ctaLabel: props.ctaLabel,
+      enableNavigation: props.enableNavigation
     });
     item.append(card);
     list.append(item);

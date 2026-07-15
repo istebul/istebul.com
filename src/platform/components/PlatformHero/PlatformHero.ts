@@ -1,27 +1,37 @@
 /**
- * İSTEBUL PlatformHero — ilk çalışan Platform UI bileşeni.
+ * İSTEBUL PlatformHero — çalışan Platform UI bileşeni.
  *
- * PR-004: Gerçek DOM üreticisi. Hiçbir HTML / route / ürün modülü
- * bu dosyayı henüz import etmemelidir.
+ * SEO notu: entegrasyonda `headingLevel: 2` kullanın; mevcut ana sayfa H1 korunur.
  */
 
-import type { PlatformIdentity } from '../../types/platform-product';
+import type { PlatformIdentity } from '../../types/platform-product.ts';
 
 /** PlatformHero içerik / erişilebilirlik seçenekleri. */
 export interface PlatformHeroProps {
   /**
-   * Platform kimliği (PR-002). Verilirse marka adı kimlikten alınabilir;
-   * başlık ve açıklama varsayılanları korunur veya `title` / `description` ile override edilir.
+   * Platform kimliği (PR-002). Verilirse marka adı kimlikten alınabilir.
    */
   identity?: Pick<PlatformIdentity, 'name' | 'shortName' | 'slogan' | 'shortDescription'>;
-  /** Ana başlık (H1). */
+  /** Başlık metni. */
   title?: string;
+  /**
+   * Başlık düzeyi. Ana sayfa entegrasyonunda `2` zorunlu (mevcut H1 bozulmasın).
+   * @default 1
+   */
+  headingLevel?: 1 | 2;
   /** Alt açıklama. */
   description?: string;
   /** Marka / ürün adı (kahraman düzeyinde). */
   brandName?: string;
-  /** CTA metni — yönlendirme yok; yer tutucu düğme. */
+  /** CTA metni. */
   ctaLabel?: string;
+  /**
+   * CTA hedefi. Verilirse `<a href>` üretilir (ör. `#platform-products`).
+   * Verilmezse yönlendirmesiz düğme.
+   */
+  ctaHref?: string;
+  /** CTA açıklama notunu gizle. */
+  hideCtaNote?: boolean;
   /** Kök öğeye eklenecek ekstra sınıf. */
   className?: string;
 }
@@ -47,15 +57,18 @@ function resolveCopy(props: PlatformHeroProps = {}): {
 
 /**
  * PlatformHero DOM ağacını oluşturur.
- * CTA tıklanınca gezinmez; gelecekte Platform Landing bağlayacaktır.
  */
 export function createPlatformHeroElement(props: PlatformHeroProps = {}): HTMLElement {
   const { brandName, title, description, ctaLabel } = resolveCopy(props);
+  const headingLevel = props.headingLevel === 2 ? 2 : 1;
+  const titleId = 'ib-platform-hero-title';
+  const ctaHref = props.ctaHref?.trim() || '';
+  const hideCtaNote = Boolean(props.hideCtaNote) || Boolean(ctaHref);
 
   const section = document.createElement('section');
   section.className = ['ib-platform-hero', props.className].filter(Boolean).join(' ');
   section.setAttribute('data-platform-component', 'platform-hero');
-  section.setAttribute('aria-labelledby', 'ib-platform-hero-title');
+  section.setAttribute('aria-labelledby', titleId);
 
   const inner = document.createElement('div');
   inner.className = 'ib-platform-hero__inner';
@@ -64,9 +77,9 @@ export function createPlatformHeroElement(props: PlatformHeroProps = {}): HTMLEl
   brand.className = 'ib-platform-hero__brand';
   brand.textContent = brandName;
 
-  const heading = document.createElement('h1');
+  const heading = document.createElement(headingLevel === 2 ? 'h2' : 'h1');
   heading.className = 'ib-platform-hero__title';
-  heading.id = 'ib-platform-hero-title';
+  heading.id = titleId;
   heading.textContent = title;
 
   const lead = document.createElement('p');
@@ -78,26 +91,37 @@ export function createPlatformHeroElement(props: PlatformHeroProps = {}): HTMLEl
   actions.setAttribute('role', 'group');
   actions.setAttribute('aria-label', 'Platform eylemleri');
 
-  const cta = document.createElement('button');
-  cta.type = 'button';
-  cta.className = 'ib-platform-hero__cta';
-  cta.textContent = ctaLabel;
-  cta.setAttribute('data-platform-cta', 'discover-products');
-  cta.setAttribute(
-    'aria-describedby',
-    'ib-platform-hero-cta-note'
-  );
-  /* Yönlendirme yok — PR-004 yerleşimi / cutover ayrı PR. */
-  cta.addEventListener('click', (event) => {
-    event.preventDefault();
-  });
+  let cta: HTMLAnchorElement | HTMLButtonElement;
+  if (ctaHref) {
+    const link = document.createElement('a');
+    link.className = 'ib-platform-hero__cta';
+    link.href = ctaHref;
+    link.textContent = ctaLabel;
+    link.setAttribute('data-platform-cta', 'discover-products');
+    cta = link;
+  } else {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'ib-platform-hero__cta';
+    button.textContent = ctaLabel;
+    button.setAttribute('data-platform-cta', 'discover-products');
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+    });
+    cta = button;
+  }
 
-  const ctaNote = document.createElement('span');
-  ctaNote.className = 'ib-platform-hero__cta-note';
-  ctaNote.id = 'ib-platform-hero-cta-note';
-  ctaNote.textContent = 'Yönlendirme henüz etkin değil.';
+  actions.append(cta);
 
-  actions.append(cta, ctaNote);
+  if (!hideCtaNote) {
+    const ctaNote = document.createElement('span');
+    ctaNote.className = 'ib-platform-hero__cta-note';
+    ctaNote.id = 'ib-platform-hero-cta-note';
+    ctaNote.textContent = 'Yönlendirme henüz etkin değil.';
+    cta.setAttribute('aria-describedby', ctaNote.id);
+    actions.append(ctaNote);
+  }
+
   inner.append(brand, heading, lead, actions);
   section.append(inner);
 

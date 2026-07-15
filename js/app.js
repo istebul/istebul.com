@@ -8,6 +8,7 @@ import {
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
 import { initHomeCategories } from './runtime/home-categories.js';
+import { initPlatformShellHome } from './runtime/platform-shell-home.js';
 import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
@@ -193,6 +194,7 @@ class App {
 
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
+            initPlatformShellHome();
             initHomeCategories();
             initHomeEconomicIndicators();
 
@@ -5642,6 +5644,7 @@ document.addEventListener('click', (event) => {
 
 // Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
 const MARKETING_SECTION_IDS = new Set([
+    'platform-shell-home',
     'home',
     'home-economic-indicators',
     'trust',

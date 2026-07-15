@@ -72,6 +72,7 @@ html.ib-route-pending [data-private-section]{display:none!important}
 /* Pre-bootstrap: hide until route script runs */
 html.ib-route-pending #main-content > section[id]{display:none!important}
 html.ib-route-pending .ib-prerender-seo{display:none!important}
+html[data-ib-route="home"] #platform-shell-home,
 html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #how-it-works,
 html[data-ib-route="home"] #home-economic-indicators,
@@ -84,6 +85,7 @@ html[data-ib-route="home"] #home-guides-strip{display:block!important}
 html[data-ib-route="home"] #sample-preview,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #karar-rehberi{display:none!important}
+html[data-ib-route^="page-"] #platform-shell-home,
 html[data-ib-route^="page-"] #home,
 html[data-ib-route^="page-"] #home-economic-indicators,
 html[data-ib-route^="page-"] #how-it-works,
@@ -276,6 +278,15 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <p>Tam deneyim için JavaScript gerekir. <a href="/karar-asistani/">Ön değerlendirmeye başlayın</a> veya <a href="/planlar">planları görün</a>.</p>
             </div>
         </noscript>
+        <!-- Platform shell (PR-551): additive intro; mevcut AI H1 (#hero-v4-title) korunur -->
+        <section
+            id="platform-shell-home"
+            class="ib-platform-shell-home"
+            aria-label="İSTEBUL platform"
+            data-platform-shell
+        >
+            <div id="platform-shell-home-mount" class="ib-platform-shell-home__mount"></div>
+        </section>
         <!-- Home Section -->
         <section id="home" class="hero-section ib-hero-venture ib-hero-premium-dark ib-hero-v4" aria-labelledby="hero-v4-title">
             <div class="hero-container container ib-hero-v4-grid">

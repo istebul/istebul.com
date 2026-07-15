@@ -12,18 +12,18 @@ export type {
   PlatformProductId,
   PlatformProductStatus,
   PlatformProductVisibility
-} from './types/platform-product';
+} from './types/platform-product.ts';
 
 export {
   PLATFORM_PRODUCTS,
   getPlatformProductById,
   listVisiblePlatformProducts
-} from './constants/platform-products';
+} from './constants/platform-products.ts';
 
 export {
   PLATFORM_PRODUCT_STATUS_LABELS,
   getPlatformProductStatusLabel,
   getPlatformProductStatusTone
-} from './constants/platform-product-status';
+} from './constants/platform-product-status.ts';
 
-export { PLATFORM_IDENTITY, PLATFORM_CATALOG } from './config/platform-identity';
+export { PLATFORM_IDENTITY, PLATFORM_CATALOG } from './config/platform-identity.ts';

@@ -3,7 +3,7 @@
  * Yalnızca görünüm / kopya; yönlendirme veya iş kuralı yok.
  */
 
-import type { PlatformProductStatus } from '../types/platform-product';
+import type { PlatformProductStatus } from '../types/platform-product.ts';
 
 /** Durum → kullanıcıya görünen Türkçe etiket. */
 export const PLATFORM_PRODUCT_STATUS_LABELS: Readonly<
