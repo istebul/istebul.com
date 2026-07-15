@@ -436,6 +436,20 @@ esbuild.buildSync({
   outfile: aiLandingFoundationOut
 });
 
+/* PR-566 — İSTEBUL AI Landing Clone boot (hydrate /ai; does not touch /) */
+const aiLandingBootOut = path.join(dist, 'js/ai/ai-landing-boot.js');
+ensureDir(aiLandingBootOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/ai/ai-landing-boot.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: aiLandingBootOut
+});
+
 const emitRuntimeScript = (relativePath) => {
   const src = path.join(root, relativePath);
   if (!fs.existsSync(src)) return;
