@@ -31,15 +31,31 @@ assert(index.includes('homepage.bundle.css') || index.includes('enterprise-card-
 );
 assert(index.includes('home-economic-indicators-mount'), 'Homepage economic indicators mount is missing.');
 {
+  /* PR-560 homepage IA visual order via flex `order` */
   const css = read('css/istebul-premium-final-v7.css');
-  const homeOrder = css.match(/#home\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  const evdsOrder = css.match(/#home-economic-indicators\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  const howOrder = css.match(/#how-it-works\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  assert.ok(homeOrder, 'Home section flex order is missing in premium layout CSS.');
-  assert.ok(evdsOrder, 'Economic indicators flex order is missing in premium layout CSS.');
-  assert.ok(howOrder, 'How-it-works flex order is missing in premium layout CSS.');
-  assert.ok(Number(evdsOrder) > Number(homeOrder), 'Economic indicators should follow hero in premium layout.');
-  assert.ok(Number(howOrder) > Number(evdsOrder), 'How-it-works should follow economic indicators in premium layout.');
+  const orderOf = (id) => {
+    const re = new RegExp(`#${id}\\s*\\{[^}]*order:\\s*(\\d+)`);
+    return Number(css.match(re)?.[1] || NaN);
+  };
+  const platform = orderOf('platform-shell-home');
+  const home = orderOf('home');
+  const cats = orderOf('home-vertical-focus');
+  const how = orderOf('how-it-works');
+  const feats = orderOf('home-features-strip');
+  const pricing = orderOf('pricing');
+  const evds = orderOf('home-economic-indicators');
+  const partner = orderOf('partner-enterprise');
+  const faq = orderOf('landing-faq');
+  const guides = orderOf('home-guides-strip');
+  assert.ok(platform < home, 'Platform shell should precede AI hero.');
+  assert.ok(home < cats, 'Categories should follow AI hero.');
+  assert.ok(cats < how, 'How-it-works should follow categories.');
+  assert.ok(how < feats, 'Features should follow how-it-works.');
+  assert.ok(feats < pricing, 'Pricing should follow features.');
+  assert.ok(pricing < evds, 'Economic indicators should follow pricing.');
+  assert.ok(evds < partner, 'Partner should follow economic indicators.');
+  assert.ok(partner < faq, 'FAQ should follow partner.');
+  assert.ok(faq < guides, 'Guides should follow FAQ.');
 }
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');

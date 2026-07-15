@@ -45,63 +45,72 @@ html.ib-ds-v4.ib-premium-v7 .sample-preview-section {
   }
 }
 
-/* —— Home section order (premium flow) —— */
+/* —— Home section order (PR-560 IA) ——
+ * 1 Platform Hero → 2 AI Hero → 3 Kategoriler → 4 Nasıl çalışır →
+ * 5 Özellikler → 6 Fiyat → 7 Ekonomi → 8 Partner → 9 SSS → 10 Rehber
+ * Visual only (flex order); DOM / hash ids unchanged.
+ */
 html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #main-content,
 html.ib-ds-v4.ib-premium-v7.ib-route-pending #main-content {
   display: flex;
   flex-direction: column;
 }
 
+html.ib-ds-v4.ib-premium-v7 #platform-shell-home {
+  order: 5;
+}
+
 html.ib-ds-v4.ib-premium-v7 #home {
   order: 10;
 }
 
-html.ib-ds-v4.ib-premium-v7 #home-economic-indicators {
-  order: 15;
-}
-
-html.ib-ds-v4.ib-premium-v7 #how-it-works {
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus {
   order: 20;
 }
 
-html.ib-ds-v4.ib-premium-v7 #home-vertical-focus {
-  order: 25;
-}
-
-html.ib-ds-v4.ib-premium-v7 #home-features-strip {
+html.ib-ds-v4.ib-premium-v7 #how-it-works {
   order: 30;
 }
 
-html.ib-ds-v4.ib-premium-v7 #sample-preview {
-  order: 35;
-}
-
-html.ib-ds-v4.ib-premium-v7 #karar-rehberi {
-  order: 50;
-}
-
-html.ib-ds-v4.ib-premium-v7 #trust {
-  order: 60;
+html.ib-ds-v4.ib-premium-v7 #home-features-strip {
+  order: 40;
 }
 
 html.ib-ds-v4.ib-premium-v7 #pricing {
-  order: 70;
+  order: 50;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-economic-indicators {
+  order: 60;
 }
 
 html.ib-ds-v4.ib-premium-v7 #partner-enterprise {
-  order: 80;
+  order: 70;
 }
 
 html.ib-ds-v4.ib-premium-v7 #landing-faq {
-  order: 90;
+  order: 80;
 }
 
 html.ib-ds-v4.ib-premium-v7 #home-guides-strip {
-  order: 95;
+  order: 90;
+}
+
+/* Hidden / legacy landing blocks — keep after marketing flow */
+html.ib-ds-v4.ib-premium-v7 #sample-preview {
+  order: 200;
+}
+
+html.ib-ds-v4.ib-premium-v7 #karar-rehberi {
+  order: 210;
+}
+
+html.ib-ds-v4.ib-premium-v7 #trust {
+  order: 220;
 }
 
 html.ib-ds-v4.ib-premium-v7 #home-final-cta {
-  order: 100;
+  order: 230;
 }
 
 /* —— Section headings —— */

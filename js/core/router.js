@@ -17,15 +17,18 @@ import {
 import { pulseRouteSection } from '../runtime/perceived-performance.js';
 import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full-page-navigation.js';
 
-/** Marketing sections on index.html (long-scroll landing). */
+/**
+ * Marketing sections on index.html (long-scroll landing).
+ * Order matches PR-560 visual IA (CSS flex order in istebul-premium-final-v7.css).
+ */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'platform-shell-home',
     'home',
-    'home-economic-indicators',
-    'how-it-works',
     'home-vertical-focus',
+    'how-it-works',
     'home-features-strip',
     'pricing',
+    'home-economic-indicators',
     'partner-enterprise',
     'landing-faq',
     'home-guides-strip'
@@ -36,11 +39,11 @@ export const MARKETING_HASH_IDS = Object.freeze([
     'platform-shell-home',
     'platform-products',
     'home',
-    'home-economic-indicators',
     'home-vertical-focus',
-    'home-features-strip',
     'how-it-works',
+    'home-features-strip',
     'pricing',
+    'home-economic-indicators',
     'partner-enterprise',
     'landing-faq',
     'home-guides-strip'
