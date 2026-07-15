@@ -1,23 +1,40 @@
 # PlatformHero
 
-Platform Landing ilk görünüm alanı (kahraman / hero) için ortak bileşen iskeleti.
+Platform Landing ilk görünüm alanı (kahraman / hero) için **çalışan** ortak bileşen.
 
-## Sorumluluk (gelecek)
-
-- Platform markasını ve tek ana vaadi göstermek
-- Kısa destek cümlesi + ürünlere yönlendiren CTA grubu
-- İSTEBUL AI / GarsonAI / Business iş mantığı veya karar dikeyi içeriği taşımamak
-
-## Durum (PR-003)
+## Durum (PR-004)
 
 | Alan | Durum |
 |------|--------|
-| Klasör / README | Hazır |
-| Çalışan kod | Yok |
-| HTML / route bağlantısı | Yok |
+| DOM üreticisi | `PlatformHero.ts` — `createPlatformHeroElement` |
+| Stil | `platform-hero.css` (scoped `.ib-platform-hero`) |
+| Örnek kullanım | [`ÖRNEK_KULLANIM.md`](./ÖRNEK_KULLANIM.md) |
+| HTML / route / home bağlantısı | **Yok** — hiçbir ekran import etmez |
+
+## Sorumluluk
+
+- Platform markasını kahraman düzeyinde göstermek
+- Tek başlık + kısa destek cümlesi + CTA yer tutucusu
+- İSTEBUL AI / GarsonAI / Business iş mantığı taşımamak
+- Gelecekte `PLATFORM_IDENTITY` / katalog ile props üzerinden hizalanmak
+
+## Varsayılan içerik (Türkçe)
+
+| Alan | Metin |
+|------|--------|
+| Marka | İSTEBUL |
+| Başlık | Yapay zekâ destekli dijital platform |
+| Açıklama | İSTEBUL; bireyler ve işletmeler için geliştirilen yapay zekâ destekli dijital ürünleri tek çatı altında sunar. |
+| CTA | Ürünleri keşfet *(yönlendirme yok)* |
+
+## Tasarım
+
+- Minimal, kurumsal, Design System v4 token uyumu
+- Responsive; `prefers-reduced-motion` destekli
+- Erişilebilir: `aria-labelledby`, odak halkası, anlamlı grup etiketi
 
 ## Kurallar
 
 - Mevcut `index.html` hero’sunun yerine geçmez (ayrı cutover PR).
-- `homepage.bundle` veya ürün DS stillerini zorla import etmez.
-- Kullanıcıya görünen metinler Türkçe olacaktır ([terim sözlüğü](../../../../docs/TÜRKÇE_TERİM_STANDARTLARI.md)).
+- `homepage.bundle` / Garson DS import edilmez.
+- `src/platform` dışından henüz import edilmemelidir.
