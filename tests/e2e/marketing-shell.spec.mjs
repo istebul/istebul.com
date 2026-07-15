@@ -1,11 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-const waitForAppReady = async (page) => {
+const waitForPlatformReady = async (page) => {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForSelector('nav.navbar', { timeout: 15000 });
   await page.waitForFunction(() => document.documentElement.getAttribute('data-ib-route'), null, {
     timeout: 15000
   });
+};
+
+const waitForAiLandingReady = async (page) => {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector('#hero-v4-title', { timeout: 15000 });
+  await page.waitForSelector('nav.seo-nav', { timeout: 15000 });
 };
 
 test.describe('Marketing shell (Platform + AI)', () => {
@@ -18,7 +24,7 @@ test.describe('Marketing shell (Platform + AI)', () => {
       }
     });
     await page.goto('/');
-    await waitForAppReady(page);
+    await waitForPlatformReady(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'home');
     await expect(page.locator('#platform-landing')).toBeVisible();
@@ -45,7 +51,7 @@ test.describe('Marketing shell (Platform + AI)', () => {
       }
     });
     await page.goto('/ai/');
-    await waitForAppReady(page);
+    await waitForAiLandingReady(page);
 
     await expect(page.getByRole('heading', { name: /yalnız değilsiniz/i })).toBeVisible();
     await expect(page.locator('#home')).toBeVisible();
@@ -56,7 +62,7 @@ test.describe('Marketing shell (Platform + AI)', () => {
 
   test('/giris?return= auth modalı ve return yakalama', async ({ page }) => {
     await page.goto('/giris?return=%2Fauto%2F');
-    await waitForAppReady(page);
+    await waitForPlatformReady(page);
 
     await expect(page.locator('#auth-modal.show')).toBeVisible();
     await expect(page.locator('#auth-modal input[type="email"]')).toBeVisible();
@@ -64,7 +70,7 @@ test.describe('Marketing shell (Platform + AI)', () => {
 
   test('giriş modalı açılır', async ({ page }) => {
     await page.goto('/');
-    await waitForAppReady(page);
+    await waitForPlatformReady(page);
 
     const loginBtn = page.locator('#login-btn');
     if (await loginBtn.isVisible()) {

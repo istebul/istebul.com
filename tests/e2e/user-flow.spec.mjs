@@ -9,6 +9,12 @@ const waitForSpaReady = async (page) => {
   });
 };
 
+const waitForAiLandingReady = async (page) => {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector('#hero-v4-title', { timeout: 15000 });
+  await page.waitForSelector('nav.seo-nav', { timeout: 15000 });
+};
+
 const dismissCookieBanner = async (page) => {
   const accept = page.locator('[data-cookie-accept]');
   if (await accept.isVisible().catch(() => false)) {
@@ -2218,7 +2224,7 @@ test.describe('Faz 3D-1A category journey guards', () => {
     await expect(navCta).toContainText(/Ön değerlendirme/i);
 
     await page.goto('/ai/');
-    await waitForSpaReady(page);
+    await waitForAiLandingReady(page);
     await dismissCookieBanner(page);
 
     const heroCta = page.locator('[data-hero-cta-primary]');
@@ -2234,7 +2240,7 @@ test.describe('Faz 3D-1A category journey guards', () => {
   test('AI Landing kategori kartları guard vertical href canonical', async ({ page }) => {
     await forceTurkishHomeLocale(page);
     await page.goto('/ai/');
-    await waitForSpaReady(page);
+    await waitForAiLandingReady(page);
     await dismissCookieBanner(page);
     await page.locator('#home-vertical-focus').scrollIntoViewIfNeeded();
 
