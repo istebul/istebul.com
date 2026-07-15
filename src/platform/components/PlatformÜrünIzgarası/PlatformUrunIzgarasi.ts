@@ -182,7 +182,8 @@ export function createPlatformUrunIzgarasiElement(
 
     const card = createPlatformUrunKartiElement({
       product,
-      ctaLabel: props.ctaLabel,
+      // Grid override yoksa kart ürünün `ctaLabel` değerini (katalog) kullanır.
+      ctaLabel: props.ctaLabel?.trim() || undefined,
       enableNavigation: props.enableNavigation
     });
     item.append(card);

@@ -1,8 +1,9 @@
 /**
- * Platform shell home mount (PR-551).
+ * Platform shell home mount (PR-551 / PR-553).
  *
  * Mevcut AI hero / kategoriler korunur. PlatformHero H2 kullanır (H1 bozulmaz).
  * Veri: PLATFORM_CATALOG. Yeni route yok.
+ * PR-553: ürün başına katalog CTA’ları + Business durum rozeti.
  */
 
 import { PLATFORM_CATALOG } from '../../src/platform/config/platform-identity.ts';
@@ -25,17 +26,20 @@ export function initPlatformShellHome() {
   }
 
   const catalog = PLATFORM_CATALOG;
+  const identity = catalog.identity;
   const products = listVisiblePlatformProducts();
 
   const hero = createPlatformHeroElement({
-    identity: catalog.identity,
+    identity,
     headingLevel: 2,
+    brandName: identity.name,
     title: 'Yapay zekâ destekli dijital platform',
-    description:
-      'İSTEBUL; bireyler ve işletmeler için geliştirilen yapay zekâ destekli dijital ürünleri tek çatı altında sunar.',
-    ctaLabel: 'Ürünleri keşfet',
-    ctaHref: `#${PRODUCTS_ID}`,
-    hideCtaNote: true
+    slogan: identity.slogan,
+    description: identity.description,
+    products,
+    showProductStatus: true,
+    hideCtaNote: true,
+    className: 'ib-platform-hero--shell'
   });
 
   const productsWrap = document.createElement('div');
@@ -47,10 +51,10 @@ export function initPlatformShellHome() {
   productsTitle.id = 'platform-products-title';
   productsTitle.textContent = 'Platform ürünleri';
 
+  // Kart CTA’ları PLATFORM_PRODUCTS.ctaLabel üzerinden gelir (global “İncele” yok).
   const grid = createPlatformUrunIzgarasiElement({
     products,
     columns: 3,
-    ctaLabel: 'İncele',
     enableNavigation: true,
     labelledBy: 'platform-products-title',
     ariaLabel: 'Platform ürünleri'
@@ -60,11 +64,14 @@ export function initPlatformShellHome() {
 
   mount.replaceChildren(hero, productsWrap);
   mount.dataset.platformMounted = '1';
+  mount.dataset.platformExperience = '1';
   mount.classList.add('ib-platform-shell-home__mount');
 
   const section = document.getElementById(SECTION_ID);
   if (section) {
     section.dataset.platformShellReady = '1';
+    section.dataset.platformShellExperience = '1';
+    section.classList.add('ib-platform-shell-home--experience');
   }
 
   return true;

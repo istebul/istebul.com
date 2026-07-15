@@ -56,6 +56,7 @@ export type PlatformProductVisibility = 'gorunur' | 'gizli';
  * - visibility → Görünürlük
  * - defaultColor → Varsayılan ürün rengi
  * - platformLabel → Platform etiketi
+ * - ctaLabel → Çağrı butonu metni (platform deneyimi)
  */
 export interface PlatformProduct {
   /** Kimlik — kararlı teknik anahtar */
@@ -86,6 +87,8 @@ export interface PlatformProduct {
   defaultColor: string;
   /** Platform etiketi — ürün ailesi / kategori rozeti (Türkçe) */
   platformLabel: string;
+  /** Çağrı butonu metni — Platform Hero / kart deneyimi (Türkçe) */
+  ctaLabel: string;
 }
 
 /** Platform markasının kendi kimlik kaydı. */

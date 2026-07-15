@@ -14,7 +14,10 @@ export {
   createPlatformHeroElement,
   PLATFORM_HERO_DEFAULTS
 } from './PlatformHero/PlatformHero.ts';
-export type { PlatformHeroProps } from './PlatformHero/PlatformHero.ts';
+export type {
+  PlatformHeroProps,
+  PlatformHeroProductAction
+} from './PlatformHero/PlatformHero.ts';
 
 export {
   createPlatformUrunKartiElement,

@@ -1,11 +1,16 @@
 /**
- * Platform shell home mount — section wrapper (PR-551).
+ * Platform shell home mount — section wrapper (PR-551 / PR-553).
  */
 
 .ib-platform-shell-home {
   box-sizing: border-box;
   width: 100%;
   background: var(--color-bg, #fafaf8);
+}
+
+.ib-platform-shell-home--experience {
+  /* CLS: hero + ızgara için sabit rezerv (JS önce boş mount). */
+  contain: layout;
 }
 
 .ib-platform-shell-home__inner {
@@ -28,7 +33,19 @@
   color: var(--color-text, #111827);
 }
 
-/* CLS rezervi — JS mount öncesi boşluk */
+/* CLS rezervi — JS mount öncesi boşluk (ürün CTA şeridi + grid). */
 .ib-platform-shell-home__mount:empty {
-  min-height: 18rem;
+  min-height: clamp(22rem, 55vw, 28rem);
+}
+
+@media (min-width: 640px) {
+  .ib-platform-shell-home__mount:empty {
+    min-height: 20rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .ib-platform-shell-home__mount:empty {
+    min-height: 18rem;
+  }
 }

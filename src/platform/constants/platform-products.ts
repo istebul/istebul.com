@@ -29,7 +29,8 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
     order: 1,
     visibility: 'gorunur',
     defaultColor: '#2563eb',
-    platformLabel: 'Karar Platformu'
+    platformLabel: 'Karar Platformu',
+    ctaLabel: 'Karşılaştırmaya Başla'
   }),
   Object.freeze({
     id: 'garsonai',
@@ -46,7 +47,8 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
     order: 2,
     visibility: 'gorunur',
     defaultColor: '#f97316',
-    platformLabel: 'Restoran İşletim Sistemi'
+    platformLabel: 'Restoran İşletim Sistemi',
+    ctaLabel: 'Restoranını Yönet'
   }),
   Object.freeze({
     id: 'business',
@@ -63,7 +65,8 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
     order: 3,
     visibility: 'gorunur',
     defaultColor: '#0f172a',
-    platformLabel: 'İş Zekâsı'
+    platformLabel: 'İş Zekâsı',
+    ctaLabel: 'Gelişmeleri İncele'
   })
 ]);
 
