@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { loadJson, SEO_BUILD_DATE } = require('./lib/seo.cjs');
 const { mergeGuidePage, estimatePageWords, TARGET_GUIDE_WORDS } = require('./lib/seo-guide-expansions.cjs');
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.join(__dirname, '..');
 const dist = path.join(root, 'dist');
@@ -139,48 +140,12 @@ function orphanEstimate(sitemapLocs, distFiles) {
   return orphans;
 }
 
-/**
- * EPIC-002 surface contract — Platform root vs AI product entry.
- * Hard-fails when HTML structure drifts back to the former AI homepage-on-/ model.
- */
 function assertPlatformAiIndexabilityContract() {
-  const failures = [];
   const indexPath = path.join(root, 'index.html');
   const aiPath = path.join(root, 'ai/index.html');
-  if (!fs.existsSync(indexPath)) failures.push('index.html missing');
-  if (!fs.existsSync(aiPath)) failures.push('ai/index.html missing');
-  if (failures.length) return failures;
-
-  const indexHtml = fs.readFileSync(indexPath, 'utf8');
-  const aiHtml = fs.readFileSync(aiPath, 'utf8');
-
-  for (const marker of ['id="platform-landing"', 'id="neden-istebul"']) {
-    if (!indexHtml.includes(marker)) {
-      failures.push(`Platform Landing root missing ${marker}`);
-    }
-  }
-  for (const marker of [
-    'id="hero-v4-title"',
-    'id="how-it-works"',
-    'id="pricing"',
-    'id="landing-faq"',
-    'id="home"'
-  ]) {
-    if (indexHtml.includes(marker)) {
-      failures.push(`root must not host AI section ${marker}`);
-    }
-  }
-  for (const marker of [
-    'id="hero-v4-title"',
-    'id="how-it-works"',
-    'id="pricing"',
-    'id="landing-faq"'
-  ]) {
-    if (!aiHtml.includes(marker)) {
-      failures.push(`AI Landing missing ${marker}`);
-    }
-  }
-
+  const indexHtml = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
+  const aiHtml = fs.existsSync(aiPath) ? fs.readFileSync(aiPath, 'utf8') : '';
+  const failures = collectPlatformAiSurfaceFailures(indexHtml, aiHtml);
   const sitemapXml = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
   if (!sitemapXml.includes('https://www.istebul.com/ai/')) {
     failures.push('sitemap missing https://www.istebul.com/ai/');

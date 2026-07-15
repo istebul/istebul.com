@@ -124,29 +124,12 @@ if (/<script>\s*\/\* ROUTE_BOOTSTRAP_START/i.test(indexHtml)) {
   fail('index.html must not inline route bootstrap script');
 }
 
-/* EPIC-002 indexability: root = Platform Landing; AI long-scroll = /ai/ */
-for (const marker of ['id="platform-landing"', 'id="neden-istebul"']) {
-  if (!indexHtml.includes(marker)) fail(`index.html Platform Landing missing ${marker}`);
-}
-for (const marker of ['id="hero-v4-title"', 'id="how-it-works"', 'id="pricing"', 'id="landing-faq"', 'id="home"']) {
-  if (indexHtml.includes(marker)) {
-    fail(`index.html must not host AI Landing section ${marker} (belongs on /ai/)`);
-  }
-}
-
+/* EPIC-002 indexability surfaces — single shared contract */
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 const aiHtmlPath = path.join(root, 'ai/index.html');
-if (!fs.existsSync(aiHtmlPath)) {
-  fail('ai/index.html missing — AI product entry required after Platform Cutover');
-} else {
-  const aiHtml = fs.readFileSync(aiHtmlPath, 'utf8');
-  for (const marker of [
-    'id="hero-v4-title"',
-    'id="how-it-works"',
-    'id="pricing"',
-    'id="landing-faq"'
-  ]) {
-    if (!aiHtml.includes(marker)) fail(`ai/index.html missing AI Landing section ${marker}`);
-  }
+const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
+for (const msg of collectPlatformAiSurfaceFailures(indexHtml, aiHtml)) {
+  fail(msg);
 }
 
 if (failed) process.exit(1);

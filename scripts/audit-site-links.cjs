@@ -47,8 +47,12 @@ function scanHtml(rel) {
   while ((m = brokenHashOnly.exec(html)) !== null) {
     const id = m[1];
     if (!html.includes(`id="${id}"`) && !html.includes(`id='${id}'`)) {
-      if (rel === 'index.html' && ['how-it-works', 'sample-preview', 'pricing', 'home'].includes(id)) {
-        fail(`${rel}: hash-only link #${id} should use /#${id} or data-home-anchor`);
+      /* AI long-scroll hashes belong on /ai/ after Platform Cutover */
+      if (
+        rel === 'index.html' &&
+        ['how-it-works', 'sample-preview', 'pricing', 'home', 'landing-faq'].includes(id)
+      ) {
+        fail(`${rel}: hash-only link #${id} should use /ai/#${id} (AI Landing)`);
       }
     }
   }
