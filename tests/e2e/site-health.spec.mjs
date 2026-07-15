@@ -59,9 +59,14 @@ test.describe('Site health — readability and layout', () => {
   test('homepage uses consolidated CSS bundles', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    const styleLinks = await page.locator('link[rel="stylesheet"]').count();
-    // Home may load one additional static stylesheet besides consolidated bundles.
-    expect(styleLinks).toBeLessThanOrEqual(4);
+    const styleHrefs = await page.locator('link[rel="stylesheet"]').evaluateAll((nodes) =>
+      nodes.map((n) => n.getAttribute('href') || '')
+    );
+    const platformSheets = styleHrefs.filter((href) => /\/css\/platform-[^"']+\.css/.test(href)).length;
+    const coreSheets = styleHrefs.length - platformSheets;
+    // SPA core stays consolidated; Platform Landing may add dedicated platform-*.css sheets.
+    expect(coreSheets).toBeLessThanOrEqual(4);
+    expect(platformSheets).toBeGreaterThan(0);
     const bundle = await page.locator('link[href*="homepage.bundle"]').count();
     expect(bundle).toBeGreaterThan(0);
   });

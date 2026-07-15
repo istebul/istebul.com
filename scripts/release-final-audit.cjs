@@ -82,11 +82,33 @@ addCheck('Sigorta kategorisi canlı', sigortaLive ? 'PASS' : 'FAIL');
 const kaskoLive = isRegistryHomeKeyLive(registrySource, 'kasko');
 addCheck('Kasko kategorisi canlı', kaskoLive ? 'PASS' : 'FAIL');
 
-const distIndexPath = path.join(root, 'dist/index.html');
-if (!fs.existsSync(distIndexPath)) {
-  addCheck('dist home-category prerender', 'FAIL', 'dist/index.html missing — run npm run build');
+const distPlatformPath = path.join(root, 'dist/index.html');
+if (!fs.existsSync(distPlatformPath)) {
+  addCheck('dist Platform Landing', 'FAIL', 'dist/index.html missing — run npm run build');
 } else {
-  const distIndexSource = fs.readFileSync(distIndexPath, 'utf8');
+  const distPlatform = fs.readFileSync(distPlatformPath, 'utf8');
+  const platformFailures = [];
+  if (!distPlatform.includes('id="platform-landing"')) {
+    platformFailures.push('missing #platform-landing');
+  }
+  if (!distPlatform.includes('id="neden-istebul"')) {
+    platformFailures.push('missing #neden-istebul');
+  }
+  if (distPlatform.includes('id="hero-v4-title"')) {
+    platformFailures.push('AI hero H1 must not remain on Platform root');
+  }
+  addCheck(
+    'dist Platform Landing',
+    platformFailures.length ? 'FAIL' : 'PASS',
+    platformFailures.join('; ')
+  );
+}
+
+const distAiPath = path.join(root, 'dist/ai/index.html');
+if (!fs.existsSync(distAiPath)) {
+  addCheck('dist AI home-category prerender', 'FAIL', 'dist/ai/index.html missing — run npm run build');
+} else {
+  const distIndexSource = fs.readFileSync(distAiPath, 'utf8');
   const distFailures = [];
   const gridSection = extractHomeCategoryGridSection(distIndexSource);
 
@@ -124,7 +146,7 @@ if (!fs.existsSync(distIndexPath)) {
   }
 
   addCheck(
-    'dist home-category prerender',
+    'dist AI home-category prerender',
     distFailures.length ? 'FAIL' : 'PASS',
     distFailures.join('; ')
   );

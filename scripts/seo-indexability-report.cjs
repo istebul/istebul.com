@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { loadJson, SEO_BUILD_DATE } = require('./lib/seo.cjs');
 const { mergeGuidePage, estimatePageWords, TARGET_GUIDE_WORDS } = require('./lib/seo-guide-expansions.cjs');
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.join(__dirname, '..');
 const dist = path.join(root, 'dist');
@@ -43,6 +44,7 @@ function canonicalIssues(files) {
   const issues = [];
   const publicPaths = [
     'index.html',
+    'ai/index.html',
     'auto/index.html',
     'konut/index.html',
     'tatil/index.html',
@@ -138,7 +140,26 @@ function orphanEstimate(sitemapLocs, distFiles) {
   return orphans;
 }
 
+function assertPlatformAiIndexabilityContract() {
+  const indexPath = path.join(root, 'index.html');
+  const aiPath = path.join(root, 'ai/index.html');
+  const indexHtml = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
+  const aiHtml = fs.existsSync(aiPath) ? fs.readFileSync(aiPath, 'utf8') : '';
+  const failures = collectPlatformAiSurfaceFailures(indexHtml, aiHtml);
+  const sitemapXml = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  if (!sitemapXml.includes('https://www.istebul.com/ai/')) {
+    failures.push('sitemap missing https://www.istebul.com/ai/');
+  }
+  return failures;
+}
+
 function main() {
+  const contractFailures = assertPlatformAiIndexabilityContract();
+  if (contractFailures.length) {
+    contractFailures.forEach((msg) => console.error('FAIL:', msg));
+    process.exit(1);
+  }
+
   const landing = loadJson('data/seo/landing-pages.json');
   const guideStats = landing.pages.map((p) => {
     const merged = mergeGuidePage(p);
@@ -205,21 +226,30 @@ ${canonIssues.length ? canonIssues.map((c) => `- ${c}`).join('\n') : '_None dete
 
 ## Required sitemap paths
 
-${['/', '/auto/', '/konut/', '/tatil/', '/finans/', '/metodoloji/', '/karar-asistani/']
+${['/', '/ai/', '/auto/', '/konut/', '/tatil/', '/finans/', '/metodoloji/', '/karar-asistani/']
   .map((p) => {
     const loc = `https://www.istebul.com${p === '/' ? '/' : p}`;
     return `- ${loc}: ${sitemapXml.includes(loc) ? 'OK' : 'MISSING'}`;
   })
   .join('\n')}
 
+## EPIC-002 surface contract
+
+| Surface | Contract | Status |
+|---------|----------|--------|
+| \`/\` (\`index.html\`) | \`#platform-landing\`, \`#neden-istebul\` — no AI long-scroll sections | OK |
+| \`/ai/\` (\`ai/index.html\`) | \`#hero-v4-title\`, \`#how-it-works\`, \`#pricing\`, \`#landing-faq\` | OK |
+
 ## Notes
 
 - Rehber pages are generated at build into \`dist/rehber/{slug}/\`.
 - Legacy URLs \`/index.php/*\`, \`/cgi-sys/*\`, \`/2025/*\` → 410; \`/category/*\` → 301 home.
+- After Platform Cutover, AI homepage sections are indexability-checked on \`/ai/\` only.
 `;
 
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   fs.writeFileSync(reportPath, body);
+  console.log('seo-indexability-report: OK (Platform + AI contracts)');
   console.log('seo-indexability-report: wrote', reportPath);
   console.log(body.split('\n').slice(0, 20).join('\n'));
 }
