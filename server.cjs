@@ -41,6 +41,31 @@ app.get('/js/app.bundle.js', (_req, res, next) => {
   res.sendFile(path.join(distJs, bundle));
 });
 
+/** PR-564 — serve bundled Platform Landing Preview (TS → ESM) without changing `/`. */
+app.get('/js/runtime/platform-shell-preview.js', (_req, res, next) => {
+  const fs = require('fs');
+  const distFile = path.join(__dirname, 'dist', 'js', 'runtime', 'platform-shell-preview.js');
+  if (fs.existsSync(distFile)) {
+    res.type('application/javascript');
+    return res.sendFile(distFile);
+  }
+  try {
+    const esbuild = require('esbuild');
+    const result = esbuild.buildSync({
+      entryPoints: [path.join(__dirname, 'js', 'runtime', 'platform-shell-preview.js')],
+      bundle: true,
+      format: 'esm',
+      platform: 'browser',
+      target: 'es2020',
+      write: false
+    });
+    res.type('application/javascript');
+    return res.send(result.outputFiles[0].text);
+  } catch {
+    return next();
+  }
+});
+
 app.use('/js/chunks', express.static(path.join(__dirname, 'dist', 'js', 'chunks'), {
   fallthrough: false,
   setHeaders: (res) => {
@@ -98,6 +123,13 @@ app.get('*', (req, res, next) => {
     const autoIndex = path.join(__dirname, 'auto', 'index.html');
     if (fs.existsSync(autoIndex)) {
       return res.sendFile(autoIndex);
+    }
+  }
+
+  if (raw === '/platform-preview' || raw === '/platform-preview/') {
+    const previewIndex = path.join(__dirname, 'platform-preview', 'index.html');
+    if (fs.existsSync(previewIndex)) {
+      return res.sendFile(previewIndex);
     }
   }
 
