@@ -40,7 +40,7 @@
     "test:integration": "node --no-warnings --test tests/integration/*.test.mjs",
     "seed:ai-listings": "node scripts/seed-ai-listings.cjs",
     "seed:ai-listings:publish": "node scripts/seed-ai-listings.cjs --direct --publish",
-    "test:smoke": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --no-warnings scripts/smoke-test.cjs",
+    "test:smoke": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --experimental-strip-types --no-warnings scripts/smoke-test.cjs",
     "test:production": "npm run production:audit",
     "test:accessibility": "node scripts/accessibility-check.cjs && node scripts/contrast-visibility-audit.cjs",
     "test:contrast-visibility": "node scripts/contrast-visibility-audit.cjs && npx playwright test tests/e2e/contrast-visibility-guard.spec.mjs -c playwright.config.mjs --project=chromium --workers=1",
