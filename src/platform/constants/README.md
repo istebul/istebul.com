@@ -7,6 +7,7 @@ Platform düzeyinde **statik sabitler** ve ürün kayıt listeleri.
 | Dosya | İçerik |
 |-------|--------|
 | `platform-products.ts` | İSTEBUL AI, GarsonAI, İSTEBUL Business resmî tanımları |
+| `platform-product-status.ts` | Durum rozeti Türkçe etiketleri / ton eşlemesi (PR-005) |
 
 ## Kurallar
 

@@ -1,0 +1,300 @@
+/**
+ * İSTEBUL PlatformÜrünKartı — scoped styles (PR-005).
+ * Design System v4 token uyumu. Sayfalara bağlanmaz.
+ */
+
+.ib-platform-urun-karti {
+  --ib-puc-accent: var(--color-accent, #2563eb);
+  --ib-puc-ink: var(--color-text, #111827);
+  --ib-puc-muted: var(--color-muted, #6b7280);
+  --ib-puc-surface: var(--color-surface, #ffffff);
+  --ib-puc-border: var(--color-border, #e5e7eb);
+  --ib-puc-bg: var(--color-bg, #fafaf8);
+  --ib-puc-radius: var(--radius-card, 24px);
+  --ib-puc-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.03));
+  --ib-puc-shadow-hover: var(--shadow-card-hover, 0 8px 24px rgba(15, 23, 42, 0.08));
+  --ib-puc-ease: var(--transition-fast, 200ms ease-out);
+  --ib-puc-font-heading: var(
+    --font-heading,
+    'Satoshi',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif
+  );
+  --ib-puc-font-body: var(
+    --font-body,
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif
+  );
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+  padding: 1.25rem 1.25rem 1.15rem;
+  border: 1px solid var(--ib-puc-border);
+  border-radius: var(--ib-puc-radius);
+  background: var(--ib-puc-surface);
+  box-shadow: var(--ib-puc-shadow);
+  color: var(--ib-puc-ink);
+  font-family: var(--ib-puc-font-body);
+  overflow: hidden;
+  transition:
+    box-shadow var(--ib-puc-ease),
+    border-color var(--ib-puc-ease),
+    transform var(--ib-puc-ease);
+}
+
+.ib-platform-urun-karti *,
+.ib-platform-urun-karti *::before,
+.ib-platform-urun-karti *::after {
+  box-sizing: border-box;
+}
+
+.ib-platform-urun-karti:hover {
+  border-color: color-mix(in srgb, var(--ib-puc-accent) 35%, var(--ib-puc-border));
+  box-shadow: var(--ib-puc-shadow-hover);
+}
+
+.ib-platform-urun-karti__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--ib-puc-accent);
+}
+
+.ib-platform-urun-karti__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.15rem;
+}
+
+.ib-platform-urun-karti__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  max-width: min(140px, 48%);
+}
+
+.ib-platform-urun-karti__logo-img {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.ib-platform-urun-karti__logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.5rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ib-puc-accent) 12%, var(--ib-puc-bg));
+  color: var(--ib-puc-accent);
+  font-family: var(--ib-puc-font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ib-platform-urun-karti__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.ib-platform-urun-karti__platform-label,
+.ib-platform-urun-karti__status {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.ib-platform-urun-karti__platform-label {
+  border: 1px solid color-mix(in srgb, var(--ib-puc-accent) 28%, var(--ib-puc-border));
+  background: color-mix(in srgb, var(--ib-puc-accent) 8%, var(--ib-puc-surface));
+  color: color-mix(in srgb, var(--ib-puc-accent) 75%, var(--ib-puc-ink));
+}
+
+.ib-platform-urun-karti__status {
+  border: 1px solid transparent;
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.ib-platform-urun-karti--status-canli .ib-platform-urun-karti__status,
+.ib-platform-urun-karti__status[data-status='canli'] {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.ib-platform-urun-karti--status-gelistirme .ib-platform-urun-karti__status,
+.ib-platform-urun-karti__status[data-status='gelistirme'] {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.ib-platform-urun-karti--status-yakinda .ib-platform-urun-karti__status,
+.ib-platform-urun-karti__status[data-status='yakinda'] {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+
+.ib-platform-urun-karti--status-beta .ib-platform-urun-karti__status,
+.ib-platform-urun-karti__status[data-status='beta'] {
+  background: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+
+.ib-platform-urun-karti--status-bakim .ib-platform-urun-karti__status,
+.ib-platform-urun-karti__status[data-status='bakim'] {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.ib-platform-urun-karti--status-kapali .ib-platform-urun-karti__status,
+.ib-platform-urun-karti__status[data-status='kapali'] {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+.ib-platform-urun-karti__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1 1 auto;
+}
+
+.ib-platform-urun-karti__title {
+  margin: 0;
+  font-family: var(--ib-puc-font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--ib-puc-ink);
+}
+
+.ib-platform-urun-karti__description {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ib-puc-muted);
+}
+
+.ib-platform-urun-karti__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 0.25rem;
+}
+
+.ib-platform-urun-karti__cta {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--ib-puc-accent);
+  color: #ffffff;
+  font-family: var(--ib-puc-font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background var(--ib-puc-ease),
+    box-shadow var(--ib-puc-ease),
+    transform var(--ib-puc-ease),
+    filter var(--ib-puc-ease);
+}
+
+.ib-platform-urun-karti__cta:hover {
+  filter: brightness(0.94);
+}
+
+.ib-platform-urun-karti__cta:focus {
+  outline: none;
+}
+
+.ib-platform-urun-karti__cta:focus-visible {
+  outline: 2px solid var(--ib-puc-accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ib-puc-accent) 25%, transparent);
+}
+
+.ib-platform-urun-karti__cta:active {
+  transform: translateY(1px);
+}
+
+.ib-platform-urun-karti--status-kapali .ib-platform-urun-karti__cta {
+  background: #9ca3af;
+}
+
+.ib-platform-urun-karti__cta-note {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--ib-puc-muted);
+}
+
+@media (max-width: 479px) {
+  .ib-platform-urun-karti__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ib-platform-urun-karti__badges {
+    justify-content: flex-start;
+  }
+
+  .ib-platform-urun-karti__logo {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-platform-urun-karti,
+  .ib-platform-urun-karti__cta {
+    transition: none;
+  }
+
+  .ib-platform-urun-karti__cta:active {
+    transform: none;
+  }
+}

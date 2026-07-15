@@ -20,4 +20,10 @@ export {
   listVisiblePlatformProducts
 } from './constants/platform-products';
 
+export {
+  PLATFORM_PRODUCT_STATUS_LABELS,
+  getPlatformProductStatusLabel,
+  getPlatformProductStatusTone
+} from './constants/platform-product-status';
+
 export { PLATFORM_IDENTITY, PLATFORM_CATALOG } from './config/platform-identity';
