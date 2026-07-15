@@ -55,18 +55,18 @@ const COMPARE_PLANS = Object.freeze([
     priceHint: 'Ücretsiz',
     featured: false,
     ctaHref: '/karar-asistani/',
-    ctaLabel: 'Ön değerlendirme başlat',
+    ctaLabel: 'İSTEBUL AI ile başla',
     ctaClass: 'btn btn-outline btn-block'
   },
   {
     id: 'pro',
     tier: 'pro',
     badge: 'En popüler',
-    name: 'isteBul Pro',
+    name: 'İSTEBUL AI Pro',
     priceHint: 'Erken erişim',
     featured: true,
     ctaHref: '/planlar?checkout=pro',
-    ctaLabel: 'Erken erişim talep et',
+    ctaLabel: 'İSTEBUL AI erken erişim talep et',
     ctaClass: 'btn btn-primary btn-block',
     checkoutButton: true
   },
