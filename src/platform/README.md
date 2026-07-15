@@ -12,6 +12,7 @@ parçaların oturacağı yerdir.
 |------|--------|
 | Klasör iskeleti | Hazır (PR-001) |
 | Ürün kimliği veri katmanı | Hazır (PR-002) — `constants/`, `types/`, `config/` |
+| Ortak bileşen iskeleti | Hazır (PR-003) — `components/*` README + boş `components/index.ts` |
 | Çalışan UI / route bağlantısı | **Yok** — kullanıcıya görünmez (`PLATFORM_CATALOG.wiredToRuntime === false`) |
 | GarsonAI / Business / İSTEBUL AI | Dokunulmaz; ürün kodundan import yok |
 
@@ -39,7 +40,7 @@ Bu nedenle ortak Platform Shell **`src/platform/`** altında tutulur; AI runtime
 
 | Klasör | Amaç |
 |--------|------|
-| `components/` | Ortak platform bileşenleri (placeholder) |
+| `components/` | Ortak platform bileşen iskeleti (PR-003; çalışan kod yok) |
 | `constants/` | Platform sabitleri ve ürün kaydı adayları |
 | `types/` | Platform tip sözleşmeleri |
 | `assets/` | Platform’a özel statik varlıklar (marka dışı) |
