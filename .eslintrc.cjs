@@ -25,7 +25,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['src/ai-core/**/*.ts'],
+      files: ['src/ai-core/**/*.ts', 'src/restaurant-knowledge/**/*.ts'],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
       parserOptions: {
