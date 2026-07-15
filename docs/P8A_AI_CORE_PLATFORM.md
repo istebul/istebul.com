@@ -86,3 +86,9 @@ Adoption pattern for later P8 tickets:
 4. Swap live providers when network adapters are implemented (still behind Strategy)
 
 Planned consumers: reservation AI, menu intelligence, CRM scoring, kitchen priority, waiter floor coach, payment policy advisor, CX chat, inventory alerts — all through this core.
+
+## P8-B Knowledge Graph (optional)
+
+`AIOrchestratorOptions.knowledgeResolver` accepts a `RestaurantKnowledgeResolverPort`.
+When provided, `orchestrate()` appends a knowledge prompt block after restaurant/customer contexts.
+When omitted, behavior is identical to P8-A. See `docs/P8B_RESTAURANT_KNOWLEDGE_GRAPH.md`.

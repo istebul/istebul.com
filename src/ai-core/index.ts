@@ -29,6 +29,7 @@ export type {
   LLMProvider,
   EmbeddingProvider,
   ModerationProvider,
+  RestaurantKnowledgeResolverPort,
 } from './interfaces/index.ts';
 
 export {
