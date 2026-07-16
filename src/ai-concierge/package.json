@@ -1,0 +1,7 @@
+{
+  "name": "@istebul/ai-concierge",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.ts" },
+  "description": "P8-C AI Concierge — first GarsonAI guest conversation module on AI Core + Restaurant Knowledge Graph. Mock provider by default; OpenAI/Groq/xAI via one-line provider switch."
+}
