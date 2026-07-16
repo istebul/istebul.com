@@ -399,6 +399,23 @@ esbuild.buildSync({
   outfile: siteAnalyticsBootOut
 });
 
+/* PR-575 — standalone Platform product surfaces (/ai/, /garson/, /business/) */
+const platformSurfaceAnalyticsBootOut = path.join(
+  dist,
+  'js/runtime/platform-surface-analytics-boot.js'
+);
+ensureDir(platformSurfaceAnalyticsBootOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/platform-surface-analytics-boot.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: platformSurfaceAnalyticsBootOut
+});
+
 const siteSocialInitOut = path.join(dist, 'js/runtime/site-social-init.js');
 ensureDir(siteSocialInitOut);
 esbuild.buildSync({
