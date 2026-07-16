@@ -1,15 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-const waitForPlatformReady = async (page) => {
+const waitForPlatformReady = async (page, { requireLanding = true } = {}) => {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForSelector('nav.navbar', { timeout: 15000 });
   await page.waitForFunction(() => document.documentElement.getAttribute('data-ib-route'), null, {
     timeout: 15000
   });
-  await page.waitForSelector(
-    '#platform-landing[data-platform-landing-ready="1"], #platform-landing-mount[data-platform-landing-mounted="1"]',
-    { timeout: 20000 }
-  );
+  if (requireLanding) {
+    await page.waitForFunction(() => {
+      const section = document.getElementById('platform-landing');
+      const mount = document.getElementById('platform-landing-mount');
+      return (
+        section?.getAttribute('data-platform-landing-ready') === '1' ||
+        mount?.getAttribute('data-platform-landing-mounted') === '1'
+      );
+    }, null, { timeout: 20000 });
+  }
 };
 
 const waitForAiLandingReady = async (page) => {
@@ -79,7 +85,7 @@ test.describe('Marketing shell (Platform + AI)', () => {
 
   test('/giris?return= auth modalı ve return yakalama', async ({ page }) => {
     await page.goto('/giris?return=%2Fauto%2F');
-    await waitForPlatformReady(page);
+    await waitForPlatformReady(page, { requireLanding: false });
 
     await expect(page.locator('#auth-modal.show')).toBeVisible();
     await expect(page.locator('#auth-modal input[type="email"]')).toBeVisible();
