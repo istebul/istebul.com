@@ -19,6 +19,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `utils/` | Yardımcı fonksiyonlar |
 | `assets/` | Business’e özel statik varlıklar |
 | `routes/` | Business route kayıt dosyası |
+| `knowledge/` | Report DNA, KPI, kategori, prompt ve çıktı bilgi mimarisi |
 
 ## Genel route
 
