@@ -1,0 +1,7 @@
+{
+  "name": "@istebul/ai-actions",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.ts" },
+  "description": "P8-D AI Action Engine — turns Concierge intents into auditable restaurant actions (reservation, table, preorder, guarantee, summary). No live payment. Built on P8-A/B/C."
+}
