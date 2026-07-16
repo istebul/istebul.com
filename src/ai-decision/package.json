@@ -1,0 +1,7 @@
+{
+  "name": "@istebul/ai-decision",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.ts" },
+  "description": "P8-F AI Restaurant Brain — Decision Engine for table/reservation/menu/campaign/guarantee recommendations and occupancy predictions. Mock default, no live LLM. Adapter-only integration with P8-A/B/C/D."
+}

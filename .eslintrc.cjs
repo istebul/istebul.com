@@ -31,6 +31,7 @@ module.exports = {
         'src/ai-concierge/**/*.ts',
         'src/ai-actions/**/*.ts',
         'src/payment-gateway/**/*.ts',
+        'src/ai-decision/**/*.ts',
       ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
