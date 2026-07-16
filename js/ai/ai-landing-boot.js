@@ -19,6 +19,14 @@ import {
   initAiLandingFoundation
 } from './ai-landing-foundation.js';
 
+/** EPIC-003A: lock hero mockup to final paint state (no stale animation frame). */
+function initAiHeroRender() {
+  const preview = document.querySelector('#home .decision-preview.ib-glass-dashboard');
+  if (!preview || preview.dataset.aiHeroRenderReady === '1') return;
+  preview.dataset.aiHeroRenderReady = '1';
+  preview.classList.add('ib-ai-hero-render-ready');
+}
+
 function initAiLandingAnchors() {
   document.querySelectorAll('[data-home-anchor]').forEach((el) => {
     if (el.dataset.aiLandingAnchorBound === '1') return;
@@ -76,6 +84,7 @@ export async function initAiLandingClone() {
   await window.__ibI18n?.ready;
 
   initAiLandingFoundation();
+  initAiHeroRender();
   initAiLandingAnchors();
   initLandingFaq();
   initHomeCategories();
@@ -108,6 +117,12 @@ if (typeof document !== 'undefined') {
   } else {
     void boot();
   }
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      initAiHeroRender();
+    }
+  });
 }
 
 export default initAiLandingClone;
