@@ -30,6 +30,7 @@ module.exports = {
         'src/restaurant-knowledge/**/*.ts',
         'src/ai-concierge/**/*.ts',
         'src/ai-actions/**/*.ts',
+        'src/payment-gateway/**/*.ts',
       ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],

@@ -8,6 +8,7 @@ import {
   type ConciergeChatMessage,
   type ConciergeSuggestionCard,
 } from '@istebul/ai-concierge';
+import { createConciergePaymentBridge } from '@istebul/payment-gateway';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -86,6 +87,11 @@ export function AiConciergeChat({
     return instance;
   }, [restaurantSlug, restaurantId, restaurantName]);
 
+  const paymentBridge = useMemo(
+    () => createConciergePaymentBridge({ restaurantId, defaultProvider: 'mock' }),
+    [restaurantId],
+  );
+
   useEffect(() => {
     setMessages(concierge.getMessages());
     setCards([]);
@@ -115,7 +121,26 @@ export function AiConciergeChat({
     ]);
     try {
       const turn = await concierge.chat(trimmed);
-      setMessages(turn.messages);
+      let nextMessages = turn.messages;
+      const wantsPayment =
+        /garanti|provizyon|ödeme|odeme|payment|authorize/i.test(trimmed) ||
+        turn.intent.id === 'create_reservation' ||
+        turn.intent.id === 'show_reservation_summary';
+
+      if (wantsPayment) {
+        const flow = await paymentBridge.runFromTurn(turn);
+        nextMessages = [
+          ...turn.messages,
+          {
+            id: `p8e-pay-${Date.now()}`,
+            role: 'assistant',
+            content: flow.conversationMessage,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+
+      setMessages(nextMessages);
       setCards(turn.suggestionCards);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Concierge yanıt veremedi.');

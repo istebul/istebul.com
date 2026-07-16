@@ -1,3 +1,4 @@
+import { AuthorizationStep } from '@/components/cx/AuthorizationStep';
 import { ConciergeStep } from '@/components/cx/ConciergeStep';
 import { ConfirmationStep } from '@/components/cx/ConfirmationStep';
 import { CxEmpty, CxError, CxLoading } from '@/components/cx/CxStates';
@@ -5,6 +6,7 @@ import { CxShell } from '@/components/cx/CxShell';
 import { GuaranteeStep } from '@/components/cx/GuaranteeStep';
 import { LandingStep } from '@/components/cx/LandingStep';
 import { MenuStep } from '@/components/cx/MenuStep';
+import { PaymentGatewayStep } from '@/components/cx/PaymentGatewayStep';
 import { PreorderStep } from '@/components/cx/PreorderStep';
 import { SummaryStep } from '@/components/cx/SummaryStep';
 import {
@@ -140,6 +142,31 @@ export function RestaurantCxPage({ slug }: RestaurantCxPageProps) {
           guarantee={cx.guarantee}
           onContinue={cx.goNext}
           onBack={cx.goBack}
+        />
+      ) : null}
+
+      {cx.step === 'payment' ? (
+        <PaymentGatewayStep
+          guarantee={cx.guarantee}
+          provider={cx.paymentProvider}
+          onProviderChange={cx.setPaymentProvider}
+          isAuthorizing={cx.isAuthorizing}
+          onContinue={() => {
+            void cx.startAuthorization();
+          }}
+          onBack={cx.goBack}
+        />
+      ) : null}
+
+      {cx.step === 'authorization' ? (
+        <AuthorizationStep
+          authorization={cx.authorization}
+          error={cx.authorizeError}
+          onContinue={cx.goNext}
+          onBack={cx.goBack}
+          onRetry={() => {
+            void cx.startAuthorization();
+          }}
         />
       ) : null}
 

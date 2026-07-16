@@ -1,0 +1,7 @@
+{
+  "name": "@istebul/payment-gateway",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.ts" },
+  "description": "P8-E Payment Gateway Integration — Strategy providers (Stripe/iyzico/PayTR/Mock), authorization lifecycle, reservation guarantee, webhook foundation. No live provider API keys required. Built on P8-A/B/C/D."
+}

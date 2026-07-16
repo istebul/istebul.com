@@ -9,6 +9,8 @@ export const JOURNEY_STEPS = [
   'menu',
   'preorder',
   'guarantee',
+  'payment',
+  'authorization',
   'summary',
   'confirmation',
 ] as const;
@@ -26,6 +28,8 @@ export const JOURNEY_STEP_LABELS: Record<JourneyStep, string> = {
   menu: 'Menü',
   preorder: 'Ön Sipariş',
   guarantee: 'Provizyon',
+  payment: 'Payment Gateway',
+  authorization: 'Authorization',
   summary: 'Özet',
   confirmation: 'Onay',
 };

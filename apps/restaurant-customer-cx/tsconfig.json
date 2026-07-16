@@ -20,6 +20,8 @@
       "@/*": ["./src/*"],
       "@istebul/ai-concierge": ["../../src/ai-concierge/index.ts"],
       "@istebul/ai-core": ["../../src/ai-core/index.ts"],
+      "@istebul/ai-actions": ["../../src/ai-actions/index.ts"],
+      "@istebul/payment-gateway": ["../../src/payment-gateway/index.ts"],
       "@istebul/restaurant-knowledge": ["../../src/restaurant-knowledge/index.ts"]
     }
   },

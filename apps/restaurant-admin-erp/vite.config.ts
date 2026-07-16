@@ -30,6 +30,7 @@ export default defineConfig({
       'tables',
       'checkin',
       'payments',
+      'payment-gateways',
       'menu',
       'inventory',
     ]),
@@ -38,6 +39,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@istebul/payment-gateway': path.resolve(__dirname, '../../src/payment-gateway/index.ts'),
+      '@istebul/ai-actions': path.resolve(__dirname, '../../src/ai-actions/index.ts'),
+      '@istebul/ai-core': path.resolve(__dirname, '../../src/ai-core/index.ts'),
+      '@istebul/restaurant-knowledge': path.resolve(
+        __dirname,
+        '../../src/restaurant-knowledge/index.ts',
+      ),
     },
   },
   build: {

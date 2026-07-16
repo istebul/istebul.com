@@ -5,6 +5,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { InventoryPage } from '@/pages/InventoryPage';
 import { MenuPage } from '@/pages/MenuPage';
 import { OrdersPage } from '@/pages/OrdersPage';
+import { PaymentGatewaysPage } from '@/pages/PaymentGatewaysPage';
 import { PaymentsPage } from '@/pages/PaymentsPage';
 import { ReservationsPage } from '@/pages/ReservationsPage';
 import { TablesPage } from '@/pages/TablesPage';
@@ -58,6 +59,14 @@ export default function App() {
           element={
             <AdminLayout activeNavId="payments">
               <PaymentsPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/payment-gateways"
+          element={
+            <AdminLayout activeNavId="payment-gateways">
+              <PaymentGatewaysPage />
             </AdminLayout>
           }
         />

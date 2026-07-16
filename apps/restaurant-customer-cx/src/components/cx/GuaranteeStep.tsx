@@ -30,15 +30,15 @@ export function GuaranteeStep({ guarantee, onContinue, onBack }: GuaranteeStepPr
           </ul>
         </div>
         <p className="text-xs text-muted-foreground">
-          Payment Foundation (P7-I) entegrasyon noktası hazır. Bu fazda kart çekimi /
-          authorize-capture çağrısı yapılmaz.
+          Sonraki adımda Payment Gateway (P8-E) ile Mock authorize çalışır. Canlı kart /
+          Stripe-iyzico-PayTR anahtarı gerekmez.
         </p>
         <div className="flex gap-2">
           <Button variant="outline" className="flex-1" onClick={onBack}>
             Geri
           </Button>
           <Button className="flex-1" onClick={onContinue}>
-            Özet
+            Payment Gateway
           </Button>
         </div>
       </CardContent>

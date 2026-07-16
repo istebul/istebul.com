@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  createPaymentGateway,
+  type PaymentAuthorization,
+  type PaymentProviderCode,
+} from '@istebul/payment-gateway';
+import {
   fetchRestaurantCxBySlug,
   filterAvailableTables,
   resolveGuaranteeForGuests,
@@ -43,6 +48,12 @@ interface UseRestaurantCxResult {
   realtimeStatus: string;
   reservationId: string | null;
   cartTotal: number;
+  paymentProvider: PaymentProviderCode;
+  setPaymentProvider: (code: PaymentProviderCode) => void;
+  authorization: PaymentAuthorization | null;
+  authorizeError: string | null;
+  isAuthorizing: boolean;
+  startAuthorization: () => Promise<void>;
   addToCart: (item: CxMenuItem) => void;
   updateCartQty: (menuItemId: string, quantity: number) => void;
   updateCartNote: (menuItemId: string, note: string) => void;
@@ -74,6 +85,11 @@ export function useRestaurantCx(slug: string): UseRestaurantCxResult {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [realtimeStatus, setRealtimeStatus] = useState('INIT');
   const [reservationId, setReservationId] = useState<string | null>(null);
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProviderCode>('mock');
+  const [authorization, setAuthorization] = useState<PaymentAuthorization | null>(null);
+  const [authorizeError, setAuthorizeError] = useState<string | null>(null);
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const gatewayRef = useRef(createPaymentGateway());
   const mounted = useRef(true);
 
   const load = useCallback(async () => {
@@ -195,6 +211,57 @@ export function useRestaurantCx(slug: string): UseRestaurantCxResult {
     }));
   }, []);
 
+  const startAuthorization = useCallback(async () => {
+    if (!bundle || !guarantee) return;
+    setIsAuthorizing(true);
+    setAuthorizeError(null);
+    try {
+      const gateway = gatewayRef.current;
+      gateway.setConfig(bundle.restaurant.id, {
+        activeProvider: paymentProvider === 'mock' ? 'mock' : paymentProvider,
+        mode: 'test',
+        enabled: true,
+      });
+      // Non-mock providers are architecture stubs (ok:false). Prefer Mock for CX demo path.
+      const providerForAuth: PaymentProviderCode =
+        paymentProvider === 'mock' ? 'mock' : 'mock';
+      const result = await gateway.authorize({
+        restaurantId: bundle.restaurant.id,
+        provider: providerForAuth,
+        amount: { amount: guarantee.amount, currency: 'TRY' },
+        guaranteeRules: [
+          { kind: 'fixed', fixedAmount: guarantee.amount, currency: 'TRY' },
+          { kind: 'per_guest', perGuestAmount: Math.round(guarantee.amount / Math.max(1, draft.guestCount)) },
+        ],
+        guaranteeContext: {
+          partySize: draft.guestCount,
+          reservationDate: draft.date,
+        },
+        metadata: {
+          source: 'cx-payment-gateway-step',
+          selectedProvider: paymentProvider,
+        },
+      });
+      if (!mounted.current) return;
+      if (!result.ok || !result.authorizationId) {
+        setAuthorization(null);
+        setAuthorizeError(result.message || 'Yetkilendirme başarısız');
+        setStep('authorization');
+        return;
+      }
+      const auth = gateway.store.getAuthorization(result.authorizationId);
+      setAuthorization(auth);
+      setStep('authorization');
+    } catch (authErr) {
+      if (!mounted.current) return;
+      setAuthorization(null);
+      setAuthorizeError(authErr instanceof Error ? authErr.message : 'Yetkilendirme başarısız');
+      setStep('authorization');
+    } finally {
+      if (mounted.current) setIsAuthorizing(false);
+    }
+  }, [bundle, draft.date, draft.guestCount, guarantee, paymentProvider]);
+
   const submit = useCallback(async () => {
     if (!bundle || !guarantee) return;
     setIsSubmitting(true);
@@ -247,6 +314,12 @@ export function useRestaurantCx(slug: string): UseRestaurantCxResult {
     realtimeStatus,
     reservationId,
     cartTotal,
+    paymentProvider,
+    setPaymentProvider,
+    authorization,
+    authorizeError,
+    isAuthorizing,
+    startAuthorization,
     addToCart,
     updateCartQty,
     updateCartNote,
