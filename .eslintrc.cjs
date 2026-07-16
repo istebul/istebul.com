@@ -29,6 +29,7 @@ module.exports = {
         'src/ai-core/**/*.ts',
         'src/restaurant-knowledge/**/*.ts',
         'src/ai-concierge/**/*.ts',
+        'src/ai-actions/**/*.ts',
       ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
