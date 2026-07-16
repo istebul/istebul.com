@@ -1,9 +1,7 @@
 /**
- * İSTEBUL Platform — gezinme / alt bilgi IA veri fasadı (PR-567).
+ * İSTEBUL Platform — gezinme / alt bilgi IA veri fasadı (PR-567 / EPIC-003).
  *
- * Saf veri. index.html /ai / footer HTML’ye henüz bağlanmaz.
- * Bugünkü canlı href’ler `current` URL haritasından türetilir.
- * Cutover sonrası tek faz değişimi ile yön değiştirmeye hazırlık amaçlıdır.
+ * Saf veri. Canlı href’ler `PLATFORM_URL_ACTIVE_PHASE` (target) üzerinden türetilir.
  */
 
 import type { PlatformChromeLink } from '../types/platform-url.ts';
@@ -13,8 +11,7 @@ import {
 } from './platform-url-map.ts';
 
 /**
- * Ana gezinme — Ürünler menüsü (PR-552 canlı sözleşmesi ile uyumlu).
- * Not: İSTEBUL AI nav href’i bugün `/` (footer’da `/#home` varyantı ayrı).
+ * Ana gezinme — Ürünler menüsü (Platform Cutover sonrası).
  */
 export const PLATFORM_NAV_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
   Object.freeze([
@@ -22,7 +19,7 @@ export const PLATFORM_NAV_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
       id: 'nav-product-istebul-ai',
       label: 'İSTEBUL AI',
       i18nKey: 'nav.productAi',
-      href: getPlatformProductUrl('istebul-ai', 'current'),
+      href: getPlatformProductUrl('istebul-ai'),
       productId: 'istebul-ai',
       role: 'product'
     }),
@@ -30,7 +27,7 @@ export const PLATFORM_NAV_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
       id: 'nav-product-garsonai',
       label: 'GarsonAI',
       i18nKey: 'nav.productGarson',
-      href: getPlatformProductUrl('garsonai', 'current'),
+      href: getPlatformProductUrl('garsonai'),
       productId: 'garsonai',
       role: 'product'
     }),
@@ -38,50 +35,48 @@ export const PLATFORM_NAV_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
       id: 'nav-product-business',
       label: 'İSTEBUL Business',
       i18nKey: 'nav.productBusiness',
-      href: getPlatformProductUrl('business', 'current'),
+      href: getPlatformProductUrl('business'),
       productId: 'business',
       role: 'product'
     })
   ]);
 
 /**
- * Footer — Ürünler sütunu (PR-562 canlı sözleşmesi).
- * İSTEBUL AI satırı mevcut HTML’de `/#home` kullanır; bu fasad da aynıyı belgeler.
+ * Footer — Ürünler sütunu (AI → /ai/ ürün girişi).
  */
 export const PLATFORM_FOOTER_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
   Object.freeze([
     Object.freeze({
       id: 'footer-product-istebul-ai',
       label: 'İSTEBUL AI',
-      href: '/#home',
+      href: getPlatformProductUrl('istebul-ai'),
       productId: 'istebul-ai',
       role: 'product'
     }),
     Object.freeze({
       id: 'footer-product-garsonai',
       label: 'GarsonAI',
-      href: getPlatformProductUrl('garsonai', 'current'),
+      href: getPlatformProductUrl('garsonai'),
       productId: 'garsonai',
       role: 'product'
     }),
     Object.freeze({
       id: 'footer-product-business',
       label: 'İSTEBUL Business',
-      href: getPlatformProductUrl('business', 'current'),
+      href: getPlatformProductUrl('business'),
       productId: 'business',
       role: 'product'
     }),
     Object.freeze({
       id: 'footer-product-plans',
       label: 'Planlar',
-      href: getPlatformSurfaceUrl('ai-pricing', 'current'),
+      href: getPlatformSurfaceUrl('ai-pricing'),
       role: 'utility'
     })
   ]);
 
 /**
- * Karar kategorileri (nav) — ürün değildir; cutover’da AI ürün ağacında kalır.
- * Merkezi sözleşme: Garson/Business buraya girmez.
+ * Karar kategorileri (nav) — ürün değildir; AI ürün ağacında kalır.
  */
 export const PLATFORM_NAV_CATEGORY_LINKS_CURRENT: readonly PlatformChromeLink[] =
   Object.freeze([
@@ -124,46 +119,19 @@ export const PLATFORM_NAV_CATEGORY_LINKS_CURRENT: readonly PlatformChromeLink[] 
     Object.freeze({
       id: 'nav-cat-all',
       label: 'Tüm kategoriler',
-      href: '/#home-vertical-focus',
+      href: '/ai/#home-vertical-focus',
       role: 'utility'
     })
   ]);
 
 /**
- * Cutover sonrası Ürünler menüsü hedefi (henüz HTML’ye bağlanmaz).
- * AI → /ai/; Garson/Business aynı.
+ * Cutover sonrası Ürünler menüsü hedefi (= canlı faz).
  */
 export const PLATFORM_NAV_PRODUCT_LINKS_TARGET: readonly PlatformChromeLink[] =
-  Object.freeze(
-    PLATFORM_NAV_PRODUCT_LINKS_CURRENT.map((link) =>
-      Object.freeze({
-        ...link,
-        href: link.productId
-          ? getPlatformProductUrl(link.productId, 'target')
-          : link.href
-      })
-    )
-  );
+  PLATFORM_NAV_PRODUCT_LINKS_CURRENT;
 
 /**
- * Cutover sonrası footer ürün sütunu hedefi (henüz HTML’ye bağlanmaz).
- * AI satırı `/ai/` (anchor yerine ürün girişi).
+ * Cutover sonrası footer ürün sütunu hedefi (= canlı faz).
  */
 export const PLATFORM_FOOTER_PRODUCT_LINKS_TARGET: readonly PlatformChromeLink[] =
-  Object.freeze(
-    PLATFORM_FOOTER_PRODUCT_LINKS_CURRENT.map((link) => {
-      if (link.productId === 'istebul-ai') {
-        return Object.freeze({
-          ...link,
-          href: getPlatformProductUrl('istebul-ai', 'target')
-        });
-      }
-      if (link.productId) {
-        return Object.freeze({
-          ...link,
-          href: getPlatformProductUrl(link.productId, 'target')
-        });
-      }
-      return link;
-    })
-  );
+  PLATFORM_FOOTER_PRODUCT_LINKS_CURRENT;

@@ -153,8 +153,10 @@ export function createPlatformUrunKartiElement(
     cta.href = product.url;
     cta.textContent = ctaLabel;
     cta.setAttribute('data-platform-cta', 'product-inspect');
+    cta.setAttribute('data-platform-product-id', product.id);
     cta.setAttribute('data-platform-product-url', product.url);
-    /* Tam sayfa ürün girişleri için native gezinme (SPA yakalaması için data-native-route yok). */
+    cta.setAttribute('data-platform-product-entry', '1');
+    /* Full-page product entries (/ai/, /garson/, /business/) escape via full-page-navigation. */
     footer.append(cta);
   } else {
     const cta = document.createElement('button');

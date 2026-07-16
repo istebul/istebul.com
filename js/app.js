@@ -4375,6 +4375,15 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     handleCheckoutDeepLink() {
         const params = new URLSearchParams(window.location.search);
         const wantsCheckout = params.get('checkout') === 'pro';
+        const path = window.location.pathname === '/index.html'
+            ? '/'
+            : (window.location.pathname.replace(/\/$/, '') || '/');
+
+        /* Platform root no longer hosts AI #pricing — send checkout deep links to /ai/. */
+        if (path === '/' && window.location.hash === '#pricing') {
+            window.location.replace('/ai/#pricing');
+            return;
+        }
 
         if (window.location.hash === '#pricing') {
             document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -5639,22 +5648,10 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
+// Production route visibility guard — Platform Landing only (sync with js/core/router.js)
 const MARKETING_SECTION_IDS = new Set([
-    'platform-shell-home',
-    'home',
-    'home-economic-indicators',
-    'trust',
-    'methodology-teaser',
-    'sample-preview',
-    'home-auto-bridge',
-    'how-it-works',
-    'home-vertical-focus',
-    'pricing',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip',
-    'home-final-cta'
+    'platform-landing',
+    'neden-istebul'
 ]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
@@ -5672,6 +5669,18 @@ function applyHomeMarketingVisibility() {
     });
     document.body.classList.remove('app-route-active', 'ib-premium-route-active');
 }
+
+/** bfcache / Back-Forward restore must never resurrect stale AI-home SPA state on `/`. */
+window.addEventListener('pageshow', (event) => {
+    const path = window.location.pathname === '/index.html'
+        ? '/'
+        : (window.location.pathname.replace(/\/$/, '') || '/');
+    if (path !== '/') return;
+    if (event.persisted || document.documentElement.dataset.ibPlatformLanding === '1') {
+        applyHomeMarketingVisibility();
+        window.app?.router?.handleRoute?.();
+    }
+});
 
 function hydrateBlogPostSurface() {
     import('./runtime/init-public-content.js')

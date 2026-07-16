@@ -10,7 +10,12 @@ export const SITE_CATEGORIES = Object.freeze([
   'tatil',
   'finansman',
   'sigorta',
-  'kasko'
+  'kasko',
+  'home',
+  'platform',
+  'ai',
+  'garson',
+  'business'
 ]);
 
 const PATH_CATEGORY = [
@@ -19,7 +24,10 @@ const PATH_CATEGORY = [
   [/^\/tatil\/?/i, 'tatil'],
   [/^\/finans\/?/i, 'finansman'],
   [/^\/sigorta\/?/i, 'sigorta'],
-  [/^\/kasko\/?/i, 'kasko']
+  [/^\/kasko\/?/i, 'kasko'],
+  [/^\/ai\/?/i, 'ai'],
+  [/^\/garson\/?/i, 'garson'],
+  [/^\/business\/?/i, 'business']
 ];
 
 const HOME_CATEGORY_MAP = Object.freeze({
@@ -93,7 +101,7 @@ export function categoryFromPath(path = '') {
   for (const [re, cat] of PATH_CATEGORY) {
     if (re.test(p)) return cat;
   }
-  if (p === '/' || p === '/index.html') return 'home';
+  if (p === '/' || p === '/index.html') return 'platform';
   return null;
 }
 
@@ -157,7 +165,16 @@ export function mirrorLegacySiteEvent(legacyEventName, metadata = {}) {
 }
 
 export function trackHomepageView() {
-  trackSiteEventUnique('homepage_view', 'homepage_view', { category: 'home' });
+  trackSiteEventUnique('homepage_view', 'homepage_view', { category: 'platform' });
+}
+
+/** Distinct surface visit markers (page_view itself comes from analytics.init path key). */
+export function trackPlatformSurfaceView(surface = 'platform') {
+  const cat = normalizeCategory(surface) || categoryFromPath(window.location.pathname) || 'platform';
+  trackSiteEventUnique(`surface_view:${cat}`, `surface_view:${cat}`, {
+    category: cat,
+    surface: cat
+  });
 }
 
 export function trackCategoryCardClick(categoryId, meta = {}) {
@@ -214,10 +231,23 @@ export function initSiteAnalyticsPage() {
   const path = window.location.pathname;
   if (path === '/' || path === '/index.html') {
     trackHomepageView();
+    trackPlatformSurfaceView('platform');
+    return;
+  }
+  if (/^\/ai\/?/i.test(path)) {
+    trackPlatformSurfaceView('ai');
+    return;
+  }
+  if (/^\/garson\/?/i.test(path)) {
+    trackPlatformSurfaceView('garson');
+    return;
+  }
+  if (/^\/business\/?/i.test(path)) {
+    trackPlatformSurfaceView('business');
     return;
   }
   const cat = categoryFromPath(path);
-  if (cat && cat !== 'home') {
+  if (cat && !['platform', 'home', 'ai', 'garson', 'business'].includes(cat)) {
     trackCategoryPageView(cat);
   }
 }

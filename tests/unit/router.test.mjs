@@ -63,7 +63,21 @@ function makeSection(id) {
 }
 
 global.window = {
-    location: { pathname: '/', hash: '', origin: 'https://www.istebul.com' },
+    location: {
+        pathname: '/',
+        hash: '',
+        search: '',
+        origin: 'https://www.istebul.com',
+        href: 'https://www.istebul.com/',
+        replace(url) {
+            const parsed = new URL(url, global.window.location.origin);
+            global.window.location.pathname = parsed.pathname;
+            global.window.location.hash = parsed.hash;
+            global.window.location.search = parsed.search;
+            global.window.location.href = parsed.href;
+            global.window.__lastReplace = parsed.href;
+        }
+    },
     history: {
         pushState(_state, _title, url) {
             const parsed = new URL(url, global.window.location.origin);
@@ -115,6 +129,30 @@ test('marketing section constants match Platform Landing cutover surface', () =>
     assert.ok(!HOMEPAGE_SECTION_IDS.includes('pricing'));
     assert.ok(!HOMEPAGE_SECTION_IDS.includes('home'));
     assert.ok(!MARKETING_HASH_IDS.includes('how-it-works'));
+});
+
+test('handleRoute redirects legacy AI home hashes from Platform root to /ai/', () => {
+    const router = new Router();
+    global.window.location.pathname = '/';
+    global.window.location.hash = '#pricing';
+    global.window.__lastReplace = null;
+
+    router.handleRoute();
+
+    assert.equal(global.window.__lastReplace, 'https://www.istebul.com/ai/#pricing');
+    assert.equal(global.window.location.pathname, '/ai/');
+    assert.equal(global.window.location.hash, '#pricing');
+});
+
+test('handleRoute full-page escapes /ai to AI Landing document', () => {
+    const router = new Router();
+    global.window.location.pathname = '/ai';
+    global.window.location.hash = '';
+    global.window.__lastReplace = null;
+
+    router.handleRoute();
+
+    assert.ok(String(global.window.__lastReplace || '').includes('/ai/'));
 });
 
 test('matchRoute resolves exact and dynamic listing routes', () => {

@@ -1,11 +1,11 @@
 /**
- * İSTEBUL Platform — merkezi URL haritası (PR-567 / EPIC-002).
+ * İSTEBUL Platform — merkezi URL haritası (PR-567 / EPIC-002 / EPIC-003).
  *
  * Tek kaynak: ürün ve yüzey URL’leri.
- * - `current` = bugünkü canlı davranış (değiştirme; cutover değil)
- * - `target`  = onaylı cutover sonrası hedef (henüz hiçbir runtime tüketmez)
+ * - `current` = cutover öncesi tarihsel kayıt
+ * - `target`  = Platform Cutover sonrası canlı sözleşme
  *
- * Varsayılan faz her zaman `current`. Target’a geçiş ayrı, onaylı cutover PR ister.
+ * Runtime faz: `PLATFORM_URL_ACTIVE_PHASE` = `target` (PR-568).
  */
 
 import type { PlatformProductId } from '../types/platform-product.ts';
@@ -23,17 +23,17 @@ export const PLATFORM_PRODUCT_URLS: Readonly<
   'istebul-ai': Object.freeze({
     current: '/',
     target: '/ai/',
-    note: 'Cutover sonrası AI Landing /ai; kök Platform Landing olur. /ai noindex kaldırma ayrı SEO PR.'
+    note: 'Canlı: AI Landing /ai/; kök Platform Landing (PR-568/EPIC-003).'
   }),
   garsonai: Object.freeze({
     current: '/garson/',
     target: '/garson/',
-    note: 'Ürün girişi aynı kalır.'
+    note: 'Ürün girişi aynı kalır; SPA full-page escape.'
   }),
   business: Object.freeze({
     current: '/business/',
     target: '/business/',
-    note: 'Ürün girişi aynı kalır.'
+    note: 'Ürün girişi aynı kalır; SPA full-page escape.'
   })
 });
 
@@ -47,12 +47,12 @@ export const PLATFORM_SURFACE_URLS: Readonly<
   'platform-root': Object.freeze({
     current: '/',
     target: '/',
-    note: 'Hedefte Platform Landing; bugün AI home + SPA kabuğu. Görünüm değişikliği cutover PR.'
+    note: 'Canlı: Platform Landing (PR-568).'
   }),
   'ai-landing': Object.freeze({
     current: '/ai/',
     target: '/ai/',
-    note: 'Paralel klon yüzey (PR-566). Bugün noindex; SEO cutover ayrı.'
+    note: 'İSTEBUL AI marketing surface; indexable after cutover.'
   }),
   'ai-funnel': Object.freeze({
     current: '/karar-asistani/',
@@ -67,7 +67,7 @@ export const PLATFORM_SURFACE_URLS: Readonly<
   'platform-preview': Object.freeze({
     current: '/platform-preview/',
     target: '/platform-preview/',
-    note: 'Noindex preview; cutover sonrası kalkabilir veya arşiv — ayrı karar.'
+    note: 'Noindex preview; cutover sonrası arşiv adayı.'
   })
 });
 
