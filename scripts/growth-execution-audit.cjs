@@ -53,9 +53,10 @@ const aiIndex = fs.readFileSync(path.join(root, 'ai/index.html'), 'utf8');
 if (!aiIndex.includes('data-hero-cta-primary')) {
   fail('AI landing hero must expose experiment selector');
 }
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 const platformIndex = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-if (!platformIndex.includes('id="platform-landing"')) {
-  fail('platform homepage must mount Platform Landing');
+for (const msg of collectPlatformAiSurfaceFailures(platformIndex, aiIndex)) {
+  fail(msg);
 }
 
 if (failed) process.exit(1);

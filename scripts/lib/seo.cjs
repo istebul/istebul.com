@@ -368,31 +368,31 @@ const GUIDE_INTERNAL_LINKS = {
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji ve skor şeffaflığı' },
-    { href: '/#landing-faq', label: 'Sık sorulan sorular (SSS)' }
+    { href: '/ai/#landing-faq', label: 'Sık sorulan sorular (SSS)' }
   ],
   'elektrikli-arac-rehberi': [
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ],
   'finansman-rehberi': [
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ],
   'tco-rehberi': [
     { href: '/auto/', label: 'Araç TCO analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ],
   'ikinci-el-rehberi': [
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ]
 };
 

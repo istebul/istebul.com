@@ -16,17 +16,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test
+      - name: Full quality gate (same release contract as Production Deploy)
+        run: npm run test
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Production build and link audits
-        run: |
-          npm run build
-          node scripts/audit-footer-links.cjs
-          node scripts/audit-rehber-sitemap.cjs
-          node scripts/audit-sitemap-coverage.cjs
+      # Reuses dist/ from npm test — same go-live audit set as production-deploy.yml
+      - name: Go-live post-build contract (shared with Production Deploy)
+        run: node scripts/go-live-production.cjs --skip-build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -53,7 +51,7 @@ jobs:
   e2e-release:
     runs-on: ubuntu-latest
     needs: quality
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Same e2e:release gate as Production Deploy — also on PRs so Cursor ↔ Actions match
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

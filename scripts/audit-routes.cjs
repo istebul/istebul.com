@@ -50,6 +50,8 @@ if (fs.existsSync(distDir)) {
   }
 }
 
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
+
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const aiHtmlPath = path.join(root, 'ai/index.html');
 if (!fs.existsSync(aiHtmlPath)) {
@@ -57,22 +59,19 @@ if (!fs.existsSync(aiHtmlPath)) {
 }
 const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
 
-/* Platform Landing owns root; AI long-scroll lives under /ai/ */
-const platformSections = [
-  'id="platform-landing"',
-  'id="neden-istebul"',
+for (const msg of collectPlatformAiSurfaceFailures(indexHtml, aiHtml)) {
+  fail(msg);
+}
+
+/* SPA shell sections remain on root index (not AI long-scroll). */
+const spaShellSections = [
   'id="page-karar-analizi"',
   'id="ilanlar"',
   'id="compare"',
   'id="profil"'
 ];
-for (const marker of platformSections) {
+for (const marker of spaShellSections) {
   if (!indexHtml.includes(marker)) fail(`index.html missing section ${marker}`);
-}
-
-const aiSections = ['id="home"', 'id="how-it-works"', 'id="pricing"'];
-for (const marker of aiSections) {
-  if (!aiHtml.includes(marker)) fail(`ai/index.html missing section ${marker}`);
 }
 
 const bootstrapFile = path.join(root, 'js/runtime/route-bootstrap-head.js');

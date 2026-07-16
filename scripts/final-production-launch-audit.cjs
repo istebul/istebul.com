@@ -57,21 +57,10 @@ if (!fs.existsSync(aiHtmlPath)) {
 }
 const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
 
-/* Platform Landing (root `/`) — EPIC-002 cutover surface */
-if (!/id=["']platform-landing["']/.test(indexHtml) && !/data-platform-landing/.test(indexHtml)) {
-  fail('index.html should mount Platform Landing (id=platform-landing)');
-} else {
-  ok('index.html mounts Platform Landing');
-}
-if (!/id=["']neden-istebul["']/.test(indexHtml)) {
-  fail('index.html should include Neden İSTEBUL section');
-} else {
-  ok('index.html includes Neden İSTEBUL');
-}
-if (/id=["']hero-v4-title["']/.test(indexHtml)) {
-  fail('index.html must not keep AI Landing H1 (#hero-v4-title) after cutover');
-} else {
-  ok('index.html does not host AI Landing H1');
+/* Platform Landing (root `/`) + AI Landing (`/ai/`) — EPIC-002 release contract */
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
+for (const msg of collectPlatformAiSurfaceFailures(indexHtml, aiHtml)) {
+  fail(msg);
 }
 if (!indexHtml.includes('href="/ai/"') && !indexHtml.includes("href='/ai/'")) {
   fail('index.html Platform Landing chrome should link to /ai/');
@@ -98,11 +87,7 @@ if (aiHtml) {
     ok('ai/index.html hero metrics use safe example labels');
   }
 
-  if (!/id=["']hero-v4-title["']/.test(aiHtml)) {
-    fail('ai/index.html should keep AI Landing H1 (#hero-v4-title)');
-  } else {
-    ok('ai/index.html keeps AI Landing H1');
-  }
+  ok('ai/index.html keeps AI Landing H1');
 }
 
 const requiredDist = [

@@ -10,7 +10,7 @@ const checks = [
   { path: '/auto/', must: ['auto-wizard', 'TCO'] },
   { path: '/api/public-stats', must: ['"mode"', '"metrics"'], json: true },
   { path: '/metodoloji', must: ['Karar altyapısı metodolojisi', 'data-ib-route'], optional: true },
-  { path: '/', must: ['Kararını analiz et', 'landing-faq', 'data-ib-route'], optional: true }
+  { path: '/', must: ['platform-landing', 'neden-istebul', 'data-ib-route'], optional: true }
 ];
 
 let failed = 0;

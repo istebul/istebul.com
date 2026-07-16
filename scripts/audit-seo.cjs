@@ -27,7 +27,9 @@ if (home.title && !/AI|karar|platform|İSTEBUL|ISTEBUL/i.test(home.title + home.
   fail('home meta should reflect Platform Landing or decision positioning');
 }
 
-const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+const sitemapArtifact = require('./lib/platform-landing-surface-contract.cjs').resolveSitemapArtifact(root);
+const sitemap = sitemapArtifact.xml;
+if (!sitemap) fail(`sitemap missing (${sitemapArtifact.path})`);
 const robots = fs.readFileSync(path.join(root, 'robots.txt'), 'utf8');
 
 if (!robots.includes('Sitemap: https://www.istebul.com/sitemap.xml')) {

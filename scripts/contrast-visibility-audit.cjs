@@ -9,17 +9,27 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
+const {
+  PLATFORM_ROOT_REQUIRED,
+  AI_LANDING_REQUIRED
+} = require('./lib/platform-landing-surface-contract.cjs');
+
 /** @type {Array<{ file: string, markers: string[], label?: string }>} */
 const CRITICAL_SURFACES = [
   {
     label: 'Platform Landing yüzeyleri',
     file: 'index.html',
-    markers: ['id="platform-landing"', 'id="neden-istebul"', 'data-platform-cutover']
+    markers: [...PLATFORM_ROOT_REQUIRED, 'data-platform-cutover']
   },
   {
     label: 'AI Landing hero + kategori CTA',
     file: 'ai/index.html',
-    markers: ['id="hero-v4-title"', 'data-hero-cta-primary', 'id="home-category-grid"', 'id="home-vertical-focus"']
+    markers: [
+      ...AI_LANDING_REQUIRED,
+      'data-hero-cta-primary',
+      'id="home-category-grid"',
+      'id="home-vertical-focus"'
+    ]
   },
   {
     label: 'Karar asistanı + seçenekler shell',
