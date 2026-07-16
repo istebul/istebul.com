@@ -64,7 +64,16 @@
   display: flex;
   align-items: center;
   gap: var(--gai-space-1);
-  flex-shrink: 0;
+  /* Allow the right link group to shrink on small viewports to avoid horizontal overflow. */
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+@media (max-width: 420px) {
+  /* On very small viewports, hide auxiliary announce links to prevent overflow. */
+  .gai-announce__right {
+    display: none;
+  }
 }
 
 .gai-announce__right a {
