@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { completeKonutWizard } from './helpers/konut-wizard.mjs';
+import { completeFinansWizard, openFinansWizard } from './helpers/finans-wizard.mjs';
 
 const PAGES = [
   { path: '/', heading: /İSTEBUL|platform/i },
@@ -268,42 +269,6 @@ test.describe('Site health — readability and layout', () => {
     });
     expect(overflow).toBe(false);
   });
-
-  async function openFinansWizard(page) {
-    await page.locator('#finans-flow').scrollIntoViewIfNeeded();
-    await page.locator('#finans-hero-cta').click({ force: true });
-    await expect(page.locator('#finans-wizard')).toBeVisible();
-  }
-
-  async function completeFinansWizard(page) {
-    await openFinansWizard(page);
-
-    await page.locator('#finans-wizard [data-field="purpose"][data-value="konut"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="amount_range"][data-value="1m"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="term_months"][data-value="36"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="capacity_range"][data-value="25k"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-manual="monthly_income"]').fill('55000');
-    await page.locator('#finans-wizard [data-manual="monthly_expense"]').fill('18000');
-    await page.locator('#finans-wizard [data-manual="existing_debt"]').fill('6000');
-    await page.locator('#finans-wizard [data-field="income_type"][data-value="stabil"]').click();
-    await page.locator('#finans-wizard [data-field="early_payment"][data-value="belki"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="rate_sensitivity"][data-value="orta"]').click();
-    await page.locator('#finans-wizard [data-field="risk_tolerance"][data-value="dengeli"]').click();
-    await page.locator('#finans-next').click();
-
-    await expect(page.locator('#finans-results')).toBeVisible();
-    await expect(page.locator('#finans-results .finansman-v2-root')).toBeVisible({ timeout: 15000 });
-  }
 
   async function completeTatilWizard(page) {
     await page.waitForSelector('#vacation-hero-cta', { state: 'visible', timeout: 15000 });
