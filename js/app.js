@@ -96,6 +96,11 @@ import {
     syncHtmlRouteSurface,
     tryExternalRouteRedirect
 } from './runtime/route-surface.js';
+import { resolveFullPageNavigation } from './runtime/full-page-navigation.js';
+import {
+    isLegacyAiHomeHash,
+    resolveLegacyAiHomeRedirect
+} from './runtime/platform-url-contract.js';
 window.lucide = window.lucide || {
     createIcons() {},
     icons: {}
@@ -4375,6 +4380,15 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     handleCheckoutDeepLink() {
         const params = new URLSearchParams(window.location.search);
         const wantsCheckout = params.get('checkout') === 'pro';
+        const path = window.location.pathname === '/index.html'
+            ? '/'
+            : (window.location.pathname.replace(/\/$/, '') || '/');
+
+        /* Platform root no longer hosts AI #pricing — send checkout deep links to /ai/. */
+        if (path === '/' && window.location.hash === '#pricing') {
+            window.location.replace('/ai/#pricing');
+            return;
+        }
 
         if (window.location.hash === '#pricing') {
             document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -5639,22 +5653,10 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
+// Production route visibility guard — Platform Landing only (sync with js/core/router.js)
 const MARKETING_SECTION_IDS = new Set([
-    'platform-shell-home',
-    'home',
-    'home-economic-indicators',
-    'trust',
-    'methodology-teaser',
-    'sample-preview',
-    'home-auto-bridge',
-    'how-it-works',
-    'home-vertical-focus',
-    'pricing',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip',
-    'home-final-cta'
+    'platform-landing',
+    'neden-istebul'
 ]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
@@ -5672,6 +5674,18 @@ function applyHomeMarketingVisibility() {
     });
     document.body.classList.remove('app-route-active', 'ib-premium-route-active');
 }
+
+/** bfcache / Back-Forward restore must never resurrect stale AI-home SPA state on `/`. */
+window.addEventListener('pageshow', (event) => {
+    const path = window.location.pathname === '/index.html'
+        ? '/'
+        : (window.location.pathname.replace(/\/$/, '') || '/');
+    if (path !== '/') return;
+    if (event.persisted || document.documentElement.dataset.ibPlatformLanding === '1') {
+        applyHomeMarketingVisibility();
+        window.app?.router?.handleRoute?.();
+    }
+});
 
 function hydrateBlogPostSurface() {
     import('./runtime/init-public-content.js')
@@ -5729,6 +5743,24 @@ function applyProductionRouteVisibility() {
     const { pathname: stripped } = stripLocalePrefix(rawPath === '/index.html' ? '/' : rawPath);
     const path = stripped.replace(/\/$/, '') || '/';
     const hashId = (window.location.hash || '').slice(1);
+
+    const fullPageTarget = resolveFullPageNavigation(path);
+    if (fullPageTarget) {
+        const dest = new URL(fullPageTarget, window.location.origin);
+        dest.search = window.location.search || '';
+        dest.hash = window.location.hash || '';
+        window.location.replace(`${dest.pathname}${dest.search}${dest.hash}`);
+        return;
+    }
+
+    if (path === '/' && hashId && isLegacyAiHomeHash(hashId)) {
+        const redirect = resolveLegacyAiHomeRedirect(hashId);
+        if (redirect) {
+            window.location.replace(redirect);
+            return;
+        }
+    }
+
     const marketingHash = MARKETING_SECTION_IDS.has(hashId);
 
     syncHtmlRouteSurface(resolveRouteSurface(path), path);
