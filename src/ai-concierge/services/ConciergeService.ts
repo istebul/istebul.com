@@ -241,7 +241,7 @@ export class ConciergeService implements AIConcierge {
 
     let content = orch.assistantMessage.content;
     let suggestionCards = [] as ConciergeTurnResult['suggestionCards'];
-    let remoteCallAttempted: false = false;
+    let remoteCallAttempted = false as const;
 
     if (this.provider === 'mock' || orch.provider === 'mock') {
       const mock = this.mockResponder.respond({

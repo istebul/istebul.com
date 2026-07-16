@@ -102,7 +102,9 @@ export class ConciergeMemory {
       s.restaurantName ? `- restaurantName: ${s.restaurantName}` : null,
       s.date ? `- date: ${s.date}` : '- date: (unset)',
       s.time ? `- time: ${s.time}` : '- time: (unset)',
-      s.partySize != null ? `- partySize: ${s.partySize}` : '- partySize: (unset)',
+      s.partySize !== null && s.partySize !== undefined
+        ? `- partySize: ${s.partySize}`
+        : '- partySize: (unset)',
       s.salonPreference ? `- salonPreference: ${s.salonPreference}` : null,
       s.tablePreference ? `- tablePreference: ${s.tablePreference}` : null,
       s.tableName ? `- table: ${s.tableName} (${s.tableId || '?'})` : null,
@@ -120,7 +122,9 @@ export class ConciergeMemory {
     const lines: string[] = [];
     if (s.date) lines.push(`Tarih: ${s.date}`);
     if (s.time) lines.push(`Saat: ${s.time}`);
-    if (s.partySize != null) lines.push(`Kişi: ${s.partySize}`);
+    if (s.partySize !== null && s.partySize !== undefined) {
+      lines.push(`Kişi: ${s.partySize}`);
+    }
     if (s.salonPreference) lines.push(`Salon: ${s.salonPreference}`);
     if (s.tableName) lines.push(`Masa: ${s.tableName}`);
     else if (s.tablePreference) lines.push(`Masa tercihi: ${s.tablePreference}`);

@@ -32,7 +32,7 @@ function paymentLine(knowledge: KnowledgeResolveResult): string {
         : 'Depozito gerekli',
     );
   }
-  if (policy.cancellationHours != null) {
+  if (policy.cancellationHours !== null && policy.cancellationHours !== undefined) {
     bits.push(`İptal: ${policy.cancellationHours} saat önce`);
   }
   return bits.length ? bits.join(' · ') : '';
@@ -60,7 +60,7 @@ function menuCards(
   const fromCandidates = knowledge.candidates.menuItems.slice(0, limit).map((c, i) => ({
     id: `menu-${c.item.id || i}`,
     title: c.item.name,
-    description: `${c.item.price != null ? `${c.item.price} TL` : 'Fiyat yakında'}${
+    description: `${typeof c.item.price === 'number' ? `${c.item.price} TL` : 'Fiyat yakında'}${
       c.reasons.length ? ` · ${c.reasons[0]}` : ''
     }`,
     prompt: `${c.item.name} için ön sipariş oluştur`,
@@ -75,7 +75,7 @@ function menuCards(
     .map((item, i) => ({
       id: `menu-snap-${item.id || i}`,
       title: item.name,
-      description: item.price != null ? `${item.price} TL` : 'Fiyat yakında',
+      description: typeof item.price === 'number' ? `${item.price} TL` : 'Fiyat yakında',
       prompt: `${item.name} için ön sipariş oluştur`,
       kind: 'menu' as const,
     }));
@@ -110,7 +110,7 @@ export class ConciergeMockResponder {
     const name = knowledge.snapshot.restaurant.name;
     const load = knowledge.snapshot.occupancy?.estimatedLoadPercent;
     const loadNote =
-      load != null ? `Şu an yaklaşık %${load} doluluk.` : '';
+      typeof load === 'number' ? `Şu an yaklaşık %${load} doluluk.` : '';
 
     switch (intent.id) {
       case 'create_reservation': {
@@ -236,13 +236,13 @@ export class ConciergeMockResponder {
           ? items.slice(0, 3).map(
               (c, i) =>
                 `${i + 1}) ${c.item.name}${
-                  c.item.price != null ? ` — ${c.item.price} TL` : ''
+                  typeof c.item.price === 'number' ? ` — ${c.item.price} TL` : ''
                 }`,
             )
           : fallback.slice(0, 3).map(
               (item, i) =>
                 `${i + 1}) ${item.name}${
-                  item.price != null ? ` — ${item.price} TL` : ''
+                  typeof item.price === 'number' ? ` — ${item.price} TL` : ''
                 }`,
             );
         return {
