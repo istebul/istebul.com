@@ -33,7 +33,7 @@ function initAiLandingAnchors() {
       event.preventDefault();
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       if (window.history?.replaceState) {
-        window.history.replaceState(null, '', `/ai#${targetId}`);
+        window.history.replaceState(null, '', `/ai/#${targetId}`);
       }
     });
   });

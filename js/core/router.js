@@ -16,6 +16,10 @@ import {
 } from '../runtime/route-surface.js';
 import { pulseRouteSection } from '../runtime/perceived-performance.js';
 import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full-page-navigation.js';
+import {
+    isLegacyAiHomeHash,
+    resolveLegacyAiHomeRedirect
+} from '../runtime/platform-url-contract.js';
 
 /**
  * Marketing sections on index.html (long-scroll landing).
@@ -268,8 +272,21 @@ export class Router {
 
         const fullPageTarget = resolveFullPageNavigation(path);
         if (fullPageTarget) {
-            window.location.replace(fullPageTarget);
+            const dest = new URL(fullPageTarget, window.location.origin);
+            dest.search = window.location.search || '';
+            dest.hash = window.location.hash || '';
+            window.location.replace(`${dest.pathname}${dest.search}${dest.hash}`);
             return;
+        }
+
+        /* Dispose stale AI-home hashes on Platform root — never remount AI long-scroll here. */
+        const hashId = window.location.hash?.slice(1);
+        if (path === '/' && hashId && isLegacyAiHomeHash(hashId)) {
+            const redirect = resolveLegacyAiHomeRedirect(hashId);
+            if (redirect) {
+                window.location.replace(redirect);
+                return;
+            }
         }
 
         this.currentRoute = path;
@@ -295,7 +312,6 @@ export class Router {
             return;
         }
 
-        const hashId = window.location.hash?.slice(1);
         if (path === '/' && hashId && MARKETING_HASH_IDS.includes(hashId)) {
             this.showHomeSections();
             this.updateNavLinks(path, hashId);

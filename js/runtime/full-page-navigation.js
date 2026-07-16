@@ -2,10 +2,13 @@
  * Paths that must bypass the SPA router (standalone HTML, Auto app, legal, partner).
  */
 import { getExternalRedirect, stripPathname } from './route-surface.js';
+import {
+  isPlatformProductEntryPath,
+  normalizePlatformProductEntryPath
+} from './platform-url-contract.js';
 
 const AUTO_PATH_PREFIX = '/auto';
 const REHBER_PREFIX = '/rehber';
-const GARSON_PATH_PREFIX = '/garson';
 
 /** Paths without .html that should still leave the SPA shell. */
 const STATIC_ALIASES = Object.freeze({
@@ -25,8 +28,8 @@ const STATIC_ALIASES = Object.freeze({
   '/finansman': '/finans/',
   '/sigorta': '/sigorta/',
   '/kasko': '/kasko/',
-  '/restoran': '/restoran/',
-  '/business': '/business/'
+  '/restoran': '/restoran/'
+  /* /business handled via platform-url-contract product entries */
 });
 
 /**
@@ -54,8 +57,9 @@ export function resolveFullPageNavigation(href) {
     return pathname.endsWith('/') ? pathname : `${pathname.replace(/\/$/, '')}/`;
   }
 
-  if (stripped === GARSON_PATH_PREFIX || stripped.startsWith(`${GARSON_PATH_PREFIX}/`)) {
-    return pathname.endsWith('/') ? pathname : `${pathname.replace(/\/$/, '')}/`;
+  /* Platform product entries: /ai/, /garson/, /business/ — same escape contract */
+  if (isPlatformProductEntryPath(pathname)) {
+    return normalizePlatformProductEntryPath(pathname);
   }
 
   if (/\.html$/i.test(pathname)) {
