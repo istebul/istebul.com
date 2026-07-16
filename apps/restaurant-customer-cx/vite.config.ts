@@ -8,8 +8,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@istebul/ai-concierge': path.resolve(__dirname, '../../src/ai-concierge/index.ts'),
+      '@istebul/ai-core': path.resolve(__dirname, '../../src/ai-core/index.ts'),
+      '@istebul/restaurant-knowledge': path.resolve(
+        __dirname,
+        '../../src/restaurant-knowledge/index.ts',
+      ),
     },
   },
+
   build: {
     outDir: path.resolve(__dirname, '../../dist/r'),
     emptyOutDir: false,

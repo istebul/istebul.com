@@ -61,4 +61,13 @@ if (fs.existsSync(indexHtml)) {
   }
 }
 
-console.log('[cx] Restaurant Customer CX built to dist/r/ (P7-J · /r/{slug})');
+// Deep-link shell for P8-C AI Concierge (/r/{slug}/concierge)
+if (fs.existsSync(indexHtml)) {
+  for (const slug of ['demo-cafe']) {
+    const conciergeDir = path.join(outDir, slug, 'concierge');
+    fs.mkdirSync(conciergeDir, { recursive: true });
+    fs.copyFileSync(indexHtml, path.join(conciergeDir, 'index.html'));
+  }
+}
+
+console.log('[cx] Restaurant Customer CX built to dist/r/ (P7-J · /r/{slug} · P8-C /concierge)');

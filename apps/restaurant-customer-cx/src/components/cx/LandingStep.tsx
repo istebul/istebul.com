@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock3, MapPin, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -117,9 +118,16 @@ export function LandingStep({ restaurant, onContinue }: LandingStepProps) {
         ) : null}
       </div>
 
-      <Button className="w-full" size="default" onClick={onContinue}>
-        Rezervasyona başla
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button className="w-full" size="default" onClick={onContinue}>
+          Rezervasyona başla
+        </Button>
+        <Button asChild className="w-full" size="default" variant="outline">
+          <Link to={`/${encodeURIComponent(restaurant.slug)}/concierge`}>
+            AI Concierge ile konuş
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

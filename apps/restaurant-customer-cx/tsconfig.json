@@ -17,8 +17,13 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@istebul/ai-concierge": ["../../src/ai-concierge/index.ts"],
+      "@istebul/ai-core": ["../../src/ai-core/index.ts"],
+      "@istebul/restaurant-knowledge": ["../../src/restaurant-knowledge/index.ts"]
     }
   },
   "include": ["src"]
 }
+
+
