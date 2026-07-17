@@ -74,3 +74,36 @@ export type {
   StageHandlerResult,
   ImportRuntimeErrorCode
 } from './pipeline/runtime';
+
+/** Reader Registry Runtime (PR-101B) */
+export {
+  ReaderRegistryRuntime,
+  createReaderRegistryRuntime,
+  ReaderResolver,
+  resolveFromRegistrations,
+  ReaderFactory,
+  createReaderFactory,
+  StubImportReader,
+  ReaderRegistryError,
+  ReaderNotFoundError,
+  DuplicateReaderError,
+  InvalidRegistrationError,
+  UnsupportedSourceError,
+  READER_REGISTRY_ERROR_CODES,
+  PIPELINE_BAG_READER_LOOKUP_KEY,
+  attachReaderLookupToPipelineContext,
+  readReaderLookupFromPipelineContext,
+  normalizeExtension,
+  normalizeMimeType
+} from './readers/runtime';
+export type {
+  ReaderDescriptor,
+  ReaderRegistration,
+  ImportTarget,
+  ReaderRegistryErrorCode,
+  ReaderLookupTelemetry,
+  ReaderSelectionReason,
+  ReaderSelectionReasonCode,
+  ReaderResolveResult,
+  ReaderFactoryResult
+} from './readers/runtime';
