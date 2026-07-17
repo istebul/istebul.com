@@ -134,3 +134,51 @@ export type {
   ValidationResultRuntime,
   ValidationTelemetry
 } from './validators/runtime';
+
+/** Schema Detection Runtime (PR-101D) */
+export {
+  SchemaDetectionRuntime,
+  createSchemaDetectionRuntime,
+  SchemaRegistryRuntime,
+  createSchemaRegistryRuntime,
+  SchemaDetectorRegistry,
+  createSchemaDetectorRegistry,
+  ColumnDetectorRegistry,
+  createColumnDetectorRegistry,
+  EntityDetectorRegistry,
+  createEntityDetectorRegistry,
+  createSchemaContext,
+  clampConfidence,
+  roundConfidence,
+  confidenceBand,
+  DETECTED_TYPE_LABELS,
+  PIPELINE_BAG_SCHEMA_RESULT_KEY,
+  attachSchemaToPipelineContext,
+  readSchemaFromPipelineContext,
+  attachSchemaToPipelineResult,
+  readSchemaFromPipelineResult,
+  BUILTIN_SCHEMA_DETECTORS,
+  BUILTIN_COLUMN_DETECTORS,
+  BUILTIN_ENTITY_DETECTORS,
+  inferValueType,
+  dominantType,
+  normalizeColumnName
+} from './detectors/runtime';
+export type {
+  DetectionConfidence,
+  ConfidenceBand,
+  DetectedType,
+  DetectedColumn,
+  CandidateField,
+  DetectedEntity,
+  SchemaCandidate,
+  SchemaSourceShape,
+  SchemaContext,
+  SchemaResult,
+  SchemaDetectionTelemetry,
+  ConfidenceDistribution,
+  ColumnDetector,
+  EntityDetector,
+  SchemaDetector,
+  TabularSlice
+} from './detectors/runtime';

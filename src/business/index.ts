@@ -148,7 +148,20 @@ export {
   isBlockingSeverity,
   attachValidationToPipelineContext,
   attachValidationToPipelineResult,
-  BUILTIN_VALIDATION_RULES
+  BUILTIN_VALIDATION_RULES,
+  SchemaDetectionRuntime,
+  createSchemaDetectionRuntime,
+  SchemaRegistryRuntime,
+  createSchemaRegistryRuntime,
+  createSchemaContext,
+  clampConfidence,
+  roundConfidence,
+  confidenceBand,
+  attachSchemaToPipelineContext,
+  attachSchemaToPipelineResult,
+  BUILTIN_SCHEMA_DETECTORS,
+  inferValueType,
+  dominantType
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -186,7 +199,15 @@ export type {
   ValidationRule,
   ValidationRuleTarget,
   ValidationResultRuntime,
-  ValidationTelemetry
+  ValidationTelemetry,
+  DetectionConfidence,
+  DetectedType,
+  DetectedColumn,
+  DetectedEntity,
+  SchemaCandidate,
+  SchemaContext,
+  SchemaResult,
+  SchemaDetectionTelemetry
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
