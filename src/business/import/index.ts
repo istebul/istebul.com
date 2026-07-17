@@ -107,3 +107,30 @@ export type {
   ReaderResolveResult,
   ReaderFactoryResult
 } from './readers/runtime';
+
+/** Validation Runtime (PR-101C) */
+export {
+  ValidationRuntime,
+  createValidationRuntime,
+  ValidationRegistryRuntime,
+  createValidationRegistryRuntime,
+  createValidationContext,
+  VALIDATION_RUNTIME_SEVERITY_LABELS,
+  VALIDATION_SEVERITY_RANK,
+  isBlockingSeverity,
+  PIPELINE_BAG_VALIDATION_RESULT_KEY,
+  attachValidationToPipelineContext,
+  readValidationFromPipelineContext,
+  attachValidationToPipelineResult,
+  readValidationFromPipelineResult,
+  BUILTIN_VALIDATION_RULES
+} from './validators/runtime';
+export type {
+  ValidationSeverity as ImportValidationSeverity,
+  ValidationIssue,
+  ValidationContext,
+  ValidationRule,
+  ValidationRuleTarget,
+  ValidationResultRuntime,
+  ValidationTelemetry
+} from './validators/runtime';
