@@ -123,7 +123,11 @@ export {
   getImportAdapterById,
   listImportAdapters,
   IMPORT_ENGINE_SCHEMA_VERSION,
-  IMPORT_ENGINE_DEFAULT_LOCALE
+  IMPORT_ENGINE_DEFAULT_LOCALE,
+  ImportPipelineRuntime,
+  createImportPipelineRuntime,
+  STAGE_EXECUTION_OUTCOME_LABELS,
+  IMPORT_RUNTIME_ERROR_CODES
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -143,7 +147,12 @@ export type {
   IImportValidator,
   IImportPipeline,
   ImportPipelineStageDefinition,
-  ImportAdapterRegistration
+  ImportAdapterRegistration,
+  PipelineContext,
+  PipelineBag,
+  PipelineResult,
+  StageExecution,
+  StageExecutionOutcome
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */

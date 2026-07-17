@@ -1,5 +1,6 @@
 # pipeline
 
-`ImportPipeline.ts` — sabit aşama sırası ve tanımları.
+`ImportPipeline.ts` — sabit aşama sırası ve tanımları (Foundation).
 
-`IImportPipeline.run()` implementasyonu sonraki PR’lardadır.
+`runtime/` — **Import Pipeline Runtime Orchestrator** (PR-101A):
+`IImportPipeline.run()` uygulaması, `PipelineContext` / `PipelineResult` / `StageExecution`.
