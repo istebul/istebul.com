@@ -21,6 +21,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `routes/` | Business route kayıt dosyası |
 | `knowledge/` | Report DNA, KPI, kategori, prompt ve çıktı bilgi mimarisi |
 | `dataset/` | BusinessDataset resmi veri modeli ve kaynak/entity sözlükleri |
+| `import/` | Import Engine portları, pipeline aşamaları ve adapter kayıtları |
 
 ## Genel route
 

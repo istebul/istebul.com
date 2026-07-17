@@ -109,3 +109,39 @@ export type {
   IValidationEngine,
   BusinessDatasetRootKey
 } from './dataset';
+
+/** Import Engine — Architecture Freeze v1.0 foundation */
+export {
+  IMPORT_STATUS_LABELS,
+  IMPORT_ENGINE_PORT_COUNT,
+  IMPORT_PIPELINE_STAGES,
+  IMPORT_PIPELINE_STAGE_COUNT,
+  getImportPipelineStage,
+  listImportPipelineStages,
+  IMPORT_ADAPTER_REGISTRY,
+  IMPORT_ADAPTER_COUNT,
+  getImportAdapterById,
+  listImportAdapters,
+  IMPORT_ENGINE_SCHEMA_VERSION,
+  IMPORT_ENGINE_DEFAULT_LOCALE
+} from './import';
+export type {
+  ImportAdapterTypeId,
+  ImportSource,
+  ImportStage,
+  ImportStatus,
+  ImportError,
+  ImportContext,
+  ImportRequest,
+  ImportResult,
+  IImportReader,
+  IImportDetector,
+  ImportDetectionResult,
+  ISemanticMapper,
+  SemanticColumnMapping,
+  SemanticMappingResult,
+  IImportValidator,
+  IImportPipeline,
+  ImportPipelineStageDefinition,
+  ImportAdapterRegistration
+} from './import';
