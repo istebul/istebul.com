@@ -138,7 +138,17 @@ export {
   InvalidRegistrationError,
   UnsupportedSourceError,
   READER_REGISTRY_ERROR_CODES,
-  attachReaderLookupToPipelineContext
+  attachReaderLookupToPipelineContext,
+  ValidationRuntime,
+  createValidationRuntime,
+  ValidationRegistryRuntime,
+  createValidationRegistryRuntime,
+  createValidationContext,
+  VALIDATION_RUNTIME_SEVERITY_LABELS,
+  isBlockingSeverity,
+  attachValidationToPipelineContext,
+  attachValidationToPipelineResult,
+  BUILTIN_VALIDATION_RULES
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -169,7 +179,14 @@ export type {
   ImportTarget,
   ReaderLookupTelemetry,
   ReaderResolveResult,
-  ReaderFactoryResult
+  ReaderFactoryResult,
+  ImportValidationSeverity,
+  ValidationIssue,
+  ValidationContext,
+  ValidationRule,
+  ValidationRuleTarget,
+  ValidationResultRuntime,
+  ValidationTelemetry
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
