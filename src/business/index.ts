@@ -127,7 +127,18 @@ export {
   ImportPipelineRuntime,
   createImportPipelineRuntime,
   STAGE_EXECUTION_OUTCOME_LABELS,
-  IMPORT_RUNTIME_ERROR_CODES
+  IMPORT_RUNTIME_ERROR_CODES,
+  ReaderRegistryRuntime,
+  createReaderRegistryRuntime,
+  ReaderFactory,
+  createReaderFactory,
+  StubImportReader,
+  ReaderNotFoundError,
+  DuplicateReaderError,
+  InvalidRegistrationError,
+  UnsupportedSourceError,
+  READER_REGISTRY_ERROR_CODES,
+  attachReaderLookupToPipelineContext
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -152,7 +163,13 @@ export type {
   PipelineBag,
   PipelineResult,
   StageExecution,
-  StageExecutionOutcome
+  StageExecutionOutcome,
+  ReaderDescriptor,
+  ReaderRegistration,
+  ImportTarget,
+  ReaderLookupTelemetry,
+  ReaderResolveResult,
+  ReaderFactoryResult
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */

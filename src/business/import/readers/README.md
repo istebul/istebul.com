@@ -1,5 +1,9 @@
 # readers
 
-Gelecek `IImportReader` implementasyonları bu klasörde toplanacaktır.
+`IImportReader` implementasyonları ve **Reader Registry Runtime** (PR-101B).
 
-Bu PR’da boştur; dosya okuma yapılmaz.
+| Klasör | Amaç |
+|--------|------|
+| `runtime/` | ReaderRegistryRuntime, Resolver, Factory |
+
+Gerçek CSV/Excel okuma sonraki PR’lardadır.
