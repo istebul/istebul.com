@@ -182,3 +182,35 @@ export type {
   SchemaDetector,
   TabularSlice
 } from './detectors/runtime';
+
+/** CSV Reader Runtime (PR-101E) */
+export {
+  CsvImportReader,
+  createCsvImportReader,
+  parseCsvContent,
+  csvResultToTabular,
+  resolveCsvPayload,
+  CSV_READER_ID,
+  createCsvReaderContext,
+  createCsvReaderRegistration,
+  registerCsvImportReader,
+  attachCsvResultToPipelineContext,
+  readCsvResultFromPipelineContext,
+  attachCsvResultToPipelineResult,
+  readCsvResultFromPipelineResult,
+  PIPELINE_BAG_CSV_RESULT_KEY,
+  splitCsvLine,
+  detectDelimiter,
+  stripBom,
+  utf8ByteLength
+} from './readers/csv';
+export type {
+  CsvHeader,
+  CsvCell,
+  CsvRow,
+  CsvDelimiter,
+  CsvReaderContext,
+  CsvReaderResult,
+  CsvReaderTelemetry,
+  CsvImportReaderOptions
+} from './readers/csv';

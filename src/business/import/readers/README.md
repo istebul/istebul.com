@@ -4,6 +4,7 @@
 
 | Klasör | Amaç |
 |--------|------|
-| `runtime/` | ReaderRegistryRuntime, Resolver, Factory |
+| `runtime/` | ReaderRegistryRuntime, Resolver, Factory (PR-101B) |
+| `csv/` | **CsvImportReader** — gerçek CSV okuma (PR-101E) |
 
-Gerçek CSV/Excel okuma sonraki PR’lardadır.
+Excel / JSON reader sonraki PR’lardadır.
