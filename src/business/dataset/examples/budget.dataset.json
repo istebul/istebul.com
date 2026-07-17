@@ -1,0 +1,135 @@
+{
+  "id": "ornek-butce-2026",
+  "metadata": {
+    "id": "ornek-butce-2026",
+    "title": "Örnek Bütçe Analizi Dataset",
+    "description": "Bütçe planı ve gerçekleşen kalemler için BusinessDataset örneği.",
+    "locale": "tr",
+    "createdAt": "2026-06-15T07:00:00.000Z",
+    "tags": ["bütçe", "finans"],
+    "relatedReportIds": ["butce-analizi"]
+  },
+  "version": {
+    "schemaVersion": "1.0.0",
+    "revision": "2",
+    "effectiveAt": "2026-06-30T18:00:00.000Z",
+    "previousRevision": "1",
+    "changeSummary": "Haziran gerçekleşenleri eklendi"
+  },
+  "source": {
+    "type": "google-sheets",
+    "label": "Butce-2026-Plan-Gerceklesen",
+    "uri": "https://sheets.example.com/d/butce-2026",
+    "capturedAt": "2026-06-30T17:45:00.000Z"
+  },
+  "entities": [
+    {
+      "id": "ent-butce-kalemleri",
+      "entityType": "butce",
+      "name": "Bütçe Kalemleri",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "kalem-kodu",
+          "name": "Kalem Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "kalem-adi",
+          "name": "Kalem Adı",
+          "dataType": "metin",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "plan-tutar",
+          "name": "Plan Tutar",
+          "dataType": "para",
+          "required": true,
+          "unit": "TL",
+          "order": 3
+        },
+        {
+          "id": "gerceklesen-tutar",
+          "name": "Gerçekleşen Tutar",
+          "dataType": "para",
+          "required": true,
+          "unit": "TL",
+          "order": 4
+        },
+        {
+          "id": "sapma-yuzde",
+          "name": "Sapma (%)",
+          "dataType": "yuzde",
+          "required": false,
+          "order": 5
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-butce-1",
+          "values": {
+            "kalem-kodu": "OPR-01",
+            "kalem-adi": "Operasyon Giderleri",
+            "plan-tutar": 500000,
+            "gerceklesen-tutar": 485000,
+            "sapma-yuzde": -3
+          }
+        },
+        {
+          "id": "row-butce-2",
+          "values": {
+            "kalem-kodu": "MKT-01",
+            "kalem-adi": "Pazarlama",
+            "plan-tutar": 120000,
+            "gerceklesen-tutar": 135000,
+            "sapma-yuzde": 12.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "ent-gider-ozet",
+      "entityType": "gider",
+      "name": "Gider Özeti",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "donem",
+          "name": "Dönem",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "toplam-gider",
+          "name": "Toplam Gider",
+          "dataType": "para",
+          "required": true,
+          "unit": "TL",
+          "order": 2
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-gider-1",
+          "values": {
+            "donem": "2026-06",
+            "toplam-gider": 620000
+          }
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel-gider-butce",
+      "fromEntityId": "ent-gider-ozet",
+      "toEntityId": "ent-butce-kalemleri",
+      "kind": "referans",
+      "name": "Gider Özeti → Bütçe"
+    }
+  ]
+}
