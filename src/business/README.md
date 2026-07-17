@@ -25,6 +25,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `analysis/` | Analysis Engine modelleri, portlar ve pipeline (dataset analizi) |
 | `decision/` | Decision Engine — AnalysisResult → karar destek çıktısı |
 | `report/` | Report Engine — DecisionResult → ReportModel |
+| `document/` | Document Engine — ReportModel → DocumentModel (yerleşim/stil) |
 
 ## Genel route
 
