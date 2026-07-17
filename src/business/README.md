@@ -24,6 +24,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `import/` | Import Engine portları, pipeline aşamaları ve adapter kayıtları |
 | `analysis/` | Analysis Engine modelleri, portlar ve pipeline (dataset analizi) |
 | `decision/` | Decision Engine — AnalysisResult → karar destek çıktısı |
+| `report/` | Report Engine — DecisionResult → ReportModel |
 
 ## Genel route
 
