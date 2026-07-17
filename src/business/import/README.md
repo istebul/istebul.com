@@ -11,12 +11,11 @@ Bu PR yalnızca:
 - Adapter kayıt sistemi
 - Import tipleri
 
-## Bu PR’da yok
+## Bu PR’da yok / sınırlar
 
 - UI / dosya yükleme ekranı
-- Excel / CSV / PDF okuma veya parse
+- Excel / CSV / PDF okuma veya parse (runtime orchestrator var; reader yok)
 - AI çağrısı
-- Pipeline `run()` implementasyonu
 
 ## Dizinler
 

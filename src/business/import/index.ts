@@ -50,3 +50,27 @@ export {
   IMPORT_ENGINE_SCHEMA_VERSION,
   IMPORT_ENGINE_DEFAULT_LOCALE
 } from './constants/ImportEngineConstants';
+
+/** Import Pipeline Runtime (PR-101A) */
+export {
+  ImportPipelineRuntime,
+  createImportPipelineRuntime,
+  STAGE_EXECUTION_OUTCOME_LABELS,
+  IMPORT_RUNTIME_ERROR_CODES,
+  createImportError,
+  createNotImplementedError,
+  nowMs,
+  startStageTimer,
+  endStageTimer
+} from './pipeline/runtime';
+export type {
+  PipelineContext,
+  PipelineBag,
+  PipelineResult,
+  StageExecution,
+  StageExecutionOutcome,
+  StageTimer,
+  StageHandler,
+  StageHandlerResult,
+  ImportRuntimeErrorCode
+} from './pipeline/runtime';
