@@ -20,6 +20,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `assets/` | Business’e özel statik varlıklar |
 | `routes/` | Business route kayıt dosyası |
 | `knowledge/` | Report DNA, KPI, kategori, prompt ve çıktı bilgi mimarisi |
+| `dataset/` | BusinessDataset resmi veri modeli ve kaynak/entity sözlükleri |
 
 ## Genel route
 

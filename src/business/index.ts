@@ -60,3 +60,52 @@ export type {
   KnowledgeAnalysisRequest,
   KnowledgeAnalysisResult
 } from './knowledge';
+
+/** BusinessDataset — resmi veri modeli foundation */
+export {
+  ENTITY_TYPE_COUNT,
+  ENTITY_TYPE_REGISTRY,
+  getEntityTypeById,
+  listEntityTypes,
+  SOURCE_TYPE_COUNT,
+  SOURCE_TYPE_REGISTRY,
+  getSourceTypeById,
+  listSourceTypes,
+  VALIDATION_SEVERITY_LABELS,
+  BUSINESS_DATASET_SCHEMA_VERSION,
+  BUSINESS_DATASET_ROOT_KEYS,
+  BUSINESS_DATASET_MODEL_COUNT,
+  BUSINESS_DATASET_PORT_INTERFACE_COUNT,
+  BUSINESS_DATASET_EXAMPLE_COUNT
+} from './dataset';
+export type {
+  BusinessDataset,
+  BusinessMetadata,
+  BusinessEntity,
+  BusinessEntityLayout,
+  BusinessColumn,
+  BusinessColumnDataType,
+  BusinessRow,
+  BusinessCellValue,
+  BusinessRelation,
+  BusinessRelationKind,
+  BusinessSource,
+  BusinessSourceTypeId,
+  BusinessAttachment,
+  BusinessValidationResult,
+  BusinessDatasetVersion,
+  BusinessEntityTypeId,
+  BusinessEntityTypeDefinition,
+  BusinessSourceTypeDefinition,
+  ValidationResult,
+  ValidationSeverity,
+  Severity,
+  ValidationInfo,
+  ValidationWarning,
+  ValidationError,
+  IDataNormalizer,
+  ISchemaDetector,
+  IEntityDetector,
+  IValidationEngine,
+  BusinessDatasetRootKey
+} from './dataset';

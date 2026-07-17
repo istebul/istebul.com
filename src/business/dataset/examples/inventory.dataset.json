@@ -1,0 +1,168 @@
+{
+  "id": "ornek-envanter-2026-q2",
+  "metadata": {
+    "id": "ornek-envanter-2026-q2",
+    "title": "Örnek Envanter Sayımı Dataset",
+    "description": "Depo ve stok sayımı için BusinessDataset örneği.",
+    "locale": "tr",
+    "createdAt": "2026-07-01T08:00:00.000Z",
+    "updatedAt": "2026-07-01T10:30:00.000Z",
+    "organizationLabel": "Örnek İşletme A.Ş.",
+    "tags": ["envanter", "stok", "sayım"],
+    "relatedReportIds": ["envanter-sayimi", "kor-sayim"]
+  },
+  "version": {
+    "schemaVersion": "1.0.0",
+    "revision": "1",
+    "effectiveAt": "2026-07-01T10:30:00.000Z",
+    "changeSummary": "İlk örnek envanter anlık görüntüsü"
+  },
+  "source": {
+    "type": "excel",
+    "label": "envanter-sayim-2026-07.xlsx",
+    "capturedAt": "2026-07-01T09:15:00.000Z",
+    "sourceRevision": "upload-001"
+  },
+  "entities": [
+    {
+      "id": "ent-depo-merkez",
+      "entityType": "depo",
+      "name": "Merkez Depo",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "depo-kodu",
+          "name": "Depo Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "depo-adi",
+          "name": "Depo Adı",
+          "dataType": "metin",
+          "required": true,
+          "order": 2
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-depo-1",
+          "values": {
+            "depo-kodu": "D-01",
+            "depo-adi": "Merkez Depo"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ent-stok-satirlari",
+      "entityType": "stok",
+      "name": "Stok Satırları",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "urun-kodu",
+          "name": "Ürün Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "urun-adi",
+          "name": "Ürün Adı",
+          "dataType": "metin",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "sistem-miktar",
+          "name": "Sistem Miktarı",
+          "dataType": "sayi",
+          "required": true,
+          "unit": "adet",
+          "order": 3
+        },
+        {
+          "id": "sayilan-miktar",
+          "name": "Sayılan Miktar",
+          "dataType": "sayi",
+          "required": true,
+          "unit": "adet",
+          "order": 4
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-stok-1",
+          "values": {
+            "urun-kodu": "URN-1001",
+            "urun-adi": "Örnek Ürün A",
+            "sistem-miktar": 120,
+            "sayilan-miktar": 118
+          },
+          "sourceRef": "sheet1:row:2"
+        },
+        {
+          "id": "row-stok-2",
+          "values": {
+            "urun-kodu": "URN-1002",
+            "urun-adi": "Örnek Ürün B",
+            "sistem-miktar": 45,
+            "sayilan-miktar": 45
+          },
+          "sourceRef": "sheet1:row:3"
+        }
+      ]
+    },
+    {
+      "id": "ent-sayim-ozet",
+      "entityType": "sayim",
+      "name": "Sayım Özeti",
+      "layout": "belge",
+      "columns": [
+        {
+          "id": "sayim-tarihi",
+          "name": "Sayım Tarihi",
+          "dataType": "tarih",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "fark-adet",
+          "name": "Toplam Fark (Adet)",
+          "dataType": "tamsayi",
+          "required": true,
+          "order": 2
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-sayim-1",
+          "values": {
+            "sayim-tarihi": "2026-07-01",
+            "fark-adet": -2
+          }
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel-stok-depo",
+      "fromEntityId": "ent-stok-satirlari",
+      "toEntityId": "ent-depo-merkez",
+      "kind": "referans",
+      "name": "Stok → Depo",
+      "description": "Stok satırlarının bağlı olduğu depo"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "att-1",
+      "name": "envanter-sayim-2026-07.xlsx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "sourceRef": "upload://envanter-sayim-2026-07.xlsx"
+    }
+  ]
+}
