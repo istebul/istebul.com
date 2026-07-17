@@ -27,6 +27,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `report/` | Report Engine — DecisionResult → ReportModel |
 | `document/` | Document Engine — ReportModel → DocumentModel (yerleşim/stil) |
 | `dashboard/` | Dashboard Engine — Analysis/Decision/Report → DashboardModel |
+| `export/` | Export Engine — Document/Dashboard → ExportResult (artifact sözleşmesi) |
 
 ## Genel route
 
