@@ -23,6 +23,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `dataset/` | BusinessDataset resmi veri modeli ve kaynak/entity sözlükleri |
 | `import/` | Import Engine portları, pipeline aşamaları ve adapter kayıtları |
 | `analysis/` | Analysis Engine modelleri, portlar ve pipeline (dataset analizi) |
+| `decision/` | Decision Engine — AnalysisResult → karar destek çıktısı |
 
 ## Genel route
 
