@@ -779,7 +779,24 @@ export {
   readReportModelFromPipelineContext,
   attachReportModelToPipelineResult,
   readReportModelFromPipelineResult,
-  applyReportModelBuilderToPipelineResult
+  applyReportModelBuilderToPipelineResult,
+  NARRATIVE_KIND_LABELS,
+  NARRATIVE_KIND_ORDER,
+  createNarrativeContext,
+  PIPELINE_BAG_NARRATIVE_RUNTIME_RESULT_KEY,
+  NarrativeRegistryRuntime,
+  createNarrativeRegistryRuntime,
+  NarrativeComposerRuntime,
+  createNarrativeComposerRuntime,
+  BUILTIN_NARRATIVE_TEMPLATES,
+  BUILTIN_NARRATIVE_TEMPLATE_COUNT,
+  getBuiltinNarrativeTemplate,
+  getBuiltinNarrativeTemplateByKind,
+  attachNarrativeToPipelineContext,
+  readNarrativeFromPipelineContext,
+  attachNarrativeToPipelineResult,
+  readNarrativeFromPipelineResult,
+  applyNarrativeComposerToPipelineResult
 } from './report';
 export type {
   ReportStage,
@@ -838,7 +855,15 @@ export type {
   ReportModelTelemetry,
   ReportModelResult,
   ReportBuilderModel,
-  ReportBuilderMetadata
+  ReportBuilderMetadata,
+  NarrativeKind,
+  NarrativeTemplate,
+  NarrativeRecord,
+  NarrativeContext,
+  NarrativeWarning,
+  NarrativeTelemetry,
+  NarrativeMetadata,
+  NarrativeResult
 } from './report';
 
 /** Document Engine — Architecture Freeze v1.0 foundation */
