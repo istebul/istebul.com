@@ -407,7 +407,20 @@ export {
   readFindingFromPipelineContext,
   attachFindingToPipelineResult,
   readFindingFromPipelineResult,
-  applyFindingBuilderToPipelineResult
+  applyFindingBuilderToPipelineResult,
+  SUMMARY_SECTION_LABELS,
+  SUMMARY_SECTION_ORDER,
+  createSummaryContext,
+  PIPELINE_BAG_SUMMARY_RUNTIME_RESULT_KEY,
+  SummaryRegistryRuntime,
+  createSummaryRegistryRuntime,
+  SummaryBuilderRuntime,
+  createSummaryBuilderRuntime,
+  attachSummaryToPipelineContext,
+  readSummaryFromPipelineContext,
+  attachSummaryToPipelineResult,
+  readSummaryFromPipelineResult,
+  applySummaryBuilderToPipelineResult
 } from './analysis';
 export type {
   AnalysisStage,
@@ -483,7 +496,16 @@ export type {
   FindingWarning,
   FindingSummary,
   FindingTelemetry,
-  FindingResult
+  FindingResult,
+  SummarySectionId,
+  SummarySection,
+  SummaryMetadata,
+  SummaryRecord,
+  SummaryContext,
+  SummaryWarning,
+  SummaryTelemetry,
+  SummaryResult,
+  SummarySectionDefinition
 } from './analysis';
 
 /** Decision Engine — Architecture Freeze v1.0 foundation */

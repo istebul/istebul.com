@@ -170,6 +170,33 @@ export type {
   FindingResult
 } from './findings/runtime/index';
 
+export {
+  SUMMARY_SECTION_LABELS,
+  SUMMARY_SECTION_ORDER,
+  createSummaryContext,
+  PIPELINE_BAG_SUMMARY_RUNTIME_RESULT_KEY,
+  SummaryRegistryRuntime,
+  createSummaryRegistryRuntime,
+  SummaryBuilderRuntime,
+  createSummaryBuilderRuntime,
+  attachSummaryToPipelineContext,
+  readSummaryFromPipelineContext,
+  attachSummaryToPipelineResult,
+  readSummaryFromPipelineResult,
+  applySummaryBuilderToPipelineResult
+} from './summaries/runtime/index';
+export type {
+  SummarySectionId,
+  SummarySection,
+  SummaryMetadata,
+  SummaryRecord,
+  SummaryContext,
+  SummaryWarning,
+  SummaryTelemetry,
+  SummaryResult,
+  SummarySectionDefinition
+} from './summaries/runtime/index';
+
 export type {
   KPIComputationRequest,
   KPIComputationOutcome,
