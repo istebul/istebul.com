@@ -138,3 +138,36 @@ export type {
   PolicyTelemetry,
   PolicyResult
 } from './policies/runtime/index';
+
+/** Recommendation Builder Runtime (PR-103C) */
+export {
+  RECOMMENDATION_CATEGORY_LABELS,
+  RECOMMENDATION_SEVERITY_RANK,
+  createRecommendationContext,
+  PIPELINE_BAG_RECOMMENDATION_RUNTIME_RESULT_KEY,
+  RecommendationRegistryRuntime,
+  createRecommendationRegistryRuntime,
+  RecommendationBuilderRuntime,
+  createRecommendationBuilderRuntime,
+  BUILTIN_RECOMMENDATION_DEFINITIONS,
+  BUILTIN_RECOMMENDATION_DEFINITION_COUNT,
+  getBuiltinRecommendationDefinition,
+  getBuiltinRecommendationDefinitionByPolicyId,
+  attachRecommendationToPipelineContext,
+  readRecommendationFromPipelineContext,
+  attachRecommendationToPipelineResult,
+  readRecommendationFromPipelineResult,
+  applyRecommendationBuilderToPipelineResult
+} from './recommendations/runtime/index';
+export type {
+  RecommendationCategory,
+  RecommendationSeverity,
+  RecommendationDefinition,
+  RecommendationMetadata,
+  RecommendationRecord,
+  RecommendationContext,
+  RecommendationWarning,
+  RecommendationSummary,
+  RecommendationTelemetry,
+  RecommendationResult
+} from './recommendations/runtime/index';

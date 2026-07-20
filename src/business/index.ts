@@ -579,7 +579,24 @@ export {
   readPolicyFromPipelineContext,
   attachPolicyToPipelineResult,
   readPolicyFromPipelineResult,
-  applyPolicyEngineToPipelineResult
+  applyPolicyEngineToPipelineResult,
+  RECOMMENDATION_CATEGORY_LABELS,
+  RECOMMENDATION_SEVERITY_RANK,
+  createRecommendationContext,
+  PIPELINE_BAG_RECOMMENDATION_RUNTIME_RESULT_KEY,
+  RecommendationRegistryRuntime,
+  createRecommendationRegistryRuntime,
+  RecommendationBuilderRuntime,
+  createRecommendationBuilderRuntime,
+  BUILTIN_RECOMMENDATION_DEFINITIONS,
+  BUILTIN_RECOMMENDATION_DEFINITION_COUNT,
+  getBuiltinRecommendationDefinition,
+  getBuiltinRecommendationDefinitionByPolicyId,
+  attachRecommendationToPipelineContext,
+  readRecommendationFromPipelineContext,
+  attachRecommendationToPipelineResult,
+  readRecommendationFromPipelineResult,
+  applyRecommendationBuilderToPipelineResult
 } from './decision';
 export type {
   DecisionStage,
@@ -633,7 +650,17 @@ export type {
   PolicyWarning,
   PolicySummary,
   PolicyTelemetry,
-  PolicyResult
+  PolicyResult,
+  RecommendationCategory,
+  RecommendationSeverity,
+  RecommendationDefinition,
+  RecommendationMetadata,
+  RecommendationRecord,
+  RecommendationContext,
+  RecommendationWarning,
+  RecommendationSummary,
+  RecommendationTelemetry,
+  RecommendationResult
 } from './decision';
 
 /** Report Engine — Architecture Freeze v1.0 foundation */
