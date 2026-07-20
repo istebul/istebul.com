@@ -40,6 +40,31 @@ export {
 } from './pipeline/ExportPipeline';
 
 export {
+  EXPORT_RUNTIME_ERROR_CODES,
+  ExportPipelineRuntime,
+  createExportPipelineRuntime,
+  nowMs,
+  startExportStageTimer,
+  endExportStageTimer
+} from './pipeline/runtime/index';
+export type {
+  ExportTiming,
+  ExportStageTimer,
+  ExportRuntimeIssue,
+  ExportStageExecution,
+  ExportStageExecutionOutcome,
+  ExportModel,
+  ExportPipelineBag,
+  ExportPipelineContext,
+  ExportPipelineSummary,
+  ExportPipelineTelemetry,
+  ExportPipelineResult,
+  ExportRuntimeErrorCode,
+  ExportContextResolver,
+  ExportPipelineRuntimeOptions
+} from './pipeline/runtime/index';
+
+export {
   EXPORT_REGISTRY_STRUCTURE_COUNT,
   EXPORT_PROFILE_REGISTRY,
   EXPORT_PROFILE_REGISTRY_COUNT,
