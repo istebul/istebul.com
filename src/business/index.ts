@@ -998,7 +998,7 @@ export type {
   ThemeDefinitionEntry
 } from './document';
 
-/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) */
+/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) + Widget Builder (PR-105C) */
 export {
   DASHBOARD_MODEL_COUNT,
   DASHBOARD_EXECUTION_STATUS_LABELS,
@@ -1047,7 +1047,26 @@ export {
   readDashboardModelFromPipelineContext,
   attachDashboardModelToPipelineResult,
   readDashboardModelFromPipelineResult,
-  applyDashboardModelBuilderToPipelineResult
+  applyDashboardModelBuilderToPipelineResult,
+  WIDGET_LABELS,
+  WIDGET_ORDER,
+  WIDGET_KIND_BY_ID,
+  WIDGET_SOURCE_PART_BY_ID,
+  createWidgetContext,
+  PIPELINE_BAG_DASHBOARD_WIDGET_RUNTIME_RESULT_KEY,
+  WidgetRegistryRuntime,
+  createWidgetRegistryRuntime,
+  WidgetBuilderRuntime,
+  createWidgetBuilderRuntime,
+  BUILTIN_WIDGET_DEFINITIONS,
+  BUILTIN_WIDGET_DEFINITION_COUNT,
+  getBuiltinWidgetDefinition,
+  getBuiltinWidgetDefinitionByCode,
+  attachWidgetToPipelineContext,
+  readWidgetFromPipelineContext,
+  attachWidgetToPipelineResult,
+  readWidgetFromPipelineResult,
+  applyWidgetBuilderToPipelineResult
 } from './dashboard';
 export type {
   DashboardStage,
@@ -1111,7 +1130,15 @@ export type {
   DashboardModelTelemetry,
   DashboardModelResult,
   DashboardBuilderModel,
-  DashboardBuilderMetadata
+  DashboardBuilderMetadata,
+  WidgetId,
+  WidgetDefinition,
+  WidgetRecord,
+  WidgetContext,
+  WidgetWarning,
+  WidgetTelemetry,
+  WidgetMetadata,
+  WidgetResult
 } from './dashboard';
 
 /** Export Engine — Architecture Freeze v1.0 foundation */
