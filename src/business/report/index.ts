@@ -132,6 +132,39 @@ export type {
   NarrativeResult
 } from './narrative/runtime/index';
 
+/** Report Section Builder Runtime (PR-104D) */
+export {
+  REPORT_SECTION_LABELS,
+  REPORT_SECTION_ORDER,
+  REPORT_SECTION_KIND_BY_ID,
+  REPORT_SECTION_NARRATIVE_KIND,
+  createReportSectionContext,
+  PIPELINE_BAG_REPORT_SECTION_RUNTIME_RESULT_KEY,
+  ReportSectionRegistryRuntime,
+  createReportSectionRegistryRuntime,
+  ReportSectionBuilderRuntime,
+  createReportSectionBuilderRuntime,
+  BUILTIN_REPORT_SECTION_DEFINITIONS,
+  BUILTIN_REPORT_SECTION_DEFINITION_COUNT,
+  getBuiltinReportSectionDefinition,
+  getBuiltinReportSectionDefinitionByCode,
+  attachReportSectionToPipelineContext,
+  readReportSectionFromPipelineContext,
+  attachReportSectionToPipelineResult,
+  readReportSectionFromPipelineResult,
+  applyReportSectionBuilderToPipelineResult
+} from './sectionBuilder/runtime/index';
+export type {
+  ReportSectionId,
+  ReportSectionDefinition,
+  ReportSectionRecord,
+  ReportSectionContext,
+  ReportSectionWarning,
+  ReportSectionTelemetry,
+  ReportSectionMetadata,
+  ReportSectionResult
+} from './sectionBuilder/runtime/index';
+
 export {
   REPORT_REGISTRY_STRUCTURE_COUNT,
   REPORT_PROFILE_REGISTRY,

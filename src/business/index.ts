@@ -796,7 +796,26 @@ export {
   readNarrativeFromPipelineContext,
   attachNarrativeToPipelineResult,
   readNarrativeFromPipelineResult,
-  applyNarrativeComposerToPipelineResult
+  applyNarrativeComposerToPipelineResult,
+  REPORT_SECTION_LABELS,
+  REPORT_SECTION_ORDER,
+  REPORT_SECTION_KIND_BY_ID,
+  REPORT_SECTION_NARRATIVE_KIND,
+  createReportSectionContext,
+  PIPELINE_BAG_REPORT_SECTION_RUNTIME_RESULT_KEY,
+  ReportSectionRegistryRuntime,
+  createReportSectionRegistryRuntime,
+  ReportSectionBuilderRuntime,
+  createReportSectionBuilderRuntime,
+  BUILTIN_REPORT_SECTION_DEFINITIONS,
+  BUILTIN_REPORT_SECTION_DEFINITION_COUNT,
+  getBuiltinReportSectionDefinition,
+  getBuiltinReportSectionDefinitionByCode,
+  attachReportSectionToPipelineContext,
+  readReportSectionFromPipelineContext,
+  attachReportSectionToPipelineResult,
+  readReportSectionFromPipelineResult,
+  applyReportSectionBuilderToPipelineResult
 } from './report';
 export type {
   ReportStage,
@@ -863,7 +882,15 @@ export type {
   NarrativeWarning,
   NarrativeTelemetry,
   NarrativeMetadata,
-  NarrativeResult
+  NarrativeResult,
+  ReportSectionId,
+  ReportSectionDefinition,
+  ReportSectionRecord,
+  ReportSectionContext,
+  ReportSectionWarning,
+  ReportSectionTelemetry,
+  ReportSectionMetadata,
+  ReportSectionResult
 } from './report';
 
 /** Document Engine — Architecture Freeze v1.0 foundation */
