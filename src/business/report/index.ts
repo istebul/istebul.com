@@ -194,6 +194,31 @@ export type {
   ReportSummarySectionDefinition
 } from './summary/runtime/index';
 
+/** End-to-End Report Runtime (PR-104F) */
+export {
+  ReportRuntimeFacade,
+  createReportRuntimeFacade,
+  ReportPipelineRunner,
+  createReportPipelineRunner,
+  createReportExecutionContext,
+  resolveReportContext,
+  ensureRequestIds,
+  createSkippedStageExecution,
+  createStageExecution,
+  replaceStageExecution,
+  mutateReportModel,
+  syncReportModelFromBag,
+  buildReportExecutionTelemetry
+} from './integration/runtime/index';
+export type {
+  ReportExecutionContext,
+  CreateReportExecutionContextInput,
+  ReportExecutionResult,
+  ReportExecutionTelemetry,
+  ReportPipelineExecutionSummary,
+  ReportPipelineRunnerDependencies
+} from './integration/runtime/index';
+
 export {
   REPORT_REGISTRY_STRUCTURE_COUNT,
   REPORT_PROFILE_REGISTRY,
