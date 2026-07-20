@@ -555,7 +555,13 @@ export {
   DECISION_ENGINE_NAME,
   DECISION_ENGINE_DEFAULT_LOCALE,
   DECISION_PIPELINE_STAGE_IDS,
-  DECISION_REGISTRY_KIND
+  DECISION_REGISTRY_KIND,
+  DECISION_RUNTIME_ERROR_CODES,
+  DecisionPipelineRuntime,
+  createDecisionPipelineRuntime,
+  nowMs as decisionNowMs,
+  startDecisionStageTimer,
+  endDecisionStageTimer
 } from './decision';
 export type {
   DecisionStage,
@@ -585,7 +591,20 @@ export type {
   DecisionRegistryKind,
   DecisionStrategyDefinition,
   DecisionStrategyStatus,
-  DecisionStrategyHandler
+  DecisionStrategyHandler,
+  DecisionTiming,
+  DecisionStageTimer,
+  DecisionRuntimeIssue,
+  DecisionStageExecution,
+  DecisionStageExecutionOutcome,
+  DecisionPipelineBag,
+  DecisionPipelineContext,
+  DecisionPipelineSummary,
+  DecisionPipelineTelemetry,
+  DecisionPipelineResult,
+  DecisionRuntimeErrorCode,
+  DecisionContextResolver,
+  DecisionPipelineRuntimeOptions
 } from './decision';
 
 /** Report Engine — Architecture Freeze v1.0 foundation */
