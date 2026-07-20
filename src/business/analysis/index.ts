@@ -104,6 +104,40 @@ export type {
   AnalysisRuleEvaluationInput
 } from './rules/AnalysisRuleContract';
 
+export {
+  RULE_SEVERITY_RANK,
+  RULE_CATEGORY_LABELS,
+  RULE_OUTCOME_LABELS,
+  createRuleContext,
+  PIPELINE_BAG_RULE_RUNTIME_RESULT_KEY,
+  RuleRegistryRuntime,
+  createRuleRegistryRuntime,
+  RuleEngineRuntime,
+  createRuleEngineRuntime,
+  BUILTIN_RULE_DEFINITIONS,
+  BUILTIN_RULE_DEFINITION_COUNT,
+  BUILTIN_RULE_THRESHOLDS,
+  getBuiltinRuleDefinition,
+  attachRuleToPipelineContext,
+  readRuleFromPipelineContext,
+  attachRuleToPipelineResult,
+  readRuleFromPipelineResult,
+  applyRuleEngineToPipelineResult
+} from './rules/runtime/index';
+export type {
+  RuleSeverity,
+  RuleCategory,
+  RuleOperator,
+  RuleDefinition,
+  RuleOutcome,
+  RuleEvaluation,
+  RuleContext,
+  RuleWarning,
+  RuleSummary,
+  RuleTelemetry,
+  RuleResult
+} from './rules/runtime/index';
+
 export type {
   KPIComputationRequest,
   KPIComputationOutcome,
