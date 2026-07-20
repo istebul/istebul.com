@@ -346,3 +346,24 @@ export type {
   NormalizationSummary,
   ValidationSummary
 } from './builder/runtime';
+
+/** End-to-End Import Runtime (PR-101J) */
+export {
+  ImportRuntimeFacade,
+  createImportRuntimeFacade,
+  PipelineRunner,
+  createPipelineRunner,
+  createImportExecutionContext,
+  createPipelineContextFromExecution,
+  importTargetFromRequest,
+  buildExecutionTelemetry,
+  adapterLabelForSourceType
+} from './integration/runtime';
+export type {
+  ImportExecutionContext,
+  CreateImportExecutionContextInput,
+  ImportExecutionResult,
+  ImportExecutionTelemetry,
+  ImportPipelineSummary,
+  PipelineRunnerDependencies
+} from './integration/runtime';
