@@ -165,6 +165,35 @@ export type {
   ReportSectionResult
 } from './sectionBuilder/runtime/index';
 
+/** Report Summary Runtime (PR-104E) */
+export {
+  REPORT_SUMMARY_SECTION_LABELS,
+  REPORT_SUMMARY_SECTION_ORDER,
+  createReportSummaryContext,
+  PIPELINE_BAG_REPORT_SUMMARY_RUNTIME_RESULT_KEY,
+  ReportSummaryRegistryRuntime,
+  createReportSummaryRegistryRuntime,
+  ReportSummaryRuntime,
+  createReportSummaryRuntime,
+  attachReportSummaryToPipelineContext,
+  readReportSummaryFromPipelineContext,
+  attachReportSummaryToPipelineResult,
+  readReportSummaryFromPipelineResult,
+  applyReportSummaryToPipelineResult
+} from './summary/runtime/index';
+export type {
+  ReportSummary,
+  ReportSummarySectionId,
+  ReportSummarySection,
+  ReportSummaryMetadata,
+  ReportSummaryRecord,
+  ReportSummaryContext,
+  ReportSummaryWarning,
+  ReportSummaryTelemetry,
+  ReportSummaryResult,
+  ReportSummarySectionDefinition
+} from './summary/runtime/index';
+
 export {
   REPORT_REGISTRY_STRUCTURE_COUNT,
   REPORT_PROFILE_REGISTRY,
