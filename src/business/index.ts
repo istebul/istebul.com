@@ -216,7 +216,16 @@ export {
   primitiveTypeToColumnDataType,
   cellValueFromField,
   resolveEntityTypeId,
-  mapImportSourceToBusinessSource
+  mapImportSourceToBusinessSource,
+  ImportRuntimeFacade,
+  createImportRuntimeFacade,
+  PipelineRunner,
+  createPipelineRunner,
+  createImportExecutionContext,
+  createPipelineContextFromExecution,
+  importTargetFromRequest,
+  buildExecutionTelemetry,
+  adapterLabelForSourceType
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -301,7 +310,12 @@ export type {
   BuilderResult,
   BuilderTelemetry,
   NormalizationSummary,
-  ValidationSummary
+  ValidationSummary,
+  ImportExecutionContext,
+  ImportExecutionResult,
+  ImportExecutionTelemetry,
+  ImportPipelineSummary,
+  PipelineRunnerDependencies
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
