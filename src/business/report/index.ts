@@ -2,7 +2,7 @@
  * İSTEBUL Business Report Engine — dışa aktarım yüzeyi.
  */
 
-export { REPORT_MODEL_COUNT, REPORT_EXECUTION_STATUS_LABELS } from './models';
+export { REPORT_MODEL_COUNT, REPORT_EXECUTION_STATUS_LABELS } from './models/index';
 export type {
   ReportStage,
   ReportExecutionStatus,
@@ -21,9 +21,9 @@ export type {
   ReportReviewVerdict,
   ReportModel,
   ReportContext
-} from './models';
+} from './models/index';
 
-export { REPORT_ENGINE_PORT_COUNT } from './ports';
+export { REPORT_ENGINE_PORT_COUNT } from './ports/index';
 export type {
   IReportEngine,
   IReportPipeline,
@@ -31,7 +31,7 @@ export type {
   IEvidenceCollector,
   IReportComposer,
   IReportReviewer
-} from './ports';
+} from './ports/index';
 
 export type { ReportPipelineStageDefinition } from './pipeline/ReportPipeline';
 export {
@@ -40,6 +40,29 @@ export {
   getReportPipelineStage,
   listReportPipelineStages
 } from './pipeline/ReportPipeline';
+export {
+  REPORT_RUNTIME_ERROR_CODES,
+  ReportPipelineRuntime,
+  createReportPipelineRuntime,
+  nowMs,
+  startReportStageTimer,
+  endReportStageTimer
+} from './pipeline/runtime/index';
+export type {
+  ReportTiming,
+  ReportStageTimer,
+  ReportRuntimeIssue,
+  ReportStageExecution,
+  ReportStageExecutionOutcome,
+  ReportPipelineBag,
+  ReportPipelineContext,
+  ReportPipelineSummary,
+  ReportPipelineTelemetry,
+  ReportPipelineResult,
+  ReportRuntimeErrorCode,
+  ReportContextResolver,
+  ReportPipelineRuntimeOptions
+} from './pipeline/runtime/index';
 
 export {
   REPORT_REGISTRY_STRUCTURE_COUNT,
@@ -62,13 +85,13 @@ export {
   listBridgedOutputTemplates,
   listBridgedReportDna,
   getBridgedReportDnaById
-} from './registry';
+} from './registry/index';
 export type {
   ReportProfileDefinition,
   ReferenceTemplateDefinition,
   OutputDefinition,
   ReportDefinition
-} from './registry';
+} from './registry/index';
 
 export {
   REPORT_ENGINE_SCHEMA_VERSION,
