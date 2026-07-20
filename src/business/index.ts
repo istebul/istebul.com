@@ -815,7 +815,20 @@ export {
   readReportSectionFromPipelineContext,
   attachReportSectionToPipelineResult,
   readReportSectionFromPipelineResult,
-  applyReportSectionBuilderToPipelineResult
+  applyReportSectionBuilderToPipelineResult,
+  REPORT_SUMMARY_SECTION_LABELS,
+  REPORT_SUMMARY_SECTION_ORDER,
+  createReportSummaryContext,
+  PIPELINE_BAG_REPORT_SUMMARY_RUNTIME_RESULT_KEY,
+  ReportSummaryRegistryRuntime,
+  createReportSummaryRegistryRuntime,
+  ReportSummaryRuntime,
+  createReportSummaryRuntime,
+  attachReportSummaryToPipelineContext,
+  readReportSummaryFromPipelineContext,
+  attachReportSummaryToPipelineResult,
+  readReportSummaryFromPipelineResult,
+  applyReportSummaryToPipelineResult
 } from './report';
 export type {
   ReportStage,
@@ -890,7 +903,17 @@ export type {
   ReportSectionWarning,
   ReportSectionTelemetry,
   ReportSectionMetadata,
-  ReportSectionResult
+  ReportSectionResult,
+  ReportSummary,
+  ReportSummarySectionId,
+  ReportSummarySection,
+  ReportSummaryMetadata,
+  ReportSummaryRecord,
+  ReportSummaryContext,
+  ReportSummaryWarning,
+  ReportSummaryTelemetry,
+  ReportSummaryResult,
+  ReportSummarySectionDefinition
 } from './report';
 
 /** Document Engine — Architecture Freeze v1.0 foundation */
