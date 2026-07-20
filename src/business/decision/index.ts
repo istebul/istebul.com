@@ -202,3 +202,31 @@ export type {
   ActionPlanTelemetry,
   ActionPlanResult
 } from './actionPlans/runtime/index';
+
+/** Decision Summary Runtime (PR-103E) */
+export {
+  DECISION_SUMMARY_SECTION_LABELS,
+  DECISION_SUMMARY_SECTION_ORDER,
+  createDecisionSummaryContext,
+  PIPELINE_BAG_DECISION_SUMMARY_RUNTIME_RESULT_KEY,
+  DecisionSummaryRegistryRuntime,
+  createDecisionSummaryRegistryRuntime,
+  DecisionSummaryRuntime,
+  createDecisionSummaryRuntime,
+  attachDecisionSummaryToPipelineContext,
+  readDecisionSummaryFromPipelineContext,
+  attachDecisionSummaryToPipelineResult,
+  readDecisionSummaryFromPipelineResult,
+  applyDecisionSummaryToPipelineResult
+} from './summaries/runtime/index';
+export type {
+  DecisionSummarySectionId,
+  DecisionSummarySection,
+  DecisionSummaryMetadata,
+  DecisionSummaryRecord,
+  DecisionSummaryContext,
+  DecisionSummaryWarning,
+  DecisionSummaryTelemetry,
+  DecisionSummaryResult,
+  DecisionSummarySectionDefinition
+} from './summaries/runtime/index';

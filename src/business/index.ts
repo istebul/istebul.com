@@ -611,7 +611,20 @@ export {
   readActionPlanFromPipelineContext,
   attachActionPlanToPipelineResult,
   readActionPlanFromPipelineResult,
-  applyActionPlanBuilderToPipelineResult
+  applyActionPlanBuilderToPipelineResult,
+  DECISION_SUMMARY_SECTION_LABELS,
+  DECISION_SUMMARY_SECTION_ORDER,
+  createDecisionSummaryContext,
+  PIPELINE_BAG_DECISION_SUMMARY_RUNTIME_RESULT_KEY,
+  DecisionSummaryRegistryRuntime,
+  createDecisionSummaryRegistryRuntime,
+  DecisionSummaryRuntime,
+  createDecisionSummaryRuntime,
+  attachDecisionSummaryToPipelineContext,
+  readDecisionSummaryFromPipelineContext,
+  attachDecisionSummaryToPipelineResult,
+  readDecisionSummaryFromPipelineResult,
+  applyDecisionSummaryToPipelineResult
 } from './decision';
 export type {
   DecisionStage,
@@ -685,7 +698,16 @@ export type {
   ActionPlanWarning,
   ActionPlanSummary,
   ActionPlanTelemetry,
-  ActionPlanResult
+  ActionPlanResult,
+  DecisionSummarySectionId,
+  DecisionSummarySection,
+  DecisionSummaryMetadata,
+  DecisionSummaryRecord,
+  DecisionSummaryContext,
+  DecisionSummaryWarning,
+  DecisionSummaryTelemetry,
+  DecisionSummaryResult,
+  DecisionSummarySectionDefinition
 } from './decision';
 
 /** Report Engine — Architecture Freeze v1.0 foundation */
