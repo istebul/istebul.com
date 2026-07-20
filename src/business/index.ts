@@ -998,7 +998,7 @@ export type {
   ThemeDefinitionEntry
 } from './document';
 
-/** Dashboard Engine — Architecture Freeze v1.0 foundation */
+/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) */
 export {
   DASHBOARD_MODEL_COUNT,
   DASHBOARD_EXECUTION_STATUS_LABELS,
@@ -1028,7 +1028,13 @@ export {
   DASHBOARD_ENGINE_NAME,
   DASHBOARD_ENGINE_DEFAULT_LOCALE,
   DASHBOARD_PIPELINE_STAGE_IDS,
-  DASHBOARD_REGISTRY_KIND
+  DASHBOARD_REGISTRY_KIND,
+  DASHBOARD_RUNTIME_ERROR_CODES,
+  DashboardPipelineRuntime,
+  createDashboardPipelineRuntime,
+  nowMs as dashboardNowMs,
+  startDashboardStageTimer,
+  endDashboardStageTimer
 } from './dashboard';
 export type {
   DashboardStage,
@@ -1060,7 +1066,20 @@ export type {
   DashboardThemeDefinitionEntry,
   DashboardRegistryKind,
   WidgetDefinitionEntry,
-  DashboardLayoutDefinitionEntry
+  DashboardLayoutDefinitionEntry,
+  DashboardTiming,
+  DashboardStageTimer,
+  DashboardRuntimeIssue,
+  DashboardStageExecution,
+  DashboardStageExecutionOutcome,
+  DashboardPipelineBag,
+  DashboardPipelineContext,
+  DashboardPipelineSummary,
+  DashboardPipelineTelemetry,
+  DashboardPipelineResult,
+  DashboardRuntimeErrorCode,
+  DashboardContextResolver,
+  DashboardPipelineRuntimeOptions
 } from './dashboard';
 
 /** Export Engine — Architecture Freeze v1.0 foundation */

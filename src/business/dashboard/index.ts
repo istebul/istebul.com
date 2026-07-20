@@ -2,13 +2,13 @@
  * İSTEBUL Business Dashboard Engine — dışa aktarım yüzeyi.
  *
  * Architecture Freeze v1.0 — tanım ve port katmanı.
- * React / grafik kütüphanesi / UI yoktur.
+ * Pipeline Runtime (PR-105A) additive; React / grafik / UI yoktur.
  */
 
 export {
   DASHBOARD_MODEL_COUNT,
   DASHBOARD_EXECUTION_STATUS_LABELS
-} from './models';
+} from './models/index';
 export type {
   DashboardStage,
   DashboardExecutionStatus,
@@ -28,9 +28,9 @@ export type {
   DashboardTheme,
   DashboardModel,
   DashboardContext
-} from './models';
+} from './models/index';
 
-export { DASHBOARD_ENGINE_PORT_COUNT } from './ports';
+export { DASHBOARD_ENGINE_PORT_COUNT } from './ports/index';
 export type {
   IDashboardEngine,
   IDashboardPipeline,
@@ -38,7 +38,7 @@ export type {
   ILayoutResolver,
   IFilterResolver,
   IDashboardComposer
-} from './ports';
+} from './ports/index';
 
 export type { DashboardPipelineStageDefinition } from './pipeline/DashboardPipeline';
 export {
@@ -47,6 +47,30 @@ export {
   getDashboardPipelineStage,
   listDashboardPipelineStages
 } from './pipeline/DashboardPipeline';
+
+export {
+  DASHBOARD_RUNTIME_ERROR_CODES,
+  DashboardPipelineRuntime,
+  createDashboardPipelineRuntime,
+  nowMs,
+  startDashboardStageTimer,
+  endDashboardStageTimer
+} from './pipeline/runtime/index';
+export type {
+  DashboardTiming,
+  DashboardStageTimer,
+  DashboardRuntimeIssue,
+  DashboardStageExecution,
+  DashboardStageExecutionOutcome,
+  DashboardPipelineBag,
+  DashboardPipelineContext,
+  DashboardPipelineSummary,
+  DashboardPipelineTelemetry,
+  DashboardPipelineResult,
+  DashboardRuntimeErrorCode,
+  DashboardContextResolver,
+  DashboardPipelineRuntimeOptions
+} from './pipeline/runtime/index';
 
 export {
   DASHBOARD_REGISTRY_STRUCTURE_COUNT,
@@ -66,11 +90,11 @@ export {
   getDashboardLayoutById,
   listDashboardThemes,
   getDashboardThemeById
-} from './registry';
+} from './registry/index';
 export type {
   DashboardProfileDefinition,
   DashboardThemeDefinitionEntry
-} from './registry';
+} from './registry/index';
 
 export {
   DASHBOARD_ENGINE_SCHEMA_VERSION,
