@@ -624,7 +624,18 @@ export {
   readDecisionSummaryFromPipelineContext,
   attachDecisionSummaryToPipelineResult,
   readDecisionSummaryFromPipelineResult,
-  applyDecisionSummaryToPipelineResult
+  applyDecisionSummaryToPipelineResult,
+  DecisionRuntimeFacade,
+  createDecisionRuntimeFacade,
+  DecisionPipelineRunner,
+  createDecisionPipelineRunner,
+  createDecisionExecutionContext,
+  resolveDecisionContext,
+  ensureRequestIds,
+  createSkippedStageExecution as createDecisionSkippedStageExecution,
+  createStageExecution as createDecisionStageExecution,
+  replaceStageExecution as replaceDecisionStageExecution,
+  buildDecisionExecutionTelemetry
 } from './decision';
 export type {
   DecisionStage,
@@ -707,7 +718,13 @@ export type {
   DecisionSummaryWarning,
   DecisionSummaryTelemetry,
   DecisionSummaryResult,
-  DecisionSummarySectionDefinition
+  DecisionSummarySectionDefinition,
+  DecisionExecutionContext,
+  CreateDecisionExecutionContextInput,
+  DecisionExecutionResult,
+  DecisionExecutionTelemetry,
+  DecisionPipelineExecutionSummary,
+  DecisionPipelineRunnerDependencies
 } from './decision';
 
 /** Report Engine — Architecture Freeze v1.0 foundation */

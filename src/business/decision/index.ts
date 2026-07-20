@@ -230,3 +230,26 @@ export type {
   DecisionSummaryResult,
   DecisionSummarySectionDefinition
 } from './summaries/runtime/index';
+
+/** End-to-End Decision Runtime (PR-103F) */
+export {
+  DecisionRuntimeFacade,
+  createDecisionRuntimeFacade,
+  DecisionPipelineRunner,
+  createDecisionPipelineRunner,
+  createDecisionExecutionContext,
+  resolveDecisionContext,
+  ensureRequestIds,
+  createSkippedStageExecution,
+  createStageExecution,
+  replaceStageExecution,
+  buildDecisionExecutionTelemetry
+} from './integration/runtime/index';
+export type {
+  DecisionExecutionContext,
+  CreateDecisionExecutionContextInput,
+  DecisionExecutionResult,
+  DecisionExecutionTelemetry,
+  DecisionPipelineExecutionSummary,
+  DecisionPipelineRunnerDependencies
+} from './integration/runtime/index';
