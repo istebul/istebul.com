@@ -998,7 +998,7 @@ export type {
   ThemeDefinitionEntry
 } from './document';
 
-/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) + Widget Builder (PR-105C) */
+/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) + Widget Builder (PR-105C) + KPI Board (PR-105D) */
 export {
   DASHBOARD_MODEL_COUNT,
   DASHBOARD_EXECUTION_STATUS_LABELS,
@@ -1066,7 +1066,26 @@ export {
   readWidgetFromPipelineContext,
   attachWidgetToPipelineResult,
   readWidgetFromPipelineResult,
-  applyWidgetBuilderToPipelineResult
+  applyWidgetBuilderToPipelineResult,
+  KPI_LABELS,
+  KPI_ORDER,
+  KPI_UNIT_BY_ID,
+  KPI_SOURCE_PART_BY_ID,
+  createKpiBoardContext,
+  PIPELINE_BAG_DASHBOARD_KPI_BOARD_RUNTIME_RESULT_KEY,
+  KpiRegistryRuntime as DashboardKpiBoardRegistryRuntime,
+  createKpiRegistryRuntime as createDashboardKpiBoardRegistryRuntime,
+  KpiBoardRuntime,
+  createKpiBoardRuntime,
+  BUILTIN_KPI_DEFINITIONS as BUILTIN_DASHBOARD_KPI_BOARD_DEFINITIONS,
+  BUILTIN_KPI_DEFINITION_COUNT as BUILTIN_DASHBOARD_KPI_BOARD_DEFINITION_COUNT,
+  getBuiltinKpiDefinition as getBuiltinDashboardKpiBoardDefinition,
+  getBuiltinKpiDefinitionByCode as getBuiltinDashboardKpiBoardDefinitionByCode,
+  attachKpiBoardToPipelineContext,
+  readKpiBoardFromPipelineContext,
+  attachKpiBoardToPipelineResult,
+  readKpiBoardFromPipelineResult,
+  applyKpiBoardToPipelineResult
 } from './dashboard';
 export type {
   DashboardStage,
@@ -1138,7 +1157,15 @@ export type {
   WidgetWarning,
   WidgetTelemetry,
   WidgetMetadata,
-  WidgetResult
+  WidgetResult,
+  KpiId as DashboardKpiBoardId,
+  KpiDefinition as DashboardKpiBoardDefinition,
+  KpiRecord as DashboardKpiBoardRecord,
+  KpiBoardContext,
+  KpiBoardWarning,
+  KpiBoardTelemetry,
+  KpiBoardMetadata,
+  KpiBoardResult
 } from './dashboard';
 
 /** Export Engine — Architecture Freeze v1.0 foundation */
