@@ -138,6 +138,38 @@ export type {
   RuleResult
 } from './rules/runtime/index';
 
+export {
+  FINDING_CATEGORY_LABELS,
+  FINDING_SEVERITY_RANK,
+  createFindingContext,
+  PIPELINE_BAG_FINDING_RUNTIME_RESULT_KEY,
+  FindingRegistryRuntime,
+  createFindingRegistryRuntime,
+  FindingBuilderRuntime,
+  createFindingBuilderRuntime,
+  BUILTIN_FINDING_DEFINITIONS,
+  BUILTIN_FINDING_DEFINITION_COUNT,
+  getBuiltinFindingDefinition,
+  getBuiltinFindingDefinitionByRuleId,
+  attachFindingToPipelineContext,
+  readFindingFromPipelineContext,
+  attachFindingToPipelineResult,
+  readFindingFromPipelineResult,
+  applyFindingBuilderToPipelineResult
+} from './findings/runtime/index';
+export type {
+  FindingCategory,
+  FindingSeverity,
+  FindingDefinition,
+  FindingMetadata,
+  FindingRecord,
+  FindingContext,
+  FindingWarning,
+  FindingSummary,
+  FindingTelemetry,
+  FindingResult
+} from './findings/runtime/index';
+
 export type {
   KPIComputationRequest,
   KPIComputationOutcome,
