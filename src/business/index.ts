@@ -173,7 +173,18 @@ export {
   attachCsvResultToPipelineContext,
   PIPELINE_BAG_CSV_RESULT_KEY,
   detectDelimiter,
-  splitCsvLine
+  splitCsvLine,
+  ExcelImportReader,
+  createExcelImportReader,
+  parseExcelWorkbook,
+  excelResultToTabular,
+  EXCEL_READER_ID,
+  EXCEL_BINARY_NOT_SUPPORTED,
+  createExcelReaderContext,
+  registerExcelImportReader,
+  createExcelReaderRegistration,
+  attachExcelResultToPipelineContext,
+  PIPELINE_BAG_EXCEL_RESULT_KEY
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -227,7 +238,16 @@ export type {
   CsvReaderContext,
   CsvReaderResult,
   CsvReaderTelemetry,
-  CsvImportReaderOptions
+  CsvImportReaderOptions,
+  ExcelCell,
+  ExcelCellType,
+  ExcelSheet,
+  ExcelWorkbook,
+  ExcelRawWorkbook,
+  ExcelReaderContext,
+  ExcelReaderResult,
+  ExcelReaderTelemetry,
+  ExcelImportReaderOptions
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
