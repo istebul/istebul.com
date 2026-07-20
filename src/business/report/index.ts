@@ -101,6 +101,37 @@ export type {
   ReportMetadata as ReportBuilderMetadata
 } from './modelBuilder/runtime/index';
 
+/** Narrative Composer Runtime (PR-104C) */
+export {
+  NARRATIVE_KIND_LABELS,
+  NARRATIVE_KIND_ORDER,
+  createNarrativeContext,
+  PIPELINE_BAG_NARRATIVE_RUNTIME_RESULT_KEY,
+  NarrativeRegistryRuntime,
+  createNarrativeRegistryRuntime,
+  NarrativeComposerRuntime,
+  createNarrativeComposerRuntime,
+  BUILTIN_NARRATIVE_TEMPLATES,
+  BUILTIN_NARRATIVE_TEMPLATE_COUNT,
+  getBuiltinNarrativeTemplate,
+  getBuiltinNarrativeTemplateByKind,
+  attachNarrativeToPipelineContext,
+  readNarrativeFromPipelineContext,
+  attachNarrativeToPipelineResult,
+  readNarrativeFromPipelineResult,
+  applyNarrativeComposerToPipelineResult
+} from './narrative/runtime/index';
+export type {
+  NarrativeKind,
+  NarrativeTemplate,
+  NarrativeRecord,
+  NarrativeContext,
+  NarrativeWarning,
+  NarrativeTelemetry,
+  NarrativeMetadata,
+  NarrativeResult
+} from './narrative/runtime/index';
+
 export {
   REPORT_REGISTRY_STRUCTURE_COUNT,
   REPORT_PROFILE_REGISTRY,
