@@ -161,7 +161,19 @@ export {
   attachSchemaToPipelineResult,
   BUILTIN_SCHEMA_DETECTORS,
   inferValueType,
-  dominantType
+  dominantType,
+  CsvImportReader,
+  createCsvImportReader,
+  parseCsvContent,
+  csvResultToTabular,
+  CSV_READER_ID,
+  createCsvReaderContext,
+  registerCsvImportReader,
+  createCsvReaderRegistration,
+  attachCsvResultToPipelineContext,
+  PIPELINE_BAG_CSV_RESULT_KEY,
+  detectDelimiter,
+  splitCsvLine
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -207,7 +219,15 @@ export type {
   SchemaCandidate,
   SchemaContext,
   SchemaResult,
-  SchemaDetectionTelemetry
+  SchemaDetectionTelemetry,
+  CsvHeader,
+  CsvCell,
+  CsvRow,
+  CsvDelimiter,
+  CsvReaderContext,
+  CsvReaderResult,
+  CsvReaderTelemetry,
+  CsvImportReaderOptions
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
