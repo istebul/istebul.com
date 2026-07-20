@@ -311,3 +311,38 @@ export type {
   AppliedNormalizationRule,
   NormalizationTelemetry
 } from './normalizers/runtime';
+
+/** BusinessDataset Builder Runtime (PR-101I) */
+export {
+  BusinessDatasetBuilderRuntime,
+  createBusinessDatasetBuilderRuntime,
+  createBuilderContext,
+  toImportResult,
+  toNormalizationSummary,
+  toValidationSummary,
+  toBusinessValidationResult,
+  PIPELINE_BAG_DATASET_BUILD_RESULT_KEY,
+  attachDatasetBuildToPipelineContext,
+  readDatasetBuildFromPipelineContext,
+  attachDatasetBuildToPipelineResult,
+  readDatasetBuildFromPipelineResult,
+  primitiveTypeToColumnDataType,
+  cellValueFromField,
+  resolveEntityTypeId,
+  mapImportSourceToBusinessSource,
+  columnFromNormalizedField,
+  entityDisplayName,
+  groupFieldDefinitionsByEntity
+} from './builder/runtime';
+export type {
+  FieldAssembly,
+  RecordAssembly,
+  EntityAssembly,
+  DatasetAssembly,
+  BuilderContext,
+  CreateBuilderContextInput,
+  BuilderResult,
+  BuilderTelemetry,
+  NormalizationSummary,
+  ValidationSummary
+} from './builder/runtime';

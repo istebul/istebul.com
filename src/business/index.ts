@@ -203,7 +203,20 @@ export {
   createNormalizationContextFromSemantic,
   attachNormalizationToPipelineContext,
   PIPELINE_BAG_NORMALIZATION_RESULT_KEY,
-  BUILTIN_NORMALIZATION_RULES
+  BUILTIN_NORMALIZATION_RULES,
+  BusinessDatasetBuilderRuntime,
+  createBusinessDatasetBuilderRuntime,
+  createBuilderContext,
+  toImportResult,
+  toNormalizationSummary,
+  toValidationSummary,
+  toBusinessValidationResult,
+  PIPELINE_BAG_DATASET_BUILD_RESULT_KEY,
+  attachDatasetBuildToPipelineContext,
+  primitiveTypeToColumnDataType,
+  cellValueFromField,
+  resolveEntityTypeId,
+  mapImportSourceToBusinessSource
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -279,7 +292,16 @@ export type {
   NormalizationContext,
   NormalizationResult,
   NormalizationWarning,
-  NormalizationTelemetry
+  NormalizationTelemetry,
+  FieldAssembly,
+  RecordAssembly,
+  EntityAssembly,
+  DatasetAssembly,
+  BuilderContext,
+  BuilderResult,
+  BuilderTelemetry,
+  NormalizationSummary,
+  ValidationSummary
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
