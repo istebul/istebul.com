@@ -390,7 +390,24 @@ export {
   readRuleFromPipelineContext,
   attachRuleToPipelineResult,
   readRuleFromPipelineResult,
-  applyRuleEngineToPipelineResult
+  applyRuleEngineToPipelineResult,
+  FINDING_CATEGORY_LABELS,
+  FINDING_SEVERITY_RANK,
+  createFindingContext,
+  PIPELINE_BAG_FINDING_RUNTIME_RESULT_KEY,
+  FindingRegistryRuntime,
+  createFindingRegistryRuntime,
+  FindingBuilderRuntime,
+  createFindingBuilderRuntime,
+  BUILTIN_FINDING_DEFINITIONS,
+  BUILTIN_FINDING_DEFINITION_COUNT,
+  getBuiltinFindingDefinition,
+  getBuiltinFindingDefinitionByRuleId,
+  attachFindingToPipelineContext,
+  readFindingFromPipelineContext,
+  attachFindingToPipelineResult,
+  readFindingFromPipelineResult,
+  applyFindingBuilderToPipelineResult
 } from './analysis';
 export type {
   AnalysisStage,
@@ -456,7 +473,17 @@ export type {
   RuleWarning,
   RuleSummary,
   RuleTelemetry,
-  RuleResult
+  RuleResult,
+  FindingCategory,
+  FindingSeverity,
+  FindingDefinition,
+  FindingMetadata,
+  FindingRecord,
+  FindingContext,
+  FindingWarning,
+  FindingSummary,
+  FindingTelemetry,
+  FindingResult
 } from './analysis';
 
 /** Decision Engine — Architecture Freeze v1.0 foundation */
