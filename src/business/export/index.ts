@@ -2,10 +2,10 @@
  * İSTEBUL Business Export Engine — dışa aktarım yüzeyi.
  *
  * Architecture Freeze v1.0 — tanım ve port katmanı.
- * Gerçek PDF/DOCX/XLSX/PPTX/HTML/CSV üretimi yoktur.
+ * Pipeline Runtime (PR-106A) additive; gerçek PDF/DOCX/XLSX/PPTX/HTML/CSV üretimi yoktur.
  */
 
-export { EXPORT_MODEL_COUNT, EXPORT_STATUS_LABELS } from './models';
+export { EXPORT_MODEL_COUNT, EXPORT_STATUS_LABELS } from './models/index';
 export type {
   ExportStage,
   ExportStatus,
@@ -19,9 +19,9 @@ export type {
   ExportRequest,
   ExportResult,
   ExportContext
-} from './models';
+} from './models/index';
 
-export { EXPORT_ENGINE_PORT_COUNT } from './ports';
+export { EXPORT_ENGINE_PORT_COUNT } from './ports/index';
 export type {
   IExportEngine,
   IExportPipeline,
@@ -29,7 +29,7 @@ export type {
   ITemplateResolver,
   IExportComposer,
   IArtifactBuilder
-} from './ports';
+} from './ports/index';
 
 export type { ExportPipelineStageDefinition } from './pipeline/ExportPipeline';
 export {
@@ -82,11 +82,11 @@ export {
   getExportTemplateById,
   listArtifactDefinitions,
   getArtifactDefinitionById
-} from './registry';
+} from './registry/index';
 export type {
   ExportProfileDefinition,
   ArtifactDefinitionEntry
-} from './registry';
+} from './registry/index';
 
 export {
   EXPORT_ENGINE_SCHEMA_VERSION,
