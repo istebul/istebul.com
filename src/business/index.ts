@@ -998,7 +998,7 @@ export type {
   ThemeDefinitionEntry
 } from './document';
 
-/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) + Widget Builder (PR-105C) + KPI Board (PR-105D) + Summary (PR-105E) */
+/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) + Widget Builder (PR-105C) + KPI Board (PR-105D) + Summary (PR-105E) + End-to-End Runtime (PR-105F) */
 export {
   DASHBOARD_MODEL_COUNT,
   DASHBOARD_EXECUTION_STATUS_LABELS,
@@ -1098,7 +1098,20 @@ export {
   readDashboardSummaryFromPipelineContext,
   attachDashboardSummaryToPipelineResult,
   readDashboardSummaryFromPipelineResult,
-  applyDashboardSummaryToPipelineResult
+  applyDashboardSummaryToPipelineResult,
+  DashboardRuntimeFacade,
+  createDashboardRuntimeFacade,
+  DashboardPipelineRunner,
+  createDashboardPipelineRunner,
+  createDashboardExecutionContext,
+  resolveDashboardContext,
+  ensureRequestIds as ensureDashboardRequestIds,
+  createSkippedStageExecution as createDashboardSkippedStageExecution,
+  createStageExecution as createDashboardStageExecution,
+  replaceStageExecution as replaceDashboardStageExecution,
+  mutateDashboardModel,
+  syncDashboardModelFromBag,
+  buildDashboardExecutionTelemetry
 } from './dashboard';
 export type {
   DashboardStage,
@@ -1188,7 +1201,13 @@ export type {
   DashboardSummaryWarning,
   DashboardSummaryTelemetry,
   DashboardSummaryResult,
-  DashboardSummarySectionDefinition
+  DashboardSummarySectionDefinition,
+  DashboardExecutionContext,
+  CreateDashboardExecutionContextInput,
+  DashboardExecutionResult,
+  DashboardExecutionTelemetry,
+  DashboardPipelineExecutionSummary,
+  DashboardPipelineRunnerDependencies
 } from './dashboard';
 
 /** Export Engine — Architecture Freeze v1.0 foundation */

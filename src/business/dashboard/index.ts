@@ -2,7 +2,8 @@
  * İSTEBUL Business Dashboard Engine — dışa aktarım yüzeyi.
  *
  * Architecture Freeze v1.0 — tanım ve port katmanı.
- * Pipeline Runtime (PR-105A) additive; React / grafik / UI yoktur.
+ * Pipeline Runtime (PR-105A) + Model/Widget/KPI/Summary (PR-105B–E) +
+ * End-to-End Runtime (PR-105F) additive; React / grafik / UI yoktur.
  */
 
 export {
@@ -240,3 +241,28 @@ export type {
   DashboardSummaryResult,
   DashboardSummarySectionDefinition
 } from './summary/runtime/index';
+
+/** End-to-End Dashboard Runtime (PR-105F) */
+export {
+  DashboardRuntimeFacade,
+  createDashboardRuntimeFacade,
+  DashboardPipelineRunner,
+  createDashboardPipelineRunner,
+  createDashboardExecutionContext,
+  resolveDashboardContext,
+  ensureRequestIds,
+  createSkippedStageExecution,
+  createStageExecution,
+  replaceStageExecution,
+  mutateDashboardModel,
+  syncDashboardModelFromBag,
+  buildDashboardExecutionTelemetry
+} from './integration/runtime/index';
+export type {
+  DashboardExecutionContext,
+  CreateDashboardExecutionContextInput,
+  DashboardExecutionResult,
+  DashboardExecutionTelemetry,
+  DashboardPipelineExecutionSummary,
+  DashboardPipelineRunnerDependencies
+} from './integration/runtime/index';
