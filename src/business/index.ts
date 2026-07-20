@@ -561,7 +561,25 @@ export {
   createDecisionPipelineRuntime,
   nowMs as decisionNowMs,
   startDecisionStageTimer,
-  endDecisionStageTimer
+  endDecisionStageTimer,
+  POLICY_SEVERITY_RANK,
+  POLICY_CATEGORY_LABELS,
+  POLICY_OUTCOME_LABELS,
+  createPolicyContext,
+  PIPELINE_BAG_POLICY_RUNTIME_RESULT_KEY,
+  PolicyRegistryRuntime,
+  createPolicyRegistryRuntime,
+  PolicyEngineRuntime,
+  createPolicyEngineRuntime,
+  BUILTIN_POLICY_DEFINITIONS,
+  BUILTIN_POLICY_DEFINITION_COUNT,
+  BUILTIN_POLICY_THRESHOLDS,
+  getBuiltinPolicyDefinition,
+  attachPolicyToPipelineContext,
+  readPolicyFromPipelineContext,
+  attachPolicyToPipelineResult,
+  readPolicyFromPipelineResult,
+  applyPolicyEngineToPipelineResult
 } from './decision';
 export type {
   DecisionStage,
@@ -604,7 +622,18 @@ export type {
   DecisionPipelineResult,
   DecisionRuntimeErrorCode,
   DecisionContextResolver,
-  DecisionPipelineRuntimeOptions
+  DecisionPipelineRuntimeOptions,
+  PolicySeverity,
+  PolicyCategory,
+  PolicyOperator,
+  PolicyDefinition,
+  PolicyOutcome,
+  PolicyEvaluation,
+  PolicyContext,
+  PolicyWarning,
+  PolicySummary,
+  PolicyTelemetry,
+  PolicyResult
 } from './decision';
 
 /** Report Engine — Architecture Freeze v1.0 foundation */
