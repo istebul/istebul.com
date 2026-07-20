@@ -214,3 +214,39 @@ export type {
   CsvReaderTelemetry,
   CsvImportReaderOptions
 } from './readers/csv';
+
+/** Excel Reader Runtime (PR-101F) — altyapı; binary decode yok */
+export {
+  ExcelImportReader,
+  createExcelImportReader,
+  parseExcelWorkbook,
+  excelResultToTabular,
+  resolveExcelWorkbookPayload,
+  EXCEL_READER_ID,
+  EXCEL_BINARY_NOT_SUPPORTED,
+  createExcelReaderContext,
+  createExcelReaderRegistration,
+  registerExcelImportReader,
+  attachExcelResultToPipelineContext,
+  readExcelResultFromPipelineContext,
+  attachExcelResultToPipelineResult,
+  readExcelResultFromPipelineResult,
+  PIPELINE_BAG_EXCEL_RESULT_KEY,
+  normalizeExcelCell,
+  selectExcelSheet
+} from './readers/excel';
+export type {
+  ExcelCell,
+  ExcelCellType,
+  ExcelHeader,
+  ExcelRow,
+  ExcelSheet,
+  ExcelWorkbook,
+  ExcelRawWorkbook,
+  ExcelRawSheet,
+  ExcelRawCellValue,
+  ExcelReaderContext,
+  ExcelReaderResult,
+  ExcelReaderTelemetry,
+  ExcelImportReaderOptions
+} from './readers/excel';
