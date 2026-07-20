@@ -8,7 +8,7 @@
 export {
   ANALYSIS_MODEL_COUNT,
   ANALYSIS_STATUS_LABELS
-} from './models';
+} from './models/index';
 export type {
   AnalysisStage,
   AnalysisStatus,
@@ -22,9 +22,9 @@ export type {
   AnalysisScore,
   AnalysisSummary,
   AnalysisResult
-} from './models';
+} from './models/index';
 
-export { ANALYSIS_ENGINE_PORT_COUNT } from './ports';
+export { ANALYSIS_ENGINE_PORT_COUNT } from './ports/index';
 export type {
   IAnalysisEngine,
   IKPIEngine,
@@ -32,7 +32,7 @@ export type {
   IAnalysisPipeline,
   IFindingBuilder,
   ISummaryBuilder
-} from './ports';
+} from './ports/index';
 
 export type { AnalysisPipelineStageDefinition } from './pipeline/AnalysisPipeline';
 export {
@@ -41,6 +41,29 @@ export {
   getAnalysisPipelineStage,
   listAnalysisPipelineStages
 } from './pipeline/AnalysisPipeline';
+export {
+  ANALYSIS_RUNTIME_ERROR_CODES,
+  AnalysisPipelineRuntime,
+  createAnalysisPipelineRuntime,
+  nowMs,
+  startAnalysisStageTimer,
+  endAnalysisStageTimer
+} from './pipeline/runtime/index';
+export type {
+  AnalysisTiming,
+  AnalysisStageTimer,
+  AnalysisRuntimeIssue,
+  AnalysisStageExecution,
+  AnalysisStageExecutionOutcome,
+  AnalysisPipelineBag,
+  AnalysisPipelineContext,
+  AnalysisPipelineSummary,
+  AnalysisPipelineTelemetry,
+  AnalysisPipelineResult,
+  AnalysisRuntimeErrorCode,
+  AnalysisContextResolver,
+  AnalysisPipelineRuntimeOptions
+} from './pipeline/runtime/index';
 
 export {
   ANALYSIS_REGISTRY_STRUCTURE_COUNT,
@@ -60,11 +83,11 @@ export {
   getFindingTemplateByCode,
   listBridgedKPIs,
   getBridgedKPIById
-} from './registry';
+} from './registry/index';
 export type {
   AnalysisDefinitionEntry,
   FindingTemplateDefinition
-} from './registry';
+} from './registry/index';
 
 export {
   ANALYSIS_ENGINE_SCHEMA_VERSION,

@@ -348,7 +348,13 @@ export {
   ANALYSIS_ENGINE_NAME,
   ANALYSIS_ENGINE_DEFAULT_LOCALE,
   ANALYSIS_PIPELINE_STAGE_IDS,
-  ANALYSIS_REGISTRY_KIND
+  ANALYSIS_REGISTRY_KIND,
+  ANALYSIS_RUNTIME_ERROR_CODES,
+  AnalysisPipelineRuntime,
+  createAnalysisPipelineRuntime,
+  nowMs,
+  startAnalysisStageTimer,
+  endAnalysisStageTimer
 } from './analysis';
 export type {
   AnalysisStage,
@@ -378,7 +384,20 @@ export type {
   AnalysisRuleEvaluationInput,
   KPIComputationRequest,
   KPIComputationOutcome,
-  KPIComputationHandler
+  KPIComputationHandler,
+  AnalysisTiming,
+  AnalysisStageTimer,
+  AnalysisRuntimeIssue,
+  AnalysisStageExecution,
+  AnalysisStageExecutionOutcome,
+  AnalysisPipelineBag,
+  AnalysisPipelineContext,
+  AnalysisPipelineSummary,
+  AnalysisPipelineTelemetry,
+  AnalysisPipelineResult,
+  AnalysisRuntimeErrorCode,
+  AnalysisContextResolver,
+  AnalysisPipelineRuntimeOptions
 } from './analysis';
 
 /** Decision Engine — Architecture Freeze v1.0 foundation */
