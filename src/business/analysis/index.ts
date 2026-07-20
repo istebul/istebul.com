@@ -109,3 +109,38 @@ export type {
   KPIComputationOutcome,
   KPIComputationHandler
 } from './kpis/KPIComputationContract';
+
+export {
+  KPI_CATEGORY_LABELS,
+  createKpiContext,
+  PIPELINE_BAG_KPI_RUNTIME_RESULT_KEY,
+  KpiRegistryRuntime,
+  createKpiRegistryRuntime,
+  KpiEngineRuntime,
+  createKpiEngineRuntime,
+  BUILTIN_KPI_DEFINITIONS,
+  BUILTIN_KPI_DEFINITION_COUNT,
+  getBuiltinKpiDefinition,
+  computeDatasetFieldStats,
+  roundRatio,
+  roundAverage,
+  attachKpiToPipelineContext,
+  readKpiFromPipelineContext,
+  attachKpiToPipelineResult,
+  readKpiFromPipelineResult,
+  applyKpiEngineToPipelineResult
+} from './kpis/runtime/index';
+export type {
+  KpiCategory,
+  KpiCalculationType,
+  KpiDefinition,
+  KpiValue,
+  KpiCalculation,
+  KpiContext,
+  KpiWarning,
+  KpiDatasetSize,
+  KpiExecutionSummary,
+  KpiTelemetry,
+  KpiResult,
+  DatasetFieldStats
+} from './kpis/runtime/index';

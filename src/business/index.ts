@@ -354,7 +354,25 @@ export {
   createAnalysisPipelineRuntime,
   nowMs,
   startAnalysisStageTimer,
-  endAnalysisStageTimer
+  endAnalysisStageTimer,
+  KPI_CATEGORY_LABELS,
+  createKpiContext,
+  PIPELINE_BAG_KPI_RUNTIME_RESULT_KEY,
+  KpiRegistryRuntime,
+  createKpiRegistryRuntime,
+  KpiEngineRuntime,
+  createKpiEngineRuntime,
+  BUILTIN_KPI_DEFINITIONS,
+  BUILTIN_KPI_DEFINITION_COUNT,
+  getBuiltinKpiDefinition,
+  computeDatasetFieldStats,
+  roundRatio,
+  roundAverage,
+  attachKpiToPipelineContext,
+  readKpiFromPipelineContext,
+  attachKpiToPipelineResult,
+  readKpiFromPipelineResult,
+  applyKpiEngineToPipelineResult
 } from './analysis';
 export type {
   AnalysisStage,
@@ -397,7 +415,19 @@ export type {
   AnalysisPipelineResult,
   AnalysisRuntimeErrorCode,
   AnalysisContextResolver,
-  AnalysisPipelineRuntimeOptions
+  AnalysisPipelineRuntimeOptions,
+  KpiCategory,
+  KpiCalculationType,
+  KpiDefinition,
+  KpiValue,
+  KpiCalculation,
+  KpiContext,
+  KpiWarning,
+  KpiDatasetSize,
+  KpiExecutionSummary,
+  KpiTelemetry,
+  KpiResult,
+  DatasetFieldStats
 } from './analysis';
 
 /** Decision Engine — Architecture Freeze v1.0 foundation */
