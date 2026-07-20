@@ -37,7 +37,7 @@
     "test:unit": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --experimental-strip-types --no-warnings --test tests/unit/*.test.mjs",
     "setup:hooks": "node scripts/setup-git-hooks.cjs",
     "prepare": "node scripts/setup-git-hooks.cjs",
-    "test:integration": "node --no-warnings --test tests/integration/*.test.mjs",
+    "test:integration": "node --experimental-strip-types --no-warnings --test tests/integration/*.test.mjs",
     "seed:ai-listings": "node scripts/seed-ai-listings.cjs",
     "seed:ai-listings:publish": "node scripts/seed-ai-listings.cjs --direct --publish",
     "test:smoke": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --experimental-strip-types --no-warnings scripts/smoke-test.cjs",

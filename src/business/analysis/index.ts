@@ -237,3 +237,26 @@ export type {
   KpiResult,
   DatasetFieldStats
 } from './kpis/runtime/index';
+
+/** End-to-End Analysis Runtime (PR-102F) */
+export {
+  AnalysisRuntimeFacade,
+  createAnalysisRuntimeFacade,
+  AnalysisPipelineRunner,
+  createAnalysisPipelineRunner,
+  createAnalysisExecutionContext,
+  resolveAnalysisContext,
+  ensureRequestDatasetId,
+  createSkippedStageExecution,
+  createStageExecution,
+  replaceStageExecution,
+  buildAnalysisExecutionTelemetry
+} from './integration/runtime/index';
+export type {
+  AnalysisExecutionContext,
+  CreateAnalysisExecutionContextInput,
+  AnalysisExecutionResult,
+  AnalysisExecutionTelemetry,
+  AnalysisPipelineExecutionSummary,
+  AnalysisPipelineRunnerDependencies
+} from './integration/runtime/index';

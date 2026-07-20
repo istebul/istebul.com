@@ -420,7 +420,18 @@ export {
   readSummaryFromPipelineContext,
   attachSummaryToPipelineResult,
   readSummaryFromPipelineResult,
-  applySummaryBuilderToPipelineResult
+  applySummaryBuilderToPipelineResult,
+  AnalysisRuntimeFacade,
+  createAnalysisRuntimeFacade,
+  AnalysisPipelineRunner,
+  createAnalysisPipelineRunner,
+  createAnalysisExecutionContext,
+  resolveAnalysisContext,
+  ensureRequestDatasetId,
+  createSkippedStageExecution,
+  createStageExecution,
+  replaceStageExecution,
+  buildAnalysisExecutionTelemetry
 } from './analysis';
 export type {
   AnalysisStage,
@@ -505,7 +516,13 @@ export type {
   SummaryWarning,
   SummaryTelemetry,
   SummaryResult,
-  SummarySectionDefinition
+  SummarySectionDefinition,
+  AnalysisExecutionContext,
+  CreateAnalysisExecutionContextInput,
+  AnalysisExecutionResult,
+  AnalysisExecutionTelemetry,
+  AnalysisPipelineExecutionSummary,
+  AnalysisPipelineRunnerDependencies
 } from './analysis';
 
 /** Decision Engine — Architecture Freeze v1.0 foundation */
