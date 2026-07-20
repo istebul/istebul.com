@@ -760,7 +760,13 @@ export {
   REPORT_ENGINE_NAME,
   REPORT_ENGINE_DEFAULT_LOCALE,
   REPORT_PIPELINE_STAGE_IDS,
-  REPORT_REGISTRY_KIND
+  REPORT_REGISTRY_KIND,
+  REPORT_RUNTIME_ERROR_CODES,
+  ReportPipelineRuntime,
+  createReportPipelineRuntime,
+  nowMs as reportNowMs,
+  startReportStageTimer,
+  endReportStageTimer
 } from './report';
 export type {
   ReportStage,
@@ -790,7 +796,20 @@ export type {
   ReportProfileDefinition,
   ReferenceTemplateDefinition,
   ReportRegistryKind,
-  SectionTemplateDefinition
+  SectionTemplateDefinition,
+  ReportTiming,
+  ReportStageTimer,
+  ReportRuntimeIssue,
+  ReportStageExecution,
+  ReportStageExecutionOutcome,
+  ReportPipelineBag,
+  ReportPipelineContext,
+  ReportPipelineSummary,
+  ReportPipelineTelemetry,
+  ReportPipelineResult,
+  ReportRuntimeErrorCode,
+  ReportContextResolver,
+  ReportPipelineRuntimeOptions
 } from './report';
 
 /** Document Engine — Architecture Freeze v1.0 foundation */
