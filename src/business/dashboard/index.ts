@@ -211,3 +211,32 @@ export type {
   KpiBoardMetadata,
   KpiBoardResult
 } from './kpiBoard/runtime/index';
+
+/** Dashboard Summary Runtime (PR-105E) */
+export {
+  DASHBOARD_SUMMARY_SECTION_LABELS,
+  DASHBOARD_SUMMARY_SECTION_ORDER,
+  createDashboardSummaryContext,
+  PIPELINE_BAG_DASHBOARD_SUMMARY_RUNTIME_RESULT_KEY,
+  DashboardSummaryRegistryRuntime,
+  createDashboardSummaryRegistryRuntime,
+  DashboardSummaryRuntime,
+  createDashboardSummaryRuntime,
+  attachDashboardSummaryToPipelineContext,
+  readDashboardSummaryFromPipelineContext,
+  attachDashboardSummaryToPipelineResult,
+  readDashboardSummaryFromPipelineResult,
+  applyDashboardSummaryToPipelineResult
+} from './summary/runtime/index';
+export type {
+  DashboardSummary,
+  DashboardSummarySectionId,
+  DashboardSummarySection,
+  DashboardSummaryMetadata,
+  DashboardSummaryRecord,
+  DashboardSummaryContext,
+  DashboardSummaryWarning,
+  DashboardSummaryTelemetry,
+  DashboardSummaryResult,
+  DashboardSummarySectionDefinition
+} from './summary/runtime/index';
