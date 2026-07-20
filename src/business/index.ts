@@ -828,7 +828,20 @@ export {
   readReportSummaryFromPipelineContext,
   attachReportSummaryToPipelineResult,
   readReportSummaryFromPipelineResult,
-  applyReportSummaryToPipelineResult
+  applyReportSummaryToPipelineResult,
+  ReportRuntimeFacade,
+  createReportRuntimeFacade,
+  ReportPipelineRunner,
+  createReportPipelineRunner,
+  createReportExecutionContext,
+  resolveReportContext,
+  ensureRequestIds as ensureReportRequestIds,
+  createSkippedStageExecution as createReportSkippedStageExecution,
+  createStageExecution as createReportStageExecution,
+  replaceStageExecution as replaceReportStageExecution,
+  mutateReportModel,
+  syncReportModelFromBag,
+  buildReportExecutionTelemetry
 } from './report';
 export type {
   ReportStage,
@@ -913,7 +926,13 @@ export type {
   ReportSummaryWarning,
   ReportSummaryTelemetry,
   ReportSummaryResult,
-  ReportSummarySectionDefinition
+  ReportSummarySectionDefinition,
+  ReportExecutionContext,
+  CreateReportExecutionContextInput,
+  ReportExecutionResult,
+  ReportExecutionTelemetry,
+  ReportPipelineExecutionSummary,
+  ReportPipelineRunnerDependencies
 } from './report';
 
 /** Document Engine — Architecture Freeze v1.0 foundation */
