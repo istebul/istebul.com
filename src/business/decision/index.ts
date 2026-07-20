@@ -171,3 +171,34 @@ export type {
   RecommendationTelemetry,
   RecommendationResult
 } from './recommendations/runtime/index';
+
+/** Action Plan Builder Runtime (PR-103D) */
+export {
+  createActionPlanContext,
+  PIPELINE_BAG_ACTION_PLAN_RUNTIME_RESULT_KEY,
+  ActionPlanRegistryRuntime,
+  createActionPlanRegistryRuntime,
+  ActionPlanBuilderRuntime,
+  createActionPlanBuilderRuntime,
+  BUILTIN_ACTION_PLAN_DEFINITIONS,
+  BUILTIN_ACTION_PLAN_DEFINITION_COUNT,
+  getBuiltinActionPlanDefinition,
+  getBuiltinActionPlanDefinitionByRecommendationId,
+  attachActionPlanToPipelineContext,
+  readActionPlanFromPipelineContext,
+  attachActionPlanToPipelineResult,
+  readActionPlanFromPipelineResult,
+  applyActionPlanBuilderToPipelineResult
+} from './actionPlans/runtime/index';
+export type {
+  ActionStep,
+  ActionStepTemplate,
+  ActionPlanDefinition,
+  ActionPlanMetadata,
+  ActionPlanRecord,
+  ActionPlanContext,
+  ActionPlanWarning,
+  ActionPlanSummary,
+  ActionPlanTelemetry,
+  ActionPlanResult
+} from './actionPlans/runtime/index';
