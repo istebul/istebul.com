@@ -64,6 +64,43 @@ export type {
   ReportPipelineRuntimeOptions
 } from './pipeline/runtime/index';
 
+/** Report Model Builder Runtime (PR-104B) */
+export {
+  REPORT_PART_LABELS,
+  REPORT_PART_ORDER,
+  createReportModelContext,
+  PIPELINE_BAG_REPORT_MODEL_RUNTIME_RESULT_KEY,
+  ReportRegistryRuntime,
+  createReportRegistryRuntime,
+  ReportModelBuilderRuntime,
+  createReportModelBuilderRuntime,
+  attachReportModelToPipelineContext,
+  readReportModelFromPipelineContext,
+  attachReportModelToPipelineResult,
+  readReportModelFromPipelineResult,
+  applyReportModelBuilderToPipelineResult
+} from './modelBuilder/runtime/index';
+export type {
+  ReportPartId,
+  ReportPartDefinition,
+  ReportDataset,
+  ReportDecision,
+  ReportPolicyInformation,
+  ReportMappedRecommendation,
+  ReportRecommendationInformation,
+  ReportMappedAction,
+  ReportActionPlanInformation,
+  ReportSummaryInformation,
+  ReportModelContext,
+  ReportModelWarning,
+  ReportModelTelemetry,
+  ReportModelResult,
+  /** Sunumdan bağımsız ReportModel (PR-104B) — foundation ReportModel ile karışmaz */
+  ReportModel as ReportBuilderModel,
+  /** Builder metadata (PR-104B) — foundation ReportMetadata ile karışmaz */
+  ReportMetadata as ReportBuilderMetadata
+} from './modelBuilder/runtime/index';
+
 export {
   REPORT_REGISTRY_STRUCTURE_COUNT,
   REPORT_PROFILE_REGISTRY,

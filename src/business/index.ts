@@ -766,7 +766,20 @@ export {
   createReportPipelineRuntime,
   nowMs as reportNowMs,
   startReportStageTimer,
-  endReportStageTimer
+  endReportStageTimer,
+  REPORT_PART_LABELS,
+  REPORT_PART_ORDER,
+  createReportModelContext,
+  PIPELINE_BAG_REPORT_MODEL_RUNTIME_RESULT_KEY,
+  ReportRegistryRuntime,
+  createReportRegistryRuntime,
+  ReportModelBuilderRuntime,
+  createReportModelBuilderRuntime,
+  attachReportModelToPipelineContext,
+  readReportModelFromPipelineContext,
+  attachReportModelToPipelineResult,
+  readReportModelFromPipelineResult,
+  applyReportModelBuilderToPipelineResult
 } from './report';
 export type {
   ReportStage,
@@ -809,7 +822,23 @@ export type {
   ReportPipelineResult,
   ReportRuntimeErrorCode,
   ReportContextResolver,
-  ReportPipelineRuntimeOptions
+  ReportPipelineRuntimeOptions,
+  ReportPartId,
+  ReportPartDefinition,
+  ReportDataset,
+  ReportDecision,
+  ReportPolicyInformation,
+  ReportMappedRecommendation,
+  ReportRecommendationInformation,
+  ReportMappedAction,
+  ReportActionPlanInformation,
+  ReportSummaryInformation,
+  ReportModelContext,
+  ReportModelWarning,
+  ReportModelTelemetry,
+  ReportModelResult,
+  ReportBuilderModel,
+  ReportBuilderMetadata
 } from './report';
 
 /** Document Engine — Architecture Freeze v1.0 foundation */
