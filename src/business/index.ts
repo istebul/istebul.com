@@ -194,7 +194,16 @@ export {
   toFoundationSemanticMappingResult,
   BUSINESS_FIELD_CATALOG,
   BUILTIN_SEMANTIC_RULES,
-  normalizeSemanticKey
+  normalizeSemanticKey,
+  DatasetNormalizerRuntime,
+  createDatasetNormalizerRuntime,
+  NormalizationRegistryRuntime,
+  createNormalizationRegistryRuntime,
+  createNormalizationContext,
+  createNormalizationContextFromSemantic,
+  attachNormalizationToPipelineContext,
+  PIPELINE_BAG_NORMALIZATION_RESULT_KEY,
+  BUILTIN_NORMALIZATION_RULES
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -263,7 +272,14 @@ export type {
   SemanticContext,
   SemanticResult,
   SemanticColumnResult,
-  SemanticMappingTelemetry
+  SemanticMappingTelemetry,
+  NormalizedField,
+  NormalizedPrimitiveType,
+  NormalizedRecord,
+  NormalizationContext,
+  NormalizationResult,
+  NormalizationWarning,
+  NormalizationTelemetry
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */

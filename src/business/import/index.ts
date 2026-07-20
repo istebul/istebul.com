@@ -281,3 +281,33 @@ export type {
   SemanticMappingTelemetry,
   SemanticConfidenceDistribution
 } from './mappers/runtime';
+
+/** Dataset Normalizer Runtime (PR-101H) */
+export {
+  DatasetNormalizerRuntime,
+  createDatasetNormalizerRuntime,
+  NormalizationRegistryRuntime,
+  createNormalizationRegistryRuntime,
+  createNormalizationContext,
+  createNormalizationContextFromSemantic,
+  PIPELINE_BAG_NORMALIZATION_RESULT_KEY,
+  attachNormalizationToPipelineContext,
+  readNormalizationFromPipelineContext,
+  attachNormalizationToPipelineResult,
+  readNormalizationFromPipelineResult,
+  inferPrimitiveType,
+  BUILTIN_NORMALIZATION_RULES
+} from './normalizers/runtime';
+export type {
+  NormalizedField,
+  NormalizedPrimitiveType,
+  NormalizedRecord,
+  NormalizationRule,
+  FieldNormalizationState,
+  NormalizationContext,
+  NormalizationInputRow,
+  NormalizationResult,
+  NormalizationWarning,
+  AppliedNormalizationRule,
+  NormalizationTelemetry
+} from './normalizers/runtime';
