@@ -103,3 +103,38 @@ export type {
   DecisionStrategyStatus,
   DecisionStrategyHandler
 } from './strategies/DecisionStrategyContract';
+
+/** Policy Engine Runtime (PR-103B) */
+export {
+  POLICY_SEVERITY_RANK,
+  POLICY_CATEGORY_LABELS,
+  POLICY_OUTCOME_LABELS,
+  createPolicyContext,
+  PIPELINE_BAG_POLICY_RUNTIME_RESULT_KEY,
+  PolicyRegistryRuntime,
+  createPolicyRegistryRuntime,
+  PolicyEngineRuntime,
+  createPolicyEngineRuntime,
+  BUILTIN_POLICY_DEFINITIONS,
+  BUILTIN_POLICY_DEFINITION_COUNT,
+  BUILTIN_POLICY_THRESHOLDS,
+  getBuiltinPolicyDefinition,
+  attachPolicyToPipelineContext,
+  readPolicyFromPipelineContext,
+  attachPolicyToPipelineResult,
+  readPolicyFromPipelineResult,
+  applyPolicyEngineToPipelineResult
+} from './policies/runtime/index';
+export type {
+  PolicySeverity,
+  PolicyCategory,
+  PolicyOperator,
+  PolicyDefinition,
+  PolicyOutcome,
+  PolicyEvaluation,
+  PolicyContext,
+  PolicyWarning,
+  PolicySummary,
+  PolicyTelemetry,
+  PolicyResult
+} from './policies/runtime/index';
