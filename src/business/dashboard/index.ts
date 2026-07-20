@@ -145,3 +145,36 @@ export type {
   DashboardModel as DashboardBuilderModel,
   DashboardMetadata as DashboardBuilderMetadata
 } from './modelBuilder/runtime/index';
+
+/** Widget Builder Runtime (PR-105C) */
+export {
+  WIDGET_LABELS,
+  WIDGET_ORDER,
+  WIDGET_KIND_BY_ID,
+  WIDGET_SOURCE_PART_BY_ID,
+  createWidgetContext,
+  PIPELINE_BAG_DASHBOARD_WIDGET_RUNTIME_RESULT_KEY,
+  WidgetRegistryRuntime,
+  createWidgetRegistryRuntime,
+  WidgetBuilderRuntime,
+  createWidgetBuilderRuntime,
+  BUILTIN_WIDGET_DEFINITIONS,
+  BUILTIN_WIDGET_DEFINITION_COUNT,
+  getBuiltinWidgetDefinition,
+  getBuiltinWidgetDefinitionByCode,
+  attachWidgetToPipelineContext,
+  readWidgetFromPipelineContext,
+  attachWidgetToPipelineResult,
+  readWidgetFromPipelineResult,
+  applyWidgetBuilderToPipelineResult
+} from './widgetBuilder/runtime/index';
+export type {
+  WidgetId,
+  WidgetDefinition,
+  WidgetRecord,
+  WidgetContext,
+  WidgetWarning,
+  WidgetTelemetry,
+  WidgetMetadata,
+  WidgetResult
+} from './widgetBuilder/runtime/index';
