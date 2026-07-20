@@ -178,3 +178,36 @@ export type {
   WidgetMetadata,
   WidgetResult
 } from './widgetBuilder/runtime/index';
+
+/** KPI Board Runtime (PR-105D) */
+export {
+  KPI_LABELS,
+  KPI_ORDER,
+  KPI_UNIT_BY_ID,
+  KPI_SOURCE_PART_BY_ID,
+  createKpiBoardContext,
+  PIPELINE_BAG_DASHBOARD_KPI_BOARD_RUNTIME_RESULT_KEY,
+  KpiRegistryRuntime,
+  createKpiRegistryRuntime,
+  KpiBoardRuntime,
+  createKpiBoardRuntime,
+  BUILTIN_KPI_DEFINITIONS,
+  BUILTIN_KPI_DEFINITION_COUNT,
+  getBuiltinKpiDefinition,
+  getBuiltinKpiDefinitionByCode,
+  attachKpiBoardToPipelineContext,
+  readKpiBoardFromPipelineContext,
+  attachKpiBoardToPipelineResult,
+  readKpiBoardFromPipelineResult,
+  applyKpiBoardToPipelineResult
+} from './kpiBoard/runtime/index';
+export type {
+  KpiId,
+  KpiDefinition,
+  KpiRecord,
+  KpiBoardContext,
+  KpiBoardWarning,
+  KpiBoardTelemetry,
+  KpiBoardMetadata,
+  KpiBoardResult
+} from './kpiBoard/runtime/index';
