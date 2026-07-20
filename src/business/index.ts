@@ -998,7 +998,7 @@ export type {
   ThemeDefinitionEntry
 } from './document';
 
-/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) */
+/** Dashboard Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-105A) + Model Builder (PR-105B) */
 export {
   DASHBOARD_MODEL_COUNT,
   DASHBOARD_EXECUTION_STATUS_LABELS,
@@ -1034,7 +1034,20 @@ export {
   createDashboardPipelineRuntime,
   nowMs as dashboardNowMs,
   startDashboardStageTimer,
-  endDashboardStageTimer
+  endDashboardStageTimer,
+  DASHBOARD_PART_LABELS,
+  DASHBOARD_PART_ORDER,
+  createDashboardModelContext,
+  PIPELINE_BAG_DASHBOARD_MODEL_RUNTIME_RESULT_KEY,
+  DashboardRegistryRuntime,
+  createDashboardRegistryRuntime,
+  DashboardModelBuilderRuntime,
+  createDashboardModelBuilderRuntime,
+  attachDashboardModelToPipelineContext,
+  readDashboardModelFromPipelineContext,
+  attachDashboardModelToPipelineResult,
+  readDashboardModelFromPipelineResult,
+  applyDashboardModelBuilderToPipelineResult
 } from './dashboard';
 export type {
   DashboardStage,
@@ -1079,7 +1092,26 @@ export type {
   DashboardPipelineResult,
   DashboardRuntimeErrorCode,
   DashboardContextResolver,
-  DashboardPipelineRuntimeOptions
+  DashboardPipelineRuntimeOptions,
+  DashboardPartId,
+  DashboardPartDefinition,
+  DashboardDataset,
+  DashboardReportSummaryInformation,
+  DashboardSectionReference,
+  DashboardSectionReferences,
+  DashboardNarrativeReferenceKind,
+  DashboardNarrativeReference,
+  DashboardNarrativeReferences,
+  DashboardRecommendationReference,
+  DashboardRecommendationReferences,
+  DashboardActionPlanReference,
+  DashboardActionPlanReferences,
+  DashboardModelContext,
+  DashboardModelWarning,
+  DashboardModelTelemetry,
+  DashboardModelResult,
+  DashboardBuilderModel,
+  DashboardBuilderMetadata
 } from './dashboard';
 
 /** Export Engine — Architecture Freeze v1.0 foundation */

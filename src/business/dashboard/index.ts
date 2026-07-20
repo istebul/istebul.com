@@ -107,3 +107,41 @@ export type { DashboardRegistryKind } from './constants/DashboardEngineConstants
 
 export type { WidgetDefinitionEntry } from './widgets/WidgetContract';
 export type { DashboardLayoutDefinitionEntry } from './layouts/LayoutContract';
+
+/** Dashboard Model Builder Runtime (PR-105B) */
+export {
+  DASHBOARD_PART_LABELS,
+  DASHBOARD_PART_ORDER,
+  createDashboardModelContext,
+  PIPELINE_BAG_DASHBOARD_MODEL_RUNTIME_RESULT_KEY,
+  DashboardRegistryRuntime,
+  createDashboardRegistryRuntime,
+  DashboardModelBuilderRuntime,
+  createDashboardModelBuilderRuntime,
+  attachDashboardModelToPipelineContext,
+  readDashboardModelFromPipelineContext,
+  attachDashboardModelToPipelineResult,
+  readDashboardModelFromPipelineResult,
+  applyDashboardModelBuilderToPipelineResult
+} from './modelBuilder/runtime/index';
+export type {
+  DashboardPartId,
+  DashboardPartDefinition,
+  DashboardDataset,
+  DashboardReportSummaryInformation,
+  DashboardSectionReference,
+  DashboardSectionReferences,
+  DashboardNarrativeReferenceKind,
+  DashboardNarrativeReference,
+  DashboardNarrativeReferences,
+  DashboardRecommendationReference,
+  DashboardRecommendationReferences,
+  DashboardActionPlanReference,
+  DashboardActionPlanReferences,
+  DashboardModelContext,
+  DashboardModelWarning,
+  DashboardModelTelemetry,
+  DashboardModelResult,
+  DashboardModel as DashboardBuilderModel,
+  DashboardMetadata as DashboardBuilderMetadata
+} from './modelBuilder/runtime/index';
