@@ -250,3 +250,34 @@ export type {
   ExcelReaderTelemetry,
   ExcelImportReaderOptions
 } from './readers/excel';
+
+/** Semantic Mapping Runtime (PR-101G) */
+export {
+  SemanticMappingRuntime,
+  createSemanticMappingRuntime,
+  SemanticRegistryRuntime,
+  createSemanticRegistryRuntime,
+  createSemanticContext,
+  toFoundationSemanticMappingResult,
+  PIPELINE_BAG_SEMANTIC_RESULT_KEY,
+  attachSemanticToPipelineContext,
+  readSemanticFromPipelineContext,
+  attachSemanticToPipelineResult,
+  readSemanticFromPipelineResult,
+  normalizeSemanticKey,
+  clampConfidence as clampSemanticConfidence,
+  roundConfidence as roundSemanticConfidence,
+  confidenceBand as semanticConfidenceBand,
+  BUSINESS_FIELD_CATALOG,
+  BUILTIN_SEMANTIC_RULES
+} from './mappers/runtime';
+export type {
+  SemanticCandidate,
+  SemanticRule,
+  BusinessFieldDefinition,
+  SemanticContext,
+  SemanticResult,
+  SemanticColumnResult,
+  SemanticMappingTelemetry,
+  SemanticConfidenceDistribution
+} from './mappers/runtime';

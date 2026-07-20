@@ -184,7 +184,17 @@ export {
   registerExcelImportReader,
   createExcelReaderRegistration,
   attachExcelResultToPipelineContext,
-  PIPELINE_BAG_EXCEL_RESULT_KEY
+  PIPELINE_BAG_EXCEL_RESULT_KEY,
+  SemanticMappingRuntime,
+  createSemanticMappingRuntime,
+  SemanticRegistryRuntime,
+  createSemanticRegistryRuntime,
+  createSemanticContext,
+  attachSemanticToPipelineContext,
+  toFoundationSemanticMappingResult,
+  BUSINESS_FIELD_CATALOG,
+  BUILTIN_SEMANTIC_RULES,
+  normalizeSemanticKey
 } from './import';
 export type {
   ImportAdapterTypeId,
@@ -247,7 +257,13 @@ export type {
   ExcelReaderContext,
   ExcelReaderResult,
   ExcelReaderTelemetry,
-  ExcelImportReaderOptions
+  ExcelImportReaderOptions,
+  SemanticCandidate,
+  SemanticRule,
+  SemanticContext,
+  SemanticResult,
+  SemanticColumnResult,
+  SemanticMappingTelemetry
 } from './import';
 
 /** Analysis Engine — Architecture Freeze v1.0 foundation */
