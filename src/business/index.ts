@@ -596,7 +596,22 @@ export {
   readRecommendationFromPipelineContext,
   attachRecommendationToPipelineResult,
   readRecommendationFromPipelineResult,
-  applyRecommendationBuilderToPipelineResult
+  applyRecommendationBuilderToPipelineResult,
+  createActionPlanContext,
+  PIPELINE_BAG_ACTION_PLAN_RUNTIME_RESULT_KEY,
+  ActionPlanRegistryRuntime,
+  createActionPlanRegistryRuntime,
+  ActionPlanBuilderRuntime,
+  createActionPlanBuilderRuntime,
+  BUILTIN_ACTION_PLAN_DEFINITIONS,
+  BUILTIN_ACTION_PLAN_DEFINITION_COUNT,
+  getBuiltinActionPlanDefinition,
+  getBuiltinActionPlanDefinitionByRecommendationId,
+  attachActionPlanToPipelineContext,
+  readActionPlanFromPipelineContext,
+  attachActionPlanToPipelineResult,
+  readActionPlanFromPipelineResult,
+  applyActionPlanBuilderToPipelineResult
 } from './decision';
 export type {
   DecisionStage,
@@ -660,7 +675,17 @@ export type {
   RecommendationWarning,
   RecommendationSummary,
   RecommendationTelemetry,
-  RecommendationResult
+  RecommendationResult,
+  ActionStep,
+  ActionStepTemplate,
+  ActionPlanDefinition,
+  ActionPlanMetadata,
+  ActionPlanRecord,
+  ActionPlanContext,
+  ActionPlanWarning,
+  ActionPlanSummary,
+  ActionPlanTelemetry,
+  ActionPlanResult
 } from './decision';
 
 /** Report Engine — Architecture Freeze v1.0 foundation */
