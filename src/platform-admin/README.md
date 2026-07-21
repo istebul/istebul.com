@@ -109,4 +109,14 @@ src/platform-admin/
       builtinSystemMonitoring.ts
       systemMonitoringValidation.ts
       index.ts
+  integration/             # PR-201F End-to-End Facade
+    index.ts
+    runtime/
+      PlatformAdminExecutionContext.ts
+      PlatformAdminExecutionResult.ts
+      PlatformAdminPipelineRunner.ts
+      PlatformAdminRuntimeFacade.ts
+      stages.ts
+      helpers.ts
+      index.ts
 ```
