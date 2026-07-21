@@ -1,9 +1,9 @@
 /**
- * İSTEBUL Platform Admin — foundation + tenant + user + subscription management.
+ * İSTEBUL Platform Admin — foundation + tenant + user + subscription + system monitoring.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-201A / PR-201B / PR-201C runtime dosyaları değiştirilmez.
- * Yalnızca projeksiyon; Payment, Billing, Auth, API, veritabanı yok.
+ * PR-201A–201D runtime dosyaları değiştirilmez.
+ * Yalnızca projeksiyon; gerçek monitoring / payment / auth / API / DB yok.
  */
 
 export type {
@@ -142,3 +142,36 @@ export {
   validateSubscriptionManagementContext,
   resolveRequestedSubscriptions
 } from './subscriptions/index';
+
+/** System Monitoring Runtime — PR-201E */
+export type {
+  ServiceStatus,
+  HealthStatus,
+  SystemRuntimeMetrics,
+  SystemIdentity,
+  SystemMonitoringDefinition,
+  SystemMonitoringProjection,
+  SystemMonitoringContext,
+  SystemMonitoringSummary,
+  SystemMonitoringSummaryItem,
+  SystemMonitoringValidationIssue,
+  SystemMonitoringTelemetry,
+  SystemMonitoringResult
+} from './system-monitoring/index';
+
+export {
+  toSystemMonitoringProjection,
+  createSystemMonitoringContext,
+  buildSystemMonitoringSummary,
+  buildSystemMonitoringSummaryItems,
+  PIPELINE_BAG_SYSTEM_MONITORING_RESULT_KEY,
+  SystemMonitoringRegistryRuntime,
+  createSystemMonitoringRegistryRuntime,
+  SystemMonitoringRuntime,
+  createSystemMonitoringRuntime,
+  BUILTIN_SYSTEM_MONITORING_DEFINITIONS,
+  BUILTIN_SYSTEM_MONITORING_DEFINITION_COUNT,
+  getBuiltinSystemMonitoringDefinition,
+  validateSystemMonitoringContext,
+  resolveRequestedServices
+} from './system-monitoring/index';
