@@ -85,4 +85,16 @@ src/platform-admin/
       builtinUsers.ts
       userValidation.ts
       index.ts
+  subscriptions/           # PR-201D Subscription Management
+    index.ts
+    runtime/
+      Subscription.ts
+      SubscriptionManagementContext.ts
+      SubscriptionManagementResult.ts
+      SubscriptionRegistryRuntime.ts
+      SubscriptionSummary.ts
+      SubscriptionManagementRuntime.ts
+      builtinSubscriptions.ts
+      subscriptionValidation.ts
+      index.ts
 ```
