@@ -73,4 +73,16 @@ src/platform-admin/
       builtinTenants.ts
       tenantValidation.ts
       index.ts
+  users/                   # PR-201C User Management
+    index.ts
+    runtime/
+      User.ts
+      UserManagementContext.ts
+      UserManagementResult.ts
+      UserRegistryRuntime.ts
+      UserSummary.ts
+      UserManagementRuntime.ts
+      builtinUsers.ts
+      userValidation.ts
+      index.ts
 ```
