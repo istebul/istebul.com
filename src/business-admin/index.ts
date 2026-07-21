@@ -1,10 +1,10 @@
 /**
- * İSTEBUL Business Admin — foundation + Dashboard Workspace.
+ * İSTEBUL Business Admin — foundation + Dashboard + Reports Workspace.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-202A foundation runtime dosyaları değiştirilmez.
- * Dashboard Engine / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
- * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime yok.
+ * PR-202A foundation / PR-202B Dashboard Workspace runtime dosyaları değiştirilmez.
+ * Report Engine / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
+ * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime / Export yok.
  */
 
 export type {
@@ -94,3 +94,59 @@ export {
   DASHBOARD_WORKSPACE_CSS,
   ensureDashboardWorkspaceStyles
 } from './dashboard/index';
+
+/** Reports Workspace — PR-202C */
+export type {
+  ReportResult,
+  ReportResultMetadata,
+  ReportResultExecutiveSummary,
+  ReportResultSection,
+  ReportResultFinding,
+  ReportResultRecommendation,
+  ReportsWorkspaceWidgetId,
+  ReportsWorkspaceWidgetKind,
+  ReportsWorkspaceWidgetStatus,
+  ReportsWorkspaceWidgetDefinition,
+  ReportsWorkspaceListItem,
+  ReportsWorkspaceOverviewProjection,
+  ReportsWorkspaceDetailProjection,
+  ReportsWorkspaceStatusProjection,
+  ReportsWorkspaceExecutionProjection,
+  ReportsWorkspaceWidgetProjection,
+  ReportsWorkspaceContext,
+  ReportsWorkspaceSummary,
+  ReportsWorkspaceSummaryItem,
+  ReportsWorkspaceValidationIssue,
+  ReportsWorkspaceTelemetry,
+  ReportsWorkspaceResult,
+  ReportsWorkspaceLayoutOptions
+} from './reports/index';
+
+export {
+  toEmptyReportsWidgetProjection,
+  createReportsWorkspaceContext,
+  buildReportsWorkspaceSummary,
+  buildReportsWorkspaceSummaryItems,
+  PIPELINE_BAG_REPORTS_WORKSPACE_RESULT_KEY,
+  ReportsWorkspaceRegistry,
+  createReportsWorkspaceRegistry,
+  ReportsWorkspaceRuntime,
+  createReportsWorkspaceRuntime,
+  BUILTIN_REPORTS_WORKSPACE_WIDGETS,
+  BUILTIN_REPORTS_WORKSPACE_WIDGET_COUNT,
+  getBuiltinReportsWorkspaceWidget,
+  validateReportsWorkspaceContext,
+  resolveRequestedReportsWidgets,
+  projectReportsWorkspaceWidget,
+  projectReportsWorkspaceWidgets,
+  createReportsWorkspaceHeader,
+  createReportsWorkspaceOverview,
+  createReportsWorkspaceReportList,
+  createReportsWorkspaceReportDetail,
+  createReportsWorkspaceSummaryPanel,
+  createReportsWorkspaceLayout,
+  mountReportsWorkspace,
+  REPORTS_WORKSPACE_STYLE_ID,
+  REPORTS_WORKSPACE_CSS,
+  ensureReportsWorkspaceStyles
+} from './reports/index';
