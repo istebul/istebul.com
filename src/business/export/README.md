@@ -17,6 +17,7 @@ Tanım katmanı; gerçek PDF/DOCX/XLSX/PPTX/HTML/CSV veya dosya kaydı yoktur.
 | `modelBuilder/runtime/` | Export Model Builder (PR-106B) — formatlardan bağımsız projeksiyon |
 | `renderer/runtime/` | Renderer Runtime (PR-106C) — format-bağımsız RenderDocument |
 | `format/runtime/` | Format Runtime (PR-106D) — formata özgü FormatDocument temsilleri |
+| `summary/runtime/` | Export Summary Runtime (PR-106E) — deterministik pipeline özeti |
 | `registry/` | Profil, format, şablon, artifact |
 | `constants/` | Sabitler |
 | `formats/` | Format kayıt sözleşmesi |
@@ -59,3 +60,11 @@ Validation başarılıysa bag'e iskelet `ExportModel` yazılır. Renderer, forma
 - Deterministik format sırası
 - Pipeline bag: `exportFormatRuntimeResult` + `bag.format`
 - PR-106A–106C dosyalarına dokunmaz (`applyExportFormatToPipelineResult`)
+
+## Export Summary Runtime (PR-106E)
+
+`ExportSummaryRuntime` Validation / ExportModel / RenderDocument / FormatDocument[] üzerinden deterministik özet üretir (projection only).
+
+- Bölümler: Metadata, Validation, Export Model, Renderer, Format, Execution, Warnings
+- Pipeline bag: `exportSummaryRuntimeResult` + foundation `bag.summary`
+- PR-106A–106D dosyalarına dokunmaz (`applyExportSummaryToPipelineResult`)
