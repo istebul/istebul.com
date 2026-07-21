@@ -106,6 +106,39 @@ export type {
   ExportMetadata as ExportBuilderMetadata
 } from './modelBuilder/runtime/index';
 
+/** Export Renderer Runtime (PR-106C) */
+export {
+  RENDER_PART_LABELS,
+  RENDER_PART_ORDER,
+  createRendererContext,
+  PIPELINE_BAG_EXPORT_RENDERER_RUNTIME_RESULT_KEY,
+  RendererRegistryRuntime,
+  createRendererRegistryRuntime,
+  RendererRuntime,
+  createRendererRuntime,
+  attachRendererToPipelineContext,
+  readRendererFromPipelineContext,
+  attachRendererToPipelineResult,
+  readRendererFromPipelineResult,
+  applyExportRendererToPipelineResult
+} from './renderer/runtime/index';
+export type {
+  RenderPartId,
+  RenderPartDefinition,
+  RenderBlockKind,
+  RenderBlockSource,
+  RenderBlock,
+  RenderSection,
+  RenderMetadata,
+  RenderHeader,
+  RenderFooter,
+  RenderDocument,
+  RendererContext,
+  RendererWarning,
+  RendererTelemetry,
+  RendererResult
+} from './renderer/runtime/index';
+
 export {
   EXPORT_REGISTRY_STRUCTURE_COUNT,
   EXPORT_PROFILE_REGISTRY,

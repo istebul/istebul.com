@@ -1259,7 +1259,20 @@ export {
   readExportModelFromPipelineContext,
   attachExportModelToPipelineResult,
   readExportModelFromPipelineResult,
-  applyExportModelBuilderToPipelineResult
+  applyExportModelBuilderToPipelineResult,
+  RENDER_PART_LABELS,
+  RENDER_PART_ORDER,
+  createRendererContext,
+  PIPELINE_BAG_EXPORT_RENDERER_RUNTIME_RESULT_KEY,
+  RendererRegistryRuntime,
+  createRendererRegistryRuntime,
+  RendererRuntime,
+  createRendererRuntime,
+  attachRendererToPipelineContext,
+  readRendererFromPipelineContext,
+  attachRendererToPipelineResult,
+  readRendererFromPipelineResult,
+  applyExportRendererToPipelineResult
 } from './export';
 export type {
   ExportStage,
@@ -1322,5 +1335,19 @@ export type {
   ExportModelTelemetry,
   ExportModelResult,
   ExportBuilderModel,
-  ExportBuilderMetadata
+  ExportBuilderMetadata,
+  RenderPartId,
+  RenderPartDefinition,
+  RenderBlockKind,
+  RenderBlockSource,
+  RenderBlock,
+  RenderSection,
+  RenderMetadata,
+  RenderHeader,
+  RenderFooter,
+  RenderDocument,
+  RendererContext,
+  RendererWarning,
+  RendererTelemetry,
+  RendererResult
 } from './export';

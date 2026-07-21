@@ -15,6 +15,7 @@ Tanım katmanı; gerçek PDF/DOCX/XLSX/PPTX/HTML/CSV veya dosya kaydı yoktur.
 | `pipeline/` | Aşama tanımları |
 | `pipeline/runtime/` | Pipeline Runtime (PR-106A) — doğrulama + iskelet ExportModel |
 | `modelBuilder/runtime/` | Export Model Builder (PR-106B) — formatlardan bağımsız projeksiyon |
+| `renderer/runtime/` | Renderer Runtime (PR-106C) — format-bağımsız RenderDocument |
 | `registry/` | Profil, format, şablon, artifact |
 | `constants/` | Sabitler |
 | `formats/` | Format kayıt sözleşmesi |
@@ -39,3 +40,12 @@ Validation başarılıysa bag'e iskelet `ExportModel` yazılır. Renderer, forma
 - Parçalar: Metadata, Content, Document / Dashboard / Report / Section / Widget / KPI References
 - Pipeline bag: `exportModelRuntimeResult` + iskelet `bag.exportModel`
 - PR-106A orchestrator dosyalarına dokunmaz (`applyExportModelBuilderToPipelineResult`)
+
+## Renderer Runtime (PR-106C)
+
+`RendererRuntime` ExportModel üzerinden format-bağımsız `RenderDocument` üretir (projection only).
+
+- Parçalar: Metadata, Header, Sections, Content Blocks, Footer
+- Deterministik bölüm/blok sırası
+- Pipeline bag: `exportRendererRuntimeResult` + `bag.render`
+- PR-106A–106B dosyalarına dokunmaz (`applyExportRendererToPipelineResult`)
