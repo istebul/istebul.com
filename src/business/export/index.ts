@@ -233,5 +233,30 @@ export {
 } from './constants/ExportEngineConstants';
 export type { ExportRegistryKind } from './constants/ExportEngineConstants';
 
+/** End-to-End Export Runtime (PR-106F) */
+export {
+  ExportRuntimeFacade,
+  createExportRuntimeFacade,
+  ExportPipelineRunner,
+  createExportPipelineRunner,
+  createExportExecutionContext,
+  resolveExportContext,
+  ensureRequestIds,
+  createSkippedStageExecution,
+  createStageExecution,
+  replaceStageExecution,
+  buildFinalExportResult,
+  syncExportResultFromBag,
+  buildExportExecutionTelemetry
+} from './integration/runtime/index';
+export type {
+  ExportExecutionContext,
+  CreateExportExecutionContextInput,
+  ExportExecutionResult,
+  ExportExecutionTelemetry,
+  ExportPipelineExecutionSummary,
+  ExportPipelineRunnerDependencies
+} from './integration/runtime/index';
+
 export type { FormatDefinitionEntry } from './formats/FormatContract';
 export type { TemplateDefinitionEntry } from './templates/TemplateContract';
