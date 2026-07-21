@@ -34,6 +34,7 @@ module.exports = {
         'src/ai-decision/**/*.ts',
         'src/business/**/*.ts',
         'src/platform-admin/**/*.ts',
+        'src/business-admin/**/*.ts',
       ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
