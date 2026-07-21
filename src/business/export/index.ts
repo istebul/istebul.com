@@ -139,6 +139,38 @@ export type {
   RendererResult
 } from './renderer/runtime/index';
 
+/** Export Format Runtime (PR-106D) */
+export {
+  FORMAT_REPRESENTATION_LABELS,
+  FORMAT_REPRESENTATION_ORDER,
+  FORMAT_REPRESENTATION_MIME,
+  FORMAT_REPRESENTATION_EXTENSION,
+  createFormatContext,
+  PIPELINE_BAG_EXPORT_FORMAT_RUNTIME_RESULT_KEY,
+  FormatRegistryRuntime,
+  createFormatRegistryRuntime,
+  FormatRuntime,
+  createFormatRuntime,
+  toExportFormats,
+  attachFormatToPipelineContext,
+  readFormatFromPipelineContext,
+  attachFormatToPipelineResult,
+  readFormatFromPipelineResult,
+  applyExportFormatToPipelineResult
+} from './format/runtime/index';
+export type {
+  FormatRepresentationKind,
+  FormatDefinition,
+  FormatDocumentMetadata,
+  FormatOutlineNode,
+  FormatRepresentationModel,
+  FormatDocument,
+  FormatContext,
+  FormatWarning,
+  FormatTelemetry,
+  FormatResult
+} from './format/runtime/index';
+
 export {
   EXPORT_REGISTRY_STRUCTURE_COUNT,
   EXPORT_PROFILE_REGISTRY,

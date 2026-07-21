@@ -1272,7 +1272,23 @@ export {
   readRendererFromPipelineContext,
   attachRendererToPipelineResult,
   readRendererFromPipelineResult,
-  applyExportRendererToPipelineResult
+  applyExportRendererToPipelineResult,
+  FORMAT_REPRESENTATION_LABELS,
+  FORMAT_REPRESENTATION_ORDER,
+  FORMAT_REPRESENTATION_MIME,
+  FORMAT_REPRESENTATION_EXTENSION,
+  createFormatContext,
+  PIPELINE_BAG_EXPORT_FORMAT_RUNTIME_RESULT_KEY,
+  FormatRegistryRuntime,
+  createFormatRegistryRuntime,
+  FormatRuntime,
+  createFormatRuntime,
+  toExportFormats,
+  attachFormatToPipelineContext,
+  readFormatFromPipelineContext,
+  attachFormatToPipelineResult,
+  readFormatFromPipelineResult,
+  applyExportFormatToPipelineResult
 } from './export';
 export type {
   ExportStage,
@@ -1349,5 +1365,15 @@ export type {
   RendererContext,
   RendererWarning,
   RendererTelemetry,
-  RendererResult
+  RendererResult,
+  FormatRepresentationKind,
+  FormatDefinition,
+  FormatDocumentMetadata,
+  FormatOutlineNode,
+  FormatRepresentationModel,
+  FormatDocument,
+  FormatContext,
+  FormatWarning,
+  FormatTelemetry,
+  FormatResult
 } from './export';
