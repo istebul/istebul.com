@@ -171,6 +171,35 @@ export type {
   FormatResult
 } from './format/runtime/index';
 
+/** Export Summary Runtime (PR-106E) */
+export {
+  EXPORT_SUMMARY_SECTION_LABELS,
+  EXPORT_SUMMARY_SECTION_ORDER,
+  createExportSummaryContext,
+  PIPELINE_BAG_EXPORT_SUMMARY_RUNTIME_RESULT_KEY,
+  ExportSummaryRegistryRuntime,
+  createExportSummaryRegistryRuntime,
+  ExportSummaryRuntime,
+  createExportSummaryRuntime,
+  attachExportSummaryToPipelineContext,
+  readExportSummaryFromPipelineContext,
+  attachExportSummaryToPipelineResult,
+  readExportSummaryFromPipelineResult,
+  applyExportSummaryToPipelineResult
+} from './summary/runtime/index';
+export type {
+  ExportSummarySectionId,
+  ExportSummarySection,
+  ExportSummaryMetadata,
+  ExportSummaryRecord,
+  ExportSummaryContext,
+  ExportSummaryWarning,
+  ExportSummaryTelemetry,
+  ExportSummaryResult,
+  ExportSummarySectionDefinition,
+  ExportSummary as ExportRuntimeSummary
+} from './summary/runtime/index';
+
 export {
   EXPORT_REGISTRY_STRUCTURE_COUNT,
   EXPORT_PROFILE_REGISTRY,

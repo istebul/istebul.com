@@ -1288,7 +1288,20 @@ export {
   readFormatFromPipelineContext,
   attachFormatToPipelineResult,
   readFormatFromPipelineResult,
-  applyExportFormatToPipelineResult
+  applyExportFormatToPipelineResult,
+  EXPORT_SUMMARY_SECTION_LABELS,
+  EXPORT_SUMMARY_SECTION_ORDER,
+  createExportSummaryContext,
+  PIPELINE_BAG_EXPORT_SUMMARY_RUNTIME_RESULT_KEY,
+  ExportSummaryRegistryRuntime,
+  createExportSummaryRegistryRuntime,
+  ExportSummaryRuntime,
+  createExportSummaryRuntime,
+  attachExportSummaryToPipelineContext,
+  readExportSummaryFromPipelineContext,
+  attachExportSummaryToPipelineResult,
+  readExportSummaryFromPipelineResult,
+  applyExportSummaryToPipelineResult
 } from './export';
 export type {
   ExportStage,
@@ -1375,5 +1388,15 @@ export type {
   FormatContext,
   FormatWarning,
   FormatTelemetry,
-  FormatResult
+  FormatResult,
+  ExportSummarySectionId,
+  ExportSummarySection,
+  ExportSummaryMetadata,
+  ExportSummaryRecord,
+  ExportSummaryContext,
+  ExportSummaryWarning,
+  ExportSummaryTelemetry,
+  ExportSummaryResult,
+  ExportSummarySectionDefinition,
+  ExportRuntimeSummary
 } from './export';
