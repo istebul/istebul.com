@@ -50,7 +50,7 @@ Platform Validation → Module Registry → Platform Summary → PlatformAdminRe
 ```
 src/platform-admin/
   index.ts
-  runtime/
+  runtime/                 # PR-201A foundation (do not modify)
     PlatformAdminContext.ts
     PlatformAdminResult.ts
     PlatformAdminModule.ts
@@ -61,4 +61,16 @@ src/platform-admin/
     platformSummary.ts
     timing.ts
     index.ts
+  tenant/                  # PR-201B Tenant Management
+    index.ts
+    runtime/
+      Tenant.ts
+      TenantManagementContext.ts
+      TenantManagementResult.ts
+      TenantRegistryRuntime.ts
+      TenantSummary.ts
+      TenantManagementRuntime.ts
+      builtinTenants.ts
+      tenantValidation.ts
+      index.ts
 ```
