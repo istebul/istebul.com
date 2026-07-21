@@ -97,4 +97,16 @@ src/platform-admin/
       builtinSubscriptions.ts
       subscriptionValidation.ts
       index.ts
+  system-monitoring/       # PR-201E System Monitoring
+    index.ts
+    runtime/
+      SystemMonitoring.ts
+      SystemMonitoringContext.ts
+      SystemMonitoringResult.ts
+      SystemMonitoringRegistryRuntime.ts
+      SystemMonitoringSummary.ts
+      SystemMonitoringRuntime.ts
+      builtinSystemMonitoring.ts
+      systemMonitoringValidation.ts
+      index.ts
 ```
