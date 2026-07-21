@@ -18,6 +18,7 @@ Tanım katmanı; gerçek PDF/DOCX/XLSX/PPTX/HTML/CSV veya dosya kaydı yoktur.
 | `renderer/runtime/` | Renderer Runtime (PR-106C) — format-bağımsız RenderDocument |
 | `format/runtime/` | Format Runtime (PR-106D) — formata özgü FormatDocument temsilleri |
 | `summary/runtime/` | Export Summary Runtime (PR-106E) — deterministik pipeline özeti |
+| `integration/runtime/` | End-to-End Export Runtime (PR-106F) — facade + pipeline runner |
 | `registry/` | Profil, format, şablon, artifact |
 | `constants/` | Sabitler |
 | `formats/` | Format kayıt sözleşmesi |
@@ -68,3 +69,12 @@ Validation başarılıysa bag'e iskelet `ExportModel` yazılır. Renderer, forma
 - Bölümler: Metadata, Validation, Export Model, Renderer, Format, Execution, Warnings
 - Pipeline bag: `exportSummaryRuntimeResult` + foundation `bag.summary`
 - PR-106A–106D dosyalarına dokunmaz (`applyExportSummaryToPipelineResult`)
+
+## End-to-End Export Runtime (PR-106F)
+
+`ExportRuntimeFacade` / `ExportPipelineRunner` Validation → Export Model → Renderer → Format → Summary → ExportResult akışını birleştirir.
+
+- Validation başarısızsa Model / Renderer / Format atlanır; Summary yine çalışır
+- Her durumda geçerli foundation `ExportResult` döner
+- Pipeline bag: mevcut `validation`, `exportModel`, `render`, `format`, `summary` + runtime sonuç anahtarları
+- PR-106A–106E dosyalarına dokunmaz (`apply*` köprüleri)

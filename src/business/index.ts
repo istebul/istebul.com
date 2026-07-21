@@ -1301,7 +1301,20 @@ export {
   readExportSummaryFromPipelineContext,
   attachExportSummaryToPipelineResult,
   readExportSummaryFromPipelineResult,
-  applyExportSummaryToPipelineResult
+  applyExportSummaryToPipelineResult,
+  ExportRuntimeFacade,
+  createExportRuntimeFacade,
+  ExportPipelineRunner,
+  createExportPipelineRunner,
+  createExportExecutionContext,
+  resolveExportContext,
+  ensureRequestIds as ensureExportRequestIds,
+  createSkippedStageExecution as createExportSkippedStageExecution,
+  createStageExecution as createExportStageExecution,
+  replaceStageExecution as replaceExportStageExecution,
+  buildFinalExportResult,
+  syncExportResultFromBag,
+  buildExportExecutionTelemetry
 } from './export';
 export type {
   ExportStage,
@@ -1398,5 +1411,11 @@ export type {
   ExportSummaryTelemetry,
   ExportSummaryResult,
   ExportSummarySectionDefinition,
-  ExportRuntimeSummary
+  ExportRuntimeSummary,
+  ExportExecutionContext,
+  CreateExportExecutionContextInput,
+  ExportExecutionResult,
+  ExportExecutionTelemetry,
+  ExportPipelineExecutionSummary,
+  ExportPipelineRunnerDependencies
 } from './export';
