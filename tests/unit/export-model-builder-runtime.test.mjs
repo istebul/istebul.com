@@ -288,7 +288,11 @@ describe('ExportModelBuilderRuntime', () => {
     );
     assert.equal(result.model.content.hasDocument, false);
     assert.equal(result.model.content.hasDashboard, false);
-    assert.equal(result.model.content.totalReferenceCount, 0);
+    assert.equal(result.model.documentReferences.referenceCount, 0);
+    assert.equal(result.model.dashboardReferences.referenceCount, 0);
+    assert.equal(result.model.sectionReferences.referenceCount, 0);
+    assert.equal(result.model.widgetReferences.referenceCount, 0);
+    assert.equal(result.model.kpiReferences.referenceCount, 0);
   });
 
   it('projects document-only sources without dashboard widgets', () => {
