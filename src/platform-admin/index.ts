@@ -1,7 +1,8 @@
 /**
- * İSTEBUL Platform Admin — foundation runtime (PR-201A).
+ * İSTEBUL Platform Admin — foundation + tenant management.
  *
- * Architecture Freeze v1.0 — additive foundation katmanı.
+ * Architecture Freeze v1.0 — additive katmanlar.
+ * PR-201A foundation runtime dosyaları değiştirilmez.
  * Yalnızca projeksiyon; CRUD, API, veritabanı yok.
  */
 
@@ -38,3 +39,38 @@ export {
   startStageTimer,
   endStageTimer
 } from './runtime/index';
+
+/** Tenant Management Runtime — PR-201B */
+export type {
+  TenantStatus,
+  TenantSubscriptionStatus,
+  TenantPlanId,
+  TenantLimits,
+  TenantIdentity,
+  TenantOrganization,
+  TenantDefinition,
+  TenantProjection,
+  TenantManagementContext,
+  TenantSummary,
+  TenantSummaryItem,
+  TenantManagementValidationIssue,
+  TenantManagementTelemetry,
+  TenantManagementResult
+} from './tenant/index';
+
+export {
+  toTenantProjection,
+  createTenantManagementContext,
+  buildTenantSummary,
+  buildTenantSummaryItems,
+  PIPELINE_BAG_TENANT_MANAGEMENT_RESULT_KEY,
+  TenantRegistryRuntime,
+  createTenantRegistryRuntime,
+  TenantManagementRuntime,
+  createTenantManagementRuntime,
+  BUILTIN_TENANT_DEFINITIONS,
+  BUILTIN_TENANT_DEFINITION_COUNT,
+  getBuiltinTenantDefinition,
+  validateTenantManagementContext,
+  resolveRequestedTenants
+} from './tenant/index';
