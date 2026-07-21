@@ -1,47 +1,11 @@
 /**
- * İSTEBUL Business Admin — foundation + Dashboard Workspace.
+ * İSTEBUL Business Admin — Dashboard Workspace (PR-202B).
  *
- * Architecture Freeze v1.0 — additive katmanlar.
- * PR-202A foundation runtime dosyaları değiştirilmez.
- * Dashboard Engine / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
- * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime yok.
+ * Architecture Freeze v1.0 — additive runtime + UI iskeleti.
+ * Dashboard Engine / Platform Admin / Business Runtime / Foundation değiştirilmez.
+ * Yalnızca projeksiyon; CRUD, API, DB, Charts, Realtime yok.
  */
 
-export type {
-  BusinessAdminModuleId,
-  BusinessAdminModuleCategory,
-  BusinessAdminModuleStatus,
-  BusinessAdminModule,
-  BusinessAdminModuleProjection,
-  BusinessAdminContext,
-  BusinessAdminValidationIssue,
-  BusinessAdminSummaryItem,
-  BusinessAdminExecutionSummary,
-  BusinessAdminTelemetry,
-  BusinessAdminResult,
-  StageTimer
-} from './runtime/index';
-
-export {
-  toModuleProjection,
-  createBusinessAdminContext,
-  PIPELINE_BAG_BUSINESS_ADMIN_RESULT_KEY,
-  BusinessAdminRegistryRuntime,
-  createBusinessAdminRegistryRuntime,
-  BusinessAdminRuntime,
-  createBusinessAdminRuntime,
-  BUILTIN_BUSINESS_ADMIN_MODULES,
-  BUILTIN_BUSINESS_ADMIN_MODULE_COUNT,
-  getBuiltinBusinessAdminModule,
-  validateBusinessAdminContext,
-  resolveRequestedModules,
-  buildBusinessAdminSummaryItems,
-  nowMs,
-  startStageTimer,
-  endStageTimer
-} from './runtime/index';
-
-/** Dashboard Workspace — PR-202B */
 export type {
   DashboardResult,
   DashboardResultKpi,
@@ -62,9 +26,8 @@ export type {
   DashboardWorkspaceSummaryItem,
   DashboardWorkspaceValidationIssue,
   DashboardWorkspaceTelemetry,
-  DashboardWorkspaceResult,
-  DashboardWorkspaceLayoutOptions
-} from './dashboard/index';
+  DashboardWorkspaceResult
+} from './runtime/index';
 
 export {
   toEmptyWidgetProjection,
@@ -82,7 +45,12 @@ export {
   validateDashboardWorkspaceContext,
   resolveRequestedWidgets,
   projectWorkspaceWidget,
-  projectWorkspaceWidgets,
+  projectWorkspaceWidgets
+} from './runtime/index';
+
+export type { DashboardWorkspaceLayoutOptions } from './ui/index';
+
+export {
   createDashboardWorkspaceHeader,
   createDashboardWorkspaceOverview,
   createDashboardWorkspaceCards,
@@ -93,4 +61,4 @@ export {
   DASHBOARD_WORKSPACE_STYLE_ID,
   DASHBOARD_WORKSPACE_CSS,
   ensureDashboardWorkspaceStyles
-} from './dashboard/index';
+} from './ui/index';
