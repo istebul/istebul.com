@@ -64,6 +64,48 @@ export type {
   ExportPipelineRuntimeOptions
 } from './pipeline/runtime/index';
 
+/** Export Model Builder Runtime (PR-106B) */
+export {
+  EXPORT_PART_LABELS,
+  EXPORT_PART_ORDER,
+  createExportModelContext,
+  PIPELINE_BAG_EXPORT_MODEL_RUNTIME_RESULT_KEY,
+  ExportRegistryRuntime,
+  createExportRegistryRuntime,
+  ExportModelBuilderRuntime,
+  createExportModelBuilderRuntime,
+  attachExportModelToPipelineContext,
+  readExportModelFromPipelineContext,
+  attachExportModelToPipelineResult,
+  readExportModelFromPipelineResult,
+  applyExportModelBuilderToPipelineResult
+} from './modelBuilder/runtime/index';
+export type {
+  ExportPartId,
+  ExportPartDefinition,
+  ExportContent,
+  ExportDocumentReference,
+  ExportDocumentReferences,
+  ExportDashboardReference,
+  ExportDashboardReferences,
+  ExportReportReferenceSource,
+  ExportReportReference,
+  ExportReportReferences,
+  ExportSectionReferenceSource,
+  ExportSectionReference,
+  ExportSectionReferences,
+  ExportWidgetReference,
+  ExportWidgetReferences,
+  ExportKpiReference,
+  ExportKpiReferences,
+  ExportModelContext,
+  ExportModelWarning,
+  ExportModelTelemetry,
+  ExportModelResult,
+  ExportModel as ExportBuilderModel,
+  ExportMetadata as ExportBuilderMetadata
+} from './modelBuilder/runtime/index';
+
 export {
   EXPORT_REGISTRY_STRUCTURE_COUNT,
   EXPORT_PROFILE_REGISTRY,
