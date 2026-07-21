@@ -1,9 +1,9 @@
 /**
- * İSTEBUL Platform Admin — foundation + tenant management.
+ * İSTEBUL Platform Admin — foundation + tenant + user management.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-201A foundation runtime dosyaları değiştirilmez.
- * Yalnızca projeksiyon; CRUD, API, veritabanı yok.
+ * PR-201A / PR-201B runtime dosyaları değiştirilmez.
+ * Yalnızca projeksiyon; CRUD, Auth, API, veritabanı yok.
  */
 
 export type {
@@ -74,3 +74,36 @@ export {
   validateTenantManagementContext,
   resolveRequestedTenants
 } from './tenant/index';
+
+/** User Management Runtime — PR-201C */
+export type {
+  UserStatus,
+  UserRole,
+  UserIdentity,
+  UserTenantReference,
+  UserDefinition,
+  UserProjection,
+  UserManagementContext,
+  UserSummary,
+  UserSummaryItem,
+  UserManagementValidationIssue,
+  UserManagementTelemetry,
+  UserManagementResult
+} from './users/index';
+
+export {
+  toUserProjection,
+  createUserManagementContext,
+  buildUserSummary,
+  buildUserSummaryItems,
+  PIPELINE_BAG_USER_MANAGEMENT_RESULT_KEY,
+  UserRegistryRuntime,
+  createUserRegistryRuntime,
+  UserManagementRuntime,
+  createUserManagementRuntime,
+  BUILTIN_USER_DEFINITIONS,
+  BUILTIN_USER_DEFINITION_COUNT,
+  getBuiltinUserDefinition,
+  validateUserManagementContext,
+  resolveRequestedUsers
+} from './users/index';
