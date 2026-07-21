@@ -1,8 +1,8 @@
 /**
- * İSTEBUL Platform Admin — foundation + tenant + user + subscription + system monitoring.
+ * İSTEBUL Platform Admin — foundation through end-to-end facade.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-201A–201D runtime dosyaları değiştirilmez.
+ * PR-201A–201E runtime dosyaları değiştirilmez.
  * Yalnızca projeksiyon; gerçek monitoring / payment / auth / API / DB yok.
  */
 
@@ -175,3 +175,32 @@ export {
   validateSystemMonitoringContext,
   resolveRequestedServices
 } from './system-monitoring/index';
+
+/** End-to-End Platform Admin Runtime — PR-201F */
+export type {
+  PlatformAdminPipelineStage,
+  PlatformAdminStageOutcome,
+  PlatformAdminPipelineBag,
+  PlatformAdminExecutionContext,
+  PlatformAdminStageExecution,
+  PlatformAdminPipelineExecutionSummary,
+  PlatformAdminExecutionTelemetry,
+  PlatformAdminExecutionResult,
+  PlatformAdminPipelineRunnerDependencies
+} from './integration/index';
+
+export {
+  PLATFORM_ADMIN_PIPELINE_STAGES,
+  PLATFORM_ADMIN_SKIP_ON_VALIDATION_FAILURE,
+  PLATFORM_ADMIN_STAGE_LABELS,
+  createPlatformAdminExecutionContext,
+  createSkippedStageExecution,
+  createStageExecution,
+  buildPlatformAdminExecutionTelemetry,
+  createEmptyPlatformAdminResult,
+  buildE2ESummaryItems,
+  PlatformAdminPipelineRunner,
+  createPlatformAdminPipelineRunner,
+  PlatformAdminRuntimeFacade,
+  createPlatformAdminRuntimeFacade
+} from './integration/index';
