@@ -1,30 +1,37 @@
-# Business Admin Foundation
+# Business Admin
 
-**Epic:** EPIC-202  
-**PR:** PR-202A — Business Admin Foundation Runtime
-
-## Scope
-
-Business Admin için temel runtime ve modül iskeleti. Bu katman tek bir tenant'ın
-(işletmenin) Business Runtime yönetim yüzeyi için yalnızca projeksiyon üretir.
+**Epic:** EPIC-202
 
 ## Architecture Freeze v1.0
 
 - Foundation interface'leri değiştirilmez
 - Core Runtime değiştirilmez
 - Platform Admin değiştirilmez
-- Business Runtime Engine'lerine dokunulmaz
+- Business Runtime Engine'lerine (Dashboard dahil) dokunulmaz
 - Yeni global state oluşturulmaz
 - Platform Admin ile ortak ekran oluşturulmaz
 - TypeScript strict devam eder
 
-## Pipeline
+## PRs
+
+| PR | Scope |
+|----|--------|
+| PR-202A | Business Admin Foundation Runtime |
+| PR-202B | Dashboard Workspace |
+
+## Pipeline (PR-202A)
 
 ```
 Validation → Module Registry → Summary → BusinessAdminResult
 ```
 
-## Modules (skeleton)
+## Pipeline (PR-202B)
+
+```
+DashboardResult → Workspace Projection → Workspace Summary → DashboardWorkspaceResult
+```
+
+## Modules (foundation skeleton)
 
 | ID | Name | Category |
 |----|------|----------|
@@ -35,19 +42,22 @@ Validation → Module Registry → Summary → BusinessAdminResult
 | `users` | Users | operations |
 | `activity` | Activity | monitoring |
 
-## Telemetry
+## Workspace widgets (PR-202B)
 
-- Execution duration (`durationMs`)
-- Registered module count
-- Summary item count
+| ID | Name | Kind |
+|----|------|------|
+| `overview` | Overview | overview |
+| `kpi-cards` | KPI Cards | kpi-cards |
+| `recent-analysis` | Recent Analysis | list |
+| `recent-decisions` | Recent Decisions | list |
+| `recent-reports` | Recent Reports | list |
+| `recent-exports` | Recent Exports | list |
+| `execution-summary` | Execution Summary | summary |
 
-## Out of scope (PR-202A)
+## Out of scope
 
-- CRUD
-- Database
-- API
-- Authentication
-- Authorization
+- CRUD / Database / API / Auth
+- Charts / Realtime (PR-202B)
 
 ## Directory
 
@@ -56,7 +66,7 @@ src/business-admin/
   index.ts
   README.md
   tsconfig.json
-  runtime/                 # PR-202A foundation (do not modify after ship)
+  runtime/                 # PR-202A foundation (do not modify)
     BusinessAdminContext.ts
     BusinessAdminResult.ts
     BusinessAdminModule.ts
@@ -67,4 +77,22 @@ src/business-admin/
     businessSummary.ts
     timing.ts
     index.ts
+  dashboard/               # PR-202B Dashboard Workspace
+    index.ts
+    runtime/
+      DashboardResult.ts
+      DashboardWorkspaceWidget.ts
+      DashboardWorkspaceContext.ts
+      DashboardWorkspaceResult.ts
+      DashboardWorkspaceRegistry.ts
+      DashboardWorkspaceRuntime.ts
+      DashboardWorkspaceSummary.ts
+      builtinWidgets.ts
+      workspaceValidation.ts
+      workspaceProjection.ts
+      index.ts
+    ui/
+      DashboardWorkspaceLayout.ts
+      dashboardWorkspaceStyles.ts
+      index.ts
 ```
