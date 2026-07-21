@@ -1,9 +1,9 @@
 /**
- * İSTEBUL Platform Admin — foundation + tenant + user management.
+ * İSTEBUL Platform Admin — foundation + tenant + user + subscription management.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-201A / PR-201B runtime dosyaları değiştirilmez.
- * Yalnızca projeksiyon; CRUD, Auth, API, veritabanı yok.
+ * PR-201A / PR-201B / PR-201C runtime dosyaları değiştirilmez.
+ * Yalnızca projeksiyon; Payment, Billing, Auth, API, veritabanı yok.
  */
 
 export type {
@@ -107,3 +107,38 @@ export {
   validateUserManagementContext,
   resolveRequestedUsers
 } from './users/index';
+
+/** Subscription Management Runtime — PR-201D */
+export type {
+  SubscriptionStatus,
+  SubscriptionPlanId,
+  SubscriptionBillingCycle,
+  SubscriptionUsageLimits,
+  SubscriptionIdentity,
+  SubscriptionTenantReference,
+  SubscriptionDefinition,
+  SubscriptionProjection,
+  SubscriptionManagementContext,
+  SubscriptionSummary,
+  SubscriptionSummaryItem,
+  SubscriptionManagementValidationIssue,
+  SubscriptionManagementTelemetry,
+  SubscriptionManagementResult
+} from './subscriptions/index';
+
+export {
+  toSubscriptionProjection,
+  createSubscriptionManagementContext,
+  buildSubscriptionSummary,
+  buildSubscriptionSummaryItems,
+  PIPELINE_BAG_SUBSCRIPTION_MANAGEMENT_RESULT_KEY,
+  SubscriptionRegistryRuntime,
+  createSubscriptionRegistryRuntime,
+  SubscriptionManagementRuntime,
+  createSubscriptionManagementRuntime,
+  BUILTIN_SUBSCRIPTION_DEFINITIONS,
+  BUILTIN_SUBSCRIPTION_DEFINITION_COUNT,
+  getBuiltinSubscriptionDefinition,
+  validateSubscriptionManagementContext,
+  resolveRequestedSubscriptions
+} from './subscriptions/index';
