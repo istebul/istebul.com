@@ -33,6 +33,7 @@ module.exports = {
         'src/payment-gateway/**/*.ts',
         'src/ai-decision/**/*.ts',
         'src/business/**/*.ts',
+        'src/platform-admin/**/*.ts',
       ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
