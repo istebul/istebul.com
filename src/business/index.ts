@@ -1210,7 +1210,7 @@ export type {
   DashboardPipelineRunnerDependencies
 } from './dashboard';
 
-/** Export Engine — Architecture Freeze v1.0 foundation */
+/** Export Engine — Architecture Freeze v1.0 foundation + Pipeline Runtime (PR-106A) */
 export {
   EXPORT_MODEL_COUNT,
   EXPORT_STATUS_LABELS,
@@ -1219,6 +1219,12 @@ export {
   EXPORT_PIPELINE_STAGE_COUNT,
   getExportPipelineStage,
   listExportPipelineStages,
+  EXPORT_RUNTIME_ERROR_CODES,
+  ExportPipelineRuntime,
+  createExportPipelineRuntime,
+  nowMs as exportNowMs,
+  startExportStageTimer,
+  endExportStageTimer,
   EXPORT_PROFILE_REGISTRY,
   EXPORT_PROFILE_REGISTRY_COUNT,
   EXPORT_FORMAT_REGISTRY,
@@ -1266,5 +1272,19 @@ export type {
   ArtifactDefinitionEntry,
   ExportRegistryKind,
   FormatDefinitionEntry,
-  TemplateDefinitionEntry
+  TemplateDefinitionEntry,
+  ExportTiming,
+  ExportStageTimer,
+  ExportRuntimeIssue,
+  ExportStageExecution,
+  ExportStageExecutionOutcome,
+  ExportModel,
+  ExportPipelineBag,
+  ExportPipelineContext,
+  ExportPipelineSummary,
+  ExportPipelineTelemetry,
+  ExportPipelineResult,
+  ExportRuntimeErrorCode,
+  ExportContextResolver,
+  ExportPipelineRuntimeOptions
 } from './export';
