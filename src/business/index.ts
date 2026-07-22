@@ -43,9 +43,20 @@ export {
   runBusinessIntelligenceEngine,
   MetricsEngine,
   InsightEngine,
-  RecommendationEngine
+  RecommendationEngine,
+  AnalyticsEngine,
+  createAnalyticsEngine,
+  AnalyticsRegistry,
+  createDefaultAnalyticsRegistry,
+  RevenueAnalytics,
+  GrowthAnalytics,
+  CustomerAnalytics,
+  InventoryAnalytics,
+  CashFlowAnalytics,
+  RiskAnalytics,
+  OpportunityAnalytics
 } from './intelligence';
-export type { BusinessIntelligenceEngineOptions } from './intelligence';
+export type { BusinessIntelligenceEngineOptions, AnalyticsEngineOptions } from './intelligence';
 export type {
   IBusinessDataProvider,
   BusinessDataProvider,
@@ -67,7 +78,11 @@ export type {
   BusinessAdvisorResult,
   BusinessMetricSignals,
   MetricsEngineResult,
-  InsightEngineResult
+  InsightEngineResult,
+  BusinessAnalyticsModuleId,
+  BusinessAnalyticsModule,
+  BusinessAnalyticsModuleResult,
+  BusinessAnalyticsSnapshot
 } from './intelligence';
 export type {
   BusinessModule,

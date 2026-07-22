@@ -1,4 +1,5 @@
 import { getDefaultBusinessDataProvider } from '../../providers/ProviderFactory';
+import { createAnalyticsEngine } from '../core/AnalyticsEngine';
 import { InsightEngine } from '../../services/InsightEngine';
 import { MetricsEngine } from '../../services/MetricsEngine';
 import { RecommendationEngine } from '../../services/RecommendationEngine';
@@ -12,16 +13,18 @@ export interface BusinessIntelligenceEngineOptions {
 
 /**
  * Business Intelligence Engine — orchestrates:
- * ProviderFactory/Mock → MetricsEngine → InsightEngine → RecommendationEngine.
+ * Provider → AnalyticsEngine → MetricsEngine → InsightEngine → RecommendationEngine.
  */
 export function runBusinessIntelligenceEngine(
   options: BusinessIntelligenceEngineOptions = {}
 ): BusinessAdvisorResult {
   const provider = options.dataProvider ?? getDefaultBusinessDataProvider();
-  const metricsEngine = new MetricsEngine(provider);
+  const analyticsEngine = createAnalyticsEngine({ provider });
+  const metricsEngine = new MetricsEngine({ analyticsEngine, provider });
   const insightEngine = new InsightEngine(metricsEngine);
   const recommendationEngine = new RecommendationEngine(insightEngine);
 
+  analyticsEngine.compute();
   const metricsResult = metricsEngine.compute();
   const insightResult = insightEngine.compute();
   const recommendations = recommendationEngine.compute();

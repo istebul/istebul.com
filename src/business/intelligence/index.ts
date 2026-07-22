@@ -1,7 +1,7 @@
 /**
- * Business Intelligence Engine (EPIC-510 + EPIC-520 provider architecture)
+ * Business Intelligence Engine (EPIC-510 → EPIC-530)
  *
- * ProviderFactory → MetricsEngine → InsightEngine → RecommendationEngine → Advisor UI
+ * Provider → AnalyticsEngine → MetricsEngine → InsightEngine → RecommendationEngine → Advisor UI
  *
  * Mock-only foundation. No API, DB, auth, or tenant integration.
  */
@@ -29,6 +29,28 @@ export {
   runBusinessIntelligenceEngine
 } from './pipeline/BusinessIntelligenceEngine';
 export type { BusinessIntelligenceEngineOptions } from './pipeline/BusinessIntelligenceEngine';
+
+export { AnalyticsEngine, createAnalyticsEngine } from './core/AnalyticsEngine';
+export type { AnalyticsEngineOptions } from './core/AnalyticsEngine';
+export {
+  AnalyticsRegistry,
+  createDefaultAnalyticsRegistry
+} from './core/AnalyticsRegistry';
+
+export { RevenueAnalytics } from './analytics/RevenueAnalytics';
+export { GrowthAnalytics } from './analytics/GrowthAnalytics';
+export { CustomerAnalytics } from './analytics/CustomerAnalytics';
+export { InventoryAnalytics } from './analytics/InventoryAnalytics';
+export { CashFlowAnalytics } from './analytics/CashFlowAnalytics';
+export { RiskAnalytics } from './analytics/RiskAnalytics';
+export { OpportunityAnalytics } from './analytics/OpportunityAnalytics';
+
+export type {
+  BusinessAnalyticsModuleId,
+  BusinessAnalyticsModule,
+  BusinessAnalyticsModuleResult,
+  BusinessAnalyticsSnapshot
+} from './models/analytics';
 
 export type {
   BusinessDataProvider,
