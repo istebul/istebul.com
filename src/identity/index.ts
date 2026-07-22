@@ -1,10 +1,10 @@
 /**
- * İSTEBUL Identity — foundation through Authentication Runtime.
+ * İSTEBUL Identity — foundation through Session Management Runtime.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-203A foundation runtime dosyaları değiştirilmez.
- * Yalnızca projeksiyon; Login / Logout / Supabase Auth / JWT / OAuth /
- * OIDC / API / DB yok.
+ * PR-203A / PR-203B runtime dosyaları değiştirilmez.
+ * Yalnızca projeksiyon; Login / Logout / JWT / Refresh Token / Cookie /
+ * Supabase Auth / OAuth / OIDC / API / DB yok.
  */
 
 export type {
@@ -87,3 +87,43 @@ export {
   buildAuthenticationSummary,
   buildAuthenticationSummaryItems
 } from './authentication/index';
+
+/** Session Management Runtime — PR-203C */
+export type {
+  SessionState,
+  SessionLifetime,
+  SessionExpiration,
+  RenewalReference,
+  SessionActivity,
+  DeviceReference,
+  Session,
+  SessionModule,
+  SessionProjection,
+  SessionContext,
+  SessionValidationIssue,
+  SessionSummaryItem,
+  SessionSummary,
+  SessionTelemetry,
+  SessionResult
+} from './session/index';
+
+export {
+  toSessionProjection,
+  createSessionContext,
+  PIPELINE_BAG_SESSION_RESULT_KEY,
+  SessionRegistry,
+  SessionRegistryRuntime,
+  createSessionRegistry,
+  createSessionRegistryRuntime,
+  SessionRuntime,
+  createSessionRuntime,
+  BUILTIN_SESSION_MODULES,
+  BUILTIN_SESSION_MODULE_COUNT,
+  getBuiltinSessionModule,
+  validateSessionContext,
+  resolveSessionIdentityProjections,
+  resolveSessionAuthenticationProjections,
+  resolveRequestedSessions,
+  buildSessionSummary,
+  buildSessionSummaryItems
+} from './session/index';
