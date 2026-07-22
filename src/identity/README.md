@@ -8,7 +8,8 @@ Identity
 ├── Authentication      (PR-203B)
 ├── Session             (PR-203C)
 ├── Authorization       (PR-203D)
-└── Tenant Isolation    (PR-203E)
+├── Tenant Isolation    (PR-203E)
+└── Identity & Access   (PR-203F)  ← E2E facade
 ```
 
 ## Packages
@@ -20,6 +21,7 @@ Identity
 | PR-203C | Session Management Runtime | `session/` |
 | PR-203D | Authorization (RBAC) Runtime | `authorization/` |
 | PR-203E | Tenant Isolation Runtime | `tenant-isolation/` |
+| PR-203F | Identity & Access E2E Runtime | `integration/` |
 
 ## Architecture Freeze v1.0
 
@@ -30,6 +32,7 @@ Identity
 - Authentication Runtime (PR-203B) dosyaları değiştirilmez
 - Session Management Runtime (PR-203C) dosyaları değiştirilmez
 - Authorization Runtime (PR-203D) dosyaları değiştirilmez
+- Tenant Isolation Runtime (PR-203E) dosyaları değiştirilmez
 - Yeni global state oluşturulmaz
 - TypeScript strict devam eder
 - Projection-first yaklaşımı korunur
@@ -305,6 +308,60 @@ TenantIsolationResult
 - Middleware
 - JWT Claims
 
+## PR-203F — Identity & Access End-to-End Runtime
+
+### Pipeline
+
+```
+Validation
+  ↓
+Identity Projection
+  ↓
+Authentication Projection
+  ↓
+Session Projection
+  ↓
+Authorization Projection
+  ↓
+Tenant Isolation Projection
+  ↓
+Summary
+  ↓
+IdentityAccessResult
+```
+
+### Behaviour
+
+- Validation başarısızsa Identity / Authentication / Session / Authorization /
+  Tenant Isolation çalıştırılmaz
+- Summary her zaman çalışır
+- Her zaman geçerli bir `IdentityAccessResult` döndürülür
+
+### Deliverables
+
+- `IdentityAccessRuntimeFacade`
+- `IdentityAccessPipelineRunner`
+- `IdentityAccessExecutionContext`
+- `IdentityAccessExecutionResult`
+- `IdentityAccessResult`
+
+### Telemetry
+
+- Total execution duration
+- Stage durations
+- Succeeded stage count
+- Skipped stage count
+- Summary count
+
+### Out of scope (PR-203F)
+
+- Middleware
+- Supabase Auth
+- JWT
+- API
+- Database
+- RLS
+
 ## Directory
 
 ```
@@ -359,7 +416,7 @@ src/identity/
       authorizationValidation.ts
       authorizationSummary.ts
       index.ts
-  tenant-isolation/             # PR-203E Tenant Isolation
+  tenant-isolation/             # PR-203E Tenant Isolation (do not modify)
     index.ts
     runtime/
       TenantIsolationContext.ts
@@ -370,5 +427,15 @@ src/identity/
       builtinModules.ts
       tenantIsolationValidation.ts
       tenantIsolationSummary.ts
+      index.ts
+  integration/                  # PR-203F Identity & Access E2E
+    index.ts
+    runtime/
+      stages.ts
+      IdentityAccessExecutionContext.ts
+      IdentityAccessExecutionResult.ts
+      helpers.ts
+      IdentityAccessPipelineRunner.ts
+      IdentityAccessRuntimeFacade.ts
       index.ts
 ```
