@@ -7,7 +7,8 @@ Identity
 ├── Foundation          (PR-203A)
 ├── Authentication      (PR-203B)
 ├── Session             (PR-203C)
-└── Authorization       (PR-203D)
+├── Authorization       (PR-203D)
+└── Tenant Isolation    (PR-203E)
 ```
 
 ## Packages
@@ -18,6 +19,7 @@ Identity
 | PR-203B | Authentication Runtime | `authentication/` |
 | PR-203C | Session Management Runtime | `session/` |
 | PR-203D | Authorization (RBAC) Runtime | `authorization/` |
+| PR-203E | Tenant Isolation Runtime | `tenant-isolation/` |
 
 ## Architecture Freeze v1.0
 
@@ -27,6 +29,7 @@ Identity
 - Identity Foundation (PR-203A) dosyaları değiştirilmez
 - Authentication Runtime (PR-203B) dosyaları değiştirilmez
 - Session Management Runtime (PR-203C) dosyaları değiştirilmez
+- Authorization Runtime (PR-203D) dosyaları değiştirilmez
 - Yeni global state oluşturulmaz
 - TypeScript strict devam eder
 - Projection-first yaklaşımı korunur
@@ -243,6 +246,65 @@ AuthorizationResult
 - API
 - Database
 
+## PR-203E — Tenant Isolation Runtime
+
+### Pipeline
+
+```
+Validation
+  ↓
+Identity Projection
+  ↓
+Authentication Projection
+  ↓
+Session Projection
+  ↓
+Authorization Projection
+  ↓
+Tenant Isolation Projection
+  ↓
+Summary
+  ↓
+TenantIsolationResult
+```
+
+### Model
+
+| Component | Description |
+|-----------|-------------|
+| Tenant Identity | Kiracı kimlik alanları |
+| Tenant Boundary | Sınır tanımı |
+| Tenant Membership | Üyelik projeksiyonu |
+| Scope | Kapsam seviyesi |
+| Isolation Rule | Kural tanımı (RLS yok) |
+| Access Scope | Erişim kapsamı |
+| Isolation Decision | Allow / Deny / Restrict |
+| Summary | Yürütme özeti |
+
+### Deliverables
+
+- `TenantIsolationRuntime`
+- `TenantIsolationContext`
+- `TenantIsolationResult`
+- `TenantIsolationRegistry`
+- `TenantIsolationModule`
+
+### Telemetry
+
+- Execution duration (`durationMs`)
+- Tenant count
+- Membership count
+- Isolation decision count
+- Summary item count
+
+### Out of scope (PR-203E)
+
+- Supabase RLS
+- Database
+- API
+- Middleware
+- JWT Claims
+
 ## Directory
 
 ```
@@ -285,7 +347,7 @@ src/identity/
       sessionValidation.ts
       sessionSummary.ts
       index.ts
-  authorization/                # PR-203D Authorization (RBAC)
+  authorization/                # PR-203D Authorization (RBAC) (do not modify)
     index.ts
     runtime/
       AuthorizationContext.ts
@@ -296,5 +358,17 @@ src/identity/
       builtinModules.ts
       authorizationValidation.ts
       authorizationSummary.ts
+      index.ts
+  tenant-isolation/             # PR-203E Tenant Isolation
+    index.ts
+    runtime/
+      TenantIsolationContext.ts
+      TenantIsolationResult.ts
+      TenantIsolationModule.ts
+      TenantIsolationRegistry.ts
+      TenantIsolationRuntime.ts
+      builtinModules.ts
+      tenantIsolationValidation.ts
+      tenantIsolationSummary.ts
       index.ts
 ```
