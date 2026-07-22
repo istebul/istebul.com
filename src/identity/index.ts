@@ -206,6 +206,41 @@ export {
   createAuthenticationSessionBridge
 } from './authentication/index';
 
+/** Identity Bridge — EPIC-301D */
+export type {
+  IdentityBridgeOperation,
+  IdentityBridgeContext,
+  IdentityBridgeValidationIssue,
+  IdentityBridgeSummaryItem,
+  IdentityBridgeTelemetry,
+  IdentityBridgeResult,
+  CreateIdentityBridgeResultInput,
+  IdentityBridgeBinding,
+  MapToIdentityModuleOptions,
+  IdentityBridgeDependencies
+} from './bridge/index';
+
+export {
+  createIdentityBridgeContext,
+  resolveIdentityBridgeProviderContext,
+  mapIdentityBridgeOperationToSessionBridgeOperation,
+  toAuthenticationSessionBridgeContextFromIdentity,
+  createIdentityBridgeResult,
+  PIPELINE_BAG_IDENTITY_BRIDGE_RESULT_KEY,
+  IdentityBridgeRegistry,
+  IdentityBridgeRegistryRuntime,
+  createIdentityBridgeRegistry,
+  createIdentityBridgeRegistryRuntime,
+  mapAuthenticationStatusToIdentityStatus,
+  resolveIdentityIdentifiers,
+  mapIntegrationResultsToIdentityModule,
+  createIdentityBridgeBindingFromModule,
+  mapIntegrationIssuesToIdentityBridgeIssues,
+  projectMappedIdentityModule,
+  IdentityBridge,
+  createIdentityBridge
+} from './bridge/index';
+
 /** Session Management Runtime — PR-203C */
 export type {
   SessionState,
