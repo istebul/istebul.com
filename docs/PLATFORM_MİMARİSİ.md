@@ -105,9 +105,10 @@ Ana SPA navigasyonunda GarsonAI bugün “Karar Kategorileri” altında listele
 
 | Yol | Açıklama |
 |-----|----------|
-| `business/index.html` | Canlı giriş `/business/` |
-| `css/business-page.css` | Ürün sayfa stilleri |
-| `src/business/` | Foundation iskeleti (auth/API yok; HTML’den ayrı tutulmuş) |
+| `business/index.html` (+ alt sayfalar) | Canlı giriş `/business/` MVP uygulaması |
+| `css/business-page.css` | App shell + dashboard stilleri |
+| `js/business/business-app.js` | TS foundation boot (esbuild bundle) |
+| `src/business/` | Type-safe component / route / mock iskeleti (auth/API yok) |
 
 ### 3.5 Altyapı (çapraz kesen, dikkatli kullanım)
 

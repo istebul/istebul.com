@@ -1,6 +1,6 @@
 # İSTEBUL Business
 
-İSTEBUL Business ürününün foundation katmanı.
+İSTEBUL Business ürününün foundation + MVP uygulama iskeleti.
 
 Bu dizin, iş yönetimi / analiz / karar modüllerinin genişlemeye uygun iskeletini tutar.
 Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktur.
@@ -9,13 +9,15 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 
 | Klasör | Amaç |
 |--------|------|
-| `pages/` | Sayfa düzeyinde yüzeyler (ör. BusinessHomePage) |
-| `components/` | Yeniden kullanılabilir UI parçaları |
-| `layouts/` | Business kabuk / layout tanımları |
+| `app/` | Uygulama mount (`mountBusinessApp`) |
+| `pages/` | Dashboard, Analizler, Raporlar, Danışman, Bildirimler, Ayarlar |
+| `components/` | Sidebar, Topbar, EmptyState, KPI, özet, aktivite, AI, hızlı işlem |
+| `layouts/` | Business kabuk (sidebar + topbar + içerik) |
+| `data/` | Dashboard mock verisi |
 | `services/` | Gelecek servis katmanı (henüz boş) |
 | `hooks/` | Gelecek hook katmanı (henüz boş) |
 | `types/` | Tip tanımları |
-| `constants/` | Statik kayıtlar (modül listesi vb.) |
+| `constants/` | Nav + legacy modül kayıtları |
 | `utils/` | Yardımcı fonksiyonlar |
 | `assets/` | Business’e özel statik varlıklar |
 | `routes/` | Business route kayıt dosyası |
@@ -31,4 +33,13 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 
 ## Genel route
 
-Genel giriş yüzeyi: `/business/` (`business/index.html`).
+| Path | Sayfa |
+|------|-------|
+| `/business/` | Dashboard |
+| `/business/analizler/` | Analizler |
+| `/business/raporlar/` | Raporlar |
+| `/business/danisman/` | Yapay Zekâ Danışmanı |
+| `/business/bildirimler/` | Bildirimler |
+| `/business/ayarlar/` | Ayarlar |
+
+Canlı giriş: `business/*/index.html` + `js/business/business-app.js` (src/business TS bundle).

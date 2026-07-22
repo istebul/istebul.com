@@ -2,5 +2,6 @@
 
 Business sayfalarının ortak kabuk / layout tanımları.
 
-Header, ana içerik alanı ve gelecek navigation iskeleti burada tutulur.
-Mevcut site marka kabuğu ile uyumlu kalır.
+`createBusinessLayoutShell` — Sidebar + Topbar + içerik alanı üretir.
+Mobilde sidebar drawer + backdrop ile açılır.
+Dark mode token hazırlığı `css/business-page.css` içinde tutulur.

@@ -2,5 +2,8 @@
 
 Business ürününün route kayıt dosyası.
 
-İleride alt modül sayfaları buradan yönetilir.
-SPA router’a bu aşamada bağlanmaz; genel giriş `/business/` statik yüzeydir.
+Alt sayfalar `BUSINESS_ROUTES` üzerinden yönetilir.
+Statik HTML kabukları `/business/*/index.html` olarak yayınlanır;
+istemci mount `js/business/business-app.js` ile yapılır.
+
+Ana SPA router’a bağlanmaz (full-page Business ürün ağacı).

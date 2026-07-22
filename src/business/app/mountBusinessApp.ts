@@ -1,0 +1,85 @@
+import type { BusinessNavId } from '../types/business-nav';
+import { createBusinessLayoutShell } from '../layouts/BusinessLayout';
+import {
+  getBusinessRouteByNavId,
+  getBusinessRouteByPath,
+  type BusinessRouteDefinition
+} from '../routes/business-routes';
+import { createBusinessDashboardPageElement } from '../pages/BusinessDashboardPage';
+import { createBusinessAnalysesPageElement } from '../pages/BusinessAnalysesPage';
+import { createBusinessReportsPageElement } from '../pages/BusinessReportsPage';
+import { createBusinessAiAdvisorPageElement } from '../pages/BusinessAiAdvisorPage';
+import { createBusinessNotificationsPageElement } from '../pages/BusinessNotificationsPage';
+import { createBusinessSettingsPageElement } from '../pages/BusinessSettingsPage';
+
+export interface MountBusinessAppOptions {
+  /** Explicit page; defaults from pathname or data-business-page. */
+  navId?: BusinessNavId;
+  pathname?: string;
+}
+
+function resolveRoute(options: MountBusinessAppOptions, container: HTMLElement): BusinessRouteDefinition {
+  if (options.navId) {
+    const byNav = getBusinessRouteByNavId(options.navId);
+    if (byNav) return byNav;
+  }
+
+  const dataPage = container.dataset.businessPage as BusinessNavId | undefined;
+  if (dataPage) {
+    const byData = getBusinessRouteByNavId(dataPage);
+    if (byData) return byData;
+  }
+
+  const pathname =
+    options.pathname ??
+    (typeof window !== 'undefined' ? window.location.pathname : '/business');
+  const byPath = getBusinessRouteByPath(pathname);
+  if (byPath) return byPath;
+
+  const fallback = getBusinessRouteByNavId('dashboard');
+  if (!fallback) {
+    throw new Error('Business dashboard route is missing');
+  }
+  return fallback;
+}
+
+function createPageElement(route: BusinessRouteDefinition): HTMLElement {
+  switch (route.page) {
+    case 'BusinessDashboardPage':
+      return createBusinessDashboardPageElement();
+    case 'BusinessAnalysesPage':
+      return createBusinessAnalysesPageElement();
+    case 'BusinessReportsPage':
+      return createBusinessReportsPageElement();
+    case 'BusinessAiAdvisorPage':
+      return createBusinessAiAdvisorPageElement();
+    case 'BusinessNotificationsPage':
+      return createBusinessNotificationsPageElement();
+    case 'BusinessSettingsPage':
+      return createBusinessSettingsPageElement();
+    default: {
+      const _exhaustive: never = route.page;
+      return _exhaustive;
+    }
+  }
+}
+
+/**
+ * Business MVP uygulamasını hedef kapsayıcıya mount eder.
+ * Auth / tenant / API çağrısı yapmaz.
+ */
+export function mountBusinessApp(container: HTMLElement, options: MountBusinessAppOptions = {}): void {
+  const route = resolveRoute(options, container);
+  const { root, content } = createBusinessLayoutShell({
+    activeNavId: route.navId,
+    title: route.title,
+    subtitle: route.description
+  });
+
+  content.appendChild(createPageElement(route));
+  container.replaceChildren(root);
+  container.dataset.businessAppReady = '1';
+  container.dataset.businessActivePage = route.navId;
+}
+
+export default mountBusinessApp;
