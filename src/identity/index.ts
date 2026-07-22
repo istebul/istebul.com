@@ -1,8 +1,9 @@
 /**
- * İSTEBUL Identity — foundation through Tenant Isolation Runtime.
+ * İSTEBUL Identity — foundation through Identity & Access E2E Runtime.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-203A / PR-203B / PR-203C / PR-203D runtime dosyaları değiştirilmez.
+ * PR-203A / PR-203B / PR-203C / PR-203D / PR-203E runtime dosyaları
+ * değiştirilmez.
  * Yalnızca projeksiyon; Login / Logout / JWT / Refresh Token / Cookie /
  * Middleware / Policy Engine / Supabase RLS / OAuth / OIDC / API / DB yok.
  */
@@ -213,3 +214,40 @@ export {
   buildTenantIsolationSummary,
   buildTenantIsolationSummaryItems
 } from './tenant-isolation/index';
+
+/** Identity & Access End-to-End Runtime — PR-203F */
+export type {
+  IdentityAccessPipelineStage,
+  IdentityAccessStageOutcome,
+  IdentityAccessPipelineBag,
+  IdentityAccessExecutionContext,
+  IdentityAccessSummaryItem,
+  IdentityAccessValidationIssue,
+  IdentityAccessSummary,
+  IdentityAccessResultTelemetry,
+  IdentityAccessResult,
+  IdentityAccessStageExecution,
+  IdentityAccessPipelineExecutionSummary,
+  IdentityAccessExecutionTelemetry,
+  IdentityAccessExecutionResult,
+  IdentityAccessPipelineRunnerDependencies
+} from './integration/index';
+
+export {
+  IDENTITY_ACCESS_PIPELINE_STAGES,
+  IDENTITY_ACCESS_SKIP_ON_VALIDATION_FAILURE,
+  IDENTITY_ACCESS_STAGE_LABELS,
+  createIdentityAccessExecutionContext,
+  PIPELINE_BAG_IDENTITY_ACCESS_RESULT_KEY,
+  validateIdentityAccessContext,
+  createSkippedStageExecution,
+  createStageExecution,
+  buildIdentityAccessExecutionTelemetry,
+  createEmptyIdentityAccessResult,
+  createIdentityAccessResult,
+  buildE2ESummaryItems,
+  IdentityAccessPipelineRunner,
+  createIdentityAccessPipelineRunner,
+  IdentityAccessRuntimeFacade,
+  createIdentityAccessRuntimeFacade
+} from './integration/index';
