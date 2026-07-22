@@ -3,8 +3,8 @@
  *
  * Architecture Freeze v1.0 — additive katmanlar.
  * PR-203A / PR-203B runtime dosyaları değiştirilmez.
- * Yalnızca projeksiyon; JWT / Refresh Token / Cookie / Supabase Auth /
- * OAuth / OIDC / API / DB yok.
+ * Yalnızca projeksiyon; Login / Logout / JWT / Refresh Token / Cookie /
+ * Supabase Auth / OAuth / OIDC / API / DB yok.
  */
 
 export type {
