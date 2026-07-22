@@ -4,13 +4,9 @@
 
 ## Architecture Freeze v1.0
 
-- Foundation interface'leri değiştirilmez
-- Core Runtime değiştirilmez
-- Platform Admin değiştirilmez
-- Business Runtime Engine'lerine dokunulmaz
-- Dashboard / Reports / Export Workspace'ler değiştirilmez
-- Yeni global state oluşturulmaz
-- Platform Admin ile ortak ekran oluşturulmaz
+- Foundation / workspace runtime dosyaları değiştirilmez (PR-202A–202E)
+- Core Runtime / Platform Admin / Business Engines dokunulmaz
+- Yeni global bag oluşturulmaz — mevcut bag anahtarları kullanılır
 - TypeScript strict devam eder
 
 ## PRs
@@ -22,28 +18,16 @@
 | PR-202C | Reports Workspace |
 | PR-202D | Export Workspace |
 | PR-202E | Business Settings Workspace |
+| PR-202F | End-to-End Business Admin Runtime |
 
-## Pipeline (PR-202E)
+## Pipeline (PR-202F)
 
 ```
-BusinessSettings → Workspace Projection → Summary → BusinessSettingsWorkspaceResult
+Validation → Foundation → Dashboard → Reports → Export → Settings → Summary → BusinessAdminResult
 ```
 
-## Workspace widgets (PR-202E)
-
-| ID | Name | Kind |
-|----|------|------|
-| `business-profile` | Business Profile | profile |
-| `organization` | Organization | organization |
-| `branding` | Branding | branding |
-| `localization` | Localization | localization |
-| `notification-preferences` | Notification Preferences | notifications |
-| `ai-preferences` | AI Preferences | ai-preferences |
-| `workspace-summary` | Workspace Summary | summary |
-
-## Out of scope (PR-202E)
-
-CRUD · Database · API · Realtime · Authentication
+Validation başarısızsa Foundation–Settings atlanır; Summary yine çalışır.
+Her durumda geçerli `BusinessAdminResult` döner.
 
 ## Directory
 
@@ -53,8 +37,15 @@ src/business-admin/
   dashboard/               # PR-202B (do not modify)
   reports/                 # PR-202C (do not modify)
   exports/                 # PR-202D (do not modify)
-  settings/                # PR-202E Business Settings Workspace
+  settings/                # PR-202E (do not modify)
+  integration/             # PR-202F End-to-End Facade
     index.ts
     runtime/
-    ui/
+      BusinessAdminExecutionContext.ts
+      BusinessAdminExecutionResult.ts
+      BusinessAdminPipelineRunner.ts
+      BusinessAdminRuntimeFacade.ts
+      stages.ts
+      helpers.ts
+      index.ts
 ```

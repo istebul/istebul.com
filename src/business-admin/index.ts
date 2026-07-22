@@ -1,8 +1,8 @@
 /**
- * İSTEBUL Business Admin — foundation + workspaces (Dashboard/Reports/Export/Settings).
+ * İSTEBUL Business Admin — foundation + workspaces + E2E facade.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-202A–202D runtime dosyaları değiştirilmez.
+ * PR-202A–202E runtime dosyaları değiştirilmez.
  * Core Runtime / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
  * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime yok.
  */
@@ -267,3 +267,32 @@ export {
   BUSINESS_SETTINGS_WORKSPACE_CSS,
   ensureBusinessSettingsWorkspaceStyles
 } from './settings/index';
+
+/** End-to-End Business Admin Runtime — PR-202F */
+export type {
+  BusinessAdminPipelineStage,
+  BusinessAdminStageOutcome,
+  BusinessAdminPipelineBag,
+  BusinessAdminExecutionContext,
+  BusinessAdminStageExecution,
+  BusinessAdminPipelineExecutionSummary,
+  BusinessAdminExecutionTelemetry,
+  BusinessAdminExecutionResult,
+  BusinessAdminPipelineRunnerDependencies
+} from './integration/index';
+
+export {
+  BUSINESS_ADMIN_PIPELINE_STAGES,
+  BUSINESS_ADMIN_SKIP_ON_VALIDATION_FAILURE,
+  BUSINESS_ADMIN_STAGE_LABELS,
+  createBusinessAdminExecutionContext,
+  createSkippedStageExecution,
+  createStageExecution,
+  buildBusinessAdminExecutionTelemetry,
+  createEmptyBusinessAdminResult,
+  buildE2ESummaryItems,
+  BusinessAdminPipelineRunner,
+  createBusinessAdminPipelineRunner,
+  BusinessAdminRuntimeFacade,
+  createBusinessAdminRuntimeFacade
+} from './integration/index';
