@@ -443,6 +443,160 @@ html[data-theme="dark"] .ib-business-app {
   transform: translateY(-1px);
 }
 
+/* —— AI Business Advisor (EPIC-510) —— */
+.ib-biz-page__lead {
+  margin: 0;
+  color: var(--ib-business-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 44rem;
+}
+
+.ib-biz-advisor {
+  padding: 1.2rem 1.2rem 1.3rem;
+  border: 1px solid var(--ib-business-border);
+  border-radius: var(--ib-business-radius);
+  background:
+    radial-gradient(700px 240px at 0% -20%, rgba(37, 99, 235, 0.12), transparent 55%),
+    var(--ib-business-surface);
+  box-shadow: var(--ib-business-shadow);
+}
+
+.ib-biz-advisor__header {
+  margin-bottom: 1rem;
+}
+
+.ib-biz-advisor__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--ib-business-accent);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ib-biz-advisor__title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  letter-spacing: -0.015em;
+}
+
+.ib-biz-advisor__summary {
+  margin: 0;
+  max-width: 48rem;
+  color: var(--ib-business-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.ib-biz-advisor__metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.ib-biz-advisor__metric {
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--ib-business-border);
+  border-radius: 12px;
+  background: var(--ib-business-surface-2);
+}
+
+.ib-biz-advisor__metric-label {
+  margin: 0 0 0.35rem;
+  color: var(--ib-business-muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.ib-biz-advisor__metric-value {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.ib-biz-advisor__metric[data-direction='up'] .ib-biz-advisor__metric-value {
+  color: var(--ib-business-success);
+}
+
+.ib-biz-advisor__metric[data-direction='down'] .ib-biz-advisor__metric-value {
+  color: var(--ib-business-danger);
+}
+
+.ib-biz-advisor__metric-period {
+  margin: 0.3rem 0 0;
+  color: var(--ib-business-subtle);
+  font-size: 0.7rem;
+}
+
+.ib-biz-advisor__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.ib-biz-advisor__column-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+}
+
+.ib-biz-advisor__insights,
+.ib-biz-advisor__recs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.ib-biz-advisor__insight,
+.ib-biz-advisor__rec {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--ib-business-border);
+  border-radius: 12px;
+  background: var(--ib-business-surface-2);
+}
+
+.ib-biz-advisor__insight--positive {
+  border-color: color-mix(in srgb, var(--ib-business-success) 35%, var(--ib-business-border));
+}
+
+.ib-biz-advisor__insight--risk,
+.ib-biz-advisor__insight--anomaly {
+  border-color: color-mix(in srgb, var(--ib-business-danger) 30%, var(--ib-business-border));
+}
+
+.ib-biz-advisor__insight-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.86rem;
+}
+
+.ib-biz-advisor__insight-body,
+.ib-biz-advisor__rec-message {
+  margin: 0;
+  color: var(--ib-business-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.ib-biz-advisor__rec-message {
+  color: var(--ib-business-ink);
+  font-weight: 600;
+}
+
+.ib-biz-advisor__rec-meta {
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: var(--ib-business-subtle);
+  font-size: 0.72rem;
+}
+
+.ib-biz-advisor__rec[data-priority='high'] {
+  border-color: color-mix(in srgb, var(--ib-business-accent) 40%, var(--ib-business-border));
+}
+
 /* —— Empty state —— */
 .ib-biz-empty {
   padding: 2.25rem 1.5rem;
@@ -606,6 +760,10 @@ html[data-theme="dark"] .ib-business-app {
   .ib-biz-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .ib-biz-advisor__metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
@@ -649,6 +807,10 @@ html[data-theme="dark"] .ib-business-app {
     grid-template-columns: 1fr;
   }
 
+  .ib-biz-advisor__body {
+    grid-template-columns: 1fr;
+  }
+
   .ib-biz-shell__content {
     padding: 1rem 1rem 1.75rem;
   }
@@ -661,6 +823,10 @@ html[data-theme="dark"] .ib-business-app {
 @media (max-width: 640px) {
   .ib-biz-kpi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ib-biz-advisor__metrics {
+    grid-template-columns: 1fr 1fr;
   }
 
   .ib-business-hero {

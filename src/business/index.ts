@@ -27,7 +27,36 @@ export { createBusinessDailySummaryElement } from './components/BusinessDailySum
 export { createBusinessActivityListElement } from './components/BusinessActivityList';
 export { createBusinessAiSuggestionsElement } from './components/BusinessAiSuggestions';
 export { createBusinessQuickActionsElement } from './components/BusinessQuickActions';
+export { createBusinessAdvisorPanelElement } from './components/BusinessAdvisorPanel';
 export { createBusinessLayoutShell } from './layouts/BusinessLayout';
+export {
+  MOCK_BUSINESS_RAW_DATA,
+  MockBusinessDataProvider,
+  createMockBusinessDataProvider,
+  computeBusinessMetrics,
+  computeBusinessInsights,
+  computeBusinessRecommendations,
+  runBusinessIntelligenceEngine
+} from './intelligence';
+export type { BusinessIntelligenceEngineOptions } from './intelligence';
+export type {
+  IBusinessDataProvider,
+  RawBusinessData,
+  BusinessDataPoint,
+  BusinessCategoryMargin,
+  BusinessMetric,
+  BusinessMetricId,
+  BusinessMetricsResult,
+  MetricTrendDirection,
+  BusinessInsight,
+  BusinessInsightsResult,
+  InsightKind,
+  InsightSeverity,
+  BusinessRecommendation,
+  BusinessRecommendationsResult,
+  RecommendationPriority,
+  BusinessAdvisorResult
+} from './intelligence';
 export type {
   BusinessModule,
   BusinessModuleId,
@@ -49,6 +78,9 @@ export type {
 } from './routes/business-routes';
 export type { BusinessLayoutOptions, BusinessLayoutResult } from './layouts/BusinessLayout';
 export type { MountBusinessAppOptions } from './app/mountBusinessApp';
+export type { BusinessAdvisorPanelProps } from './components/BusinessAdvisorPanel';
+export type { BusinessAiAdvisorPageOptions } from './pages/BusinessAiAdvisorPage';
+export type { BusinessDashboardPageOptions } from './pages/BusinessDashboardPage';
 
 /** Knowledge Architecture — Report DNA, KPI, kategori, prompt, çıktı kayıtları */
 export {
