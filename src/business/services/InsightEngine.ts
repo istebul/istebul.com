@@ -59,7 +59,7 @@ function buildInsightsFromMetricsResult(
     });
   }
 
-  if (signals.topMarginCategory && signals.topMarginPercent != null) {
+  if (signals.topMarginCategory && signals.topMarginPercent !== null) {
     insights.push({
       id: 'ins-positive-margin',
       kind: 'positive',
