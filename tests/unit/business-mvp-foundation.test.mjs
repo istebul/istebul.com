@@ -1,6 +1,7 @@
 /**
  * EPIC-500 — Business MVP foundation contracts.
  */
+import { register } from 'node:module';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -10,17 +11,19 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = process.cwd();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-await import(pathToFileURL(path.join(__dirname, '../helpers/business-ts-resolve.mjs')).href);
+register(pathToFileURL(path.join(__dirname, '../helpers/business-ts-resolve.mjs')).href);
 
+const { BUSINESS_NAV_ITEMS } = await import('../../src/business/constants/BusinessNav.ts');
+const { BUSINESS_DASHBOARD_MOCK } = await import('../../src/business/data/dashboard-mock.ts');
 const {
   BUSINESS_ROUTES,
-  BUSINESS_NAV_ITEMS,
   getBusinessRouteByPath,
-  getBusinessRouteByNavId,
-  mountBusinessApp,
-  createBusinessDashboardPageElement,
-  BUSINESS_DASHBOARD_MOCK
-} = await import('../../src/business/index.ts');
+  getBusinessRouteByNavId
+} = await import('../../src/business/routes/business-routes.ts');
+const { mountBusinessApp } = await import('../../src/business/app/mountBusinessApp.ts');
+const { createBusinessDashboardPageElement } = await import(
+  '../../src/business/pages/BusinessDashboardPage.ts'
+);
 
 /** Minimal DOM stubs (platform-landing-preview pattern, extended for Business shell). */
 function installDomStubs() {

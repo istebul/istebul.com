@@ -7,13 +7,12 @@
 
 import { mountBusinessApp } from '../../src/business/app/mountBusinessApp.ts';
 import { getBusinessRouteByPath } from '../../src/business/routes/business-routes.ts';
-import type { BusinessNavId } from '../../src/business/types/business-nav.ts';
 
 const MOUNT_ID = 'business-app-root';
 
 /**
  * @param {string | undefined} pageAttr
- * @returns {BusinessNavId | undefined}
+ * @returns {'dashboard' | 'analizler' | 'raporlar' | 'danisman' | 'bildirimler' | 'ayarlar' | undefined}
  */
 function resolveNavId(pageAttr) {
   if (
@@ -24,7 +23,7 @@ function resolveNavId(pageAttr) {
     pageAttr === 'bildirimler' ||
     pageAttr === 'ayarlar'
   ) {
-    return /** @type {BusinessNavId} */ (pageAttr);
+    return pageAttr;
   }
   return undefined;
 }
@@ -48,9 +47,7 @@ export function bootBusinessApp() {
 
   const navId = resolveNavId(root.dataset.businessPage);
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/business';
-  const route = navId
-    ? null
-    : getBusinessRouteByPath(pathname);
+  const route = navId ? null : getBusinessRouteByPath(pathname);
 
   mountBusinessApp(root, {
     navId: navId ?? route?.navId ?? 'dashboard',
