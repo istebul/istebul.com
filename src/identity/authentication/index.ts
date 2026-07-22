@@ -42,3 +42,37 @@ export {
   buildAuthenticationSummary,
   buildAuthenticationSummaryItems
 } from './runtime/index';
+
+/** Authentication Adapter Foundation — EPIC-301A */
+export type {
+  AuthenticationProviderOperation,
+  AuthenticationProviderContext,
+  AuthenticationProviderValidationIssue,
+  AuthenticationProviderSummaryItem,
+  AuthenticationProviderTelemetry,
+  AuthenticationProviderResult,
+  CreateAuthenticationProviderResultInput,
+  AuthenticationProviderRegistration,
+  AuthenticationProviderOperationResult,
+  AuthenticationProvider
+} from './adapters/index';
+
+export {
+  createAuthenticationProviderContext,
+  createAuthenticationProviderResult,
+  createAuthenticationProviderFailure,
+  createAuthenticationProviderSuccess,
+  AuthenticationProviderRegistry,
+  AuthenticationProviderRegistryRuntime,
+  createAuthenticationProviderRegistry,
+  createAuthenticationProviderRegistryRuntime,
+  BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS,
+  BUILTIN_AUTHENTICATION_PROVIDER_COUNT,
+  getBuiltinAuthenticationProviderRegistration,
+  validateAuthenticationProviderContext,
+  resolveAuthenticationProvider,
+  resolveAuthenticationProviderRegistration,
+  hasAuthenticationProviderValidationErrors,
+  AuthenticationAdapter,
+  createAuthenticationAdapter
+} from './adapters/index';
