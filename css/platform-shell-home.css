@@ -35,17 +35,17 @@
 
 /* CLS rezervi — JS mount öncesi boşluk (ürün CTA şeridi + grid). */
 .ib-platform-shell-home__mount:empty {
-  min-height: clamp(22rem, 55vw, 28rem);
+  min-height: clamp(14rem, 38vw, 22rem);
 }
 
 @media (min-width: 640px) {
   .ib-platform-shell-home__mount:empty {
-    min-height: 20rem;
+    min-height: 16rem;
   }
 }
 
 @media (min-width: 960px) {
   .ib-platform-shell-home__mount:empty {
-    min-height: 18rem;
+    min-height: 14rem;
   }
 }

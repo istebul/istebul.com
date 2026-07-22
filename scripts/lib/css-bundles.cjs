@@ -34,7 +34,9 @@ const HOMEPAGE_EXTENSION = [
   'css/platform-hero.css',
   'css/platform-urun-karti.css',
   'css/platform-urun-izgarasi.css',
-  'css/platform-shell-home.css'
+  'css/platform-shell-home.css',
+  /* EPIC-401 — Production Polish v1.0.1 (visual only; last wins) */
+  'css/production-polish-v101.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */

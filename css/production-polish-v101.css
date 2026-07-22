@@ -1,0 +1,430 @@
+/**
+ * EPIC-401 / v1.0.1 — Production Polish Sprint 1
+ * Visual-only: navbar, hero, platform cards, buttons, typography, a11y.
+ * No runtime / API / auth / tenant behavior changes.
+ */
+
+/* —— Shared tokens (scoped) —— */
+html.ib-ds-v4.ib-premium-v7 {
+  --ib-pp-gap-nav: 0.4rem;
+  --ib-pp-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
+  --ib-pp-ink: #0f172a;
+  --ib-pp-muted: #475569;
+  --ib-pp-accent: #2563eb;
+  --ib-pp-radius-ctl: 9px;
+}
+
+/* ============================================================
+ * P1 — Navbar: Kaynaklar + Partner Başvurusu spacing / hover
+ * ============================================================ */
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon.nav-links-group {
+  gap: var(--ib-pp-gap-nav);
+  align-items: center;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn {
+  text-decoration: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link:hover,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link:focus-visible,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn:hover,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn:focus-visible {
+  text-decoration: none;
+  color: var(--ib-pp-accent);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link:focus-visible,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-pp-focus);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro {
+  gap: var(--ib-pp-gap-nav);
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .btn,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-login-btn,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-cta-decision {
+  flex: 0 0 auto;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply:visited {
+  color: #1e40af;
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply:hover,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply:focus-visible {
+  color: #1d4ed8;
+  text-decoration: none;
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply:focus-visible,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-login-btn:focus-visible,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-cta-decision:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-pp-focus);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-login-btn:hover,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .btn-ghost:hover {
+  text-decoration: none;
+}
+
+/* Mid desktop: keep CTA on one line, tighten padding evenly */
+@media (min-width: 901px) and (max-width: 1180px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .btn {
+    padding-inline: 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn {
+    padding-inline: 0.5rem;
+  }
+}
+
+/* Mobile / tablet: Kaynaklar block + Partner başvurusu */
+@media (max-width: 1180px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-more-mobile-label {
+    margin: 0.35rem 0 0.1rem;
+    padding: 0.45rem 0.75rem 0.2rem;
+    line-height: 1.2;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-partner-apply-mobile,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-partner-apply-mobile:visited {
+    color: #1e40af;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-partner-apply-mobile:hover,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-partner-apply-mobile:focus-visible {
+    color: #1d4ed8;
+    text-decoration: none;
+    background: rgba(37, 99, 235, 0.08);
+  }
+
+  /* Avoid duplicate Hakkımızda when mobile links flatten via display:contents */
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-more-mobile-links > a[href='/hakkimizda.html'] {
+    display: none !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon.nav-links-group {
+    gap: 0.35rem;
+    align-items: stretch;
+  }
+}
+
+/* ============================================================
+ * P2 — Hero: top/bottom space, vertical rhythm, less empty reserve
+ * ============================================================ */
+
+body.ib-platform-landing-live-page .ib-platform-hero,
+.ib-platform-landing-preview .ib-platform-hero,
+.ib-platform-hero--landing {
+  padding-block: clamp(2rem, 4.5vw, 3.25rem) clamp(1.5rem, 3.5vw, 2.5rem);
+  display: flex;
+  align-items: center;
+}
+
+body.ib-platform-landing-live-page .ib-platform-hero__inner,
+.ib-platform-hero--landing .ib-platform-hero__inner {
+  width: 100%;
+}
+
+body.ib-platform-landing-live-page .ib-platform-hero__brand,
+.ib-platform-hero--landing .ib-platform-hero__brand {
+  margin-bottom: 0.75rem;
+}
+
+body.ib-platform-landing-live-page .ib-platform-hero__title,
+.ib-platform-hero--landing .ib-platform-hero__title {
+  margin-bottom: 0.55rem;
+}
+
+body.ib-platform-landing-live-page .ib-platform-hero__description,
+.ib-platform-hero--landing .ib-platform-hero__description {
+  margin-bottom: 1.35rem;
+}
+
+/* CLS reserve: smaller empty reservation (mounted content still expands) */
+.ib-platform-landing-preview__mount:empty,
+.ib-platform-shell-home__mount:empty {
+  min-height: clamp(14rem, 38vw, 22rem);
+}
+
+.ib-platform-landing-preview__lead {
+  padding-bottom: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.ib-platform-landing-preview__products {
+  padding-bottom: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+/* ============================================================
+ * P3 — Platform cards: equal visual quality / alignment
+ * ============================================================ */
+
+.ib-platform-urun-izgarasi__item > .ib-platform-urun-karti {
+  min-height: 100%;
+}
+
+.ib-platform-urun-karti__header {
+  min-height: 2.75rem;
+  align-items: center;
+}
+
+.ib-platform-urun-karti__badges {
+  align-items: center;
+  min-height: 1.75rem;
+}
+
+.ib-platform-urun-karti__title {
+  min-height: 2.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ib-platform-urun-karti__slogan {
+  min-height: 1.35em;
+}
+
+.ib-platform-urun-karti__description {
+  min-height: 4.65em; /* ~3 lines @ 1.55 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ib-platform-urun-karti__footer {
+  width: 100%;
+  align-items: stretch;
+}
+
+.ib-platform-urun-karti__cta {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 479px) {
+  .ib-platform-urun-karti__header {
+    align-items: flex-start;
+  }
+
+  .ib-platform-urun-karti__title,
+  .ib-platform-urun-karti__description {
+    min-height: 0;
+  }
+}
+
+/* ============================================================
+ * P4 — Buttons: primary / secondary / hover / focus / disabled
+ * ============================================================ */
+
+body.ib-enterprise .btn,
+body.ib-enterprise a.btn,
+body.ib-enterprise button.btn {
+  text-decoration: none;
+  border-radius: var(--ib-pp-radius-ctl);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+body.ib-enterprise .btn:hover,
+body.ib-enterprise a.btn:hover {
+  text-decoration: none;
+}
+
+body.ib-enterprise .btn-primary,
+body.ib-enterprise a.btn-primary {
+  color: #fff;
+}
+
+body.ib-enterprise .btn-outline,
+body.ib-enterprise .btn-secondary,
+body.ib-enterprise a.btn-outline,
+body.ib-enterprise a.btn-secondary {
+  background: transparent;
+  color: var(--ib-pp-accent);
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+body.ib-enterprise .btn-outline:hover,
+body.ib-enterprise .btn-secondary:hover,
+body.ib-enterprise a.btn-outline:hover,
+body.ib-enterprise a.btn-secondary:hover {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.65);
+  color: #1d4ed8;
+}
+
+body.ib-enterprise .btn-ghost,
+body.ib-enterprise a.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ib-pp-muted);
+}
+
+body.ib-enterprise .btn-ghost:hover,
+body.ib-enterprise a.btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--ib-pp-ink);
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+body.ib-enterprise .btn:focus-visible,
+body.ib-enterprise a.btn:focus-visible,
+body.ib-enterprise button.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-pp-focus);
+}
+
+body.ib-enterprise .btn:disabled,
+body.ib-enterprise .btn[aria-disabled='true'],
+body.ib-enterprise a.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Platform hero / card CTAs share the same focus language */
+.ib-platform-hero__cta:focus-visible,
+.ib-platform-urun-karti__cta:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-pp-focus);
+}
+
+/* ============================================================
+ * P5 — Typography: headings, line-height, responsive rhythm
+ * ============================================================ */
+
+.ib-platform-hero__brand {
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.ib-platform-hero__title {
+  line-height: 1.25;
+}
+
+.ib-platform-hero__description,
+.ib-platform-landing-preview__lead-text,
+.ib-platform-landing-preview__why-lead {
+  line-height: 1.6;
+  color: var(--ib-pp-muted);
+}
+
+.ib-platform-landing-preview__lead-title,
+.ib-platform-landing-preview__products-title,
+.ib-platform-landing-preview__why-title {
+  margin-bottom: 0.65rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ib-pp-ink);
+}
+
+.ib-platform-landing-preview__why-list strong {
+  margin-bottom: 0.4rem;
+  line-height: 1.3;
+  color: var(--ib-pp-ink);
+}
+
+.ib-platform-landing-preview__why-list span {
+  line-height: 1.5;
+}
+
+.ib-platform-urun-karti__title {
+  line-height: 1.25;
+}
+
+.ib-platform-urun-karti__slogan {
+  line-height: 1.35;
+}
+
+.ib-platform-urun-karti__description {
+  line-height: 1.55;
+}
+
+@media (max-width: 639px) {
+  .ib-platform-hero__brand {
+    font-size: clamp(1.55rem, 7vw, 1.85rem);
+  }
+
+  .ib-platform-hero__title {
+    font-size: clamp(1.15rem, 4.5vw, 1.35rem);
+  }
+
+  .ib-platform-landing-preview__why-title {
+    font-size: clamp(1.2rem, 5vw, 1.4rem);
+  }
+}
+
+/* ============================================================
+ * P6 — Accessibility: focus rings + contrast helpers
+ * ============================================================ */
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-content .nav-dropdown-link:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-pp-focus);
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .theme-toggle:focus-visible,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .user-menu-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-pp-focus);
+}
+
+/* Ensure partner / ghost CTAs keep readable contrast on light chrome */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .nav-partner-apply {
+  color: #1e3a8a;
+}
+
+.ib-platform-urun-karti__description,
+.ib-platform-hero__description {
+  color: #475569;
+}
+
+.ib-platform-urun-karti__status[data-status='canli'],
+.ib-platform-urun-karti--status-canli .ib-platform-urun-karti__status {
+  color: #065f46;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ib-enterprise .btn,
+  body.ib-enterprise a.btn,
+  .ib-platform-hero__cta,
+  .ib-platform-urun-karti,
+  .ib-platform-urun-karti__cta {
+    transition: none !important;
+  }
+}
