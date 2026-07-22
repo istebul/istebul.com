@@ -6,7 +6,8 @@
 Identity
 ├── Foundation          (PR-203A)
 ├── Authentication      (PR-203B)
-└── Session             (PR-203C)
+├── Session             (PR-203C)
+└── Authorization       (PR-203D)
 ```
 
 ## Packages
@@ -16,6 +17,7 @@ Identity
 | PR-203A | Identity Foundation Runtime | `runtime/` |
 | PR-203B | Authentication Runtime | `authentication/` |
 | PR-203C | Session Management Runtime | `session/` |
+| PR-203D | Authorization (RBAC) Runtime | `authorization/` |
 
 ## Architecture Freeze v1.0
 
@@ -24,6 +26,7 @@ Identity
 - Business Admin değiştirilmez
 - Identity Foundation (PR-203A) dosyaları değiştirilmez
 - Authentication Runtime (PR-203B) dosyaları değiştirilmez
+- Session Management Runtime (PR-203C) dosyaları değiştirilmez
 - Yeni global state oluşturulmaz
 - TypeScript strict devam eder
 - Projection-first yaklaşımı korunur
@@ -183,6 +186,63 @@ SessionResult
 - API
 - Database
 
+## PR-203D — Authorization (RBAC) Runtime
+
+### Pipeline
+
+```
+Validation
+  ↓
+Identity Projection
+  ↓
+Authentication Projection
+  ↓
+Session Projection
+  ↓
+Authorization Projection
+  ↓
+Summary
+  ↓
+AuthorizationResult
+```
+
+### Model
+
+| Component | Description |
+|-----------|-------------|
+| Role | Rol tanımı |
+| Permission | İzin tanımı (action + resource) |
+| Policy | Politika tanımı (gerçek engine yok) |
+| Resource | Kaynak tanımı |
+| Action | Eylem tanımı |
+| Decision | Allow / Deny projeksiyonu |
+| Authorization Summary | Yürütme özeti |
+
+### Deliverables
+
+- `AuthorizationRuntime`
+- `AuthorizationContext`
+- `AuthorizationResult`
+- `AuthorizationRegistry`
+- `AuthorizationModule`
+
+### Telemetry
+
+- Execution duration (`durationMs`)
+- Role count
+- Permission count
+- Decision count
+- Summary item count
+
+### Out of scope (PR-203D)
+
+- Middleware
+- JWT Claims
+- Policy Engine
+- Supabase RLS
+- API
+- Database
+
 ## Directory
 
 ```
@@ -213,7 +273,7 @@ src/identity/
       authenticationValidation.ts
       authenticationSummary.ts
       index.ts
-  session/                      # PR-203C Session Management
+  session/                      # PR-203C Session Management (do not modify)
     index.ts
     runtime/
       SessionContext.ts
@@ -224,5 +284,17 @@ src/identity/
       builtinModules.ts
       sessionValidation.ts
       sessionSummary.ts
+      index.ts
+  authorization/                # PR-203D Authorization (RBAC)
+    index.ts
+    runtime/
+      AuthorizationContext.ts
+      AuthorizationResult.ts
+      AuthorizationModule.ts
+      AuthorizationRegistry.ts
+      AuthorizationRuntime.ts
+      builtinModules.ts
+      authorizationValidation.ts
+      authorizationSummary.ts
       index.ts
 ```

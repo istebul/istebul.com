@@ -1,10 +1,10 @@
 /**
- * İSTEBUL Identity — foundation through Session Management Runtime.
+ * İSTEBUL Identity — foundation through Authorization (RBAC) Runtime.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-203A / PR-203B runtime dosyaları değiştirilmez.
+ * PR-203A / PR-203B / PR-203C runtime dosyaları değiştirilmez.
  * Yalnızca projeksiyon; Login / Logout / JWT / Refresh Token / Cookie /
- * Supabase Auth / OAuth / OIDC / API / DB yok.
+ * Middleware / Policy Engine / Supabase RLS / OAuth / OIDC / API / DB yok.
  */
 
 export type {
@@ -127,3 +127,45 @@ export {
   buildSessionSummary,
   buildSessionSummaryItems
 } from './session/index';
+
+/** Authorization (RBAC) Runtime — PR-203D */
+export type {
+  AuthorizationDecisionOutcome,
+  AuthorizationRoleScope,
+  AuthorizationAction,
+  AuthorizationResource,
+  AuthorizationPermission,
+  AuthorizationRole,
+  AuthorizationPolicy,
+  AuthorizationDecision,
+  AuthorizationModule,
+  AuthorizationProjection,
+  AuthorizationContext,
+  AuthorizationValidationIssue,
+  AuthorizationSummaryItem,
+  AuthorizationSummary,
+  AuthorizationTelemetry,
+  AuthorizationResult
+} from './authorization/index';
+
+export {
+  toAuthorizationProjection,
+  createAuthorizationContext,
+  PIPELINE_BAG_AUTHORIZATION_RESULT_KEY,
+  AuthorizationRegistry,
+  AuthorizationRegistryRuntime,
+  createAuthorizationRegistry,
+  createAuthorizationRegistryRuntime,
+  AuthorizationRuntime,
+  createAuthorizationRuntime,
+  BUILTIN_AUTHORIZATION_MODULES,
+  BUILTIN_AUTHORIZATION_MODULE_COUNT,
+  getBuiltinAuthorizationModule,
+  validateAuthorizationContext,
+  resolveAuthorizationIdentityProjections,
+  resolveAuthorizationAuthenticationProjections,
+  resolveAuthorizationSessionProjections,
+  resolveRequestedAuthorizations,
+  buildAuthorizationSummary,
+  buildAuthorizationSummaryItems
+} from './authorization/index';
