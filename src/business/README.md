@@ -14,6 +14,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `components/` | Sidebar, Topbar, EmptyState, KPI, özet, aktivite, AI, hızlı işlem |
 | `layouts/` | Business kabuk (sidebar + topbar + içerik) |
 | `data/` | Dashboard mock verisi |
+| `intelligence/` | AI Business Advisor — Data/Metrics/Insight/Recommendation (EPIC-510) |
 | `services/` | Gelecek servis katmanı (henüz boş) |
 | `hooks/` | Gelecek hook katmanı (henüz boş) |
 | `types/` | Tip tanımları |

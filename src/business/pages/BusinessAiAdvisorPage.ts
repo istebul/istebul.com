@@ -1,18 +1,25 @@
-import { createBusinessEmptyStateElement } from '../components/BusinessEmptyState';
+import { createBusinessAdvisorPanelElement } from '../components/BusinessAdvisorPanel';
+import { runBusinessIntelligenceEngine } from '../intelligence/pipeline/BusinessIntelligenceEngine';
+import type { BusinessAdvisorResult } from '../intelligence/types/advisor-result';
 
-export function createBusinessAiAdvisorPageElement(): HTMLElement {
+export interface BusinessAiAdvisorPageOptions {
+  advisor?: BusinessAdvisorResult;
+}
+
+export function createBusinessAiAdvisorPageElement(
+  options: BusinessAiAdvisorPageOptions = {}
+): HTMLElement {
+  const advisor = options.advisor ?? runBusinessIntelligenceEngine();
   const root = document.createElement('div');
   root.className = 'ib-biz-page';
   root.dataset.businessPage = 'danisman';
-  root.appendChild(
-    createBusinessEmptyStateElement({
-      title: 'Yapay Zekâ Danışmanı yakında',
-      description:
-        'Danışman sohbet yüzeyi MVP iskeletinde yer tutucu olarak hazır. AI proxy bağlantısı bu sprintte açılmaz.',
-      actionLabel: 'Dashboard’a dön',
-      actionHref: '/business/'
-    })
-  );
+
+  const intro = document.createElement('p');
+  intro.className = 'ib-biz-page__lead';
+  intro.textContent =
+    'Yapay Zekâ Danışmanı foundation katmanı aktif. Öneriler mock Intelligence Engine çıktısıdır; API bağlantısı yoktur.';
+
+  root.append(intro, createBusinessAdvisorPanelElement({ advisor, compact: false }));
   return root;
 }
 
