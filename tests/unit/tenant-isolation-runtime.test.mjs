@@ -943,11 +943,9 @@ describe('TenantIsolationRuntime.execute', () => {
     assert.ok(result.isolations.length >= 2);
     assert.ok(
       result.isolations.every((item) =>
-        ['authz-owner-001', 'authz-padmin-002'].includes(item.isolationId) ||
         ['authz-owner-001', 'authz-padmin-002'].includes(
-          BUILTIN_TENANT_ISOLATION_MODULES.find(
-            (m) => m.id === item.isolationId
-          )?.authorizationId
+          BUILTIN_TENANT_ISOLATION_MODULES.find((m) => m.id === item.isolationId)
+            ?.authorizationId ?? ''
         )
       )
     );
