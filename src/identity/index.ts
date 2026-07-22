@@ -406,6 +406,42 @@ export {
   buildTenantIsolationSummaryItems
 } from './tenant-isolation/index';
 
+/** Tenant Adapter Foundation — EPIC-302A */
+export type {
+  TenantProviderOperation,
+  TenantProviderContext,
+  TenantProviderStatus,
+  TenantProviderValidationIssue,
+  TenantProviderSummaryItem,
+  TenantProviderTelemetry,
+  TenantProviderResult,
+  CreateTenantProviderResultInput,
+  TenantProviderKind,
+  TenantProviderRegistration,
+  TenantProviderOperationResult,
+  TenantProvider
+} from './tenant-isolation/index';
+
+export {
+  createTenantProviderContext,
+  createTenantProviderResult,
+  createTenantProviderFailure,
+  createTenantProviderSuccess,
+  TenantProviderRegistry,
+  TenantProviderRegistryRuntime,
+  createTenantProviderRegistry,
+  createTenantProviderRegistryRuntime,
+  BUILTIN_TENANT_PROVIDER_REGISTRATIONS,
+  BUILTIN_TENANT_PROVIDER_COUNT,
+  getBuiltinTenantProviderRegistration,
+  validateTenantProviderContext,
+  resolveTenantProvider,
+  resolveTenantProviderRegistration,
+  hasTenantProviderValidationErrors,
+  TenantAdapter,
+  createTenantAdapter
+} from './tenant-isolation/index';
+
 /** Identity & Access End-to-End Runtime — PR-203F */
 export type {
   IdentityAccessPipelineStage,

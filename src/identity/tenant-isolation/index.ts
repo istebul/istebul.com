@@ -50,3 +50,39 @@ export {
   buildTenantIsolationSummary,
   buildTenantIsolationSummaryItems
 } from './runtime/index';
+
+/** Tenant Adapter Foundation — EPIC-302A */
+export type {
+  TenantProviderOperation,
+  TenantProviderContext,
+  TenantProviderStatus,
+  TenantProviderValidationIssue,
+  TenantProviderSummaryItem,
+  TenantProviderTelemetry,
+  TenantProviderResult,
+  CreateTenantProviderResultInput,
+  TenantProviderKind,
+  TenantProviderRegistration,
+  TenantProviderOperationResult,
+  TenantProvider
+} from './adapters/index';
+
+export {
+  createTenantProviderContext,
+  createTenantProviderResult,
+  createTenantProviderFailure,
+  createTenantProviderSuccess,
+  TenantProviderRegistry,
+  TenantProviderRegistryRuntime,
+  createTenantProviderRegistry,
+  createTenantProviderRegistryRuntime,
+  BUILTIN_TENANT_PROVIDER_REGISTRATIONS,
+  BUILTIN_TENANT_PROVIDER_COUNT,
+  getBuiltinTenantProviderRegistration,
+  validateTenantProviderContext,
+  resolveTenantProvider,
+  resolveTenantProviderRegistration,
+  hasTenantProviderValidationErrors,
+  TenantAdapter,
+  createTenantAdapter
+} from './adapters/index';
