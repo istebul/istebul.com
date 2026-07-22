@@ -1,8 +1,8 @@
 /**
- * İSTEBUL Identity — foundation through Authorization (RBAC) Runtime.
+ * İSTEBUL Identity — foundation through Tenant Isolation Runtime.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-203A / PR-203B / PR-203C runtime dosyaları değiştirilmez.
+ * PR-203A / PR-203B / PR-203C / PR-203D runtime dosyaları değiştirilmez.
  * Yalnızca projeksiyon; Login / Logout / JWT / Refresh Token / Cookie /
  * Middleware / Policy Engine / Supabase RLS / OAuth / OIDC / API / DB yok.
  */
@@ -169,3 +169,47 @@ export {
   buildAuthorizationSummary,
   buildAuthorizationSummaryItems
 } from './authorization/index';
+
+/** Tenant Isolation Runtime — PR-203E */
+export type {
+  TenantIsolationDecisionOutcome,
+  TenantIsolationScopeLevel,
+  TenantIdentityRef,
+  TenantBoundary,
+  TenantMembership,
+  TenantIsolationScope,
+  TenantIsolationRule,
+  TenantAccessScope,
+  TenantIsolationDecision,
+  TenantIsolationModule,
+  TenantIsolationProjection,
+  TenantIsolationContext,
+  TenantIsolationValidationIssue,
+  TenantIsolationSummaryItem,
+  TenantIsolationSummary,
+  TenantIsolationTelemetry,
+  TenantIsolationResult
+} from './tenant-isolation/index';
+
+export {
+  toTenantIsolationProjection,
+  createTenantIsolationContext,
+  PIPELINE_BAG_TENANT_ISOLATION_RESULT_KEY,
+  TenantIsolationRegistry,
+  TenantIsolationRegistryRuntime,
+  createTenantIsolationRegistry,
+  createTenantIsolationRegistryRuntime,
+  TenantIsolationRuntime,
+  createTenantIsolationRuntime,
+  BUILTIN_TENANT_ISOLATION_MODULES,
+  BUILTIN_TENANT_ISOLATION_MODULE_COUNT,
+  getBuiltinTenantIsolationModule,
+  validateTenantIsolationContext,
+  resolveTenantIsolationIdentityProjections,
+  resolveTenantIsolationAuthenticationProjections,
+  resolveTenantIsolationSessionProjections,
+  resolveTenantIsolationAuthorizationProjections,
+  resolveRequestedIsolations,
+  buildTenantIsolationSummary,
+  buildTenantIsolationSummaryItems
+} from './tenant-isolation/index';
