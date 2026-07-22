@@ -1,9 +1,10 @@
 /**
- * İSTEBUL Identity — foundation (PR-203A).
+ * İSTEBUL Identity — foundation through Authentication Runtime.
  *
- * Architecture Freeze v1.0 — additive katman.
- * Core Runtime, Platform Admin ve Business Admin değiştirilmez.
- * Yalnızca projeksiyon; Login / Logout / Supabase Auth / JWT / API / DB yok.
+ * Architecture Freeze v1.0 — additive katmanlar.
+ * PR-203A foundation runtime dosyaları değiştirilmez.
+ * Yalnızca projeksiyon; Login / Logout / Supabase Auth / JWT / OAuth /
+ * OIDC / API / DB yok.
  */
 
 export type {
@@ -49,3 +50,40 @@ export {
   startStageTimer,
   endStageTimer
 } from './runtime/index';
+
+/** Authentication Runtime — PR-203B */
+export type {
+  AuthenticationStatus,
+  AuthenticationMethod,
+  Principal,
+  CredentialReference,
+  AuthenticationState,
+  AuthenticationModule,
+  AuthenticationProjection,
+  AuthenticationContext,
+  AuthenticationValidationIssue,
+  AuthenticationSummaryItem,
+  AuthenticationSummary,
+  AuthenticationTelemetry,
+  AuthenticationResult
+} from './authentication/index';
+
+export {
+  toAuthenticationProjection,
+  createAuthenticationContext,
+  PIPELINE_BAG_AUTHENTICATION_RESULT_KEY,
+  AuthenticationRegistry,
+  AuthenticationRegistryRuntime,
+  createAuthenticationRegistry,
+  createAuthenticationRegistryRuntime,
+  AuthenticationRuntime,
+  createAuthenticationRuntime,
+  BUILTIN_AUTHENTICATION_MODULES,
+  BUILTIN_AUTHENTICATION_MODULE_COUNT,
+  getBuiltinAuthenticationModule,
+  validateAuthenticationContext,
+  resolveIdentityProjections,
+  resolveRequestedAuthentications,
+  buildAuthenticationSummary,
+  buildAuthenticationSummaryItems
+} from './authentication/index';

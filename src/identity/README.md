@@ -1,60 +1,74 @@
-# Identity Foundation
+# Identity
 
-**Epic:** EPIC-203  
-**PR:** PR-203A — Identity Foundation Runtime
+**Epic:** EPIC-203
 
-## Scope
+## Packages
 
-Platform genelinde kullanılacak kimlik (Identity) temel katmanı. Platform Admin ve Business Admin tarafından ortak kullanılır. Bu katman yalnızca projeksiyon üretir.
+| PR | Scope | Path |
+|----|-------|------|
+| PR-203A | Identity Foundation Runtime | `runtime/` |
+| PR-203B | Authentication Runtime | `authentication/` |
 
 ## Architecture Freeze v1.0
 
 - Core Runtime değiştirilmez
 - Platform Admin değiştirilmez
 - Business Admin değiştirilmez
+- Identity Foundation (PR-203A) dosyaları değiştirilmez
 - Yeni global state oluşturulmaz
 - TypeScript strict devam eder
 - Projection-first yaklaşımı korunur
 
-## Pipeline
+## PR-203B — Authentication Runtime
+
+### Pipeline
 
 ```
-Validation → Identity Projection → Summary → IdentityResult
+Validation
+  ↓
+Identity Projection
+  ↓
+Authentication Projection
+  ↓
+Summary
+  ↓
+AuthenticationResult
 ```
 
-## Model
+### Model
 
 | Component | Description |
 |-----------|-------------|
-| Identity | Kimlik agregatı |
-| User | Kullanıcı alanları |
-| Tenant | Kiracı alanları |
-| Role | Rol tanımı |
-| Permission | İzin tanımı |
-| Claims | Claim haritası |
-| Session Reference | Oturum referansı (auth yok) |
+| Authentication State | Durum agregatı |
+| Principal | Doğrulanmış aktör projeksiyonu |
+| Credential Reference | Kimlik bilgisi referansı |
+| Authentication Method | Yöntem (provider yok) |
+| Authentication Status | Durum |
+| Authentication Summary | Yürütme özeti |
 
-## Deliverables
+### Deliverables
 
-- `IdentityRuntime`
-- `IdentityContext`
-- `IdentityResult`
-- `IdentityRegistry`
-- `IdentityModule`
+- `AuthenticationRuntime`
+- `AuthenticationContext`
+- `AuthenticationResult`
+- `AuthenticationRegistry`
+- `AuthenticationModule`
 
-## Telemetry
+### Telemetry
 
 - Execution duration (`durationMs`)
-- Identity count
-- Role count
-- Permission count
+- Authenticated principal count
+- Authentication state count
+- Summary item count
 
-## Out of scope (PR-203A)
+### Out of scope (PR-203B)
 
-- Login
-- Logout
-- Supabase Auth
+- Login UI
+- Logout UI
 - JWT doğrulama
+- Supabase Auth
+- OAuth
+- OIDC
 - API
 - Database
 
@@ -65,15 +79,17 @@ src/identity/
   index.ts
   tsconfig.json
   README.md
-  runtime/                 # PR-203A foundation
-    IdentityContext.ts
-    IdentityResult.ts
-    IdentityModule.ts
-    IdentityRegistry.ts
-    IdentityRuntime.ts
-    builtinModules.ts
-    identityValidation.ts
-    identitySummary.ts
-    timing.ts
+  runtime/                      # PR-203A foundation (do not modify)
+  authentication/               # PR-203B Authentication Runtime
     index.ts
+    runtime/
+      AuthenticationContext.ts
+      AuthenticationResult.ts
+      AuthenticationModule.ts
+      AuthenticationRegistry.ts
+      AuthenticationRuntime.ts
+      builtinModules.ts
+      authenticationValidation.ts
+      authenticationSummary.ts
+      index.ts
 ```
