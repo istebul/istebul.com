@@ -8,6 +8,7 @@
 |----|-------|------|
 | PR-203A | Identity Foundation Runtime | `runtime/` |
 | PR-203B | Authentication Runtime | `authentication/` |
+| PR-203C | Session Management Runtime | `session/` |
 
 ## Architecture Freeze v1.0
 
@@ -15,11 +16,12 @@
 - Platform Admin değiştirilmez
 - Business Admin değiştirilmez
 - Identity Foundation (PR-203A) dosyaları değiştirilmez
+- Authentication Runtime (PR-203B) dosyaları değiştirilmez
 - Yeni global state oluşturulmaz
 - TypeScript strict devam eder
 - Projection-first yaklaşımı korunur
 
-## PR-203B — Authentication Runtime
+## PR-203C — Session Management Runtime
 
 ### Pipeline
 
@@ -30,42 +32,47 @@ Identity Projection
   ↓
 Authentication Projection
   ↓
+Session Projection
+  ↓
 Summary
   ↓
-AuthenticationResult
+SessionResult
 ```
 
 ### Model
 
 | Component | Description |
 |-----------|-------------|
-| Authentication State | Durum agregatı |
-| Principal | Doğrulanmış aktör projeksiyonu |
-| Credential Reference | Kimlik bilgisi referansı |
-| Authentication Method | Yöntem (provider yok) |
-| Authentication Status | Durum |
-| Authentication Summary | Yürütme özeti |
+| Session | Oturum agregatı |
+| Session State | Yaşam durumu |
+| Session Lifetime | Süre projeksiyonu |
+| Expiration | Sona erme projeksiyonu |
+| Renewal Reference | Yenileme referansı (refresh token yok) |
+| Activity | Aktivite projeksiyonu |
+| Device Reference | Cihaz referansı |
+| Summary | Yürütme özeti |
 
 ### Deliverables
 
-- `AuthenticationRuntime`
-- `AuthenticationContext`
-- `AuthenticationResult`
-- `AuthenticationRegistry`
-- `AuthenticationModule`
+- `SessionRuntime`
+- `SessionContext`
+- `SessionResult`
+- `SessionRegistry`
+- `SessionModule`
 
 ### Telemetry
 
 - Execution duration (`durationMs`)
-- Authenticated principal count
-- Authentication state count
+- Session count
+- Active session count
+- Expired session count
 - Summary item count
 
-### Out of scope (PR-203B)
+### Out of scope (PR-203C)
 
-- Login UI
-- Logout UI
 - JWT doğrulama
+- Refresh Token
+- Cookie
 - Supabase Auth
 - OAuth
 - OIDC
@@ -80,16 +87,17 @@ src/identity/
   tsconfig.json
   README.md
   runtime/                      # PR-203A foundation (do not modify)
-  authentication/               # PR-203B Authentication Runtime
+  authentication/               # PR-203B (do not modify)
+  session/                      # PR-203C Session Management
     index.ts
     runtime/
-      AuthenticationContext.ts
-      AuthenticationResult.ts
-      AuthenticationModule.ts
-      AuthenticationRegistry.ts
-      AuthenticationRuntime.ts
+      SessionContext.ts
+      SessionResult.ts
+      SessionModule.ts
+      SessionRegistry.ts
+      SessionRuntime.ts
       builtinModules.ts
-      authenticationValidation.ts
-      authenticationSummary.ts
+      sessionValidation.ts
+      sessionSummary.ts
       index.ts
 ```
