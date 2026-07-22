@@ -1,9 +1,9 @@
 /**
- * İSTEBUL Business Admin — foundation + Dashboard + Reports + Export Workspace.
+ * İSTEBUL Business Admin — foundation + workspaces (Dashboard/Reports/Export/Settings).
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-202A–202C runtime dosyaları değiştirilmez.
- * Export Engine / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
+ * PR-202A–202D runtime dosyaları değiştirilmez.
+ * Core Runtime / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
  * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime yok.
  */
 
@@ -204,3 +204,66 @@ export {
   EXPORT_WORKSPACE_CSS,
   ensureExportWorkspaceStyles
 } from './exports/index';
+
+/** Business Settings Workspace — PR-202E */
+export type {
+  BusinessSettings,
+  BusinessSettingsProfile,
+  BusinessSettingsOrganization,
+  BusinessSettingsBranding,
+  BusinessSettingsLocalization,
+  BusinessSettingsNotifications,
+  BusinessSettingsAiPreferences,
+  BusinessSettingsWorkspaceWidgetId,
+  BusinessSettingsWorkspaceWidgetKind,
+  BusinessSettingsWorkspaceWidgetStatus,
+  BusinessSettingsWorkspaceWidgetDefinition,
+  BusinessSettingsWorkspaceFieldItem,
+  BusinessSettingsProfileProjection,
+  BusinessSettingsOrganizationProjection,
+  BusinessSettingsBrandingProjection,
+  BusinessSettingsLocalizationProjection,
+  BusinessSettingsNotificationsProjection,
+  BusinessSettingsAiPreferencesProjection,
+  BusinessSettingsExecutionProjection,
+  BusinessSettingsWorkspaceWidgetProjection,
+  BusinessSettingsWorkspaceContext,
+  BusinessSettingsWorkspaceSummary,
+  BusinessSettingsWorkspaceSummaryItem,
+  BusinessSettingsWorkspaceValidationIssue,
+  BusinessSettingsWorkspaceTelemetry,
+  BusinessSettingsWorkspaceResult,
+  BusinessSettingsWorkspaceLayoutOptions
+} from './settings/index';
+
+export {
+  toEmptyBusinessSettingsWidgetProjection,
+  createBusinessSettingsWorkspaceContext,
+  buildBusinessSettingsWorkspaceSummary,
+  buildBusinessSettingsWorkspaceSummaryItems,
+  PIPELINE_BAG_BUSINESS_SETTINGS_WORKSPACE_RESULT_KEY,
+  BusinessSettingsWorkspaceRegistry,
+  createBusinessSettingsWorkspaceRegistry,
+  BusinessSettingsWorkspaceRuntime,
+  createBusinessSettingsWorkspaceRuntime,
+  BUILTIN_BUSINESS_SETTINGS_WORKSPACE_WIDGETS,
+  BUILTIN_BUSINESS_SETTINGS_WORKSPACE_WIDGET_COUNT,
+  getBuiltinBusinessSettingsWorkspaceWidget,
+  validateBusinessSettingsWorkspaceContext,
+  resolveRequestedBusinessSettingsWidgets,
+  projectBusinessSettingsWorkspaceWidget,
+  projectBusinessSettingsWorkspaceWidgets,
+  createBusinessSettingsWorkspaceHeader,
+  createBusinessSettingsWorkspaceProfile,
+  createBusinessSettingsWorkspaceOrganization,
+  createBusinessSettingsWorkspaceBranding,
+  createBusinessSettingsWorkspaceLocalization,
+  createBusinessSettingsWorkspaceNotifications,
+  createBusinessSettingsWorkspaceAiPreferences,
+  createBusinessSettingsWorkspaceSummaryPanel,
+  createBusinessSettingsWorkspaceLayout,
+  mountBusinessSettingsWorkspace,
+  BUSINESS_SETTINGS_WORKSPACE_STYLE_ID,
+  BUSINESS_SETTINGS_WORKSPACE_CSS,
+  ensureBusinessSettingsWorkspaceStyles
+} from './settings/index';
