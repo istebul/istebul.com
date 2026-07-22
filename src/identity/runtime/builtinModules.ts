@@ -280,7 +280,7 @@ export const BUILTIN_IDENTITY_MODULES: readonly IdentityModule[] = Object.freeze
       createdAt: '2026-03-20T11:00:00.000Z',
       updatedAt: '2026-07-05T08:00:00.000Z'
     }
-  ]
+  ] as IdentityModule[]
 );
 
 /** Yerleşik kimlik sayısı */
