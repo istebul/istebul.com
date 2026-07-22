@@ -3,6 +3,9 @@
  *
  * Mevcut Business Admin context / bag anahtarları kullanılır.
  * Yeni global bag oluşturulmaz.
+ *
+ * Shared bag/locale/actor fields from core execution contracts (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { BusinessAdminModuleId } from '../../runtime/BusinessAdminModule';
@@ -14,28 +17,25 @@ import type { ExportResult } from '../../exports/runtime/ExportResult';
 import type { ExportWorkspaceWidgetId } from '../../exports/runtime/ExportWorkspaceWidget';
 import type { BusinessSettings } from '../../settings/runtime/BusinessSettings';
 import type { BusinessSettingsWorkspaceWidgetId } from '../../settings/runtime/BusinessSettingsWorkspaceWidget';
+import type {
+  ExecutionContextBase,
+  PipelineBag
+} from '../../../core/execution/index';
 
 /**
  * Pipeline bag — yalnızca mevcut Business Admin bag anahtarları.
  */
-export type BusinessAdminPipelineBag = Record<string, unknown>;
+export type BusinessAdminPipelineBag = PipelineBag;
 
 /**
  * Uçtan uca Business Admin yürütme bağlamı.
  */
-export interface BusinessAdminExecutionContext {
+export interface BusinessAdminExecutionContext extends ExecutionContextBase {
   /**
    * Tenant kimliği — başarılı akış için zorunlu.
    * Boş/eksik değer validation aşamasında error üretir.
    */
   tenantId?: string;
-  /**
-   * Dil — varsayılan `tr`.
-   * Geçersiz değerler validation aşamasında error üretir.
-   */
-  locale?: 'tr' | 'en' | (string & {});
-  /** Opsiyonel aktör kimliği */
-  actorId?: string;
   /** Foundation modül filtresi */
   moduleIds?: readonly BusinessAdminModuleId[];
   /** Dashboard workspace widget filtresi */

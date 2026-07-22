@@ -33,6 +33,7 @@ module.exports = {
         'src/payment-gateway/**/*.ts',
         'src/ai-decision/**/*.ts',
         'src/business/**/*.ts',
+        'src/core/**/*.ts',
         'src/platform-admin/**/*.ts',
         'src/business-admin/**/*.ts',
         'src/identity/**/*.ts',

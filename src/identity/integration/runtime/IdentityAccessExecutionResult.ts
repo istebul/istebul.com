@@ -1,5 +1,8 @@
 /**
  * İSTEBUL Identity — IdentityAccessResult + ExecutionResult (PR-203F).
+ *
+ * Shared execution contracts from core (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { IdentityResult } from '../../runtime/IdentityResult';
@@ -7,6 +10,16 @@ import type { AuthenticationResult } from '../../authentication/runtime/Authenti
 import type { SessionResult } from '../../session/runtime/SessionResult';
 import type { AuthorizationResult } from '../../authorization/runtime/AuthorizationResult';
 import type { TenantIsolationResult } from '../../tenant-isolation/runtime/TenantIsolationResult';
+import type {
+  ExecutionResultBase,
+  ExecutionSummaryItem,
+  ExecutionTelemetryCore,
+  PipelineExecutionSummaryBase,
+  ResultTelemetryBase,
+  StageCountTelemetry,
+  StageExecutionBase,
+  ValidationIssueBase
+} from '../../../core/execution/index';
 import type { IdentityAccessPipelineBag } from './IdentityAccessExecutionContext';
 import type {
   IdentityAccessPipelineStage,
@@ -16,20 +29,12 @@ import type {
 /**
  * Identity Access özet öğesi.
  */
-export interface IdentityAccessSummaryItem {
-  key: string;
-  label: string;
-  value: string | number | boolean;
-}
+export type IdentityAccessSummaryItem = ExecutionSummaryItem;
 
 /**
  * Identity Access doğrulama bulgusu.
  */
-export interface IdentityAccessValidationIssue {
-  code: string;
-  message: string;
-  severity: 'warning' | 'error';
-}
+export type IdentityAccessValidationIssue = ValidationIssueBase;
 
 /**
  * Identity Access aggregate summary.
@@ -49,12 +54,7 @@ export interface IdentityAccessSummary {
 /**
  * Identity Access aggregate telemetrisi (result içi).
  */
-export interface IdentityAccessResultTelemetry {
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-  summaryItemCount: number;
-}
+export type IdentityAccessResultTelemetry = ResultTelemetryBase;
 
 /**
  * IdentityAccessResult — her durumda geçerli aggregate sonuç.
@@ -78,64 +78,39 @@ export const PIPELINE_BAG_IDENTITY_ACCESS_RESULT_KEY =
 /**
  * Tek aşama yürütme kaydı.
  */
-export interface IdentityAccessStageExecution {
-  stageId: IdentityAccessPipelineStage;
-  stageName: string;
-  outcome: IdentityAccessStageOutcome;
-  detail: string;
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-}
+export type IdentityAccessStageExecution = StageExecutionBase<
+  IdentityAccessPipelineStage,
+  IdentityAccessStageOutcome
+>;
 
 /**
  * Pipeline özet telemetrisi.
  */
-export interface IdentityAccessPipelineExecutionSummary {
-  stagesExecuted: number;
-  stagesSucceeded: number;
-  stagesFailed: number;
-  stagesSkipped: number;
-  success: boolean;
-}
+export type IdentityAccessPipelineExecutionSummary =
+  PipelineExecutionSummaryBase;
 
 /**
  * Uçtan uca yürütme telemetrisi.
  */
-export interface IdentityAccessExecutionTelemetry {
-  /** Toplam süre (ms) */
-  totalDurationMs: number;
-  startedAt: string;
-  endedAt: string;
-  /** Aşama süreleri */
-  stageDurationsMs: Readonly<
-    Partial<Record<IdentityAccessPipelineStage, number>>
-  >;
-  /** Aşama sonuçları */
-  stageOutcomes: Readonly<
-    Partial<Record<IdentityAccessPipelineStage, IdentityAccessStageOutcome>>
-  >;
-  /** Succeeded stage count */
-  succeededStageCount: number;
-  /** Skipped stage count */
-  skippedStageCount: number;
-  /** Summary item count */
-  summaryCount: number;
-  summary: IdentityAccessPipelineExecutionSummary;
-}
+export type IdentityAccessExecutionTelemetry = ExecutionTelemetryCore<
+  IdentityAccessPipelineStage,
+  IdentityAccessStageOutcome
+> &
+  StageCountTelemetry & {
+    summary: IdentityAccessPipelineExecutionSummary;
+  };
 
 /**
  * Uçtan uca Identity & Access yürütme sonucu.
  */
-export interface IdentityAccessExecutionResult {
+export interface IdentityAccessExecutionResult
+  extends ExecutionResultBase<
+    Readonly<IdentityAccessPipelineBag>,
+    IdentityAccessStageExecution,
+    IdentityAccessExecutionTelemetry
+  > {
   /** Aggregate IdentityAccessResult — her durumda geçerli */
   identityAccessResult: IdentityAccessResult;
-  /** Aşama kayıtları */
-  stageExecutions: readonly IdentityAccessStageExecution[];
-  /** Telemetri */
-  telemetry: IdentityAccessExecutionTelemetry;
-  /** Pipeline bag (mevcut anahtarlar) */
-  bag: Readonly<IdentityAccessPipelineBag>;
   /** Nested runtime sonuçları */
   identityResult?: IdentityResult;
   authenticationResult?: AuthenticationResult;

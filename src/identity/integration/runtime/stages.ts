@@ -2,6 +2,8 @@
  * İSTEBUL Identity — pipeline aşama kimlikleri (PR-203F).
  */
 
+import type { StageOutcome } from '../../../core/execution/index';
+
 /**
  * End-to-end Identity & Access pipeline aşamaları.
  */
@@ -56,9 +58,6 @@ export const IDENTITY_ACCESS_STAGE_LABELS: Readonly<
 });
 
 /**
- * Aşama sonucu.
+ * Aşama sonucu — shared {@link StageOutcome} (PR-901A).
  */
-export type IdentityAccessStageOutcome =
-  | 'succeeded'
-  | 'failed'
-  | 'skipped';
+export type IdentityAccessStageOutcome = StageOutcome;

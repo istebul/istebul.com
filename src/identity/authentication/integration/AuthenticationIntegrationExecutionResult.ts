@@ -1,10 +1,23 @@
 /**
  * İSTEBUL Identity — AuthenticationIntegrationResult + ExecutionResult (EPIC-301E).
+ *
+ * Shared execution contracts from core (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { AuthenticationProviderResult } from '../adapters/AuthenticationProviderResult';
 import type { AuthenticationSessionBridgeResult } from '../bridge/AuthenticationSessionBridgeResult';
 import type { IdentityBridgeResult } from '../../bridge/IdentityBridgeResult';
+import type {
+  ExecutionResultBase,
+  ExecutionSummaryItem,
+  ExecutionTelemetryCore,
+  PipelineExecutionSummaryBase,
+  ResultTelemetryBase,
+  StageCountTelemetry,
+  StageExecutionBase,
+  ValidationIssueBase
+} from '../../../core/execution/index';
 import type { AuthenticationIntegrationPipelineBag } from './AuthenticationIntegrationExecutionContext';
 import type {
   AuthenticationIntegrationPipelineStage,
@@ -14,20 +27,12 @@ import type {
 /**
  * Integration özet öğesi.
  */
-export interface AuthenticationIntegrationSummaryItem {
-  key: string;
-  label: string;
-  value: string | number | boolean;
-}
+export type AuthenticationIntegrationSummaryItem = ExecutionSummaryItem;
 
 /**
  * Integration doğrulama bulgusu.
  */
-export interface AuthenticationIntegrationValidationIssue {
-  code: string;
-  message: string;
-  severity: 'warning' | 'error';
-}
+export type AuthenticationIntegrationValidationIssue = ValidationIssueBase;
 
 /**
  * Integration aggregate summary.
@@ -46,12 +51,7 @@ export interface AuthenticationIntegrationSummary {
 /**
  * Integration aggregate telemetrisi (result içi).
  */
-export interface AuthenticationIntegrationResultTelemetry {
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-  summaryItemCount: number;
-}
+export type AuthenticationIntegrationResultTelemetry = ResultTelemetryBase;
 
 /**
  * AuthenticationIntegrationResult — her durumda geçerli aggregate sonuç.
@@ -73,63 +73,36 @@ export const PIPELINE_BAG_AUTHENTICATION_INTEGRATION_RESULT_KEY =
 /**
  * Tek aşama yürütme kaydı.
  */
-export interface AuthenticationIntegrationStageExecution {
-  stageId: AuthenticationIntegrationPipelineStage;
-  stageName: string;
-  outcome: AuthenticationIntegrationStageOutcome;
-  detail: string;
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-}
+export type AuthenticationIntegrationStageExecution = StageExecutionBase<
+  AuthenticationIntegrationPipelineStage,
+  AuthenticationIntegrationStageOutcome
+>;
 
 /**
  * Pipeline özet telemetrisi.
  */
-export interface AuthenticationIntegrationPipelineExecutionSummary {
-  stagesExecuted: number;
-  stagesSucceeded: number;
-  stagesFailed: number;
-  stagesSkipped: number;
-  success: boolean;
-}
+export type AuthenticationIntegrationPipelineExecutionSummary =
+  PipelineExecutionSummaryBase;
 
 /**
  * Uçtan uca yürütme telemetrisi.
  */
-export interface AuthenticationIntegrationExecutionTelemetry {
-  /** Toplam süre (ms) */
-  totalDurationMs: number;
-  startedAt: string;
-  endedAt: string;
-  /** Aşama süreleri */
-  stageDurationsMs: Readonly<
-    Partial<Record<AuthenticationIntegrationPipelineStage, number>>
-  >;
-  /** Aşama sonuçları */
-  stageOutcomes: Readonly<
-    Partial<
-      Record<
-        AuthenticationIntegrationPipelineStage,
-        AuthenticationIntegrationStageOutcome
-      >
-    >
-  >;
-  /** Succeeded stage count */
-  succeededStageCount: number;
-  /** Skipped stage count */
-  skippedStageCount: number;
-  /** Summary count */
-  summaryCount: number;
-}
+export type AuthenticationIntegrationExecutionTelemetry =
+  ExecutionTelemetryCore<
+    AuthenticationIntegrationPipelineStage,
+    AuthenticationIntegrationStageOutcome
+  > &
+    StageCountTelemetry;
 
 /**
  * AuthenticationIntegrationExecutionResult — tam yürütme kaydı.
  */
-export interface AuthenticationIntegrationExecutionResult {
+export interface AuthenticationIntegrationExecutionResult
+  extends ExecutionResultBase<
+    AuthenticationIntegrationPipelineBag,
+    AuthenticationIntegrationStageExecution,
+    AuthenticationIntegrationExecutionTelemetry
+  > {
   authenticationIntegrationResult: AuthenticationIntegrationResult;
-  stageExecutions: readonly AuthenticationIntegrationStageExecution[];
   pipelineSummary: AuthenticationIntegrationPipelineExecutionSummary;
-  telemetry: AuthenticationIntegrationExecutionTelemetry;
-  bag: AuthenticationIntegrationPipelineBag;
 }

@@ -1,5 +1,8 @@
 /**
  * İSTEBUL Platform Admin — PlatformAdminExecutionResult (PR-201F).
+ *
+ * Shared execution contracts from core (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { PlatformAdminResult } from '../../runtime/PlatformAdminResult';
@@ -7,6 +10,12 @@ import type { TenantManagementResult } from '../../tenant/runtime/TenantManageme
 import type { UserManagementResult } from '../../users/runtime/UserManagementResult';
 import type { SubscriptionManagementResult } from '../../subscriptions/runtime/SubscriptionManagementResult';
 import type { SystemMonitoringResult } from '../../system-monitoring/runtime/SystemMonitoringResult';
+import type {
+  ExecutionResultBase,
+  ExecutionTelemetryCore,
+  PipelineExecutionSummaryBase,
+  StageExecutionBase
+} from '../../../core/execution/index';
 import type { PlatformAdminPipelineBag } from './PlatformAdminExecutionContext';
 import type {
   PlatformAdminPipelineStage,
@@ -16,56 +25,38 @@ import type {
 /**
  * Tek aşama yürütme kaydı.
  */
-export interface PlatformAdminStageExecution {
-  stageId: PlatformAdminPipelineStage;
-  stageName: string;
-  outcome: PlatformAdminStageOutcome;
-  detail: string;
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-}
+export type PlatformAdminStageExecution = StageExecutionBase<
+  PlatformAdminPipelineStage,
+  PlatformAdminStageOutcome
+>;
 
 /**
  * Pipeline özet telemetrisi.
  */
-export interface PlatformAdminPipelineExecutionSummary {
-  stagesExecuted: number;
-  stagesSucceeded: number;
-  stagesFailed: number;
-  stagesSkipped: number;
-  success: boolean;
-}
+export type PlatformAdminPipelineExecutionSummary =
+  PipelineExecutionSummaryBase;
 
 /**
  * Uçtan uca yürütme telemetrisi.
  */
-export interface PlatformAdminExecutionTelemetry {
-  /** Toplam süre (ms) */
-  totalDurationMs: number;
-  startedAt: string;
-  endedAt: string;
-  /** Aşama süreleri */
-  stageDurationsMs: Readonly<Partial<Record<PlatformAdminPipelineStage, number>>>;
-  /** Aşama sonuçları */
-  stageOutcomes: Readonly<
-    Partial<Record<PlatformAdminPipelineStage, PlatformAdminStageOutcome>>
-  >;
+export type PlatformAdminExecutionTelemetry = ExecutionTelemetryCore<
+  PlatformAdminPipelineStage,
+  PlatformAdminStageOutcome
+> & {
   summary: PlatformAdminPipelineExecutionSummary;
-}
+};
 
 /**
  * Uçtan uca Platform Admin yürütme sonucu.
  */
-export interface PlatformAdminExecutionResult {
+export interface PlatformAdminExecutionResult
+  extends ExecutionResultBase<
+    Readonly<PlatformAdminPipelineBag>,
+    PlatformAdminStageExecution,
+    PlatformAdminExecutionTelemetry
+  > {
   /** Foundation PlatformAdminResult — her durumda geçerli */
   platformAdminResult: PlatformAdminResult;
-  /** Aşama kayıtları */
-  stageExecutions: readonly PlatformAdminStageExecution[];
-  /** Telemetri */
-  telemetry: PlatformAdminExecutionTelemetry;
-  /** Pipeline bag (mevcut anahtarlar) */
-  bag: Readonly<PlatformAdminPipelineBag>;
   /** Tenant runtime sonucu */
   tenantResult?: TenantManagementResult;
   /** User runtime sonucu */
