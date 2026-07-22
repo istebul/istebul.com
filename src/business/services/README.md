@@ -4,9 +4,9 @@ Business Intelligence pipeline engines.
 
 | Service | Consumes | Produces |
 |---------|----------|----------|
-| `MetricsEngine` | `AnalyticsEngine` (provider via analytics) | Metrics + signals |
+| `MetricsEngine` | Analytics → Scoring → Health | Metrics + signals + health |
 | `InsightEngine` | `MetricsEngine` only | Insights (+ signals pass-through) |
 | `RecommendationEngine` | `InsightEngine` only | AI-style recommendations |
 
-Analytics modules live under `src/business/intelligence/analytics/`.
+Scoring / health modules live under `src/business/intelligence/scoring/` and `health/`.
 Mock provider remains the default upstream source.

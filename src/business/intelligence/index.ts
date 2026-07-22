@@ -1,7 +1,7 @@
 /**
- * Business Intelligence Engine (EPIC-510 → EPIC-530)
+ * Business Intelligence Engine (EPIC-510 → EPIC-540)
  *
- * Provider → AnalyticsEngine → MetricsEngine → InsightEngine → RecommendationEngine → Advisor UI
+ * Provider → Analytics → Scoring → Health → Metrics → Insight → Recommendation → Advisor
  *
  * Mock-only foundation. No API, DB, auth, or tenant integration.
  */
@@ -28,7 +28,10 @@ export {
 export {
   runBusinessIntelligenceEngine
 } from './pipeline/BusinessIntelligenceEngine';
-export type { BusinessIntelligenceEngineOptions } from './pipeline/BusinessIntelligenceEngine';
+export type {
+  BusinessIntelligenceEngineOptions,
+  BusinessAdvisorResultWithHealth
+} from './pipeline/BusinessIntelligenceEngine';
 
 export { AnalyticsEngine, createAnalyticsEngine } from './core/AnalyticsEngine';
 export type { AnalyticsEngineOptions } from './core/AnalyticsEngine';
@@ -36,6 +39,26 @@ export {
   AnalyticsRegistry,
   createDefaultAnalyticsRegistry
 } from './core/AnalyticsRegistry';
+
+export { ScoringEngine, createScoringEngine } from './scoring/ScoringEngine';
+export { RevenueScorer } from './scoring/RevenueScorer';
+export { GrowthScorer } from './scoring/GrowthScorer';
+export { CustomerScorer } from './scoring/CustomerScorer';
+export { InventoryScorer } from './scoring/InventoryScorer';
+export { CashFlowScorer } from './scoring/CashFlowScorer';
+export { RiskScorer } from './scoring/RiskScorer';
+export { OpportunityScorer } from './scoring/OpportunityScorer';
+
+export {
+  BusinessHealthEngine,
+  createBusinessHealthEngine
+} from './health/BusinessHealthEngine';
+export type { BusinessHealthEngineOptions } from './health/BusinessHealthEngine';
+export {
+  buildExecutiveKpis,
+  resolveHealthLabel,
+  bandFromOverall
+} from './health/ExecutiveScore';
 
 export { RevenueAnalytics } from './analytics/RevenueAnalytics';
 export { GrowthAnalytics } from './analytics/GrowthAnalytics';
@@ -51,6 +74,15 @@ export type {
   BusinessAnalyticsModuleResult,
   BusinessAnalyticsSnapshot
 } from './models/analytics';
+export type {
+  BusinessScorerId,
+  BusinessScorer,
+  DomainScore,
+  ExecutiveKpi,
+  HealthBand,
+  BusinessHealthResult,
+  ScoringEngineResult
+} from './models/business-health';
 
 export type {
   BusinessDataProvider,

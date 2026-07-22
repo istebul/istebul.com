@@ -48,15 +48,32 @@ export {
   createAnalyticsEngine,
   AnalyticsRegistry,
   createDefaultAnalyticsRegistry,
+  ScoringEngine,
+  createScoringEngine,
+  BusinessHealthEngine,
+  createBusinessHealthEngine,
+  buildExecutiveKpis,
   RevenueAnalytics,
   GrowthAnalytics,
   CustomerAnalytics,
   InventoryAnalytics,
   CashFlowAnalytics,
   RiskAnalytics,
-  OpportunityAnalytics
+  OpportunityAnalytics,
+  RevenueScorer,
+  GrowthScorer,
+  CustomerScorer,
+  InventoryScorer,
+  CashFlowScorer,
+  RiskScorer,
+  OpportunityScorer
 } from './intelligence';
-export type { BusinessIntelligenceEngineOptions, AnalyticsEngineOptions } from './intelligence';
+export type {
+  BusinessIntelligenceEngineOptions,
+  AnalyticsEngineOptions,
+  BusinessHealthEngineOptions,
+  BusinessAdvisorResultWithHealth
+} from './intelligence';
 export type {
   IBusinessDataProvider,
   BusinessDataProvider,
@@ -82,7 +99,14 @@ export type {
   BusinessAnalyticsModuleId,
   BusinessAnalyticsModule,
   BusinessAnalyticsModuleResult,
-  BusinessAnalyticsSnapshot
+  BusinessAnalyticsSnapshot,
+  BusinessScorerId,
+  BusinessScorer,
+  DomainScore,
+  ExecutiveKpi,
+  HealthBand,
+  BusinessHealthResult,
+  ScoringEngineResult
 } from './intelligence';
 export type {
   BusinessModule,

@@ -1,11 +1,13 @@
 /**
- * Business Intelligence (EPIC-510 → EPIC-530)
+ * Business Intelligence (EPIC-510 → EPIC-540)
  *
  * ## Pipeline
  *
  * ```
  * Provider (mock default)
- *   → AnalyticsEngine (+ Registry plug-ins)
+ *   → AnalyticsEngine
+ *   → ScoringEngine
+ *   → BusinessHealthEngine
  *   → MetricsEngine
  *   → InsightEngine
  *   → RecommendationEngine
@@ -15,11 +17,11 @@
  * | Area | Path |
  * |------|------|
  * | Analytics modules | `analytics/` |
- * | Orchestration | `core/AnalyticsEngine.ts`, `core/AnalyticsRegistry.ts` |
- * | Models | `models/analytics.ts` |
- * | Score utils | `utils/analytics-score.ts` |
- * | Providers | `src/business/providers/` |
- * | Downstream engines | `src/business/services/` |
+ * | Scoring modules | `scoring/` |
+ * | Health engine | `health/` |
+ * | Orchestration | `core/`, `pipeline/` |
+ * | Models | `models/` |
+ * | Utils | `utils/` |
  *
- * No API, DB, auth, or tenant calls.
+ * No API, DB, auth, or tenant calls. Dashboard / Advisor markup unchanged.
  */
