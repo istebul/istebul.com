@@ -1,26 +1,26 @@
 /**
  * İSTEBUL Platform Admin — PlatformAdminExecutionContext (PR-201F).
+ *
+ * Shared bag/locale/actor fields from core execution contracts (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { PlatformAdminModuleId } from '../../runtime/PlatformAdminModule';
+import type {
+  ExecutionContextBase,
+  PipelineBag
+} from '../../../core/execution/index';
 
 /**
  * Pipeline bag — mevcut Platform Admin bag anahtarları kullanılır.
  * Yeni global bag oluşturulmaz.
  */
-export type PlatformAdminPipelineBag = Record<string, unknown>;
+export type PlatformAdminPipelineBag = PipelineBag;
 
 /**
  * Uçtan uca Platform Admin yürütme bağlamı.
  */
-export interface PlatformAdminExecutionContext {
-  /**
-   * Dil — varsayılan `tr`.
-   * Geçersiz değerler validation aşamasında error üretir.
-   */
-  locale?: 'tr' | 'en' | (string & {});
-  /** Opsiyonel aktör kimliği */
-  actorId?: string;
+export interface PlatformAdminExecutionContext extends ExecutionContextBase {
   /** Foundation modül filtresi */
   moduleIds?: readonly PlatformAdminModuleId[];
   /** Tenant filtresi */

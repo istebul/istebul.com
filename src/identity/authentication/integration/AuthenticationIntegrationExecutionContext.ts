@@ -1,13 +1,20 @@
 /**
  * İSTEBUL Identity — AuthenticationIntegrationExecutionContext (EPIC-301E).
+ *
+ * Shared bag/locale/actor fields from core execution contracts (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { AuthenticationProviderContext } from '../adapters/AuthenticationProviderContext';
+import type {
+  ExecutionContextBase,
+  PipelineBag
+} from '../../../core/execution/index';
 
 /**
  * Pipeline bag — instance bazlı; yeni global bag yok.
  */
-export type AuthenticationIntegrationPipelineBag = Record<string, unknown>;
+export type AuthenticationIntegrationPipelineBag = PipelineBag;
 
 /**
  * Integration operasyonu — alt katmanlara iletilir.
@@ -21,20 +28,14 @@ export type AuthenticationIntegrationOperation =
 /**
  * Uçtan uca Authentication Integration yürütme bağlamı.
  */
-export interface AuthenticationIntegrationExecutionContext {
-  /**
-   * Dil — varsayılan `tr`.
-   * Geçersiz değerler validation aşamasında error üretir.
-   */
-  locale?: 'tr' | 'en' | (string & {});
+export interface AuthenticationIntegrationExecutionContext
+  extends ExecutionContextBase {
   /** Integration operasyonu — varsayılan synchronize */
   operation?: AuthenticationIntegrationOperation;
   /** Adapter'a iletilecek provider bağlamı */
   providerContext?: AuthenticationProviderContext;
   /** Provider kimliği (providerContext yoksa) */
   providerId?: string;
-  /** Opsiyonel aktör kimliği */
-  actorId?: string;
   /** Opsiyonel identity kimliği */
   identityId?: string;
   /** Opsiyonel oturum kimliği */

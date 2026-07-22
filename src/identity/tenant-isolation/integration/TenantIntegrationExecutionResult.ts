@@ -1,10 +1,23 @@
 /**
  * İSTEBUL Identity — TenantIntegrationResult + ExecutionResult (EPIC-302E).
+ *
+ * Shared execution contracts from core (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { TenantProviderResult } from '../adapters/TenantProviderResult';
 import type { TenantSessionBridgeResult } from '../bridge/TenantSessionBridgeResult';
 import type { BusinessContextBridgeResult } from '../../business-context/bridge/BusinessContextBridgeResult';
+import type {
+  ExecutionResultBase,
+  ExecutionSummaryItem,
+  ExecutionTelemetryCore,
+  PipelineExecutionSummaryBase,
+  ResultTelemetryBase,
+  StageCountTelemetry,
+  StageExecutionBase,
+  ValidationIssueBase
+} from '../../../core/execution/index';
 import type { TenantIntegrationPipelineBag } from './TenantIntegrationExecutionContext';
 import type {
   TenantIntegrationPipelineStage,
@@ -14,20 +27,12 @@ import type {
 /**
  * Integration özet öğesi.
  */
-export interface TenantIntegrationSummaryItem {
-  key: string;
-  label: string;
-  value: string | number | boolean;
-}
+export type TenantIntegrationSummaryItem = ExecutionSummaryItem;
 
 /**
  * Integration doğrulama bulgusu.
  */
-export interface TenantIntegrationValidationIssue {
-  code: string;
-  message: string;
-  severity: 'warning' | 'error';
-}
+export type TenantIntegrationValidationIssue = ValidationIssueBase;
 
 /**
  * Integration aggregate summary.
@@ -46,12 +51,7 @@ export interface TenantIntegrationSummary {
 /**
  * Integration aggregate telemetrisi (result içi).
  */
-export interface TenantIntegrationResultTelemetry {
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-  summaryItemCount: number;
-}
+export type TenantIntegrationResultTelemetry = ResultTelemetryBase;
 
 /**
  * TenantIntegrationResult — her durumda geçerli aggregate sonuç.
@@ -73,60 +73,35 @@ export const PIPELINE_BAG_TENANT_INTEGRATION_RESULT_KEY =
 /**
  * Tek aşama yürütme kaydı.
  */
-export interface TenantIntegrationStageExecution {
-  stageId: TenantIntegrationPipelineStage;
-  stageName: string;
-  outcome: TenantIntegrationStageOutcome;
-  detail: string;
-  durationMs: number;
-  startedAt: string;
-  endedAt: string;
-}
+export type TenantIntegrationStageExecution = StageExecutionBase<
+  TenantIntegrationPipelineStage,
+  TenantIntegrationStageOutcome
+>;
 
 /**
  * Pipeline özet telemetrisi.
  */
-export interface TenantIntegrationPipelineExecutionSummary {
-  stagesExecuted: number;
-  stagesSucceeded: number;
-  stagesFailed: number;
-  stagesSkipped: number;
-  success: boolean;
-}
+export type TenantIntegrationPipelineExecutionSummary =
+  PipelineExecutionSummaryBase;
 
 /**
  * Uçtan uca yürütme telemetrisi.
  */
-export interface TenantIntegrationExecutionTelemetry {
-  /** Toplam süre (ms) */
-  totalDurationMs: number;
-  startedAt: string;
-  endedAt: string;
-  /** Aşama süreleri */
-  stageDurationsMs: Readonly<
-    Partial<Record<TenantIntegrationPipelineStage, number>>
-  >;
-  /** Aşama sonuçları */
-  stageOutcomes: Readonly<
-    Partial<
-      Record<TenantIntegrationPipelineStage, TenantIntegrationStageOutcome>
-    >
-  >;
-  /** Succeeded stage count */
-  succeededStageCount: number;
-  /** Skipped stage count */
-  skippedStageCount: number;
-  /** Summary count */
-  summaryCount: number;
-}
+export type TenantIntegrationExecutionTelemetry = ExecutionTelemetryCore<
+  TenantIntegrationPipelineStage,
+  TenantIntegrationStageOutcome
+> &
+  StageCountTelemetry;
 
 /**
  * TenantIntegrationExecutionResult — tam yürütme kaydı.
  */
-export interface TenantIntegrationExecutionResult {
+export interface TenantIntegrationExecutionResult
+  extends ExecutionResultBase<
+    TenantIntegrationPipelineBag,
+    TenantIntegrationStageExecution,
+    TenantIntegrationExecutionTelemetry
+  > {
   tenantIntegrationResult: TenantIntegrationResult;
-  stageExecutions: readonly TenantIntegrationStageExecution[];
   pipelineSummary: TenantIntegrationPipelineExecutionSummary;
-  telemetry: TenantIntegrationExecutionTelemetry;
-  bag: TenantIntegrationPipelineBag;
 }

@@ -2,6 +2,8 @@
  * İSTEBUL Platform Admin — pipeline aşama kimlikleri (PR-201F).
  */
 
+import type { StageOutcome } from '../../../core/execution/index';
+
 /**
  * End-to-end Platform Admin pipeline aşamaları.
  */
@@ -56,9 +58,6 @@ export const PLATFORM_ADMIN_STAGE_LABELS: Readonly<
 });
 
 /**
- * Aşama sonucu.
+ * Aşama sonucu — shared {@link StageOutcome} (PR-901A).
  */
-export type PlatformAdminStageOutcome =
-  | 'succeeded'
-  | 'failed'
-  | 'skipped';
+export type PlatformAdminStageOutcome = StageOutcome;

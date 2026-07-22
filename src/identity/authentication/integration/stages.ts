@@ -2,6 +2,8 @@
  * İSTEBUL Identity — Authentication Integration pipeline stages (EPIC-301E).
  */
 
+import type { StageOutcome } from '../../../core/execution/index';
+
 /**
  * End-to-end Authentication Integration pipeline aşamaları.
  */
@@ -52,9 +54,6 @@ export const AUTHENTICATION_INTEGRATION_STAGE_LABELS: Readonly<
 });
 
 /**
- * Aşama sonucu.
+ * Aşama sonucu — shared {@link StageOutcome} (PR-901A).
  */
-export type AuthenticationIntegrationStageOutcome =
-  | 'succeeded'
-  | 'failed'
-  | 'skipped';
+export type AuthenticationIntegrationStageOutcome = StageOutcome;

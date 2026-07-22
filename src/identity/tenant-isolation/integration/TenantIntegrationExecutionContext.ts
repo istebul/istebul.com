@@ -1,13 +1,20 @@
 /**
  * İSTEBUL Identity — TenantIntegrationExecutionContext (EPIC-302E).
+ *
+ * Shared bag/locale/actor fields from core execution contracts (PR-901A).
+ * Public type names unchanged.
  */
 
 import type { TenantProviderContext } from '../adapters/TenantProviderContext';
+import type {
+  ExecutionContextBase,
+  PipelineBag
+} from '../../../core/execution/index';
 
 /**
  * Pipeline bag — instance bazlı; yeni global bag yok.
  */
-export type TenantIntegrationPipelineBag = Record<string, unknown>;
+export type TenantIntegrationPipelineBag = PipelineBag;
 
 /**
  * Integration operasyonu — alt katmanlara iletilir.
@@ -21,20 +28,13 @@ export type TenantIntegrationOperation =
 /**
  * Uçtan uca Tenant Integration yürütme bağlamı.
  */
-export interface TenantIntegrationExecutionContext {
-  /**
-   * Dil — varsayılan `tr`.
-   * Geçersiz değerler validation aşamasında error üretir.
-   */
-  locale?: 'tr' | 'en' | (string & {});
+export interface TenantIntegrationExecutionContext extends ExecutionContextBase {
   /** Integration operasyonu — varsayılan synchronize */
   operation?: TenantIntegrationOperation;
   /** Adapter'a iletilecek provider bağlamı */
   providerContext?: TenantProviderContext;
   /** Provider kimliği (providerContext yoksa) */
   providerId?: string;
-  /** Opsiyonel aktör kimliği */
-  actorId?: string;
   /** Opsiyonel tenant kimliği */
   tenantId?: string;
   /** Opsiyonel tenant slug */

@@ -14,8 +14,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "rootDir": ".."
+    "rootDir": "."
   },
-  "include": ["./**/*.ts", "../core/**/*.ts"],
+  "include": ["./**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }

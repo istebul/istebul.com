@@ -2,6 +2,8 @@
  * İSTEBUL Business Admin — pipeline aşama kimlikleri (PR-202F).
  */
 
+import type { StageOutcome } from '../../../core/execution/index';
+
 /**
  * End-to-end Business Admin pipeline aşamaları.
  */
@@ -56,9 +58,6 @@ export const BUSINESS_ADMIN_STAGE_LABELS: Readonly<
 });
 
 /**
- * Aşama sonucu.
+ * Aşama sonucu — shared {@link StageOutcome} (PR-901A).
  */
-export type BusinessAdminStageOutcome =
-  | 'succeeded'
-  | 'failed'
-  | 'skipped';
+export type BusinessAdminStageOutcome = StageOutcome;

@@ -1,24 +1,25 @@
 /**
  * İSTEBUL Identity — IdentityAccessExecutionContext (PR-203F).
+ *
+ * Shared bag/locale/actor fields from `@/core/execution` (PR-901A).
+ * Public type names unchanged.
  */
+
+import type {
+  ExecutionContextBase,
+  PipelineBag
+} from '../../../core/execution/index';
 
 /**
  * Pipeline bag — mevcut Identity bag anahtarları kullanılır.
  * Yeni global bag oluşturulmaz.
  */
-export type IdentityAccessPipelineBag = Record<string, unknown>;
+export type IdentityAccessPipelineBag = PipelineBag;
 
 /**
  * Uçtan uca Identity & Access yürütme bağlamı.
  */
-export interface IdentityAccessExecutionContext {
-  /**
-   * Dil — varsayılan `tr`.
-   * Geçersiz değerler validation aşamasında error üretir.
-   */
-  locale?: 'tr' | 'en' | (string & {});
-  /** Opsiyonel aktör kimliği */
-  actorId?: string;
+export interface IdentityAccessExecutionContext extends ExecutionContextBase {
   /** Identity filtresi */
   identityIds?: readonly string[];
   /** Authentication filtresi */

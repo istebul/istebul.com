@@ -2,6 +2,8 @@
  * İSTEBUL Identity — Tenant Integration pipeline stages (EPIC-302E).
  */
 
+import type { StageOutcome } from '../../../core/execution/index';
+
 /**
  * End-to-end Tenant Integration pipeline aşamaları.
  */
@@ -52,9 +54,6 @@ export const TENANT_INTEGRATION_STAGE_LABELS: Readonly<
 });
 
 /**
- * Aşama sonucu.
+ * Aşama sonucu — shared {@link StageOutcome} (PR-901A).
  */
-export type TenantIntegrationStageOutcome =
-  | 'succeeded'
-  | 'failed'
-  | 'skipped';
+export type TenantIntegrationStageOutcome = StageOutcome;
