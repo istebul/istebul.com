@@ -1,38 +1,42 @@
-import { computeBusinessInsights } from '../insights/InsightEngine';
-import { computeBusinessMetrics } from '../metrics/MetricsEngine';
-import { createMockBusinessDataProvider } from '../providers/MockDataProvider';
-import { computeBusinessRecommendations } from '../recommendations/RecommendationEngine';
+import { getDefaultBusinessDataProvider } from '../../providers/ProviderFactory';
+import { InsightEngine } from '../../services/InsightEngine';
+import { MetricsEngine } from '../../services/MetricsEngine';
+import { RecommendationEngine } from '../../services/RecommendationEngine';
 import type { BusinessAdvisorResult } from '../types/advisor-result';
-import type { IBusinessDataProvider } from '../types/raw-business-data';
+import type { BusinessDataProvider } from '../../types/business-provider';
 
 export interface BusinessIntelligenceEngineOptions {
-  dataProvider?: IBusinessDataProvider;
+  /** Optional provider; defaults to mock via ProviderFactory. */
+  dataProvider?: BusinessDataProvider;
 }
 
 /**
  * Business Intelligence Engine — orchestrates:
- * Data Provider → Metrics → Insights → Recommendations.
+ * ProviderFactory/Mock → MetricsEngine → InsightEngine → RecommendationEngine.
  */
 export function runBusinessIntelligenceEngine(
   options: BusinessIntelligenceEngineOptions = {}
 ): BusinessAdvisorResult {
-  const provider = options.dataProvider ?? createMockBusinessDataProvider();
-  const raw = provider.getSnapshot();
-  const metrics = computeBusinessMetrics(raw);
-  const insights = computeBusinessInsights(raw, metrics);
-  const recommendations = computeBusinessRecommendations(raw, metrics, insights);
+  const provider = options.dataProvider ?? getDefaultBusinessDataProvider();
+  const metricsEngine = new MetricsEngine(provider);
+  const insightEngine = new InsightEngine(metricsEngine);
+  const recommendationEngine = new RecommendationEngine(insightEngine);
 
-  const revenue = metrics.metrics.find((m) => m.id === 'revenue-trend');
-  const risk = metrics.metrics.find((m) => m.id === 'risk-score');
+  const metricsResult = metricsEngine.compute();
+  const insightResult = insightEngine.compute();
+  const recommendations = recommendationEngine.compute();
+
+  const revenue = metricsResult.metrics.metrics.find((m) => m.id === 'revenue-trend');
+  const risk = metricsResult.metrics.metrics.find((m) => m.id === 'risk-score');
 
   return Object.freeze({
     headline: 'AI Business Advisor',
     summary: `Mock zekâ özeti: gelir ${revenue?.value ?? '—'}, risk skoru ${risk?.value ?? '—'}. Gerçek API bağlantısı yok.`,
-    metrics,
-    insights,
+    metrics: metricsResult.metrics,
+    insights: insightResult.insights,
     recommendations,
     source: 'mock',
-    generatedAt: raw.asOf
+    generatedAt: metricsResult.signals.asOf
   });
 }
 

@@ -1,6 +1,11 @@
 # services
 
-Business iş servisleri için ayrılmış katman.
+Business Intelligence pipeline engines (EPIC-520).
 
-API, analitik veya depolama çağrıları ileride burada toplanır.
-Bu foundation aşamasında servis uygulanmaz.
+| Service | Consumes | Produces |
+|---------|----------|----------|
+| `MetricsEngine` | `BusinessDataProvider` | Metrics + derived signals |
+| `InsightEngine` | `MetricsEngine` only | Insights (+ signals pass-through) |
+| `RecommendationEngine` | `InsightEngine` only | AI-style recommendations |
+
+No API, DB, auth, or tenant calls. Mock provider is the default upstream.
