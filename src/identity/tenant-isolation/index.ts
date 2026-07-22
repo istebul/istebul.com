@@ -141,3 +141,37 @@ export {
   createTenantAdapterWithSupabaseProvider,
   attachSupabaseTenantProvider
 } from './providers/index';
+
+/** Tenant Session Bridge — EPIC-302C */
+export type {
+  TenantSessionBridgeOperation,
+  TenantSessionBridgeContext,
+  TenantSessionBridgeValidationIssue,
+  TenantSessionBridgeSummaryItem,
+  TenantSessionBridgeTelemetry,
+  TenantSessionBridgeResult,
+  CreateTenantSessionBridgeResultInput,
+  TenantSessionBridgeBinding,
+  MapTenantProviderToIsolationOptions,
+  TenantSessionBridgeDependencies
+} from './bridge/index';
+
+export {
+  createTenantSessionBridgeContext,
+  resolveTenantBridgeProviderContext,
+  mapTenantBridgeOperationToProviderOperation,
+  createTenantSessionBridgeResult,
+  PIPELINE_BAG_TENANT_SESSION_BRIDGE_RESULT_KEY,
+  TenantSessionBridgeRegistry,
+  TenantSessionBridgeRegistryRuntime,
+  createTenantSessionBridgeRegistry,
+  createTenantSessionBridgeRegistryRuntime,
+  mapTenantProviderStatusToDecisionOutcome,
+  resolveTenantBridgeIdentifiers,
+  mapTenantProviderResultToIsolationModule,
+  createBridgeBindingFromIsolationModule,
+  mapTenantProviderIssuesToBridgeIssues,
+  projectMappedIsolationModule,
+  TenantSessionBridge,
+  createTenantSessionBridge
+} from './bridge/index';
