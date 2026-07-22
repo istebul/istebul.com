@@ -1,6 +1,15 @@
 # pages
 
-Business ürününün sayfa düzeyindeki yüzeyleri burada yaşar.
+Business ürününün sayfa düzeyindeki yüzeyleri.
 
-Her sayfa tek bir rota yüzeyine karşılık gelir ve ileride ilgili layout ile
-birleştirilir. Bu aşamada yalnızca tanıtım/foundation içeriği üretilir.
+| Sayfa | Route |
+|-------|-------|
+| `BusinessDashboardPage` | `/business/` |
+| `BusinessAnalysesPage` | `/business/analizler/` |
+| `BusinessReportsPage` | `/business/raporlar/` |
+| `BusinessAiAdvisorPage` | `/business/danisman/` |
+| `BusinessNotificationsPage` | `/business/bildirimler/` |
+| `BusinessSettingsPage` | `/business/ayarlar/` |
+| `BusinessHomePage` | Legacy alias → Dashboard mount |
+
+Her sayfa `BusinessLayout` kabuğu ile `mountBusinessApp` üzerinden birleştirilir.

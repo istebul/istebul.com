@@ -1,37 +1,64 @@
+import type { BusinessNavId } from '../types/business-nav';
+import { createBusinessSidebarElement } from '../components/BusinessSidebar';
+import { createBusinessTopbarElement } from '../components/BusinessTopbar';
+
 export interface BusinessLayoutOptions {
+  activeNavId: BusinessNavId;
   title: string;
-  subtitle: string;
-  intro: string;
+  subtitle?: string;
+  /** @deprecated Legacy marketing shell fields — ignored by app layout. */
+  intro?: string;
 }
 
-export function createBusinessLayoutShell(options: BusinessLayoutOptions): HTMLElement {
+export interface BusinessLayoutResult {
+  root: HTMLElement;
+  content: HTMLElement;
+  sidebar: HTMLElement;
+}
+
+/**
+ * Business uygulama kabuğu: Sidebar + Topbar + içerik alanı.
+ * Kimlik doğrulama / tenant bağlamı içermez.
+ */
+export function createBusinessLayoutShell(options: BusinessLayoutOptions): BusinessLayoutResult {
   const root = document.createElement('div');
-  root.className = 'ib-business-layout';
+  root.className = 'ib-biz-shell';
+  root.dataset.businessShell = '1';
 
-  const hero = document.createElement('header');
-  hero.className = 'ib-business-layout__hero';
+  const sidebar = createBusinessSidebarElement({ activeId: options.activeNavId });
+  sidebar.id = 'ib-biz-sidebar';
 
-  const title = document.createElement('h1');
-  title.className = 'ib-business-layout__title';
-  title.textContent = options.title;
+  const main = document.createElement('div');
+  main.className = 'ib-biz-shell__main';
 
-  const subtitle = document.createElement('p');
-  subtitle.className = 'ib-business-layout__subtitle';
-  subtitle.textContent = options.subtitle;
+  const content = document.createElement('div');
+  content.className = 'ib-biz-shell__content';
+  content.id = 'business-app-content';
+  content.setAttribute('role', 'main');
 
-  const intro = document.createElement('p');
-  intro.className = 'ib-business-layout__intro';
-  intro.textContent = options.intro;
+  const topbar = createBusinessTopbarElement({
+    title: options.title,
+    subtitle: options.subtitle,
+    onMenuToggle: () => {
+      root.classList.toggle('is-sidebar-open');
+      const open = root.classList.contains('is-sidebar-open');
+      root.setAttribute('data-sidebar-open', open ? '1' : '0');
+    }
+  });
 
-  hero.append(title, subtitle, intro);
+  const backdrop = document.createElement('button');
+  backdrop.type = 'button';
+  backdrop.className = 'ib-biz-shell__backdrop';
+  backdrop.setAttribute('aria-label', 'Menüyü kapat');
+  backdrop.addEventListener('click', () => {
+    root.classList.remove('is-sidebar-open');
+    root.setAttribute('data-sidebar-open', '0');
+  });
 
-  const modulesRegion = document.createElement('section');
-  modulesRegion.className = 'ib-business-layout__modules';
-  modulesRegion.setAttribute('aria-label', 'Business modülleri');
-  modulesRegion.id = 'business-modules';
+  main.append(topbar, content);
+  root.append(sidebar, backdrop, main);
 
-  root.append(hero, modulesRegion);
-  return root;
+  return { root, content, sidebar };
 }
 
 export default createBusinessLayoutShell;

@@ -96,6 +96,9 @@ function serveAiLandingModule(relativeEntry) {
 app.get('/js/ai/ai-landing-foundation.js', serveAiLandingModule('js/ai/ai-landing-foundation.js'));
 app.get('/js/ai/ai-landing-boot.js', serveAiLandingModule('js/ai/ai-landing-boot.js'));
 
+/** EPIC-500 — Business MVP app (bundles src/business TS; no auth/API). */
+app.get('/js/business/business-app.js', serveAiLandingModule('js/business/business-app.js'));
+
 app.use('/js/chunks', express.static(path.join(__dirname, 'dist', 'js', 'chunks'), {
   fallthrough: false,
   setHeaders: (res) => {

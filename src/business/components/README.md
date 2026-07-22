@@ -2,5 +2,16 @@
 
 Business arayüzünde yeniden kullanılabilir bileşenler.
 
-Kartlar, başlık blokları ve gelecekteki etkileşimli parçalar burada tutulur.
+| Bileşen | Rol |
+|---------|-----|
+| `BusinessSidebar` | Sol navigasyon |
+| `BusinessTopbar` | Üst bar + mobil menü |
+| `BusinessEmptyState` | Boş durum yüzeyi |
+| `BusinessKpiCard` | KPI kartı |
+| `BusinessDailySummary` | Günlük özet |
+| `BusinessActivityList` | Son aktiviteler |
+| `BusinessAiSuggestions` | AI önerileri (placeholder) |
+| `BusinessQuickActions` | Hızlı işlemler |
+| `BusinessModuleCard` | Legacy tanıtım kartı |
+
 Yeni UI framework eklenmez; mevcut İSTEBUL tasarım dili kullanılır.
