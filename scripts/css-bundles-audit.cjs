@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 /**
  * Ensures CSS bundles exist and key pages reference consolidated stylesheets.
+ *
+ * EPIC-401: Platform Hero / ürün kartı / ızgara / shell styles are delivered via
+ * `css/bundles/homepage.bundle.css` (see HOMEPAGE_EXTENSION). index.html must
+ * not re-link those sheets as duplicates; dedicated platform landing sheets
+ * (e.g. platform-landing-preview.css) may still be linked directly.
  */
 const fs = require('fs');
 const path = require('path');
-const { BUNDLES } = require('./lib/css-bundles.cjs');
+const { BUNDLES, HOMEPAGE_EXTENSION } = require('./lib/css-bundles.cjs');
 
 const root = process.cwd();
 let failed = false;
@@ -22,7 +27,8 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!index.includes('css/bundles/homepage.bundle.css')) {
   fail('index.html must link css/bundles/homepage.bundle.css');
 }
-/* Platform Landing adds dedicated platform-*.css entry sheets on top of SPA bundles */
+
+/* Platform Landing may add dedicated platform-*.css sheets on top of SPA bundles */
 const linkCount = (index.match(/<link rel="stylesheet"/g) || []).length;
 const platformSheetCount = (index.match(/href="\/css\/platform-[^"]+\.css"/g) || []).length;
 const coreSheetCount = linkCount - platformSheetCount;
@@ -34,8 +40,33 @@ if (coreSheetCount > 4) {
 if (platformSheetCount < 1) {
   fail('index.html Platform Landing must link at least one /css/platform-*.css stylesheet');
 }
-if (!index.includes('/css/platform-hero.css')) {
-  fail('index.html must link /css/platform-hero.css for Platform Hero');
+
+/* Platform Hero CSS is bundled — require delivery via homepage.bundle, not a duplicate link */
+const REQUIRED_PLATFORM_BUNDLE_SHEETS = [
+  'css/platform-hero.css',
+  'css/platform-urun-karti.css',
+  'css/platform-urun-izgarasi.css',
+  'css/platform-shell-home.css'
+];
+
+const homepageBundlePath = path.join(root, 'css/bundles/homepage.bundle.css');
+const homepageBundleText = fs.existsSync(homepageBundlePath)
+  ? fs.readFileSync(homepageBundlePath, 'utf8')
+  : '';
+
+for (const sheet of REQUIRED_PLATFORM_BUNDLE_SHEETS) {
+  if (!HOMEPAGE_EXTENSION.includes(sheet)) {
+    fail(`HOMEPAGE_EXTENSION must include ${sheet} for Platform Landing styles`);
+  }
+  if (!homepageBundleText.includes(path.basename(sheet))) {
+    fail(`css/bundles/homepage.bundle.css must import ${sheet}`);
+  }
+  /* Guard against regressing to duplicate <link> + bundle delivery */
+  if (index.includes(`/${sheet}`) || index.includes(`href="${sheet}"`)) {
+    fail(
+      `index.html must not duplicate-link /${sheet} — it is already delivered via homepage.bundle.css`
+    );
+  }
 }
 
 const sigorta = fs.readFileSync(path.join(root, 'sigorta/index.html'), 'utf8');
