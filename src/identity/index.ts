@@ -172,6 +172,40 @@ export {
   attachSupabaseAuthenticationProvider
 } from './authentication/index';
 
+/** Authentication Session Bridge — EPIC-301C */
+export type {
+  AuthenticationSessionBridgeOperation,
+  AuthenticationSessionBridgeContext,
+  AuthenticationSessionBridgeValidationIssue,
+  AuthenticationSessionBridgeSummaryItem,
+  AuthenticationSessionBridgeTelemetry,
+  AuthenticationSessionBridgeResult,
+  CreateAuthenticationSessionBridgeResultInput,
+  AuthenticationSessionBridgeBinding,
+  MapAuthenticationToSessionOptions,
+  AuthenticationSessionBridgeDependencies
+} from './authentication/index';
+
+export {
+  createAuthenticationSessionBridgeContext,
+  resolveBridgeProviderContext,
+  mapBridgeOperationToProviderOperation,
+  createAuthenticationSessionBridgeResult,
+  PIPELINE_BAG_AUTHENTICATION_SESSION_BRIDGE_RESULT_KEY,
+  AuthenticationSessionBridgeRegistry,
+  AuthenticationSessionBridgeRegistryRuntime,
+  createAuthenticationSessionBridgeRegistry,
+  createAuthenticationSessionBridgeRegistryRuntime,
+  mapAuthenticationStatusToSessionState,
+  resolveSessionIdentifiers,
+  mapAuthenticationProviderResultToSessionModule,
+  createBridgeBindingFromSessionModule,
+  mapProviderIssuesToBridgeIssues,
+  projectMappedSessionModule,
+  AuthenticationSessionBridge,
+  createAuthenticationSessionBridge
+} from './authentication/index';
+
 /** Session Management Runtime — PR-203C */
 export type {
   SessionState,
