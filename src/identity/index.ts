@@ -531,6 +531,50 @@ export {
   createTenantSessionBridge
 } from './tenant-isolation/index';
 
+/** Business Context Bridge — EPIC-302D */
+export type {
+  BusinessRuntimeExecutionContext,
+  BusinessRuntimeModuleProjection,
+  BusinessRuntimeExecutionResult,
+  BusinessRuntimePort,
+  BusinessContextStatus,
+  BusinessContextWorkspaceRef,
+  BusinessContextModule,
+  BusinessContextProjection,
+  BusinessContextBridgeOperation,
+  BusinessContextBridgeContext,
+  BusinessContextBridgeValidationIssue,
+  BusinessContextBridgeSummaryItem,
+  BusinessContextBridgeTelemetry,
+  BusinessContextBridgeResult,
+  CreateBusinessContextBridgeResultInput,
+  BusinessContextBridgeBinding,
+  MapTenantToBusinessContextOptions,
+  BusinessContextBridgeDependencies
+} from './business-context/index';
+
+export {
+  toBusinessContextProjection,
+  createBusinessContextBridgeContext,
+  resolveTenantSessionBridgeContextFromBusiness,
+  mapBusinessBridgeOperationToTenantBridgeOperation,
+  createBusinessContextBridgeResult,
+  PIPELINE_BAG_BUSINESS_CONTEXT_BRIDGE_RESULT_KEY,
+  BusinessContextBridgeRegistry,
+  BusinessContextBridgeRegistryRuntime,
+  createBusinessContextBridgeRegistry,
+  createBusinessContextBridgeRegistryRuntime,
+  mapToBusinessContextStatus,
+  resolveBusinessContextIdentifiers,
+  mapBusinessModulesToWorkspaces,
+  mapTenantBridgeResultToBusinessContextModule,
+  createBusinessContextBridgeBindingFromModule,
+  mapUpstreamIssuesToBusinessContextBridgeIssues,
+  projectMappedBusinessContextModule,
+  BusinessContextBridge,
+  createBusinessContextBridge
+} from './business-context/index';
+
 /** Identity & Access End-to-End Runtime — PR-203F */
 export type {
   IdentityAccessPipelineStage,
