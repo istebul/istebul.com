@@ -26,7 +26,7 @@
 }
 
 .ib-platform-landing-preview__mount:empty {
-  min-height: clamp(22rem, 55vw, 30rem);
+  min-height: clamp(14rem, 38vw, 22rem);
 }
 
 .ib-platform-landing-preview__lead {

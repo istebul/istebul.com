@@ -1,21 +1,30 @@
 /**
- * Unified button focus / disabled states (corporate + marketing).
+ * Unified button focus / hover / disabled states (corporate + marketing).
+ * EPIC-401: keep primary / secondary / ghost language consistent platform-wide.
  */
 .btn,
 button.btn,
 a.btn {
   outline-offset: 2px;
+  text-decoration: none;
+}
+
+.btn:hover,
+button.btn:hover,
+a.btn:hover {
+  text-decoration: none;
 }
 
 .btn:focus-visible,
 button.btn:focus-visible,
 a.btn:focus-visible {
-  outline: 2px solid var(--color-primary, var(--primary-color));
+  outline: 2px solid var(--color-primary, var(--primary-color, #2563eb));
   outline-offset: 2px;
 }
 
 .btn:disabled,
-.btn[aria-disabled='true'] {
+.btn[aria-disabled='true'],
+a.btn[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
   pointer-events: none;
@@ -26,7 +35,13 @@ a.btn:focus-visible {
 .btn.primary:focus-visible,
 .btn-primary:focus-visible,
 .btn.btn-primary:focus-visible {
-  outline-color: var(--color-primary-dark, var(--primary-dark));
+  outline-color: var(--color-primary-dark, var(--primary-dark, #1d4ed8));
+}
+
+.btn-outline:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible {
+  outline-color: var(--color-primary, var(--primary-color, #2563eb));
 }
 
 .ib-btn-loading {
