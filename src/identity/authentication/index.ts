@@ -159,3 +159,42 @@ export {
   AuthenticationSessionBridge,
   createAuthenticationSessionBridge
 } from './bridge/index';
+
+/** Authentication End-to-End Runtime — EPIC-301E */
+export type {
+  AuthenticationIntegrationPipelineStage,
+  AuthenticationIntegrationStageOutcome,
+  AuthenticationIntegrationPipelineBag,
+  AuthenticationIntegrationOperation,
+  AuthenticationIntegrationExecutionContext,
+  AuthenticationIntegrationSummaryItem,
+  AuthenticationIntegrationValidationIssue,
+  AuthenticationIntegrationSummary,
+  AuthenticationIntegrationResultTelemetry,
+  AuthenticationIntegrationResult,
+  AuthenticationIntegrationStageExecution,
+  AuthenticationIntegrationPipelineExecutionSummary,
+  AuthenticationIntegrationExecutionTelemetry,
+  AuthenticationIntegrationExecutionResult,
+  AuthenticationIntegrationPipelineRunnerDependencies
+} from './integration/index';
+
+export {
+  AUTHENTICATION_INTEGRATION_PIPELINE_STAGES,
+  AUTHENTICATION_INTEGRATION_SKIP_ON_VALIDATION_FAILURE,
+  AUTHENTICATION_INTEGRATION_STAGE_LABELS,
+  createAuthenticationIntegrationExecutionContext,
+  PIPELINE_BAG_AUTHENTICATION_INTEGRATION_RESULT_KEY,
+  validateAuthenticationIntegrationContext,
+  createAuthenticationIntegrationSkippedStageExecution,
+  createAuthenticationIntegrationStageExecution,
+  buildAuthenticationIntegrationExecutionTelemetry,
+  buildAuthenticationIntegrationPipelineExecutionSummary,
+  createEmptyAuthenticationIntegrationResult,
+  createAuthenticationIntegrationResult,
+  buildAuthenticationIntegrationE2ESummaryItems,
+  AuthenticationIntegrationPipelineRunner,
+  createAuthenticationIntegrationPipelineRunner,
+  AuthenticationIntegrationFacade,
+  createAuthenticationIntegrationFacade
+} from './integration/index';
