@@ -175,3 +175,42 @@ export {
   TenantSessionBridge,
   createTenantSessionBridge
 } from './bridge/index';
+
+/** Tenant End-to-End Runtime — EPIC-302E */
+export type {
+  TenantIntegrationPipelineStage,
+  TenantIntegrationStageOutcome,
+  TenantIntegrationPipelineBag,
+  TenantIntegrationOperation,
+  TenantIntegrationExecutionContext,
+  TenantIntegrationSummaryItem,
+  TenantIntegrationValidationIssue,
+  TenantIntegrationSummary,
+  TenantIntegrationResultTelemetry,
+  TenantIntegrationResult,
+  TenantIntegrationStageExecution,
+  TenantIntegrationPipelineExecutionSummary,
+  TenantIntegrationExecutionTelemetry,
+  TenantIntegrationExecutionResult,
+  TenantIntegrationPipelineRunnerDependencies
+} from './integration/index';
+
+export {
+  TENANT_INTEGRATION_PIPELINE_STAGES,
+  TENANT_INTEGRATION_SKIP_ON_VALIDATION_FAILURE,
+  TENANT_INTEGRATION_STAGE_LABELS,
+  createTenantIntegrationExecutionContext,
+  PIPELINE_BAG_TENANT_INTEGRATION_RESULT_KEY,
+  validateTenantIntegrationContext,
+  createTenantIntegrationSkippedStageExecution,
+  createTenantIntegrationStageExecution,
+  buildTenantIntegrationExecutionTelemetry,
+  buildTenantIntegrationPipelineExecutionSummary,
+  createEmptyTenantIntegrationResult,
+  createTenantIntegrationResult,
+  buildTenantIntegrationE2ESummaryItems,
+  TenantIntegrationPipelineRunner,
+  createTenantIntegrationPipelineRunner,
+  TenantIntegrationFacade,
+  createTenantIntegrationFacade
+} from './integration/index';
