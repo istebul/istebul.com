@@ -123,6 +123,55 @@ export {
   createAuthenticationAdapter
 } from './authentication/index';
 
+/** Supabase Authentication Provider — EPIC-301B */
+export type {
+  AuthenticationErrorCode,
+  SupabaseAuthenticationContext,
+  SupabaseAuthUser,
+  SupabaseAuthSession,
+  SupabaseAuthenticationErrorInfo,
+  SupabaseAuthenticationResult,
+  CreateSupabaseAuthenticationResultInput,
+  SupabaseAuthUserLike,
+  SupabaseAuthSessionLike,
+  SupabaseClientAuthErrorLike,
+  SupabaseAuthResponseLike,
+  SupabaseAuthClientLike,
+  SupabaseAuthErrorLike,
+  SupabaseAuthenticationProviderDependencies
+} from './authentication/index';
+
+export {
+  AuthenticationError,
+  SessionExpired,
+  InvalidCredentials,
+  ProviderUnavailable,
+  createAuthenticationErrorByCode,
+  toAuthenticationError,
+  SUPABASE_AUTHENTICATION_PROVIDER_ID,
+  SUPABASE_AUTHENTICATION_PROVIDER_NAME,
+  SUPABASE_AUTHENTICATION_PROVIDER_DESCRIPTION,
+  SUPABASE_CONTEXT_BAG_KEY,
+  createSupabaseAuthenticationContext,
+  toAuthenticationProviderContext,
+  fromAuthenticationProviderContext,
+  validateSupabaseAuthenticateCredentials,
+  createSupabaseAuthenticationResult,
+  toPrincipalFromSupabaseUser,
+  toCredentialReferenceFromSupabaseSession,
+  toAuthenticationProviderResult,
+  assertSupabaseAuthClient,
+  mapSupabaseErrorMessageToCode,
+  mapSupabaseAuthError,
+  mapUnknownProviderError,
+  SupabaseAuthenticationProvider,
+  createSupabaseAuthenticationProvider,
+  createSupabaseAuthenticationProviderRegistration,
+  registerSupabaseAuthenticationProvider,
+  createAuthenticationAdapterWithSupabaseProvider,
+  attachSupabaseAuthenticationProvider
+} from './authentication/index';
+
 /** Session Management Runtime — PR-203C */
 export type {
   SessionState,
