@@ -1,8 +1,24 @@
 /**
  * İSTEBUL Identity — Tenant Integration E2E helpers (EPIC-302E).
+ *
+ * Shared stage/telemetry/summary utilities from core (PR-901B).
+ * Public export names unchanged.
  */
 
-import { endStageTimer, nowMs, startStageTimer } from '../../runtime/timing';
+import {
+  buildIntegrationStageSummaryItems,
+  buildIntegrationStyleExecutionTelemetry,
+  buildPipelineExecutionSummary,
+  createSkippedStageExecution as createSkippedStageExecutionCore,
+  createStageExecution as createStageExecutionCore,
+  endStageTimer,
+  nowMs,
+  pushEmptyOptionalStringIssue,
+  pushEmptyProviderContextIdIssue,
+  pushInvalidLocaleIssue,
+  pushProviderContextRequiredIssue,
+  startStageTimer
+} from '../../../core/pipeline/index';
 import type {
   TenantIntegrationExecutionTelemetry,
   TenantIntegrationPipelineExecutionSummary,
@@ -18,7 +34,6 @@ import type {
 } from './stages';
 import { TENANT_INTEGRATION_STAGE_LABELS } from './stages';
 
-const VALID_LOCALES = new Set(['tr', 'en']);
 const VALID_OPERATIONS = new Set([
   'synchronize',
   'refresh',
@@ -35,13 +50,7 @@ export function validateTenantIntegrationContext(
   const issues: TenantIntegrationValidationIssue[] = [];
   const locale = context.locale ?? 'tr';
 
-  if (!VALID_LOCALES.has(locale)) {
-    issues.push({
-      code: 'INVALID_LOCALE',
-      message: `Geçersiz locale: ${String(locale)}`,
-      severity: 'error'
-    });
-  }
+  pushInvalidLocaleIssue(issues, locale);
 
   if (context.operation !== undefined && !VALID_OPERATIONS.has(context.operation)) {
     issues.push({
@@ -51,60 +60,30 @@ export function validateTenantIntegrationContext(
     });
   }
 
-  if (context.actorId !== undefined) {
-    if (typeof context.actorId !== 'string' || context.actorId.trim() === '') {
-      issues.push({
-        code: 'EMPTY_ACTOR_ID',
-        message: 'actorId boş string olamaz.',
-        severity: 'error'
-      });
-    }
-  }
-
-  if (context.tenantId !== undefined) {
-    if (typeof context.tenantId !== 'string' || context.tenantId.trim() === '') {
-      issues.push({
-        code: 'EMPTY_TENANT_ID',
-        message: 'tenantId boş string olamaz.',
-        severity: 'error'
-      });
-    }
-  }
-
-  if (context.providerId !== undefined) {
-    if (
-      typeof context.providerId !== 'string' ||
-      context.providerId.trim() === ''
-    ) {
-      issues.push({
-        code: 'EMPTY_PROVIDER_ID',
-        message: 'providerId boş string olamaz.',
-        severity: 'error'
-      });
-    }
-  }
-
-  if (!context.providerContext && !context.providerId) {
-    issues.push({
-      code: 'PROVIDER_CONTEXT_REQUIRED',
-      message: 'providerContext veya providerId zorunludur.',
-      severity: 'error'
-    });
-  }
-
-  if (context.providerContext) {
-    if (
-      !context.providerContext.providerId ||
-      typeof context.providerContext.providerId !== 'string' ||
-      context.providerContext.providerId.trim() === ''
-    ) {
-      issues.push({
-        code: 'EMPTY_PROVIDER_CONTEXT_ID',
-        message: 'providerContext.providerId zorunludur.',
-        severity: 'error'
-      });
-    }
-  }
+  pushEmptyOptionalStringIssue(
+    issues,
+    context.actorId,
+    'EMPTY_ACTOR_ID',
+    'actorId boş string olamaz.'
+  );
+  pushEmptyOptionalStringIssue(
+    issues,
+    context.tenantId,
+    'EMPTY_TENANT_ID',
+    'tenantId boş string olamaz.'
+  );
+  pushEmptyOptionalStringIssue(
+    issues,
+    context.providerId,
+    'EMPTY_PROVIDER_ID',
+    'providerId boş string olamaz.'
+  );
+  pushProviderContextRequiredIssue(
+    issues,
+    context.providerContext,
+    context.providerId
+  );
+  pushEmptyProviderContextIdIssue(issues, context.providerContext);
 
   return Object.freeze(issues);
 }
@@ -116,17 +95,11 @@ export function createTenantIntegrationSkippedStageExecution(
   stageId: TenantIntegrationPipelineStage,
   detail: string
 ): TenantIntegrationStageExecution {
-  const timer = startStageTimer();
-  const timing = endStageTimer(timer);
-  return {
+  return createSkippedStageExecutionCore(
     stageId,
-    stageName: TENANT_INTEGRATION_STAGE_LABELS[stageId],
-    outcome: 'skipped',
-    detail,
-    durationMs: timing.durationMs,
-    startedAt: timer.startedAt,
-    endedAt: timing.endedAt
-  };
+    TENANT_INTEGRATION_STAGE_LABELS[stageId],
+    detail
+  );
 }
 
 /**
@@ -138,27 +111,13 @@ export function createTenantIntegrationStageExecution(
   detail: string,
   timing?: { durationMs: number; startedAt: string; endedAt: string }
 ): TenantIntegrationStageExecution {
-  const resolved =
-    timing ??
-    (() => {
-      const timer = startStageTimer();
-      const end = endStageTimer(timer);
-      return {
-        durationMs: end.durationMs,
-        startedAt: timer.startedAt,
-        endedAt: end.endedAt
-      };
-    })();
-
-  return {
+  return createStageExecutionCore(
     stageId,
-    stageName: TENANT_INTEGRATION_STAGE_LABELS[stageId],
+    TENANT_INTEGRATION_STAGE_LABELS[stageId],
     outcome,
     detail,
-    durationMs: resolved.durationMs,
-    startedAt: resolved.startedAt,
-    endedAt: resolved.endedAt
-  };
+    timing
+  );
 }
 
 /**
@@ -171,37 +130,13 @@ export function buildTenantIntegrationExecutionTelemetry(
   totalDurationMs: number,
   summaryCount: number
 ): TenantIntegrationExecutionTelemetry {
-  const stageDurationsMs: Partial<
-    Record<TenantIntegrationPipelineStage, number>
-  > = {};
-  const stageOutcomes: Partial<
-    Record<TenantIntegrationPipelineStage, TenantIntegrationStageOutcome>
-  > = {};
-
-  let succeededStageCount = 0;
-  let skippedStageCount = 0;
-
-  for (const stage of stageExecutions) {
-    stageDurationsMs[stage.stageId] = stage.durationMs;
-    stageOutcomes[stage.stageId] = stage.outcome;
-    if (stage.outcome === 'succeeded') {
-      succeededStageCount += 1;
-    }
-    if (stage.outcome === 'skipped') {
-      skippedStageCount += 1;
-    }
-  }
-
-  return {
-    totalDurationMs,
+  return buildIntegrationStyleExecutionTelemetry(
+    stageExecutions,
     startedAt,
     endedAt,
-    stageDurationsMs: Object.freeze(stageDurationsMs),
-    stageOutcomes: Object.freeze(stageOutcomes),
-    succeededStageCount,
-    skippedStageCount,
+    totalDurationMs,
     summaryCount
-  };
+  );
 }
 
 /**
@@ -210,23 +145,10 @@ export function buildTenantIntegrationExecutionTelemetry(
 export function buildTenantIntegrationPipelineExecutionSummary(
   stageExecutions: readonly TenantIntegrationStageExecution[]
 ): TenantIntegrationPipelineExecutionSummary {
-  let stagesSucceeded = 0;
-  let stagesFailed = 0;
-  let stagesSkipped = 0;
-
-  for (const stage of stageExecutions) {
-    if (stage.outcome === 'succeeded') stagesSucceeded += 1;
-    if (stage.outcome === 'failed') stagesFailed += 1;
-    if (stage.outcome === 'skipped') stagesSkipped += 1;
-  }
-
-  return {
-    stagesExecuted: stageExecutions.length,
-    stagesSucceeded,
-    stagesFailed,
-    stagesSkipped,
-    success: stagesFailed === 0 && stagesSucceeded > 0
-  };
+  return buildPipelineExecutionSummary(
+    stageExecutions,
+    'no-failures-and-some-succeeded'
+  );
 }
 
 /**
@@ -303,26 +225,10 @@ export function buildTenantIntegrationE2ESummaryItems(
   integration: TenantIntegrationResult
 ): TenantIntegrationSummaryItem[] {
   return [
-    {
-      key: 'success',
-      label: 'Success',
-      value: pipelineSummary.success && integration.summary.success
-    },
-    {
-      key: 'stagesSucceeded',
-      label: 'Stages Succeeded',
-      value: pipelineSummary.stagesSucceeded
-    },
-    {
-      key: 'stagesSkipped',
-      label: 'Stages Skipped',
-      value: pipelineSummary.stagesSkipped
-    },
-    {
-      key: 'stagesFailed',
-      label: 'Stages Failed',
-      value: pipelineSummary.stagesFailed
-    },
+    ...buildIntegrationStageSummaryItems(
+      pipelineSummary,
+      integration.summary.success
+    ),
     {
       key: 'adapterSucceeded',
       label: 'Adapter Succeeded',
