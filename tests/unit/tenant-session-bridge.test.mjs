@@ -1180,3 +1180,456 @@ describe('Result factory coverage', () => {
     assert.equal(all[1].id, 'b2');
   });
 });
+
+describe('Extended mapping coverage', () => {
+  it('maps validate resolved without accessOutcome to allow', () => {
+    assert.equal(
+      mapTenantProviderStatusToDecisionOutcome('resolved', 'validate'),
+      'allow'
+    );
+  });
+
+  it('maps validate unresolved without accessOutcome to deny', () => {
+    assert.equal(
+      mapTenantProviderStatusToDecisionOutcome('unresolved', 'validate'),
+      'deny'
+    );
+  });
+
+  it('maps stale status to restrict for synchronize', () => {
+    assert.equal(
+      mapTenantProviderStatusToDecisionOutcome('stale', 'synchronize'),
+      'restrict'
+    );
+  });
+
+  it('falls back identity from membership when option omitted', () => {
+    const ids = resolveTenantBridgeIdentifiers(baseProviderResult(), {
+      operation: 'synchronize'
+    });
+    assert.equal(ids.identityId, 'identity-001');
+  });
+
+  it('uses existing module identity when memberships empty', () => {
+    const existing = mapTenantProviderResultToIsolationModule(
+      baseProviderResult(),
+      { operation: 'synchronize', identityId: 'identity-existing' }
+    );
+    const ids = resolveTenantBridgeIdentifiers(
+      baseProviderResult({ memberships: [], tenant: undefined }),
+      { operation: 'refresh', existingModule: existing }
+    );
+    assert.equal(ids.identityId, 'identity-existing');
+    assert.equal(ids.tenantId, 'tenant-demo-001');
+  });
+
+  it('generates fallback tenant id from providerId', () => {
+    const ids = resolveTenantBridgeIdentifiers(
+      baseProviderResult({
+        tenant: undefined,
+        memberships: [],
+        bag: undefined
+      }),
+      { operation: 'getTenant' }
+    );
+    assert.match(ids.tenantId, /^tenant-bridge-/);
+  });
+
+  it('uses provider accessScope when present', () => {
+    const module = mapTenantProviderResultToIsolationModule(
+      baseProviderResult({
+        accessScope: {
+          accessScopeId: 'scope-custom',
+          allowedTenantIds: ['tenant-demo-001', 'tenant-other'],
+          crossTenantAllowed: true
+        },
+        accessOutcome: 'allow'
+      }),
+      { operation: 'validate' }
+    );
+    assert.equal(module.accessScope.accessScopeId, 'scope-custom');
+    assert.equal(module.accessScope.crossTenantAllowed, true);
+    assert.equal(module.accessScope.allowedTenantIds.length, 2);
+  });
+
+  it('reuses existing accessScope when provider omits it', () => {
+    const first = mapTenantProviderResultToIsolationModule(
+      baseProviderResult({
+        accessScope: {
+          accessScopeId: 'scope-first',
+          allowedTenantIds: ['tenant-demo-001'],
+          crossTenantAllowed: false
+        }
+      }),
+      { operation: 'synchronize' }
+    );
+    const second = mapTenantProviderResultToIsolationModule(
+      baseProviderResult({ accessScope: undefined }),
+      { operation: 'refresh', existingModule: first }
+    );
+    assert.equal(second.accessScope.accessScopeId, 'scope-first');
+  });
+
+  it('creates default scopes when none exist', () => {
+    const module = mapTenantProviderResultToIsolationModule(
+      baseProviderResult(),
+      { operation: 'synchronize' }
+    );
+    assert.ok(module.scopes.some((item) => item.level === 'tenant'));
+    assert.ok(module.scopes.some((item) => item.level === 'membership'));
+  });
+
+  it('preserves existing isolation rules', () => {
+    const first = mapTenantProviderResultToIsolationModule(
+      baseProviderResult(),
+      { operation: 'synchronize' }
+    );
+    const custom = {
+      ...first,
+      isolationRules: Object.freeze([
+        {
+          ruleId: 'custom-rule',
+          name: 'Custom',
+          sourceTenantId: 'tenant-demo-001',
+          effect: 'deny'
+        }
+      ])
+    };
+    const second = mapTenantProviderResultToIsolationModule(
+      baseProviderResult(),
+      { operation: 'refresh', existingModule: custom }
+    );
+    assert.equal(second.isolationRules[0].ruleId, 'custom-rule');
+  });
+
+  it('does not synthesize membership without identity', () => {
+    const module = mapTenantProviderResultToIsolationModule(
+      baseProviderResult({ memberships: undefined }),
+      { operation: 'getTenant' }
+    );
+    assert.equal(module.memberships.length, 0);
+  });
+
+  it('binding reuses existing id on remap', () => {
+    const module = mapTenantProviderResultToIsolationModule(
+      baseProviderResult(),
+      { operation: 'synchronize', sessionId: 'session-001' }
+    );
+    const first = createBridgeBindingFromIsolationModule(
+      module,
+      SUPABASE_TENANT_PROVIDER_ID,
+      'synchronize'
+    );
+    const second = createBridgeBindingFromIsolationModule(
+      module,
+      SUPABASE_TENANT_PROVIDER_ID,
+      'refresh',
+      first
+    );
+    assert.equal(second.id, first.id);
+    assert.equal(second.lastOperation, 'refresh');
+    assert.equal(second.createdAt, first.createdAt);
+  });
+});
+
+describe('Extended flow coverage', () => {
+  it('synchronize registers isolation module in runtime registry', async () => {
+    const { bridge, isolationRegistry } = createBridge();
+    const result = await bridge.synchronize(syncContext());
+    assert.ok(isolationRegistry.getById(result.isolationModule.id));
+    assert.equal(isolationRegistry.tenantCount(), 1);
+  });
+
+  it('listMemberships by tenantId includes tenant projection', async () => {
+    const { bridge } = createBridge();
+    const result = await bridge.listMemberships(
+      createTenantSessionBridgeContext({
+        operation: 'listMemberships',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({ tenantId: 'tenant-demo-001' })
+        ),
+        tenantId: 'tenant-demo-001',
+        sessionId: 'session-001'
+      })
+    );
+    assert.equal(result.success, true);
+    assert.equal(
+      result.isolationModule?.tenantIdentity.tenantId,
+      'tenant-demo-001'
+    );
+  });
+
+  it('getTenant fails without tenantId', async () => {
+    const { bridge } = createBridge();
+    const result = await bridge.getTenant(
+      createTenantSessionBridgeContext({
+        operation: 'getTenant',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({})
+        )
+      })
+    );
+    assert.equal(result.success, false);
+  });
+
+  it('validate fails without identity/tenant keys', async () => {
+    const { bridge } = createBridge();
+    const result = await bridge.validate(
+      createTenantSessionBridgeContext({
+        operation: 'validate',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({ tenantId: 'tenant-demo-001' })
+        ),
+        tenantId: 'tenant-demo-001'
+      })
+    );
+    assert.equal(result.success, false);
+    assert.ok(
+      result.validationIssues.some((item) => item.code === 'AccessDenied')
+    );
+  });
+
+  it('maps MembershipNotFound on empty membership list', async () => {
+    const { bridge } = createBridge({
+      memberships: {
+        listByIdentity: async () => ({ data: [], error: null }),
+        listByTenant: async () => ({ data: [], error: null }),
+        getById: async () => ({ data: null, error: null }),
+        validateAccess: async () => ({ data: null, error: null })
+      }
+    });
+    const result = await bridge.listMemberships(
+      createTenantSessionBridgeContext({
+        operation: 'listMemberships',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({ identityId: 'identity-001' })
+        ),
+        identityId: 'identity-001'
+      })
+    );
+    assert.equal(result.success, false);
+    assert.ok(
+      result.validationIssues.some(
+        (item) => item.code === 'MembershipNotFound'
+      )
+    );
+  });
+
+  it('resolve by identityId finds existing binding', async () => {
+    const { bridge } = createBridge();
+    await bridge.synchronize(syncContext());
+    const second = await bridge.synchronize(
+      createTenantSessionBridgeContext({
+        operation: 'synchronize',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({
+            tenantId: 'tenant-demo-001',
+            identityId: 'identity-001'
+          })
+        ),
+        identityId: 'identity-001'
+      })
+    );
+    assert.equal(bridge.getBridgeRegistry().count(), 1);
+    assert.equal(second.binding.identityId, 'identity-001');
+  });
+
+  it('providerContext bag merges with bridge bag', () => {
+    const resolved = resolveTenantBridgeProviderContext(
+      createTenantSessionBridgeContext({
+        operation: 'synchronize',
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({
+            tenantId: 'tenant-demo-001',
+            bag: { fromProvider: 1 }
+          })
+        ),
+        bag: { fromBridge: 2 }
+      })
+    );
+    assert.equal(resolved.bag?.fromProvider, 1);
+    assert.equal(resolved.bag?.fromBridge, 2);
+  });
+
+  it('summary items include refresh and validation keys', async () => {
+    const { bridge } = createBridge();
+    const result = await bridge.refresh(
+      createTenantSessionBridgeContext({
+        operation: 'refresh',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({
+            tenantId: 'tenant-demo-001',
+            identityId: 'identity-001'
+          })
+        ),
+        tenantId: 'tenant-demo-001'
+      })
+    );
+    assert.ok(result.summaryItems.some((item) => item.key === 'refreshCount'));
+    assert.ok(
+      result.summaryItems.some((item) => item.key === 'validationCount')
+    );
+  });
+
+  it('failed synchronize keeps telemetry summaryCount aligned', async () => {
+    const { bridge } = createBridge({
+      tenants: {
+        getById: async () => ({ data: null, error: null }),
+        getBySlug: async () => ({ data: null, error: null }),
+        getByDomain: async () => ({ data: null, error: null })
+      }
+    });
+    const result = await bridge.synchronize(syncContext());
+    assert.equal(result.telemetry.summaryCount, result.summaryItems.length);
+    assert.equal(result.telemetry.tenantSynchronizationCount, 0);
+  });
+
+  it('upsertIsolationModule replaces previous registration', async () => {
+    const { bridge, isolationRegistry } = createBridge();
+    const first = await bridge.synchronize(syncContext());
+    const beforeCount = isolationRegistry.count();
+    await bridge.refresh(
+      createTenantSessionBridgeContext({
+        operation: 'refresh',
+        providerId: SUPABASE_TENANT_PROVIDER_ID,
+        providerContext: toTenantProviderContext(
+          createSupabaseTenantContext({
+            tenantId: 'tenant-demo-001',
+            identityId: 'identity-001'
+          })
+        ),
+        tenantId: 'tenant-demo-001',
+        bridgeBindingId: first.binding.id,
+        sessionId: 'session-001'
+      })
+    );
+    assert.equal(isolationRegistry.count(), beforeCount);
+  });
+
+  it('register throws without isolationModuleId', () => {
+    const registry = createTenantSessionBridgeRegistry();
+    assert.throws(
+      () =>
+        registry.register({
+          id: 'bridge-x',
+          providerId: 'p',
+          tenantId: 't',
+          isolationModuleId: '',
+          membershipCount: 0,
+          order: 1,
+          createdAt: 'x',
+          updatedAt: 'x',
+          lastOperation: 'synchronize'
+        }),
+      /isolationModuleId zorunludur/
+    );
+  });
+
+  it('register throws without providerId', () => {
+    const registry = createTenantSessionBridgeRegistry();
+    assert.throws(
+      () =>
+        registry.register({
+          id: 'bridge-x',
+          providerId: '',
+          tenantId: 't',
+          isolationModuleId: 'i',
+          membershipCount: 0,
+          order: 1,
+          createdAt: 'x',
+          updatedAt: 'x',
+          lastOperation: 'synchronize'
+        }),
+      /providerId zorunludur/
+    );
+  });
+
+  it('upsert throws without id', () => {
+    const registry = createTenantSessionBridgeRegistry();
+    assert.throws(
+      () =>
+        registry.upsert({
+          id: '',
+          providerId: 'p',
+          tenantId: 't',
+          isolationModuleId: 'i',
+          membershipCount: 0,
+          order: 1,
+          createdAt: 'x',
+          updatedAt: 'x',
+          lastOperation: 'synchronize'
+        }),
+      /id zorunludur/
+    );
+  });
+
+  it('createTenantSessionBridgeContext preserves optional fields', () => {
+    const context = createTenantSessionBridgeContext({
+      locale: 'en',
+      operation: 'validate',
+      providerId: SUPABASE_TENANT_PROVIDER_ID,
+      tenantId: 't1',
+      tenantSlug: 'slug',
+      identityId: 'i1',
+      membershipId: 'm1',
+      sessionId: 's1',
+      resourceId: 'r1',
+      actorId: 'a1',
+      bag: { k: 1 }
+    });
+    assert.equal(context.locale, 'en');
+    assert.equal(context.tenantSlug, 'slug');
+    assert.equal(context.resourceId, 'r1');
+    assert.equal(context.bag?.k, 1);
+  });
+
+  it('decision reason encodes operation and status', () => {
+    const module = mapTenantProviderResultToIsolationModule(
+      baseProviderResult({ status: 'resolved' }),
+      { operation: 'validate' }
+    );
+    assert.match(module.decisions[0].reason, /bridge:validate:resolved/);
+  });
+
+  it('isolation result bag carries sessionId', async () => {
+    const { bridge } = createBridge();
+    const result = await bridge.synchronize(syncContext());
+    assert.equal(result.isolationResult?.telemetry.tenantCount, 1);
+    assert.ok(result.isolationResult);
+  });
+
+  it('getBySessionId returns undefined for unknown', () => {
+    const registry = createTenantSessionBridgeRegistry();
+    assert.equal(registry.getBySessionId('missing'), undefined);
+  });
+
+  it('getByIsolationModuleId returns undefined for unknown', () => {
+    const registry = createTenantSessionBridgeRegistry();
+    assert.equal(registry.getByIsolationModuleId('missing'), undefined);
+  });
+
+  it('bridge bag includes providerSuccess true on success', async () => {
+    const { bridge } = createBridge();
+    const result = await bridge.synchronize(syncContext());
+    assert.equal(result.bag?.providerSuccess, true);
+  });
+
+  it('bridge bag includes providerSuccess false on failure', async () => {
+    const { bridge } = createBridge({
+      tenants: {
+        getById: async () => ({ data: null, error: null }),
+        getBySlug: async () => ({ data: null, error: null }),
+        getByDomain: async () => ({ data: null, error: null })
+      }
+    });
+    const result = await bridge.synchronize(syncContext());
+    assert.equal(result.success, false);
+    assert.equal(result.providerResult?.success, false);
+  });
+});
