@@ -35,6 +35,7 @@ module.exports = {
         'src/business/**/*.ts',
         'src/platform-admin/**/*.ts',
         'src/business-admin/**/*.ts',
+        'src/identity/**/*.ts',
       ],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
