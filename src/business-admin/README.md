@@ -7,8 +7,9 @@
 - Foundation interface'leri değiştirilmez
 - Core Runtime değiştirilmez
 - Platform Admin değiştirilmez
-- Business Runtime Engine'lerine (Dashboard / Report dahil) dokunulmaz
+- Business Runtime Engine'lerine (Dashboard / Report / Export dahil) dokunulmaz
 - Dashboard Workspace (PR-202B) değiştirilmez
+- Reports Workspace (PR-202C) değiştirilmez
 - Yeni global state oluşturulmaz
 - Platform Admin ile ortak ekran oluşturulmaz
 - TypeScript strict devam eder
@@ -20,6 +21,7 @@
 | PR-202A | Business Admin Foundation Runtime |
 | PR-202B | Dashboard Workspace |
 | PR-202C | Reports Workspace |
+| PR-202D | Export Workspace |
 
 ## Pipeline (PR-202A)
 
@@ -37,6 +39,12 @@ DashboardResult → Workspace Projection → Workspace Summary → DashboardWork
 
 ```
 ReportResult → Workspace Projection → Summary → ReportsWorkspaceResult
+```
+
+## Pipeline (PR-202D)
+
+```
+ExportResult → Workspace Projection → Summary → ExportWorkspaceResult
 ```
 
 ## Modules (foundation skeleton)
@@ -73,11 +81,22 @@ ReportResult → Workspace Projection → Summary → ReportsWorkspaceResult
 | `report-status` | Report Status | status |
 | `execution-summary` | Execution Summary | summary |
 
+## Workspace widgets (PR-202D)
+
+| ID | Name | Kind |
+|----|------|------|
+| `exports-overview` | Exports Overview | overview |
+| `recent-exports` | Recent Exports | list |
+| `available-formats` | Available Formats | formats |
+| `export-status` | Export Status | status |
+| `execution-summary` | Execution Summary | summary |
+
 ## Out of scope
 
 - CRUD / Database / API / Auth
 - Charts / Realtime (PR-202B)
 - Realtime / Export (PR-202C)
+- Realtime (PR-202D)
 
 ## Directory
 
@@ -88,22 +107,23 @@ src/business-admin/
   tsconfig.json
   runtime/                 # PR-202A foundation (do not modify)
   dashboard/               # PR-202B Dashboard Workspace (do not modify)
-  reports/                 # PR-202C Reports Workspace
+  reports/                 # PR-202C Reports Workspace (do not modify)
+  exports/                 # PR-202D Export Workspace
     index.ts
     runtime/
-      ReportResult.ts
-      ReportsWorkspaceWidget.ts
-      ReportsWorkspaceContext.ts
-      ReportsWorkspaceResult.ts
-      ReportsWorkspaceRegistry.ts
-      ReportsWorkspaceRuntime.ts
-      ReportsWorkspaceSummary.ts
+      ExportResult.ts
+      ExportWorkspaceWidget.ts
+      ExportWorkspaceContext.ts
+      ExportWorkspaceResult.ts
+      ExportWorkspaceRegistry.ts
+      ExportWorkspaceRuntime.ts
+      ExportWorkspaceSummary.ts
       builtinWidgets.ts
       workspaceValidation.ts
       workspaceProjection.ts
       index.ts
     ui/
-      ReportsWorkspaceLayout.ts
-      reportsWorkspaceStyles.ts
+      ExportWorkspaceLayout.ts
+      exportWorkspaceStyles.ts
       index.ts
 ```

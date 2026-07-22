@@ -1,10 +1,10 @@
 /**
- * İSTEBUL Business Admin — foundation + Dashboard + Reports Workspace.
+ * İSTEBUL Business Admin — foundation + Dashboard + Reports + Export Workspace.
  *
  * Architecture Freeze v1.0 — additive katmanlar.
- * PR-202A foundation / PR-202B Dashboard Workspace runtime dosyaları değiştirilmez.
- * Report Engine / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
- * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime / Export yok.
+ * PR-202A–202C runtime dosyaları değiştirilmez.
+ * Export Engine / Platform Admin / Business Runtime Engine'lerine dokunulmaz.
+ * Yalnızca projeksiyon; CRUD / API / DB / Auth / Charts / Realtime yok.
  */
 
 export type {
@@ -150,3 +150,57 @@ export {
   REPORTS_WORKSPACE_CSS,
   ensureReportsWorkspaceStyles
 } from './reports/index';
+
+/** Export Workspace — PR-202D */
+export type {
+  ExportResult,
+  ExportResultMetadata,
+  ExportResultSummary,
+  ExportResultArtifact,
+  ExportWorkspaceWidgetId,
+  ExportWorkspaceWidgetKind,
+  ExportWorkspaceWidgetStatus,
+  ExportWorkspaceWidgetDefinition,
+  ExportWorkspaceListItem,
+  ExportWorkspaceOverviewProjection,
+  ExportWorkspaceStatusProjection,
+  ExportWorkspaceExecutionProjection,
+  ExportWorkspaceWidgetProjection,
+  ExportWorkspaceContext,
+  ExportWorkspaceSummary,
+  ExportWorkspaceSummaryItem,
+  ExportWorkspaceValidationIssue,
+  ExportWorkspaceTelemetry,
+  ExportWorkspaceResult,
+  ExportWorkspaceLayoutOptions
+} from './exports/index';
+
+export {
+  toEmptyExportWidgetProjection,
+  createExportWorkspaceContext,
+  buildExportWorkspaceSummary,
+  buildExportWorkspaceSummaryItems,
+  PIPELINE_BAG_EXPORT_WORKSPACE_RESULT_KEY,
+  ExportWorkspaceRegistry,
+  createExportWorkspaceRegistry,
+  ExportWorkspaceRuntime,
+  createExportWorkspaceRuntime,
+  BUILTIN_EXPORT_WORKSPACE_WIDGETS,
+  BUILTIN_EXPORT_WORKSPACE_WIDGET_COUNT,
+  getBuiltinExportWorkspaceWidget,
+  validateExportWorkspaceContext,
+  resolveRequestedExportWidgets,
+  projectExportWorkspaceWidget,
+  projectExportWorkspaceWidgets,
+  createExportWorkspaceHeader,
+  createExportWorkspaceOverview,
+  createExportWorkspaceFormats,
+  createExportWorkspaceRecentExports,
+  createExportWorkspaceStatus,
+  createExportWorkspaceSummaryPanel,
+  createExportWorkspaceLayout,
+  mountExportWorkspace,
+  EXPORT_WORKSPACE_STYLE_ID,
+  EXPORT_WORKSPACE_CSS,
+  ensureExportWorkspaceStyles
+} from './exports/index';
