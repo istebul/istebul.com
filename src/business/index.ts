@@ -27,10 +27,7 @@ export { createBusinessDailySummaryElement } from './components/BusinessDailySum
 export { createBusinessActivityListElement } from './components/BusinessActivityList';
 export { createBusinessAiSuggestionsElement } from './components/BusinessAiSuggestions';
 export { createBusinessQuickActionsElement } from './components/BusinessQuickActions';
-<<<<<<< HEAD
 export { createBusinessAdvisorPanelElement } from './components/BusinessAdvisorPanel';
-=======
->>>>>>> origin/main
 export { createBusinessLayoutShell } from './layouts/BusinessLayout';
 export {
   MOCK_BUSINESS_RAW_DATA,
@@ -81,12 +78,9 @@ export type {
 } from './routes/business-routes';
 export type { BusinessLayoutOptions, BusinessLayoutResult } from './layouts/BusinessLayout';
 export type { MountBusinessAppOptions } from './app/mountBusinessApp';
-<<<<<<< HEAD
 export type { BusinessAdvisorPanelProps } from './components/BusinessAdvisorPanel';
 export type { BusinessAiAdvisorPageOptions } from './pages/BusinessAiAdvisorPage';
 export type { BusinessDashboardPageOptions } from './pages/BusinessDashboardPage';
-=======
->>>>>>> origin/main
 
 /** Knowledge Architecture — Report DNA, KPI, kategori, prompt, çıktı kayıtları */
 export {
