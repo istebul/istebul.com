@@ -159,7 +159,7 @@ export class BusinessContextBridge {
         tenantBridgeResult.binding?.tenantId ||
         existingModule?.tenantId;
 
-      let businessRuntimeResult =
+      const businessRuntimeResult =
         tenantId && typeof tenantId === 'string'
           ? this.businessRuntime.execute({
               tenantId,
