@@ -86,3 +86,58 @@ export {
   TenantAdapter,
   createTenantAdapter
 } from './adapters/index';
+
+/** Supabase Tenant Provider — EPIC-302B */
+export type {
+  TenantErrorCode,
+  SupabaseTenantContext,
+  SupabaseTenantRecord,
+  SupabaseMembershipRecord,
+  SupabaseTenantErrorInfo,
+  SupabaseTenantResult,
+  CreateSupabaseTenantResultInput,
+  SupabaseTenantRowLike,
+  SupabaseMembershipRowLike,
+  SupabaseAccessCheckLike,
+  SupabaseTenantClientErrorLike,
+  SupabaseTenantResponseLike,
+  SupabaseTenantClientLike,
+  SupabaseTenantErrorLike,
+  SupabaseTenantProviderDependencies
+} from './providers/index';
+
+export {
+  TenantError,
+  TenantNotFound,
+  MembershipNotFound,
+  AccessDenied,
+  ProviderUnavailable,
+  createTenantErrorByCode,
+  toTenantError,
+  SUPABASE_TENANT_PROVIDER_ID,
+  SUPABASE_TENANT_PROVIDER_NAME,
+  SUPABASE_TENANT_PROVIDER_DESCRIPTION,
+  SUPABASE_TENANT_CONTEXT_BAG_KEY,
+  createSupabaseTenantContext,
+  toTenantProviderContext,
+  fromTenantProviderContext,
+  validateSupabaseResolveTenantKeys,
+  validateSupabaseTenantId,
+  validateSupabaseMembershipLookup,
+  validateSupabaseAccessKeys,
+  createSupabaseTenantResult,
+  toTenantIdentityRefFromSupabaseTenant,
+  toTenantMembershipsFromSupabase,
+  statusFromTenantErrorCode,
+  toTenantProviderResult,
+  assertSupabaseTenantClient,
+  mapSupabaseTenantErrorMessageToCode,
+  mapSupabaseTenantError,
+  mapUnknownTenantProviderError,
+  SupabaseTenantProvider,
+  createSupabaseTenantProvider,
+  createSupabaseTenantProviderRegistration,
+  registerSupabaseTenantProvider,
+  createTenantAdapterWithSupabaseProvider,
+  attachSupabaseTenantProvider
+} from './providers/index';
