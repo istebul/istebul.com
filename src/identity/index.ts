@@ -89,6 +89,40 @@ export {
   buildAuthenticationSummaryItems
 } from './authentication/index';
 
+/** Authentication Adapter Foundation — EPIC-301A */
+export type {
+  AuthenticationProviderOperation,
+  AuthenticationProviderContext,
+  AuthenticationProviderValidationIssue,
+  AuthenticationProviderSummaryItem,
+  AuthenticationProviderTelemetry,
+  AuthenticationProviderResult,
+  CreateAuthenticationProviderResultInput,
+  AuthenticationProviderRegistration,
+  AuthenticationProviderOperationResult,
+  AuthenticationProvider
+} from './authentication/index';
+
+export {
+  createAuthenticationProviderContext,
+  createAuthenticationProviderResult,
+  createAuthenticationProviderFailure,
+  createAuthenticationProviderSuccess,
+  AuthenticationProviderRegistry,
+  AuthenticationProviderRegistryRuntime,
+  createAuthenticationProviderRegistry,
+  createAuthenticationProviderRegistryRuntime,
+  BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS,
+  BUILTIN_AUTHENTICATION_PROVIDER_COUNT,
+  getBuiltinAuthenticationProviderRegistration,
+  validateAuthenticationProviderContext,
+  resolveAuthenticationProvider,
+  resolveAuthenticationProviderRegistration,
+  hasAuthenticationProviderValidationErrors,
+  AuthenticationAdapter,
+  createAuthenticationAdapter
+} from './authentication/index';
+
 /** Session Management Runtime — PR-203C */
 export type {
   SessionState,
