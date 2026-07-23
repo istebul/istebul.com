@@ -23,11 +23,6 @@ body.ib-enterprise .ib-trust-rail {
   margin-top: 0;
 }
 
-body.ib-enterprise #home.hero-section {
-  margin-top: 0;
-  padding-top: clamp(2.4rem, 4.5vw, 4.2rem);
-}
-
 @media (min-width: 1181px) {
   body.ib-enterprise #nav-menu,
   body.ib-enterprise #nav-menu.show {
@@ -72,6 +67,8 @@ body.ib-enterprise .nav-dropdown-btn:hover {
   font-weight: 850;
 }
 
+/* Single #home top rhythm (sticky nav is in-flow — no fixed-header offset). */
 body.ib-enterprise #home.hero-section {
-  padding-top: clamp(3.2rem, 5vw, 5rem);
+  margin-top: 0;
+  padding-top: clamp(2.4rem, 4.5vw, 4.2rem);
 }
