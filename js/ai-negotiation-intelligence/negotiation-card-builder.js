@@ -1,16 +1,18 @@
 /**
- * Negotiation Intelligence — client panel HTML builder (Faz N-3).
+ * Negotiation Intelligence — admin panel HTML builder (Sprint-22).
  */
 
 import { escapeHtml } from '../core/dom-safe.js';
-import { buildNegotiationDisplayModel } from './negotiation-view-model.js';
+import { mapNegotiationRiskClass } from './negotiation-risk-engine.js';
 
-/** @type {Readonly<Record<string, string>>} */
-const CHECKLIST_STATUS_LABELS_TR = Object.freeze({
-  pending: 'Beklemede',
-  ok: 'Tamam',
-  warn: 'Uyarı'
-});
+/**
+ * @param {number} value
+ * @returns {string}
+ */
+export function formatNegotiationTry(value) {
+  const n = Math.round(Number(value) || 0);
+  return `${n.toLocaleString('tr-TR')} TL`;
+}
 
 /**
  * @param {unknown} value
@@ -21,158 +23,73 @@ function safe(value) {
 }
 
 /**
- * @param {'low'|'medium'|'high'|string} level
- * @returns {string}
- */
-function riskBadgeClass(level) {
-  if (level === 'low') return 'ai-neg-panel__badge--low';
-  if (level === 'high') return 'ai-neg-panel__badge--high';
-  return 'ai-neg-panel__badge--medium';
-}
-
-/**
  * @param {string[]} items
+ * @param {string} listClass
  * @returns {string}
  */
-function renderWarnings(items) {
-  if (!items.length) {
-    return '<p class="ai-neg-panel__empty">Uyarı bulunmuyor.</p>';
+function renderList(items, listClass) {
+  if (!Array.isArray(items) || !items.length) {
+    return '<p class="ai-neg-panel__empty">Bilgi yok</p>';
   }
-  return `<ul class="ai-neg-panel__warnings">${items.map((item) => `<li>${safe(item)}</li>`).join('')}</ul>`;
+  return `<ul class="${listClass}">${items.map((item) => `<li>${safe(item)}</li>`).join('')}</ul>`;
 }
 
 /**
- * @param {Array<Record<string, unknown>>} checklist
- * @returns {string}
- */
-function renderChecklist(checklist) {
-  if (!checklist.length) {
-    return '<p class="ai-neg-panel__empty">Kontrol listesi üretilemedi.</p>';
-  }
-
-  return `
-    <ul class="ai-neg-panel__checklist">
-      ${checklist
-        .map((item) => {
-          const status = String(item.status ?? 'pending').toLowerCase();
-          const statusLabel = CHECKLIST_STATUS_LABELS_TR[status] ?? CHECKLIST_STATUS_LABELS_TR.pending;
-          return `
-        <li class="ai-neg-panel__checklist-item ai-neg-panel__checklist-item--${safe(status)}">
-          <span class="ai-neg-panel__checklist-label">${safe(item.label)}</span>
-          <span class="ai-neg-panel__checklist-status">${safe(statusLabel)}</span>
-        </li>`;
-        })
-        .join('')}
-    </ul>`;
-}
-
-/**
- * @param {Array<Record<string, unknown>>} signals
- * @returns {string}
- */
-function renderEvidenceSignals(signals) {
-  if (!signals.length) {
-    return '<p class="ai-neg-panel__empty">Kanıt sinyali bulunmuyor.</p>';
-  }
-
-  return `
-    <ul class="ai-neg-panel__evidence">
-      ${signals
-        .map((signal) => {
-          const impact = String(signal.impact ?? 'neutral').toLowerCase();
-          return `
-        <li class="ai-neg-panel__evidence-item ai-neg-panel__evidence-item--${safe(impact)}">
-          <span class="ai-neg-panel__evidence-signal">${safe(signal.signal)}</span>
-          <span class="ai-neg-panel__evidence-impact">${safe(impact)}</span>
-          <span class="ai-neg-panel__evidence-weight">${safe(signal.weight)}</span>
-        </li>`;
-        })
-        .join('')}
-    </ul>`;
-}
-
-/**
- * @param {Record<string, unknown>} model
- * @returns {string}
- */
-function renderEmptyPanel(model) {
-  return `
-    <aside class="ai-neg-panel" role="dialog" aria-modal="true" aria-labelledby="ai-neg-panel-title" aria-label="Pazarlık Analizi">
-      <header class="ai-neg-panel__head">
-        <div>
-          <p class="ai-neg-panel__eyebrow">Pazarlık Analizi</p>
-          <h3 id="ai-neg-panel-title" class="ai-neg-panel__title">${safe(model.title)}</h3>
-        </div>
-        <button type="button" class="ai-neg-panel__close" data-neg-action="close" aria-label="Kapat">×</button>
-      </header>
-      <div class="ai-neg-panel__body">
-        <p class="ai-neg-panel__empty">${safe(model.emptyMessage)}</p>
-      </div>
-    </aside>
-    <div class="ai-neg-panel__backdrop" data-neg-backdrop></div>`;
-}
-
-/**
- * @param {Record<string, unknown>|null|undefined} result
- * @param {{ title?: string }} [meta]
+ * @param {ReturnType<import('./negotiation-engine.js').runNegotiationIntelligence>} result
+ * @param {{ title?: string, recordId?: string }} [meta]
  * @returns {string}
  */
 export function buildNegotiationPanelHtml(result, meta = {}) {
-  const model = buildNegotiationDisplayModel(result, meta);
-
-  if (!model.hasData) {
-    return renderEmptyPanel(model);
-  }
+  const title = safe(meta.title ?? 'Pazarlık Zekâsı');
+  const riskClass = mapNegotiationRiskClass(result.negotiation_risk_level);
+  const offerRangeText = `${formatNegotiationTry(result.suggested_offer_low)} - ${formatNegotiationTry(result.suggested_offer_high)}`;
 
   return `
-    <aside class="ai-neg-panel" role="dialog" aria-modal="true" aria-labelledby="ai-neg-panel-title" aria-label="Pazarlık Analizi">
+    <aside class="ai-neg-panel" data-neg-panel${meta.recordId ? ` data-neg-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Pazarlık Zekâsı">
       <header class="ai-neg-panel__head">
         <div>
-          <p class="ai-neg-panel__eyebrow">Pazarlık Analizi</p>
-          <h3 id="ai-neg-panel-title" class="ai-neg-panel__title">${safe(model.title)}</h3>
+          <p class="ai-neg-panel__eyebrow">Pazarlık Zekâsı</p>
+          <h3 class="ai-neg-panel__title">${title}</h3>
         </div>
         <button type="button" class="ai-neg-panel__close" data-neg-action="close" aria-label="Kapat">×</button>
       </header>
       <div class="ai-neg-panel__body">
-        <section class="ai-neg-panel__hero">
+        <div class="ai-neg-panel__hero">
           <div class="ai-neg-panel__metric">
-            <span class="ai-neg-panel__metric-label">Hedef teklif</span>
-            <span class="ai-neg-panel__metric-value">${safe(model.targetOfferText)}</span>
+            <span class="ai-neg-panel__metric-label">İlan fiyatı</span>
+            <span class="ai-neg-panel__metric-value">${safe(formatNegotiationTry(result.listing_price))}</span>
           </div>
           <div class="ai-neg-panel__metric">
-            <span class="ai-neg-panel__metric-label">Teklif bandı</span>
-            <span class="ai-neg-panel__metric-value">${safe(model.bandText)}</span>
+            <span class="ai-neg-panel__metric-label">Önerilen teklif aralığı</span>
+            <span class="ai-neg-panel__metric-value ai-neg-panel__metric-value--range">${safe(offerRangeText)}</span>
           </div>
-          <div class="ai-neg-panel__metric">
-            <span class="ai-neg-panel__metric-label">Hedef indirim</span>
-            <span class="ai-neg-panel__metric-value">${safe(model.discountPercentText)}</span>
+          <div class="ai-neg-panel__metric-row">
+            <div class="ai-neg-panel__metric ai-neg-panel__metric--sm">
+              <span class="ai-neg-panel__metric-label">Hedef teklif</span>
+              <span class="ai-neg-panel__metric-value">${safe(formatNegotiationTry(result.target_offer))}</span>
+            </div>
+            <div class="ai-neg-panel__metric ai-neg-panel__metric--sm">
+              <span class="ai-neg-panel__metric-label">Pazarlık payı</span>
+              <span class="ai-neg-panel__metric-value">%${safe(result.negotiation_room_pct)}</span>
+            </div>
           </div>
-          <span class="ai-neg-panel__badge ${riskBadgeClass(String(model.riskLevel))}">Pazarlık riski: ${safe(model.riskLabel)}</span>
-        </section>
-
-        <section class="ai-neg-panel__section">
-          <h4>Güven</h4>
-          <p class="ai-neg-panel__confidence">%${safe(model.confidencePercent)}</p>
-        </section>
+          <span class="ai-neg-panel__risk ai-neg-panel__risk--${riskClass}">${safe(result.negotiation_risk_label ?? result.negotiation_risk_level)}</span>
+          <span class="ai-neg-panel__confidence">${safe(result.confidence)}% güven</span>
+        </div>
 
         <section class="ai-neg-panel__section">
           <h4>Özet</h4>
-          <p class="ai-neg-panel__summary">${safe(model.summary)}</p>
+          <p class="ai-neg-panel__summary">${safe(result.negotiation_summary)}</p>
         </section>
 
         <section class="ai-neg-panel__section">
-          <h4>Kontrol listesi</h4>
-          ${renderChecklist(/** @type {Array<Record<string, unknown>>} */ (model.checklist))}
+          <h4>Nedenler</h4>
+          ${renderList(result.reasons, 'ai-neg-panel__list')}
         </section>
 
         <section class="ai-neg-panel__section">
-          <h4>Uyarılar</h4>
-          ${renderWarnings(/** @type {string[]} */ (model.warnings))}
-        </section>
-
-        <section class="ai-neg-panel__section">
-          <h4>Kanıt sinyalleri</h4>
-          ${renderEvidenceSignals(/** @type {Array<Record<string, unknown>>} */ (model.evidenceSignals))}
+          <h4>Teklif öncesi doğrulama</h4>
+          ${renderList(result.verification_before_offer, 'ai-neg-panel__list ai-neg-panel__list--check')}
         </section>
       </div>
     </aside>

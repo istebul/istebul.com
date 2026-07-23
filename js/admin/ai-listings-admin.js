@@ -98,8 +98,8 @@ import { buildReportInput, runDecisionReport } from '../ai-decision-report/index
 import { buildDecisionReportPanelHtml } from '../ai-decision-report/report-card-builder.js';
 import { buildOwnershipCostInput, runOwnershipCostSimulator } from '../ai-ownership-cost/index.js';
 import { buildOwnershipCostPanelHtml } from '../ai-ownership-cost/cost-card-builder.js';
-import { buildListingQualityInput, runListingQualityTrust } from '../ai-listing-quality/index.js';
-import { buildQualityPanelHtml } from '../ai-listing-quality/quality-card-builder.js';
+import { buildNegotiationInput, runNegotiationIntelligence } from '../ai-negotiation-intelligence/index.js';
+import { buildNegotiationPanelHtml } from '../ai-negotiation-intelligence/negotiation-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 import {
@@ -885,14 +885,14 @@ function closeOwnershipCostPanel(root) {
   document.body.classList.remove('ai-listings-admin--cost-open');
 }
 
-function closeListingQualityPanel(root) {
-  const host = root.querySelector('#ai-lqt-panel-host');
+function closeNegotiationPanel(root) {
+  const host = root.querySelector('#ai-neg-panel-host');
   if (host) {
     host.hidden = true;
     host.innerHTML = '';
   }
-  root.querySelector('[data-lqt-backdrop]')?.setAttribute('hidden', '');
-  document.body.classList.remove('ai-listings-admin--lqt-open');
+  root.querySelector('[data-neg-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--neg-open');
 }
 
 /**
@@ -1066,7 +1066,8 @@ function openOwnershipCostPanel(root, recordId) {
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
-  closeListingQualityPanel(root);
+  closeOwnershipCostPanel(root);
+  closeNegotiationPanel(root);
 
   const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
@@ -1090,7 +1091,7 @@ function openOwnershipCostPanel(root, recordId) {
   });
 }
 
-function openListingQualityPanel(root, recordId) {
+function openNegotiationPanel(root, recordId) {
   if (!cachedRecommendationResult?.top?.length) return;
 
   const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
@@ -1102,39 +1103,25 @@ function openListingQualityPanel(root, recordId) {
   closeOwnershipCostPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const qualityInput = buildListingQualityInput(selected, profile);
-  const quality = runListingQualityTrust(qualityInput);
+  const negInput = buildNegotiationInput(selected, profile);
+  const negotiation = runNegotiationIntelligence(negInput);
 
-  const host = root.querySelector('#ai-lqt-panel-host');
+  const host = root.querySelector('#ai-neg-panel-host');
   if (!host) return;
 
-  host.innerHTML = buildQualityPanelHtml(quality, {
-    title: String(selected.title ?? 'Kalite ve Güven'),
+  host.innerHTML = buildNegotiationPanelHtml(negotiation, {
+    title: String(selected.title ?? 'Pazarlık Zekâsı'),
     recordId: String(recordId)
   });
   host.hidden = false;
-  document.body.classList.add('ai-listings-admin--lqt-open');
+  document.body.classList.add('ai-listings-admin--neg-open');
 
-  host.querySelector('[data-lqt-action="close"]')?.addEventListener('click', () => {
-    closeListingQualityPanel(root);
+  host.querySelector('[data-neg-action="close"]')?.addEventListener('click', () => {
+    closeNegotiationPanel(root);
   });
-  host.querySelector('[data-lqt-backdrop]')?.addEventListener('click', () => {
-    closeListingQualityPanel(root);
+  host.querySelector('[data-neg-backdrop]')?.addEventListener('click', () => {
+    closeNegotiationPanel(root);
   });
-}
-
-/**
- * @param {HTMLInputElement} input
- * @returns {string}
- */
-function resolveCompareSelectionId(input) {
-  const attrId = String(input.getAttribute('data-rec-compare-id') || input.dataset.recCompareId || '').trim();
-  if (attrId) return attrId;
-
-  const value = String(input.value ?? '').trim();
-  if (value && value !== 'on') return value;
-
-  return '';
 }
 
 function bindRecommendationsDashboardEvents(root) {
@@ -1145,44 +1132,7 @@ function bindRecommendationsDashboardEvents(root) {
     closeDecisionSimulatorPanel(root);
     closeDecisionReportPanel(root);
     closeOwnershipCostPanel(root);
-    closeListingQualityPanel(root);
-    closeComparePanel(root);
-    renderRecommendationsView();
-  });
-
-  const compareToggle = root.querySelector('[data-cmp-action="toggle-mode"]');
-  if (compareToggle) {
-    /** @type {HTMLInputElement} */ (compareToggle).checked = compareModeEnabled;
-    compareToggle.addEventListener('change', () => {
-      compareModeEnabled = /** @type {HTMLInputElement} */ (compareToggle).checked;
-      if (!compareModeEnabled) compareSelectedIds = [];
-      renderRecommendationsView();
-    });
-  }
-
-  root.querySelectorAll('[data-rec-compare-id]').forEach((checkbox) => {
-    checkbox.addEventListener('change', (event) => {
-      event.stopPropagation();
-      const input = /** @type {HTMLInputElement} */ (checkbox);
-      const id = resolveCompareSelectionId(input);
-      if (!id) return;
-
-      if (input.checked) {
-        if (compareSelectedIds.includes(id)) return;
-        if (compareSelectedIds.length >= 3) {
-          input.checked = false;
-          return;
-        }
-        compareSelectedIds = [...compareSelectedIds, id];
-      } else {
-        compareSelectedIds = compareSelectedIds.filter((item) => item !== id);
-      }
-      renderRecommendationsView();
-    });
-  });
-
-  root.querySelector('[data-cmp-action="clear"]')?.addEventListener('click', () => {
-    compareSelectedIds = [];
+    closeNegotiationPanel(root);
     renderRecommendationsView();
   });
 
@@ -1212,7 +1162,7 @@ function bindRecommendationsDashboardEvents(root) {
       closeDecisionSimulatorPanel(root);
       closeDecisionReportPanel(root);
       closeOwnershipCostPanel(root);
-      closeListingQualityPanel(root);
+      closeNegotiationPanel(root);
       const id = btn.getAttribute('data-rec-coach-id');
       if (id) openDecisionCoachPanel(root, id);
     });
@@ -1224,7 +1174,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.stopPropagation();
       closeDecisionReportPanel(root);
       closeOwnershipCostPanel(root);
-      closeListingQualityPanel(root);
+      closeNegotiationPanel(root);
       const id = btn.getAttribute('data-rec-sim-id');
       if (id) openDecisionSimulatorPanel(root, id);
     });
@@ -1235,7 +1185,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.preventDefault();
       event.stopPropagation();
       closeOwnershipCostPanel(root);
-      closeListingQualityPanel(root);
+      closeNegotiationPanel(root);
       const id = btn.getAttribute('data-rec-report-id');
       if (id) openDecisionReportPanel(root, id);
     });
@@ -1245,30 +1195,24 @@ function bindRecommendationsDashboardEvents(root) {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      closeListingQualityPanel(root);
+      closeNegotiationPanel(root);
       const id = btn.getAttribute('data-rec-cost-id');
       if (id) openOwnershipCostPanel(root, id);
     });
   });
 
-  root.querySelectorAll('[data-rec-quality-id]').forEach((btn) => {
+  root.querySelectorAll('[data-rec-negotiation-id]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const id = btn.getAttribute('data-rec-quality-id');
-      if (id) openListingQualityPanel(root, id);
+      const id = btn.getAttribute('data-rec-negotiation-id');
+      if (id) openNegotiationPanel(root, id);
     });
   });
 
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (
-        /** @type {HTMLElement} */ (event.target).closest(
-          '[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-quality-id], [data-rec-compare-id], .ai-rec-card__compare'
-        )
-      ) {
-        return;
-      }
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-negotiation-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
