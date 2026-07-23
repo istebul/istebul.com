@@ -1,6 +1,7 @@
 import type { BusinessInsight, BusinessInsightsResult } from '../intelligence/types/business-insight';
 import type { BusinessMetricsResult } from '../intelligence/types/business-metrics';
 import type { RawBusinessData } from '../intelligence/types/raw-business-data';
+import type { BusinessKpiTrend } from '../intelligence/models/business-kpi';
 import {
   MetricsEngine,
   type BusinessMetricSignals,
@@ -12,18 +13,21 @@ export interface InsightEngineResult {
   /** Pass-through from MetricsEngine for RecommendationEngine (no provider access). */
   signals: BusinessMetricSignals;
   metrics: BusinessMetricsResult;
+  /** EPIC-550 KPI trends available for trend-aware recommendations. */
+  trends: readonly BusinessKpiTrend[];
 }
 
 function buildInsightsFromMetricsResult(
   metricsResult: MetricsEngineResult
 ): InsightEngineResult {
-  const { metrics, signals } = metricsResult;
+  const { metrics, signals, kpi } = metricsResult;
   const revenue = signals.revenueDelta;
   const cost = signals.costDelta;
   const growth = signals.growth;
   const risk = signals.riskScore;
   const health = signals.customerHealth;
   const cashDrop = signals.cashDropPercent;
+  const trends = kpi.trends;
 
   const insights: BusinessInsight[] = [];
 
@@ -103,6 +107,20 @@ function buildInsightsFromMetricsResult(
     });
   }
 
+  // Additive EPIC-550 insight when KPI trend change is detected (does not alter prior bodies).
+  const changingTrends = trends.filter((t) => t.changeDetected);
+  if (changingTrends.length > 0) {
+    const primary = changingTrends[0];
+    insights.push({
+      id: 'ins-kpi-trend-shift',
+      kind: 'trend',
+      severity: primary.direction === 'down' ? 'warning' : 'info',
+      title: 'KPI trend hareketi',
+      body: `${primary.label} — Event Intelligence tarafından izlenen KPI hareketi.`,
+      relatedMetricIds: Object.freeze(relatedMetricIdsForTrend(primary.id))
+    });
+  }
+
   const insightsResult: BusinessInsightsResult = Object.freeze({
     insights: Object.freeze(insights.map((i) => Object.freeze({ ...i }))),
     generatedAt: metrics.generatedAt
@@ -111,12 +129,27 @@ function buildInsightsFromMetricsResult(
   return Object.freeze({
     insights: insightsResult,
     signals,
-    metrics
+    metrics,
+    trends
   });
+}
+
+function relatedMetricIdsForTrend(id: string): readonly string[] {
+  if (
+    id === 'revenue-trend' ||
+    id === 'cost-trend' ||
+    id === 'growth' ||
+    id === 'risk-score' ||
+    id === 'customer-health'
+  ) {
+    return [id];
+  }
+  return ['risk-score'];
 }
 
 /**
  * Insight Engine — consumes MetricsEngine only (no direct provider / raw access).
+ * May use KPI trends from the MetricsEngine KPI snapshot (EPIC-550).
  */
 export class InsightEngine {
   private readonly metricsEngine: MetricsEngine;
