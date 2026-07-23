@@ -67,18 +67,120 @@ html[data-theme="dark"] .ib-business-app {
   padding: 1.5rem;
 }
 
+/* —— Frame: platform nav + app shell (single product chrome) —— */
+.ib-business-frame {
+  --ib-biz-platform-nav-h: 56px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* —— Platform navigation (EPIC-570B) —— */
+.ib-biz-platform-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--ib-business-border);
+  background: var(--ib-business-surface);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.ib-biz-platform-nav__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--ib-biz-platform-nav-h);
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.ib-biz-platform-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: var(--ib-business-ink);
+}
+
+.ib-biz-platform-nav__logo {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.ib-biz-platform-nav__word {
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.03em;
+  color: var(--ib-business-ink);
+}
+
+.ib-biz-platform-nav__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  background: var(--ib-business-accent-soft);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  line-height: 1.2;
+}
+
+.ib-biz-platform-nav__toggle {
+  display: none;
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--ib-business-border);
+  border-radius: 10px;
+  background: var(--ib-business-surface-2);
+  color: var(--ib-business-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ib-biz-platform-nav__menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  margin-left: auto;
+}
+
+.ib-biz-platform-nav__link {
+  color: var(--ib-business-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.35rem 0.15rem;
+}
+
+.ib-biz-platform-nav__link:hover,
+.ib-biz-platform-nav__link.is-active,
+.ib-biz-platform-nav__link[aria-current='page'] {
+  color: var(--ib-business-accent);
+}
+
 /* —— App shell —— */
 .ib-biz-shell {
   display: grid;
   grid-template-columns: var(--ib-business-sidebar-w) minmax(0, 1fr);
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
 }
 
 .ib-biz-shell__main {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 100vh;
+  min-height: 0;
 }
 
 .ib-biz-shell__content {
@@ -93,12 +195,12 @@ html[data-theme="dark"] .ib-business-app {
 /* —— Sidebar —— */
 .ib-biz-sidebar {
   position: sticky;
-  top: 0;
+  top: var(--ib-biz-platform-nav-h, 56px);
   align-self: start;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--ib-biz-platform-nav-h, 56px));
   padding: 1.25rem 1rem;
   border-right: 1px solid var(--ib-business-border);
   background: var(--ib-business-surface);
@@ -110,12 +212,6 @@ html[data-theme="dark"] .ib-business-app {
   gap: 0.7rem;
   text-decoration: none;
   color: inherit;
-}
-
-.ib-biz-sidebar__logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
 }
 
 .ib-biz-sidebar__brand-text {
@@ -152,21 +248,6 @@ html[data-theme="dark"] .ib-business-app {
 
 .ib-biz-sidebar__link.is-active {
   font-weight: 700;
-}
-
-.ib-biz-sidebar__footer {
-  margin-top: auto;
-}
-
-.ib-biz-sidebar__platform {
-  display: inline-flex;
-  color: var(--ib-business-subtle);
-  font-size: 0.82rem;
-  text-decoration: none;
-}
-
-.ib-biz-sidebar__platform:hover {
-  color: var(--ib-business-accent);
 }
 
 /* —— Topbar —— */
@@ -790,15 +871,53 @@ html[data-theme="dark"] .ib-business-app {
 }
 
 @media (max-width: 900px) {
+  .ib-biz-platform-nav__inner {
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .ib-biz-platform-nav__toggle {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .ib-biz-platform-nav__menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0.55rem 1rem 0.85rem;
+    background: var(--ib-business-surface);
+    border-bottom: 1px solid var(--ib-business-border);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  }
+
+  .ib-biz-platform-nav.is-nav-open .ib-biz-platform-nav__menu {
+    display: flex;
+  }
+
+  .ib-biz-platform-nav__link {
+    padding: 0.65rem 0.35rem;
+  }
+
   .ib-biz-shell {
     grid-template-columns: 1fr;
   }
 
   .ib-biz-sidebar {
     position: fixed;
-    inset: 0 auto 0 0;
+    top: var(--ib-biz-platform-nav-h, 56px);
+    left: 0;
+    bottom: 0;
+    right: auto;
     z-index: 40;
     width: min(86vw, var(--ib-business-sidebar-w));
+    min-height: 0;
     transform: translateX(-105%);
     transition: transform 0.2s ease;
     box-shadow: var(--ib-business-shadow);
@@ -811,7 +930,10 @@ html[data-theme="dark"] .ib-business-app {
   .ib-biz-shell__backdrop {
     display: none;
     position: fixed;
-    inset: 0;
+    top: var(--ib-biz-platform-nav-h, 56px);
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 30;
     border: 0;
     background: rgba(15, 23, 42, 0.42);
