@@ -176,6 +176,35 @@ export type { BusinessAdvisorPanelProps } from './components/BusinessAdvisorPane
 export type { BusinessAiAdvisorPageOptions } from './pages/BusinessAiAdvisorPage';
 export type { BusinessDashboardPageOptions } from './pages/BusinessDashboardPage';
 
+/** EPIC-570 — Business Runtime Integration */
+export {
+  BusinessRuntime,
+  createBusinessRuntime,
+  getDefaultBusinessRuntime,
+  createBusinessRuntimeContext,
+  buildRuntimeHealth,
+  createIdleRuntimeHealth,
+  InMemoryRuntimeCache,
+  createInMemoryRuntimeCache,
+  buildRuntimeCacheKey,
+  DEFAULT_RUNTIME_TIMEOUT_MS,
+  DEFAULT_RUNTIME_CACHE_TTL_MS
+} from './runtime';
+export type {
+  BusinessRuntimeContext,
+  BusinessRuntimeCacheOptions,
+  BusinessRuntimeDeps,
+  BusinessRuntimeFactoryOptions,
+  BusinessRuntimeResult,
+  BusinessRuntimeTelemetry,
+  RuntimeHealth,
+  RuntimeHealthStatus,
+  RuntimeProviderLifecycle,
+  BuildRuntimeHealthInput,
+  RuntimeCacheStore,
+  RuntimeCacheEntry
+} from './runtime';
+
 /** Knowledge Architecture — Report DNA, KPI, kategori, prompt, çıktı kayıtları */
 export {
   CATEGORY_COUNT,
