@@ -195,10 +195,46 @@ test('Business app mount creates sidebar, topbar, and content', () => {
   root.id = 'business-app-root';
   mountBusinessApp(root, { navId: 'dashboard' });
   assert.equal(root.dataset.businessAppReady, '1');
+  assert.ok(root.querySelector('.ib-business-frame'));
   assert.ok(root.querySelector('.ib-biz-shell'));
   assert.ok(root.querySelector('.ib-biz-sidebar'));
   assert.ok(root.querySelector('.ib-biz-topbar'));
   assert.equal(root.querySelectorAll('.ib-biz-sidebar__link').length, 6);
+});
+
+test('EPIC-570B — Business mounts shared platform nav (logo → /, no duplicate headers)', () => {
+  installDomStubs();
+  const root = document.createElement('div');
+  root.id = 'business-app-root';
+  mountBusinessApp(root, { navId: 'dashboard' });
+
+  const platformNavs = root.querySelectorAll('.ib-biz-platform-nav');
+  assert.equal(platformNavs.length, 1, 'exactly one platform nav header');
+
+  const platformHome = root.querySelector('.ib-biz-platform-nav__brand');
+  assert.ok(platformHome);
+  assert.equal(platformHome.href, '/');
+  assert.equal(platformHome.dataset.platformHome, '1');
+
+  const businessBrand = root.querySelector('.ib-biz-sidebar__brand');
+  assert.ok(businessBrand);
+  assert.equal(businessBrand.href, '/business/');
+  assert.equal(businessBrand.dataset.businessHome, '1');
+
+  const productLinks = root.querySelectorAll('.ib-biz-platform-nav__link');
+  assert.equal(productLinks.length, 4);
+  const hrefs = productLinks.map((el) => el.href);
+  assert.ok(hrefs.includes('/'));
+  assert.ok(hrefs.includes('/garson/'));
+  assert.ok(hrefs.includes('/business/'));
+
+  const businessLink = productLinks.find((el) => el.dataset.platformProduct === 'business');
+  assert.ok(businessLink);
+  assert.ok(businessLink.classList.contains('is-active'));
+
+  // No second marketing/platform header inside the frame
+  assert.equal(root.querySelectorAll('.ib-biz-platform-nav__brand').length, 1);
+  assert.equal(root.querySelectorAll('.ib-biz-sidebar__brand').length, 1);
 });
 
 test('Business non-dashboard routes mount empty states', () => {
@@ -224,6 +260,9 @@ test('Business HTML shells and boot entry exist', () => {
     assert.match(html, /js\/business\/business-app\.js/);
     assert.match(html, /css\/business-page\.css/);
     assert.doesNotMatch(html, /Yakında/);
+    assert.doesNotMatch(html, /istebul-design-system-v4/);
+    assert.doesNotMatch(html, /istebul-premium-final-v7/);
+    assert.doesNotMatch(html, /ib-ds-v4|ib-premium-v7/);
   }
   assert.ok(fs.existsSync(path.join(root, 'js/business/business-app.js')));
   const build = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');

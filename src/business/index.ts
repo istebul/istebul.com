@@ -20,6 +20,10 @@ export {
 export { mountBusinessSettingsPage, createBusinessSettingsPageElement } from './pages/BusinessSettingsPage';
 export { createBusinessModuleCardElement } from './components/BusinessModuleCard';
 export { createBusinessSidebarElement } from './components/BusinessSidebar';
+export {
+  createBusinessPlatformNavElement,
+  BUSINESS_PLATFORM_NAV_LINKS
+} from './components/BusinessPlatformNav';
 export { createBusinessTopbarElement } from './components/BusinessTopbar';
 export { createBusinessEmptyStateElement } from './components/BusinessEmptyState';
 export { createBusinessKpiCardElement } from './components/BusinessKpiCard';

@@ -1,99 +1,63 @@
 /**
- * Negotiation Intelligence — pre-offer checklist (Faz N-1).
+ * Negotiation Intelligence — pre-offer verification checklist (Sprint-22 v1).
  */
 
-/**
- * @param {string} id
- * @param {string} label
- * @param {'pending'|'ok'|'warn'} status
- * @returns {{ id: string, label: string, status: 'pending'|'ok'|'warn' }}
- */
-function checklistItem(id, label, status = 'pending') {
-  return { id, label, status };
-}
+/** @type {Readonly<Record<string, ReadonlyArray<string>>>} */
+export const NEGOTIATION_CHECKLIST_BY_CATEGORY = Object.freeze({
+  vehicle: Object.freeze([
+    'Ekspertiz raporu',
+    'Tramer kaydı',
+    'Servis geçmişi',
+    'Km doğrulama',
+    'Boya / değişen parça kontrolü',
+    'Lastik ve bakım durumu'
+  ]),
+  housing: Object.freeze([
+    'Tapu ve mülkiyet durumu',
+    'İskan durumu',
+    'Krediye uygunluk',
+    'Aidat ve giderler',
+    'Deprem riski / bina yaşı',
+    'Konut ekspertizi'
+  ]),
+  travel: Object.freeze([
+    'İptal koşulları',
+    'Ek ücretler',
+    'Konum doğrulama',
+    'Yorumlar ve puanlar',
+    'Sezon fiyatı karşılaştırması'
+  ])
+});
 
 /**
- * @param {string} category
- * @returns {Array<{ id: string, label: string, status: 'pending'|'ok'|'warn' }>}
+ * @param {'vehicle'|'housing'|'travel'|string} category
+ * @returns {string[]}
  */
-function buildCategoryChecklist(category) {
+export function resolveNegotiationCategoryKey(category) {
   const cat = String(category ?? 'vehicle').toLowerCase();
-
-  if (cat === 'housing' || cat === 'konut' || cat === 'real_estate') {
-    return [
-      checklistItem('verify_title_deed', 'Tapu ve iskan bilgisini doğrula'),
-      checklistItem('verify_dues', 'Aidat ve ortak giderleri kontrol et'),
-      checklistItem('verify_location', 'Konum ve ulaşım bilgisini doğrula')
-    ];
-  }
-
-  if (cat === 'vacation' || cat === 'tatil' || cat === 'travel') {
-    return [
-      checklistItem('verify_cancellation', 'İptal ve iade koşullarını kontrol et'),
-      checklistItem('verify_season', 'Sezon ve tarih uyumunu doğrula'),
-      checklistItem('verify_reviews', 'Yorum ve sağlayıcı geçmişini incele')
-    ];
-  }
-
-  if (cat === 'vehicle' || cat === 'arac') {
-    return [
-      checklistItem('verify_inspection', 'Ekspertiz ve hasar kaydını kontrol et'),
-      checklistItem('verify_mileage', 'Kilometre ve model yılını doğrula'),
-      checklistItem('verify_service_history', 'Bakım geçmişini teyit et')
-    ];
-  }
-
-  return [
-    checklistItem('verify_listing_details', 'İlan detaylarını doğrula'),
-    checklistItem('verify_provider', 'Sağlayıcı bilgisini kontrol et')
-  ];
+  if (cat === 'housing' || cat === 'real_estate' || cat === 'konut') return 'housing';
+  if (cat === 'vacation' || cat === 'travel' || cat === 'tatil') return 'travel';
+  return 'vehicle';
 }
 
 /**
- * @param {Record<string, unknown>} input
- * @param {ReturnType<typeof import('./negotiation-risk-engine.js').assessNegotiationRisk>} riskResult
- * @returns {Array<{ id: string, label: string, status: 'pending'|'ok'|'warn' }>}
+ * @param {'vehicle'|'housing'|'travel'|string} category
+ * @param {Record<string, unknown>} [input]
+ * @returns {string[]}
  */
-export function buildNegotiationChecklist(input, riskResult) {
-  const ownershipSignal = /** @type {Record<string, unknown>} */ (input.ownershipSignal ?? {});
-  const qualitySignal = /** @type {Record<string, unknown>} */ (input.qualitySignal ?? {});
-  const sellerType = String(ownershipSignal.sellerType ?? 'unknown').toLowerCase();
-  const verificationLevel = String(qualitySignal.verificationLevel ?? 'none').toLowerCase();
-  const hasMarketReference = Boolean(
-    input.marketReference &&
-      (input.marketReference.medianPrice != null || input.marketReference.priceDeltaPct != null)
-  );
+export function buildNegotiationChecklist(category, input = {}) {
+  const key = resolveNegotiationCategoryKey(category);
+  const base = [...(NEGOTIATION_CHECKLIST_BY_CATEGORY[key] ?? NEGOTIATION_CHECKLIST_BY_CATEGORY.vehicle)];
 
-  const checklist = [
-    checklistItem(
-      'verify_market_reference',
-      'Piyasa referansını doğrula',
-      hasMarketReference ? 'ok' : 'warn'
-    ),
-    checklistItem('verify_listing_details', 'İlan detaylarını doğrula', 'pending'),
-    checklistItem(
-      'verify_seller',
-      'Satıcı veya sağlayıcı bilgisini doğrula',
-      sellerType === 'unknown' ? 'warn' : 'pending'
-    ),
-    checklistItem('verify_extra_costs', 'Fiyat dışı maliyetleri kontrol et', 'pending')
-  ];
-
-  for (const item of buildCategoryChecklist(String(input.category ?? 'vehicle'))) {
-    if (!checklist.some((entry) => entry.id === item.id)) {
-      checklist.push(item);
-    }
+  const duplicate = String(input.duplicate_status ?? 'new');
+  if (duplicate === 'exact' || duplicate === 'similar') {
+    base.unshift('Benzer / mükerrer ilan karşılaştırması');
   }
 
-  if (verificationLevel === 'none') {
-    checklist.push(checklistItem('verify_documents', 'Doğrulama belgelerini talep et', 'warn'));
-  } else if (verificationLevel === 'full') {
-    checklist.push(checklistItem('verify_documents', 'Doğrulama belgelerini kontrol et', 'ok'));
+  const priceIntel = /** @type {Record<string, unknown>} */ (input.price_intelligence ?? {});
+  if (String(priceIntel.price_position ?? '') === 'underpriced') {
+    base.unshift('Fiyat avantajı doğrulaması (hızlı kontrol önerilir)');
   }
 
-  if (riskResult.negotiationRisk === 'high') {
-    checklist.push(checklistItem('review_risk_factors', 'Risk sinyallerini tekrar gözden geçir', 'warn'));
-  }
-
-  return checklist;
+  return base;
 }

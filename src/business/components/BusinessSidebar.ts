@@ -7,6 +7,12 @@ export interface BusinessSidebarProps {
   onNavigate?: (item: BusinessNavItem) => void;
 }
 
+/**
+ * In-app Business navigation.
+ * Platform home (isteBul logo → `/`) lives in BusinessPlatformNav — not here.
+ * Sidebar brand stays on `/business/` so Business product identity is preserved
+ * without duplicating the platform header.
+ */
 export function createBusinessSidebarElement(props: BusinessSidebarProps): HTMLElement {
   const items = props.items ?? BUSINESS_NAV_ITEMS;
   const aside = document.createElement('aside');
@@ -17,20 +23,13 @@ export function createBusinessSidebarElement(props: BusinessSidebarProps): HTMLE
   brand.className = 'ib-biz-sidebar__brand';
   brand.href = '/business/';
   brand.setAttribute('aria-label', 'İSTEBUL Business ana sayfa');
-
-  const logo = document.createElement('img');
-  logo.className = 'ib-biz-sidebar__logo';
-  logo.src = '/assets/brand/istebul-icon.svg';
-  logo.alt = '';
-  logo.width = 32;
-  logo.height = 32;
-  logo.decoding = 'async';
+  brand.dataset.businessHome = '1';
 
   const brandText = document.createElement('span');
   brandText.className = 'ib-biz-sidebar__brand-text';
   brandText.innerHTML = '<span>İSTEBUL</span> <span>Business</span>';
 
-  brand.append(logo, brandText);
+  brand.appendChild(brandText);
 
   const nav = document.createElement('nav');
   nav.className = 'ib-biz-sidebar__nav';
@@ -56,16 +55,7 @@ export function createBusinessSidebarElement(props: BusinessSidebarProps): HTMLE
     nav.appendChild(link);
   }
 
-  const footer = document.createElement('div');
-  footer.className = 'ib-biz-sidebar__footer';
-
-  const platformLink = document.createElement('a');
-  platformLink.className = 'ib-biz-sidebar__platform';
-  platformLink.href = '/';
-  platformLink.textContent = 'isteBul Platform';
-
-  footer.appendChild(platformLink);
-  aside.append(brand, nav, footer);
+  aside.append(brand, nav);
   return aside;
 }
 

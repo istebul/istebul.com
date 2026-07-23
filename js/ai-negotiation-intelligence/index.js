@@ -1,13 +1,31 @@
 /**
- * Negotiation Intelligence — client entry (Faz N-3).
+ * Negotiation Intelligence v1 — client entry (Sprint-22).
  */
 
-export * from '../../supabase/functions/_shared/ai-listings/negotiation/index.js';
+export {
+  clearNegotiationMemoCache,
+  buildNegotiationCacheKey,
+  buildNegotiationInput,
+  computeNegotiationConfidence,
+  runNegotiationIntelligence,
+  buildNegotiationRiskLabel,
+  classifyNegotiationRiskLevel,
+  mapNegotiationRiskClass,
+  NEGOTIATION_RISK_LEVELS,
+  computeOfferRange,
+  roundOfferAmount,
+  POSITION_DISCOUNT_PROFILES,
+  buildNegotiationChecklist,
+  resolveNegotiationCategoryKey,
+  NEGOTIATION_CHECKLIST_BY_CATEGORY,
+  buildNegotiationSummaryText,
+  buildNegotiationReasons,
+  sanitizeNegotiationSummary,
+  NEGOTIATION_FORBIDDEN_PHRASES
+} from './negotiation-engine.js';
 
 export {
-  NEGOTIATION_RISK_LABELS_TR,
-  formatNegotiationCurrency,
-  buildNegotiationDisplayModel
-} from './negotiation-view-model.js';
-
-export { buildNegotiationPanelHtml, buildNegotiationShellHtml } from './negotiation-card-builder.js';
+  buildNegotiationPanelHtml,
+  buildNegotiationShellHtml,
+  formatNegotiationTry
+} from './negotiation-card-builder.js';

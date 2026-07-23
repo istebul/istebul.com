@@ -14,7 +14,10 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `components/` | Sidebar, Topbar, EmptyState, KPI, özet, aktivite, AI, hızlı işlem |
 | `layouts/` | Business kabuk (sidebar + topbar + içerik) |
 | `data/` | Dashboard mock verisi |
-| `services/` | Gelecek servis katmanı (henüz boş) |
+| `providers/` | BusinessDataProvider + Mock + adapters + ProviderResolver (EPIC-520/560) |
+| `services/` | Metrics / Insight / Recommendation engines (EPIC-520) |
+| `intelligence/` | Analytics + Scoring + Health + KPI + Events + Advisor pipeline (EPIC-510–550) |
+| `runtime/` | BusinessRuntime — UI ↔ ProviderResolver execution layer (EPIC-570) |
 | `hooks/` | Gelecek hook katmanı (henüz boş) |
 | `types/` | Tip tanımları |
 | `constants/` | Nav + legacy modül kayıtları |

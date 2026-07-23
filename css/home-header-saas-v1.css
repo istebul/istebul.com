@@ -56,6 +56,9 @@ html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #main-nav.navbar {
   position: sticky;
   top: 0;
   z-index: 1201;
+  /* Kill legacy style.css desktop `.navbar { padding: 1rem 1.5rem }` inflation
+     so sticky height stays ~--ib-saas-nav-h and does not steal hero space. */
+  padding: 0;
   background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid var(--ib-saas-border);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);

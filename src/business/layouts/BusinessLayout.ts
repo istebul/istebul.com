@@ -1,6 +1,7 @@
 import type { BusinessNavId } from '../types/business-nav';
 import { createBusinessSidebarElement } from '../components/BusinessSidebar';
 import { createBusinessTopbarElement } from '../components/BusinessTopbar';
+import { createBusinessPlatformNavElement } from '../components/BusinessPlatformNav';
 
 export interface BusinessLayoutOptions {
   activeNavId: BusinessNavId;
@@ -14,16 +15,23 @@ export interface BusinessLayoutResult {
   root: HTMLElement;
   content: HTMLElement;
   sidebar: HTMLElement;
+  platformNav: HTMLElement;
 }
 
 /**
- * Business uygulama kabuğu: Sidebar + Topbar + içerik alanı.
- * Kimlik doğrulama / tenant bağlamı içermez.
+ * Business uygulama kabuğu: Platform nav + Sidebar + Topbar + içerik.
+ * Platform logo → `/`. Kimlik doğrulama / tenant bağlamı içermez.
  */
 export function createBusinessLayoutShell(options: BusinessLayoutOptions): BusinessLayoutResult {
   const root = document.createElement('div');
-  root.className = 'ib-biz-shell';
-  root.dataset.businessShell = '1';
+  root.className = 'ib-business-frame';
+  root.dataset.businessFrame = '1';
+
+  const platformNav = createBusinessPlatformNavElement();
+
+  const shell = document.createElement('div');
+  shell.className = 'ib-biz-shell';
+  shell.dataset.businessShell = '1';
 
   const sidebar = createBusinessSidebarElement({ activeId: options.activeNavId });
   sidebar.id = 'ib-biz-sidebar';
@@ -40,9 +48,9 @@ export function createBusinessLayoutShell(options: BusinessLayoutOptions): Busin
     title: options.title,
     subtitle: options.subtitle,
     onMenuToggle: () => {
-      root.classList.toggle('is-sidebar-open');
-      const open = root.classList.contains('is-sidebar-open');
-      root.setAttribute('data-sidebar-open', open ? '1' : '0');
+      shell.classList.toggle('is-sidebar-open');
+      const open = shell.classList.contains('is-sidebar-open');
+      shell.setAttribute('data-sidebar-open', open ? '1' : '0');
     }
   });
 
@@ -51,14 +59,15 @@ export function createBusinessLayoutShell(options: BusinessLayoutOptions): Busin
   backdrop.className = 'ib-biz-shell__backdrop';
   backdrop.setAttribute('aria-label', 'Menüyü kapat');
   backdrop.addEventListener('click', () => {
-    root.classList.remove('is-sidebar-open');
-    root.setAttribute('data-sidebar-open', '0');
+    shell.classList.remove('is-sidebar-open');
+    shell.setAttribute('data-sidebar-open', '0');
   });
 
   main.append(topbar, content);
-  root.append(sidebar, backdrop, main);
+  shell.append(sidebar, backdrop, main);
+  root.append(platformNav, shell);
 
-  return { root, content, sidebar };
+  return { root, content, sidebar, platformNav };
 }
 
 export default createBusinessLayoutShell;
