@@ -1,6 +1,6 @@
 # SEO Indexability Report
 
-**Generated:** 2026-07-22  
+**Generated:** 2026-07-23  
 **Build artifact:** `dist/` present
 
 ## Summary
@@ -10,12 +10,12 @@
 | noindex pages (repo scan) | 121 |
 | sitemap URL count | 180 |
 | canonical issues | 0 |
-| orphan HTML (vs sitemap) | 36 |
+| orphan HTML (vs sitemap) | 41 |
 | internal /rehber/ links (sample) | 358 |
 | FAQ schema pages (scan) | 24 |
 | Rehber BreadcrumbList pages | 14 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 66 |
+| Indexable public HTML (estimate) | 71 |
 
 ## noindex pages
 
