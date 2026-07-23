@@ -36,11 +36,11 @@ export function renderCompanyOperatingSystem(snapshot, escapeHtml) {
         .join('');
       return `
       <details style="margin-bottom:12px;border:1px solid var(--border);border-radius:8px;padding:8px 12px">
-        <summary style="cursor:pointer;font-weight:600">${esc(d.title)} · ${esc(d.cadence)} · owner ${esc(d.owner)}</summary>
-        <p class="text-muted-sm" style="margin:8px 0 6px">${d.durationMinutes} min</p>
-        <p style="margin:0 0 6px;font-size:13px"><strong>Pre-read</strong></p>
+        <summary style="cursor:pointer;font-weight:600">${esc(d.title)} · ${esc(d.cadence)} · sahip ${esc(d.owner)}</summary>
+        <p class="text-muted-sm" style="margin:8px 0 6px">${d.durationMinutes} dk</p>
+        <p style="margin:0 0 6px;font-size:13px"><strong>Ön okuma</strong></p>
         <ul style="margin:0 0 10px;padding-left:18px;font-size:12px">${artifacts}</ul>
-        <p style="margin:0 0 6px;font-size:13px"><strong>Agenda</strong></p>
+        <p style="margin:0 0 6px;font-size:13px"><strong>Gündem</strong></p>
         <ul style="margin:0;padding-left:18px;font-size:12px">${agenda}</ul>
       </details>`;
     })
@@ -78,51 +78,51 @@ export function renderCompanyOperatingSystem(snapshot, escapeHtml) {
 
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P20 Company OS · <code>npm run metrics:company:operating</code> ·
-      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Playbook</a> ·
-      <a href="/docs/templates/DECISION_RECORD_TEMPLATE.md" target="_blank" rel="noopener">Decision template</a>
+      P20 Şirket işletim sistemi · <code>npm run metrics:company:operating</code> ·
+      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Oyun planı</a> ·
+      <a href="/docs/templates/DECISION_RECORD_TEMPLATE.md" target="_blank" rel="noopener">Karar şablonu</a>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${indepColor}">
-      <strong>Founder-independence: ${snapshot.independenceScore}%</strong>
+      <strong>Kurucu bağımsızlığı: ${snapshot.independenceScore}%</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(snapshot.executiveSummary || []).map((line) => `<li>${esc(line)}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Independence checks</h3>
+    <h3 style="margin:0 0 12px">Bağımsızlık kontrolleri</h3>
     <ul style="margin:0 0 18px;padding-left:18px;font-size:13px;line-height:1.55">${checkList}</ul>
 
-    <h3 style="margin:0 0 12px">Weekly KPI scorecard (sources)</h3>
+    <h3 style="margin:0 0 12px">Haftalık KPI skor kartı (kaynaklar)</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>Metric</th><th>Owner</th><th>Source</th><th>Target</th></tr></thead>
+        <thead><tr><th>Metrik</th><th>Sahip</th><th>Kaynak</th><th>Hedef</th></tr></thead>
         <tbody>${kpiRows || '<tr><td colspan="4">—</td></tr>'}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Review cadences</h3>
+    <h3 style="margin:0 0 12px">İnceleme ritimleri</h3>
     ${reviewBlocks}
 
-    <h3 style="margin:0 0 12px">Roadmap now (${esc(riceDoc.name || 'RICE')})</h3>
+    <h3 style="margin:0 0 12px">Yol haritası — şimdi (${esc(riceDoc.name || 'RICE')})</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>ID</th><th>Item</th><th>Owner</th><th>RICE</th></tr></thead>
+        <thead><tr><th>ID</th><th>Öğe</th><th>Sahip</th><th>RICE</th></tr></thead>
         <tbody>${queueRows || '<tr><td colspan="4">—</td></tr>'}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Decision log</h3>
+    <h3 style="margin:0 0 12px">Karar günlüğü</h3>
     <div class="table-wrap" style="margin-bottom:12px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>ID</th><th>Status</th><th>Type</th><th>Title</th><th>Owner</th></tr></thead>
+        <thead><tr><th>ID</th><th>Durum</th><th>Tip</th><th>Başlık</th><th>Sahip</th></tr></thead>
         <tbody>${decisionRows}</tbody>
       </table>
     </div>
     <p class="text-muted-sm" style="margin:0;font-size:12px">
-      Storage: <code>data/ops/decision-log.json</code> ·
-      ${snapshot.decisionStats?.proposed ?? 0} proposed ·
-      ${snapshot.decisionStats?.approved ?? 0} approved
+      Depolama: <code>data/ops/decision-log.json</code> ·
+      ${snapshot.decisionStats?.proposed ?? 0} önerilen ·
+      ${snapshot.decisionStats?.approved ?? 0} onaylı
     </p>
   `;
 }

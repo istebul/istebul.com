@@ -8,6 +8,15 @@ import { trackGrowth } from './growth-engine.js';
 const SAVED_KEY = 'istebul_saved_decisions';
 const MAX_SAVED = 24;
 
+const CATEGORY_REVISIT_PATHS = Object.freeze({
+  auto: '/auto/',
+  housing: '/konut/',
+  travel: '/tatil/',
+  finance: '/finans/',
+  insurance: '/sigorta/',
+  kasko: '/kasko/'
+});
+
 /**
  * @param {string} [userId]
  */
@@ -40,9 +49,19 @@ export function saveDecisionSnapshot(snapshot = {}) {
     topVehicle: snapshot.topVehicle || snapshot.title || 'Karar',
     score: snapshot.score ?? null,
     summary: snapshot.summary || '',
-    revisitPath: snapshot.revisitPath || '/auto/',
+    revisitPath:
+      snapshot.revisitPath ||
+      CATEGORY_REVISIT_PATHS[snapshot.categoryId] ||
+      '/karar-asistani/',
     source: snapshot.source || 'auto_results'
   };
+
+  if (snapshot.passive === true) entry.passive = true;
+  if (snapshot.tracked === true) entry.tracked = true;
+  else if (snapshot.tracked === false) entry.tracked = false;
+  if (typeof snapshot.intent === 'string' && snapshot.intent) {
+    entry.intent = snapshot.intent;
+  }
 
   const list = [entry, ...readList(key).filter((r) => r.id !== entry.id)].slice(0, MAX_SAVED);
   writeStorageRaw(key, JSON.stringify(list));
@@ -53,7 +72,8 @@ export function saveDecisionSnapshot(snapshot = {}) {
       {
         decision_id: entry.id,
         category_id: entry.categoryId,
-        has_score: entry.score != null
+        has_score: entry.score != null,
+        ...(entry.passive === true ? { is_passive: true } : {})
       },
       { funnel: 'retention', funnel_step: 'saved_decision' }
     );

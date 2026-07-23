@@ -136,17 +136,18 @@ test('empty dataset returns zeros', () => {
 
 test('buildKpiCardsHtml uses total from stats', () => {
   const stats = computeNormalizedKpiStats(listings);
-  const html = buildKpiCardsHtml(stats);
-  assert.match(html, /Toplam Kayıt/);
-  assert.match(html, /Aktif Kayıt/);
-  assert.match(html, /Mükerrer/);
-  assert.match(html, /Ortalama AI/);
+  const html = buildKpiCardsHtml(stats, listings);
+  assert.match(html, /Toplam İlan/);
+  assert.match(html, /Bugün Analiz/);
+  assert.match(html, /Yüksek Risk/);
+  assert.match(html, /İncelemede/);
   assert.match(html, /data-kpi-value="4"/);
 });
 
-test('buildKpiCardsHtml active count hint arşiv hariç', () => {
-  const html = buildKpiCardsHtml(computeNormalizedKpiStats(listings));
-  assert.match(html, /arşiv hariç/);
+test('buildKpiCardsHtml renders decision KPI hint copy', () => {
+  const html = buildKpiCardsHtml(computeNormalizedKpiStats(listings), listings);
+  assert.match(html, /aktif kayıt/);
+  assert.match(html, /risk ≥ 61/);
 });
 
 test('pending review counted', () => {

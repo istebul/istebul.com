@@ -272,6 +272,7 @@ body.vacation-page {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 44px;
   padding: 10px 18px;
   border-radius: 10px;
   font-weight: 600;
@@ -311,6 +312,7 @@ body.vacation-page {
 }
 
 .btn-sm {
+  min-height: 44px;
   padding: 8px 14px;
   font-size: 0.85rem;
 }
@@ -637,6 +639,10 @@ body.vacation-page {
   flex-wrap: wrap;
 }
 
+.vacation-wizard-actions .btn {
+  min-height: 44px;
+}
+
 .vacation-chip-grid {
   display: flex;
   flex-wrap: wrap;
@@ -646,6 +652,7 @@ body.vacation-page {
 .vacation-chip {
   border: 1px solid rgba(148, 163, 184, 0.36);
   border-radius: 999px;
+  min-height: 44px;
   padding: 8px 14px;
   font-size: 0.85rem;
   background: rgba(15, 23, 42, 0.6);

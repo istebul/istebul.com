@@ -19,20 +19,6 @@ const TATIL_ASSISTANT_TO_VERTICAL = Object.freeze({
   luxury: 'luks-resort'
 });
 
-const ASSISTANT_TATIL_TRAVELERS_MAP = Object.freeze({
-  solo: { people_type: 'tek', travelers_count: '1' },
-  couple: { people_type: 'cift', travelers_count: '2' },
-  family: { people_type: 'cocuklu-aile', travelers_count: '4' },
-  group: { people_type: 'arkadas', travelers_count: '4' }
-});
-
-const ASSISTANT_TATIL_PRIORITY_TO_COMFORT = Object.freeze({
-  premium: 'luks',
-  quiet: 'premium',
-  allInclusive: 'dengeli',
-  experience: 'dengeli'
-});
-
 const VERTICAL_BY_ASSISTANT = Object.freeze({
   arac: 'auto',
   ev: 'konut',
@@ -42,9 +28,111 @@ const VERTICAL_BY_ASSISTANT = Object.freeze({
   kasko: 'kasko'
 });
 
+const KONUT_PURPOSES = ',live,investment,seasonal,premium,';
+const KONUT_PROPERTIES = ',daire,mustakil,villa,';
+const FINANS_TERMS = { arac: ',12,24,36,48,60,', konut: ',36,48,60,', tatil: ',12,24,36,', ihtiyac: ',12,24,36,48,', isletme: ',12,24,36,48,60,' };
+const FINANS_CAPACITY = {
+  arac: ',15k,25k,40k,60k,',
+  konut: ',25k,40k,60k,',
+  tatil: ',15k,25k,40k,',
+  ihtiyac: ',15k,25k,40k,60k,',
+  isletme: ',25k,40k,60k,'
+};
+const FINANS_RATE_SENSITIVITY = {
+  arac: ',dusuk,orta,yuksek,',
+  konut: ',dusuk,orta,yuksek,',
+  tatil: ',orta,yuksek,',
+  ihtiyac: ',dusuk,orta,yuksek,',
+  isletme: ',orta,yuksek,'
+};
+
+const KASKO_VEHICLES_CSV = ',otomobil,suv,motosiklet,ticari_arac,';
+const KASKO_YEARS_CSV = ',0-3,4-10,11plus,';
+const KASKO_USAGE_CSV = ',ozel,ticari,';
+const KASKO_COVERAGE_CSV = ',mini,standard,full,';
+const KASKO_TRI_LEVEL_CSV = ',dusuk,orta,yuksek,';
+const KASKO_USAGE_BY_VEHICLE = Object.freeze({
+  otomobil: ',ozel,ticari,',
+  suv: ',ozel,',
+  motosiklet: ',ozel,',
+  ticari_arac: ',ticari,'
+});
+const KASKO_COVERAGE_BY_VEHICLE_USAGE = Object.freeze({
+  otomobil: { ozel: ',mini,standard,full,', ticari: ',mini,standard,full,' },
+  suv: { ozel: ',standard,full,' },
+  motosiklet: { ozel: ',mini,standard,' },
+  ticari_arac: { ticari: ',standard,full,' }
+});
+const KASKO_RISK_BY_VEHICLE = Object.freeze({
+  otomobil: ',dusuk,orta,yuksek,',
+  suv: ',orta,yuksek,',
+  motosiklet: ',orta,yuksek,',
+  ticari_arac: ',orta,yuksek,'
+});
+const KASKO_BUDGET_BY_VEHICLE = Object.freeze({
+  otomobil: ',dusuk,orta,yuksek,',
+  suv: ',orta,yuksek,',
+  motosiklet: ',dusuk,orta,',
+  ticari_arac: ',orta,yuksek,'
+});
+
+const SIGORTA_TYPES_CSV = ',arac,konut,saglik,seyahat,';
+const SIGORTA_LICENSE_YEARS_CSV = ',0-2,3-10,11plus,';
+const SIGORTA_USAGE_CSV = ',ozel,ticari,';
+const SIGORTA_PROPERTY_ROLE_CSV = ',malik,kiraci,';
+const SIGORTA_DESTINATION_CSV = ',yurtici,yurtdisi,schengen,';
+const SIGORTA_TRIP_DURATION_CSV = ',1-7,8-15,16plus,';
+
+/** İl query değeri — hafif format doğrulaması (tam il listesi konut runtime'da). */
+const KONUT_PROVINCE_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
+
+function isValidPositiveInteger(value) {
+  const raw = String(value ?? '').trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const n = Number(raw);
+  return n > 0 ? String(n) : null;
+}
+
+function pickCsv(value, csv) {
+  const v = String(value ?? '').trim();
+  return v && csv.includes(`,${v},`) ? v : null;
+}
+
+function isValidKaskoUsageForVehicle(vehicle = '', usage = '') {
+  const csv = KASKO_USAGE_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(usage ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
+function isValidKaskoCoverageForVehicleUsage(vehicle = '', usage = '', coverage = '') {
+  const byUsage = KASKO_COVERAGE_BY_VEHICLE_USAGE[String(vehicle ?? '').trim()];
+  const csv = byUsage?.[String(usage ?? '').trim()];
+  const value = String(coverage ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
+function isValidKaskoRiskForVehicle(vehicle = '', risk = '') {
+  const csv = KASKO_RISK_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(risk ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
+function isValidKaskoBudgetForVehicle(vehicle = '', budgetLevel = '') {
+  const csv = KASKO_BUDGET_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(budgetLevel ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
 export function normalizeAutoUsage(usage = '') {
   const key = String(usage || '').trim();
   return AUTO_USAGE_TO_VERTICAL[key] || key || 'city';
+}
+
+/** MPV kasa tercihi vertical sihirbazda SUV ile modellenir. */
+export function normalizeAutoBody(body = '') {
+  const key = String(body || '').trim();
+  if (key === 'mpv') return 'suv';
+  return key;
 }
 
 export function normalizeTatilGoal(vacationType = '') {
@@ -54,6 +142,43 @@ export function normalizeTatilGoal(vacationType = '') {
 
 export function assistantVerticalId(categoryId = '') {
   return VERTICAL_BY_ASSISTANT[categoryId] || 'auto';
+}
+
+export function isValidKonutAssistantProvinceQuery(province = '') {
+  const name = String(province || '').trim();
+  if (name.length < 2 || name.length > 40) return false;
+  return KONUT_PROVINCE_QUERY_PATTERN.test(name);
+}
+
+function normalizeKonutDistrict(district = '') {
+  const value = String(district || '').trim().slice(0, 60);
+  return value || null;
+}
+
+function normalizeKonutBudget(budget) {
+  return isValidPositiveInteger(budget);
+}
+
+/** @param {URLSearchParams} params @param {Record<string, unknown>} answers */
+export function appendKonutAssistantQueryParams(params, answers = {}) {
+  if (!params || !answers) return params;
+
+  const budget = normalizeKonutBudget(answers.budget);
+  if (budget) params.set('budget', budget);
+
+  const province = String(answers.province || '').trim();
+  if (isValidKonutAssistantProvinceQuery(province)) params.set('province', province);
+
+  const district = normalizeKonutDistrict(answers.district);
+  if (district) params.set('district', district);
+
+  const purposeKey = String(answers.purpose || '').trim();
+  if (pickCsv(purposeKey, KONUT_PURPOSES)) params.set('purpose', purposeKey);
+
+  const propertyKey = String(answers.propertyType || '').trim();
+  if (pickCsv(propertyKey, KONUT_PROPERTIES)) params.set('propertyType', propertyKey);
+
+  return params;
 }
 
 /**
@@ -118,143 +243,95 @@ export function buildAssistantInsightInput(categoryId, categoryConfig, primary, 
 export function buildVerticalContinueHref(categoryId, answers = {}) {
   const params = new URLSearchParams();
   if (categoryId === 'arac') {
-    if (answers.budget) params.set('budget', answers.budget);
-    if (answers.usage) params.set('usage', normalizeAutoUsage(answers.usage));
-    if (answers.fuel) params.set('fuel', answers.fuel);
-    if (answers.body) params.set('body', answers.body);
+    const budget = isValidPositiveInteger(answers.budget);
+    if (budget) params.set('budget', budget);
+    const usage = normalizeAutoUsage(answers.usage);
+    if (pickCsv(usage, ',family,city,long,business,')) params.set('usage', usage);
+    const fuel = pickCsv(answers.fuel, ',any,hybrid,electric,gasoline,diesel,');
+    if (fuel) params.set('fuel', fuel);
+    const body = pickCsv(normalizeAutoBody(answers.body), ',suv,sedan,hatchback,');
+    if (body) params.set('body', body);
+    const cityRaw = String(answers.province || answers.city || '').trim();
+    if (isValidKonutAssistantProvinceQuery(cityRaw)) params.set('city', cityRaw);
+    const householdSize = pickCsv(
+      answers.household_size || answers.householdSize,
+      ',1,2,3-4,5+,'
+    );
+    if (householdSize) params.set('household_size', householdSize);
     return `/auto/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'ev') {
-    return '/konut/';
+    appendKonutAssistantQueryParams(params, answers);
+    return `/konut/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'tatil') {
     if (answers.vacationType) params.set('goal', normalizeTatilGoal(answers.vacationType));
-    if (answers.budget) params.set('budget', answers.budget);
+    const budget = isValidPositiveInteger(answers.budget);
+    if (budget) params.set('budget', budget);
     if (answers.travelers) params.set('travelers', answers.travelers);
     if (answers.priority) params.set('priority', answers.priority);
     return `/tatil/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'finansman') {
-    if (answers.purpose) params.set('purpose', answers.purpose);
-    if (answers.budget) params.set('amount', answers.budget);
-    if (answers.term) params.set('term', answers.term);
+    const purpose = String(answers.purpose ?? '').trim();
+    if (FINANS_TERMS[purpose]) params.set('purpose', purpose);
+    const amount = isValidPositiveInteger(answers.budget);
+    if (amount) params.set('amount', amount);
+    const term = String(answers.term ?? '').trim();
+    if (purpose && term && FINANS_TERMS[purpose]?.includes(`,${term},`)) params.set('term', term);
+    const capacity = pickCsv(answers.capacity, FINANS_CAPACITY[purpose] || '');
+    if (purpose && capacity) params.set('capacity', capacity);
+    const rateSensitivity = pickCsv(answers.rateSensitivity, FINANS_RATE_SENSITIVITY[purpose] || '');
+    if (purpose && rateSensitivity) params.set('rate_sensitivity', rateSensitivity);
     return `/finans/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'sigorta') {
-    if (answers.insuranceType) params.set('type', answers.insuranceType);
+    const insuranceType = pickCsv(answers.insuranceType, SIGORTA_TYPES_CSV);
+    if (insuranceType) params.set('type', insuranceType);
     if (answers.risk_perception) params.set('risk', answers.risk_perception);
     if (answers.budget_level) params.set('budget_level', answers.budget_level);
+    if (insuranceType === 'arac') {
+      const licenseYears = pickCsv(answers.license_years, SIGORTA_LICENSE_YEARS_CSV);
+      if (licenseYears) params.set('license_years', licenseYears);
+      const usageType = pickCsv(answers.usage_type, SIGORTA_USAGE_CSV);
+      if (usageType) params.set('usage_type', usageType);
+    }
+    if (insuranceType === 'konut') {
+      const propertyRole = pickCsv(answers.property_role, SIGORTA_PROPERTY_ROLE_CSV);
+      if (propertyRole) params.set('property_role', propertyRole);
+    }
+    if (insuranceType === 'seyahat') {
+      const destinationType = pickCsv(answers.destination_type, SIGORTA_DESTINATION_CSV);
+      if (destinationType) params.set('destination_type', destinationType);
+      const tripDuration = pickCsv(answers.trip_duration, SIGORTA_TRIP_DURATION_CSV);
+      if (tripDuration) params.set('trip_duration', tripDuration);
+    }
     return `/sigorta/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'kasko') {
-    if (answers.vehicle_category) params.set('vehicle', answers.vehicle_category);
-    if (answers.vehicle_year_band) params.set('year', answers.vehicle_year_band);
-    if (answers.coverage_level) params.set('coverage', answers.coverage_level);
+    const vehicle = pickCsv(answers.vehicle_category, KASKO_VEHICLES_CSV);
+    if (vehicle) params.set('vehicle', vehicle);
+    const year = pickCsv(answers.vehicle_year_band, KASKO_YEARS_CSV);
+    if (year) params.set('year', year);
+    const usage = pickCsv(answers.usage_type, KASKO_USAGE_CSV);
+    if (vehicle && usage && isValidKaskoUsageForVehicle(vehicle, usage)) {
+      params.set('usage_type', usage);
+    }
+    const coverage = pickCsv(answers.coverage_level, KASKO_COVERAGE_CSV);
+    const usageForCoverage = usage && isValidKaskoUsageForVehicle(vehicle, usage) ? usage : null;
+    if (vehicle && usageForCoverage && coverage &&
+      isValidKaskoCoverageForVehicleUsage(vehicle, usageForCoverage, coverage)) {
+      params.set('coverage', coverage);
+    }
+    const risk = pickCsv(answers.risk_perception, KASKO_TRI_LEVEL_CSV);
+    if (vehicle && risk && isValidKaskoRiskForVehicle(vehicle, risk)) {
+      params.set('risk', risk);
+    }
+    const budgetLevel = pickCsv(answers.budget_level, KASKO_TRI_LEVEL_CSV);
+    if (vehicle && budgetLevel && isValidKaskoBudgetForVehicle(vehicle, budgetLevel)) {
+      params.set('budget_level', budgetLevel);
+    }
     return `/kasko/${params.toString() ? `?${params}` : ''}`;
   }
   return '/';
-}
-
-/** Tatil dikey sihirbaz — ana sayfa asistan query profili. */
-const AUTO_WIZARD_BUDGET_PRESETS = Object.freeze(['500000', '900000', '1500000', '2500000']);
-
-const AUTO_WIZARD_USAGE = new Set(['family', 'city', 'long', 'business']);
-const AUTO_WIZARD_BODY = new Set(['suv', 'sedan', 'hatchback']);
-const AUTO_WIZARD_FUEL = new Set(['any', 'hybrid', 'electric', 'gasoline', 'diesel']);
-
-/** Auto dikey sihirbaz — ana sayfa asistan query profili. */
-export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchParams()) {
-  if (!state || !params) return state;
-
-  const usage = params.get('usage');
-  const budget = params.get('budget');
-  const fuel = params.get('fuel');
-  const body = params.get('body');
-
-  if (usage) {
-    const normalized = normalizeAutoUsage(usage);
-    if (AUTO_WIZARD_USAGE.has(normalized)) state.usage = normalized;
-  }
-  if (budget) {
-    const n = Number(String(budget).replace(/\D/g, ''));
-    if (Number.isFinite(n) && n > 0) {
-      const preset = AUTO_WIZARD_BUDGET_PRESETS.find((value) => Number(value) === n);
-      if (preset) {
-        state.budget = preset;
-      } else {
-        state.budget = 'custom';
-        state.budget_custom = String(Math.round(n));
-      }
-    }
-  }
-  if (fuel && AUTO_WIZARD_FUEL.has(fuel)) state.fuel = fuel;
-  if (body && AUTO_WIZARD_BODY.has(body)) state.body = body;
-
-  return state;
-}
-
-export function bootstrapTatilFromAssistantQuery(state, params = new URLSearchParams()) {
-  if (!state || !params) return state;
-  const goal = params.get('goal');
-  const budget = params.get('budget');
-  const travelers = params.get('travelers');
-  const priority = params.get('priority');
-
-  if (goal) state.vacation_goal = normalizeTatilGoal(goal) || goal;
-  if (budget) {
-    const n = Number(String(budget).replace(/\D/g, ''));
-    if (Number.isFinite(n) && n > 0) {
-      state.budget_range = 'manuel';
-      state.budget_manual = n;
-      state.budget_total = n;
-    }
-  }
-  const travelerProfile = ASSISTANT_TATIL_TRAVELERS_MAP[travelers];
-  if (travelerProfile) {
-    state.people_type = travelerProfile.people_type;
-    state.travelers_count = travelerProfile.travelers_count;
-  }
-  if (priority && ASSISTANT_TATIL_PRIORITY_TO_COMFORT[priority]) {
-    state.comfort_expectation = ASSISTANT_TATIL_PRIORITY_TO_COMFORT[priority];
-  }
-  return state;
-}
-
-export function bootstrapFinansFromAssistantQuery(state, params = new URLSearchParams()) {
-  if (!state || !params) return state;
-  const purpose = params.get('purpose');
-  const amount = params.get('amount');
-  const term = params.get('term');
-  if (purpose) state.purpose = purpose;
-  if (term) state.term_months = term;
-  if (amount) {
-    const n = Number(String(amount).replace(/\D/g, ''));
-    if (Number.isFinite(n) && n > 0) {
-      state.amount_range = 'manuel';
-      state.amount_manual = n;
-    }
-  }
-  return state;
-}
-
-export function bootstrapSigortaFromAssistantQuery(state, params = new URLSearchParams()) {
-  if (!state || !params) return state;
-  const type = params.get('type') || params.get('insurance_type');
-  const risk = params.get('risk') || params.get('risk_perception');
-  const budgetLevel = params.get('budget_level');
-  if (type) state.insurance_type = type;
-  if (risk) state.risk_perception = risk;
-  if (budgetLevel) state.budget_level = budgetLevel;
-  return state;
-}
-
-export function bootstrapKaskoFromAssistantQuery(state, params = new URLSearchParams()) {
-  if (!state || !params) return state;
-  const vehicle = params.get('vehicle') || params.get('vehicle_category');
-  const year = params.get('year') || params.get('vehicle_year_band');
-  const coverage = params.get('coverage') || params.get('coverage_level');
-  if (vehicle) state.vehicle_category = vehicle;
-  if (year) state.vehicle_year_band = year;
-  if (coverage) state.coverage_level = coverage;
-  return state;
 }

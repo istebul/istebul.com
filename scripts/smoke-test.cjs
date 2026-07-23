@@ -1,15 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const index = read('index.html');
+const aiLanding = read('ai/index.html');
+const marketingCopy = read('js/features/i18n/marketing-copy.js');
 assert(read('js/core/router.js').includes('/karar-asistani'), 'Decision assistant route is missing.');
-assert(index.includes('/auto/'), 'Primary conversion path should link to Auto.');
-assert(index.includes('Ücretsiz analiz başlat'), 'Hero primary CTA should emphasize free analysis start.');
-assert(index.includes('Karar altyapısı'), 'Homepage should position decision infrastructure.');
+assert(index.includes('/ai/'), 'Platform Landing should link to İSTEBUL AI entry.');
+assert(index.includes('platform-landing'), 'Platform Landing mount is missing on root.');
+assert(index.includes('Neden İSTEBUL'), 'Platform Landing should include Neden İSTEBUL section.');
+assert(aiLanding.includes('home-category-grid') || aiLanding.includes('/auto'), 'AI Landing should expose Auto category entry.');
+assert(aiLanding.includes('Ön değerlendirmeye başla'), 'AI Landing primary CTA should emphasize pre-assessment entry.');
+assert(marketingCopy.includes('Tam analize başla'), 'Category card CTA should emphasize full vertical analysis entry.');
+assert(aiLanding.includes('hero-v4-title') || aiLanding.includes('yalnız değilsiniz'), 'AI Landing should keep AI hero contract.');
 const premiumPages = read('js/ui/premium-pages.js');
 const uiSource = read('js/ui/ui.js');
 assert(premiumPages.includes('decision-assistant-form'), 'Decision assistant form is missing.');
@@ -27,22 +34,16 @@ assert(index.includes('cookie-consent'), 'Cookie consent UI is missing.');
 assert(index.includes('homepage.bundle.css') || index.includes('enterprise-card-readability.css'),
   'Homepage should load homepage.bundle.css (or enterprise-card-readability.css) for contrast.'
 );
-assert(index.includes('home-economic-indicators-mount'), 'Homepage economic indicators mount is missing.');
+assert(aiLanding.includes('home-economic-indicators-mount'), 'AI Landing economic indicators mount is missing.');
+assert(aiLanding.includes('home-category-grid'), 'AI Landing category grid is missing.');
 {
-  const css = read('css/istebul-premium-final-v7.css');
-  const homeOrder = css.match(/#home\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  const evdsOrder = css.match(/#home-economic-indicators\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  const howOrder = css.match(/#how-it-works\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  assert.ok(homeOrder, 'Home section flex order is missing in premium layout CSS.');
-  assert.ok(evdsOrder, 'Economic indicators flex order is missing in premium layout CSS.');
-  assert.ok(howOrder, 'How-it-works flex order is missing in premium layout CSS.');
-  assert.ok(Number(evdsOrder) > Number(homeOrder), 'Economic indicators should follow hero in premium layout.');
-  assert.ok(Number(howOrder) > Number(evdsOrder), 'How-it-works should follow economic indicators in premium layout.');
+  const surfaceFailures = collectPlatformAiSurfaceFailures(index, aiLanding);
+  assert.equal(surfaceFailures.length, 0, surfaceFailures.join('; ') || 'release surface OK');
 }
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');
 assert(!index.includes('https://plausible.io/js/plausible.js'), 'Analytics should not load before consent.');
-assert(index.includes('decision-preview'), 'Professional hero preview is missing.');
+assert(aiLanding.includes('decision-preview'), 'AI Landing professional hero preview is missing.');
 assert(index.includes('listing-filter-form'), 'Listing filter form is missing.');
 assert(index.includes('marketplace-results-toolbar'), 'Marketplace results toolbar is missing.');
 assert(index.includes('listing-sort'), 'Listing sort control is missing.');
@@ -58,7 +59,7 @@ assert(index.includes('karsilastir'), 'Comparison route link is missing.');
 assert(uiSource.includes('comparison-count'), 'Comparison nav counter id is missing.');
 assert(uiSource.includes('favorites-count'), 'Favorites nav counter id is missing.');
 assert(read('js/core/storage-keys.js').includes('istebu_theme'), 'Theme storage key is missing.');
-assert(index.includes('cro-sticky-cta'), 'Mobile sticky CTA is missing.');
+assert(aiLanding.includes('cro-sticky-cta'), 'AI Landing mobile sticky CTA is missing.');
 assert(
   index.includes('ib-trust-rail') ||
   read('auto/index.html').includes('ib-trust-rail') ||
@@ -69,19 +70,26 @@ assert(
 const pkg = JSON.parse(read('package.json'));
 assert(pkg.scripts.build.includes('scripts/production-build.cjs'), 'Production build script should create optimized output.');
 assert(pkg.scripts['build:check'].includes('check-build-output'), 'Build output check script is missing.');
-const netlifyConfig = read('netlify.toml');
-assert(netlifyConfig.includes('publish = "dist"'), 'Netlify should publish optimized dist output.');
-assert(netlifyConfig.includes('from = "/*"'), 'Netlify SPA fallback route is missing.');
-assert(netlifyConfig.includes('Content-Security-Policy'), 'Content Security Policy is missing.');
-assert(netlifyConfig.includes('Strict-Transport-Security'), 'HSTS header is missing.');
-assert(netlifyConfig.includes('Cache-Control = "public, max-age=31536000, immutable"'), 'Long-lived asset cache header is missing.');
+const wranglerConfig = read('wrangler.toml');
+const headersConfig = read('_headers');
+const redirectsConfig = read('_redirects');
+assert(wranglerConfig.includes('pages_build_output_dir = "dist"'), 'Cloudflare Pages should publish optimized dist output.');
+assert(redirectsConfig.includes('/* /index.html 200'), 'Cloudflare SPA fallback route is missing.');
+assert(headersConfig.includes('Content-Security-Policy'), 'Content Security Policy is missing.');
+assert(headersConfig.includes('Strict-Transport-Security'), 'HSTS header is missing.');
+assert(headersConfig.includes('max-age=31536000, immutable'), 'Long-lived asset cache header is missing.');
 assert(!index.includes('browser.sentry-cdn.com/7.100.0/bundle.min.js'), 'Sentry should not load before consent.');
 assert(!index.includes('cdn.lr-in-prod.com/LogRocket.min.js'), 'LogRocket should not load before consent.');
 assert(fs.existsSync(path.join(root, 'Dockerfile')), 'Dockerfile is missing.');
 assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml is missing.');
-assert(fs.existsSync(path.join(root, 'netlify/functions/health.js')), 'Health endpoint is missing.');
+assert(fs.existsSync(path.join(root, 'functions/api/health.js')), 'Cloudflare health endpoint is missing.');
 const robotsTxt = read('robots.txt');
 assert(robotsTxt.includes('Sitemap:') && robotsTxt.includes('sitemap.xml'), 'robots.txt sitemap declaration is missing.');
+const adsTxt = read('ads.txt');
+assert(
+  adsTxt.includes('pub-6412697542113702') && adsTxt.includes('google.com'),
+  'ads.txt should declare AdSense publisher authorization.'
+);
 const sitemapXml = read('sitemap.xml');
 assert(sitemapXml.includes('www.istebul.com/auto/') || sitemapXml.includes('karar-asistani'), 'sitemap.xml should include Auto or decision assistant URL.');
 assert(read('docs/openapi.yaml').includes('/ai-proxy'), 'OpenAPI spec should document AI proxy.');
@@ -116,8 +124,8 @@ assert(css.includes('.assistant-recommendation.featured > *'), 'Featured recomme
 const indexHtml = read('index.html');
 const security = read('js/core/security.js');
 const appSource = read('js/app.js');
-assert(indexHtml.includes('data-preview-title'), 'Hero preview dynamic title target is missing.');
-assert(indexHtml.includes('preview-category-label') || indexHtml.includes('data-preview-category'), 'Hero preview category marker is missing.');
+assert(aiLanding.includes('data-preview-title') || aiLanding.includes('decision-preview'), 'AI hero preview target is missing.');
+assert(aiLanding.includes('preview-category-label') || aiLanding.includes('data-preview-category') || aiLanding.includes('decision-preview'), 'AI hero preview category marker is missing.');
 assert(appSource.includes('data-preview-sources'), 'Hero preview source links renderer is missing.');
 assert(indexHtml.includes('data-my-listings'), 'User menu should expose a real my-listings action.');
 assert(security.includes('export const escapeHtml'), 'Shared security escape helper is missing.');

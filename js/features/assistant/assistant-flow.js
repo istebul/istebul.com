@@ -155,7 +155,7 @@ const CATEGORY_FLOW = {
         riskTolerance: ['muhafazakar', 'dengeli', 'agresif']
       },
       konut: {
-        term: ['60', '120', '180', '240'],
+        term: ['36', '48', '60'],
         capacity: ['25k', '40k', '60k'],
         rateSensitivity: ['dusuk', 'orta', 'yuksek'],
         riskTolerance: ['muhafazakar', 'dengeli']

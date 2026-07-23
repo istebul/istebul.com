@@ -2,12 +2,34 @@
  * AI Listings Analytics — SVG chart builder (Sprint-12).
  */
 
+export const CHART_FALLBACK_MESSAGE = 'Yeterli veri yok';
+
+/**
+ * @param {Array<{ label?: string, count?: number }>|null|undefined} data
+ * @returns {boolean}
+ */
+export function hasChartData(data) {
+  return Array.isArray(data) && data.some((item) => Number(item?.count) > 0);
+}
+
+/**
+ * @param {string} [message]
+ * @returns {string}
+ */
+export function buildChartFallbackHtml(message = CHART_FALLBACK_MESSAGE) {
+  return `<div class="ai-analytics-chart-fallback" role="status">${escapeText(message)}</div>`;
+}
+
 /**
  * @param {Array<{ label: string, count: number }>} data
  * @param {{ title?: string, id?: string, maxValue?: number }} [options]
  * @returns {string}
  */
 export function buildBarChartSvg(data, options = {}) {
+  if (!hasChartData(data)) {
+    return buildChartFallbackHtml();
+  }
+
   const title = options.title ?? '';
   const chartId = options.id ?? `chart-${Math.random().toString(36).slice(2, 8)}`;
   const width = 320;
@@ -67,8 +89,8 @@ export function buildTopListHtml(data, options = {}) {
   const title = options.title ?? '';
   const limit = options.limit ?? 10;
   const items = data.slice(0, limit);
-  if (!items.length) {
-    return `<div class="ai-analytics-top-list"><p class="ai-listings-admin__muted">Veri yok</p></div>`;
+  if (!hasChartData(items)) {
+    return `<div class="ai-analytics-top-list">${buildChartFallbackHtml()}</div>`;
   }
 
   const max = Math.max(1, ...items.map((item) => item.count));

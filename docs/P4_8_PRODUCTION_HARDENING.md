@@ -6,7 +6,7 @@ Final security pass before deploy confidence. Scope: CSP, auth, RLS, payments, s
 
 | Area | Control | Status |
 |------|---------|--------|
-| **CSP** | `_headers` + `netlify.toml`; no third-party script CDNs; Groq only via same-origin `/ai-proxy` | Hardened |
+| **CSP** | `_headers`; no third-party script CDNs; Groq only via same-origin `/ai-proxy` | Hardened |
 | **Auth** | Supabase JWT on edge functions; `create-checkout` origin allowlist + bearer | Existing |
 | **RLS** | User tables locked; admin writes via service role + `admin-action` | Existing + migration `20260527_launch_security_hardening.sql` |
 | **Payment integrity** | Stripe signature verify; `stripe_webhook_events` idempotency | Existing |
@@ -42,7 +42,7 @@ Included in `npm test`.
 ## Operational notes
 
 - Rotate `SUPABASE_SERVICE_ROLE_KEY` if ever exposed in logs or chat.
-- Set `REFERRAL_WEBHOOK_SECRET` in Netlify/Cloudflare env when referral conversions from Stripe are required.
+- Set `REFERRAL_WEBHOOK_SECRET` in Cloudflare Pages env when referral conversions from Stripe are required.
 - Re-run `npm test` before `git push origin main`.
 
 ## Related docs

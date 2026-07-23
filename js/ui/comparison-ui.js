@@ -18,6 +18,12 @@ import {
     renderComparisonDecisionCtaHtml,
     shouldRenderComparisonDecisionCta
 } from './comparison-decision-cta.js';
+import { resolveAutoComparisonImageItem } from '../auto/vehicle-image.js';
+import {
+    bindListingGenericImageFallbacks,
+    bindListingVehicleImageFallbacks
+} from './listing-gallery-ui.js';
+import { resolveListingComparisonImageItem } from './listing-trust-ui.js';
 
 export class ComparisonUI {
     renderComparison(items = []) {
@@ -31,7 +37,7 @@ export class ComparisonUI {
                     '<h3>Karar öncesi seçenekleri burada toplayın</h3>' +
                     '<p>Önce karar asistanından öneri alın veya seçenek kartlarından ekleyin; ardından TCO, risk ve ihtiyaç uyumunu yan yana okuyarak net bir karar özeti oluşturun.</p>' +
                     '<div class="empty-state-actions">' +
-                      '<a href="/karar-asistani/" class="btn btn-primary">Karar analizini başlat</a>' +
+                      '<a href="/karar-asistani/" class="btn btn-primary">Kararını analiz et</a>' +
                       '<a href="/secenekler/" class="btn btn-outline">Seçenekleri incele</a>' +
                     '</div>' +
                 '</div>';
@@ -74,16 +80,44 @@ export class ComparisonUI {
             this.getComparisonAdvancedSection(items);
 
         this.loadIcons();
+        this.bindComparisonListingImageFallbacks(container, items);
         hydrateComparisonAiExplanation(container, decisionSummary, items);
+    }
+
+    bindComparisonListingImageFallbacks(container, items = []) {
+        if (!container?.querySelectorAll) return;
+
+        for (const item of items) {
+            if (item.sourceType !== 'Seçenek' || !item.listingImageSeed) continue;
+
+            const card = Array.from(container.querySelectorAll('[data-comparison-item-id]')).find(
+                (node) => node.dataset.comparisonItemId === String(item.id)
+            );
+            if (!card) continue;
+
+            const seed = {
+                ...item.listingImageSeed,
+                category: item.categoryId || item.listingImageSeed.category
+            };
+            bindListingVehicleImageFallbacks(card, seed);
+            bindListingGenericImageFallbacks(card, seed);
+        }
     }
 
     getComparisonCardMarkup(item, maxValues, allItems = []) {
         const tags = Array.isArray(item.tags) ? item.tags : [];
         const maxScore = Math.max(...allItems.map((i) => Number(i.score || 0)), 0);
         const isLeader = item.score && Number(item.score) >= maxScore && maxScore > 0;
+        const autoVisual = item.sourceType === 'isteBul Auto' ? resolveAutoComparisonImageItem(item) : null;
+        const listingVisual =
+            !autoVisual && item.sourceType === 'Seçenek' ? resolveListingComparisonImageItem(item) : null;
+        const visual = autoVisual || listingVisual;
+        const visualHtml = visual
+            ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(visual.imageUrl) + '" alt="' + this.escapeHtml(visual.imageAlt) + '" loading="lazy" decoding="async"></div>'
+            : '';
 
-        return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
-            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Seçenek') + '" loading="lazy" decoding="async"></div>' : '') +
+        return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '" data-comparison-item-id="' + this.escapeHtml(item.id) + '">' +
+            visualHtml +
             (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +

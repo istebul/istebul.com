@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const {
+  PLATFORM_ROOT_REQUIRED,
+  AI_LANDING_REQUIRED
+} = require('./lib/platform-landing-surface-contract.cjs');
 
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
@@ -17,5 +21,25 @@ assert(!index.includes('onclick="'), 'Inline onclick handlers should be avoided 
 assert(!index.includes('onload="'), 'Inline onload handlers should be avoided in source HTML.');
 const productionBuild = read('scripts/production-build.cjs');
 assert(!productionBuild.includes('onload="'), 'production-build must not inject inline onload handlers.');
+
+// P0-1 kritik yüzey marker'ları (Platform root + AI ürün yüzeyi from release contract)
+const criticalMarkers = [
+  ...PLATFORM_ROOT_REQUIRED.map((marker) => ['index.html', marker]),
+  ['index.html', 'id="premium-karar-analizi-root"'],
+  ['index.html', 'id="listing-result-count"'],
+  ...AI_LANDING_REQUIRED.filter((m) => m.includes('hero-v4')).map((marker) => ['ai/index.html', marker]),
+  ['ai/index.html', 'data-hero-cta-primary'],
+  ['auto/index.html', 'data-auto-hero-cta'],
+  ['tatil/index.html', 'id="vacation-hero-cta"'],
+  ['sigorta/index.html', 'id="sigorta-hero-cta"'],
+  ['kasko/index.html', 'id="kasko-hero-cta"'],
+  ['admin-panel.html', 'id="admin-nav"'],
+  ['admin/ai-listings.html', 'id="ai-listings-new-menu-btn"']
+];
+
+for (const [file, marker] of criticalMarkers) {
+  const source = read(file);
+  assert(source.includes(marker), `${file} must include critical marker: ${marker}`);
+}
 
 console.log('Accessibility static checks passed.');

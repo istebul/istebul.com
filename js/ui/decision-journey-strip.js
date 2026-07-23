@@ -3,8 +3,8 @@
  */
 
 const JOURNEY_STEPS = Object.freeze([
-  { id: 'karar-merkezi', label: 'Karar Merkezi', href: '/karar-asistani/' },
-  { id: 'secenekler', label: 'Seçenekler', href: '/secenekler/' },
+  { id: 'karar-merkezi', label: 'Ön değerlendirme', href: '/karar-asistani/' },
+  { id: 'secenekler', label: 'Karar seçenekleri', href: '/secenekler/' },
   { id: 'karsilastir', label: 'Karşılaştır', href: '/karsilastir/' }
 ]);
 
@@ -19,6 +19,7 @@ const PATH_TO_STEP = Object.freeze({
   '/karar-asistani': 'karar-merkezi',
   '/secenekler': 'secenekler',
   '/ilanlar': 'secenekler',
+  '/decision-options': 'secenekler',
   '/karsilastir': 'karsilastir'
 });
 

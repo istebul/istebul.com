@@ -77,7 +77,7 @@ Apply: `supabase db push` or run migration in Supabase SQL editor.
 
 ### CSP — **PASS**
 
-`_headers` + `netlify.toml`: HSTS, frame-ancestors, connect-src includes Supabase/Stripe/Sentry/Turnstile.
+`_headers`: HSTS, frame-ancestors, connect-src includes Supabase/Stripe/Sentry/Turnstile.
 
 **WARN:** `style-src 'unsafe-inline'` — acceptable for launch; tighten with nonces later.
 
@@ -87,7 +87,7 @@ Apply: `supabase db push` or run migration in Supabase SQL editor.
 |---------|--------|
 | Edge functions | Allowlist origins |
 | analytics-ingest | **FIXED** — 403 unknown origin |
-| Netlify functions | **FIXED** — removed static ACAO override |
+| Pages Functions | **FIXED** — removed static ACAO override |
 
 ### XSS — **PASS**
 

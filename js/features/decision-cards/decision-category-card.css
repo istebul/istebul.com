@@ -1,0 +1,285 @@
+/**
+ * Phase 3A — Decision Category Cards (sigorta / kasko / finans / tatil / auto / konut, ?decision_cards=1)
+ */
+
+.ib-decision-category-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
+  gap: clamp(0.85rem, 2.5vw, 1.15rem);
+  margin: 1.25rem 0 1.5rem;
+}
+
+.ib-decision-category-card {
+  --ib-dcard-surface: rgba(255, 255, 255, 0.98);
+  --ib-dcard-border: rgba(148, 163, 184, 0.38);
+  --ib-dcard-text: #0f172a;
+  --ib-dcard-muted: #64748b;
+  --ib-dcard-accent: var(--primary, #2563eb);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: clamp(0.9rem, 2.8vw, 1.15rem);
+  border: 1px solid var(--ib-dcard-border);
+  border-radius: 16px;
+  background:
+    radial-gradient(900px 280px at 10% -20%, rgba(37, 99, 235, 0.1), transparent 58%),
+    var(--ib-dcard-surface);
+  color: var(--ib-dcard-text);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 14px 36px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.ib-decision-category-card:hover {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.12);
+}
+
+.ib-decision-category-card.is-selected {
+  border-color: rgba(37, 99, 235, 0.72);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.28), 0 18px 44px rgba(37, 99, 235, 0.14);
+}
+
+.ib-decision-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.ib-decision-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+}
+
+.ib-decision-card__score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ib-decision-card__score-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ib-dcard-accent);
+}
+
+.ib-decision-card__score-suffix {
+  font-size: 0.78rem;
+  color: var(--ib-dcard-muted);
+}
+
+.ib-decision-card__level {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ib-decision-card__level--proceed {
+  color: #15803d;
+}
+
+.ib-decision-card__level--proceed_with_caution {
+  color: #b45309;
+}
+
+.ib-decision-card__level--wait {
+  color: #c2410c;
+}
+
+.ib-decision-card__level--avoid {
+  color: #b91c1c;
+}
+
+.ib-decision-card__title {
+  margin: 0;
+  font-size: clamp(1rem, 2.6vw, 1.12rem);
+  line-height: 1.35;
+}
+
+.ib-decision-card__signals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.ib-decision-card__signal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.45rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.ib-decision-card__signal-label {
+  font-size: 0.68rem;
+  color: var(--ib-dcard-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ib-decision-card__signal-value {
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.ib-decision-card__signal--positive {
+  border-color: rgba(22, 163, 74, 0.28);
+  background: rgba(22, 163, 74, 0.06);
+}
+
+.ib-decision-card__signal--positive .ib-decision-card__signal-value {
+  color: #15803d;
+}
+
+.ib-decision-card__signal--caution {
+  border-color: rgba(217, 119, 6, 0.28);
+  background: rgba(217, 119, 6, 0.06);
+}
+
+.ib-decision-card__signal--caution .ib-decision-card__signal-value {
+  color: #b45309;
+}
+
+.ib-decision-card__signal--risk {
+  border-color: rgba(220, 38, 38, 0.28);
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.ib-decision-card__signal--risk .ib-decision-card__signal-value {
+  color: #b91c1c;
+}
+
+.ib-decision-card__ai {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.07), rgba(37, 99, 235, 0.04));
+}
+
+.ib-decision-card__ai-summary,
+.ib-decision-card__ai-why,
+.ib-decision-card__ai-risk {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.ib-decision-card__ai-summary {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.ib-decision-card__pros,
+.ib-decision-card__cautions {
+  font-size: 0.8rem;
+}
+
+.ib-decision-card__pros ul,
+.ib-decision-card__cautions ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.ib-decision-card__pros li {
+  color: #166534;
+}
+
+.ib-decision-card__cautions li {
+  color: #9a3412;
+}
+
+.ib-decision-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 0.15rem;
+}
+
+.ib-decision-card__actions .btn {
+  flex: 1 1 auto;
+  min-width: min(100%, 8.5rem);
+}
+
+/* Feature flag: show decision cards + selection flow when V2 hides legacy siblings */
+html[data-decision-cards='1'] body.sigorta-page #sigorta-results .sigorta-v2-root ~ .ib-decision-category-cards,
+html[data-decision-cards='1'] body.kasko-page #kasko-results .kasko-v2-root ~ .ib-decision-category-cards,
+html[data-decision-cards='1'] body.finans-page #finans-results .finansman-v2-root ~ .ib-decision-category-cards,
+html[data-decision-cards='1'] body.vacation-page #vacation-results .tatil-v2-root ~ .ib-decision-category-cards,
+html[data-decision-cards='1'] body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-selection-bar,
+html[data-decision-cards='1'] body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-selection-bar,
+html[data-decision-cards='1'] body.finans-page #finans-results .finansman-v2-root ~ .vacation-selection-bar,
+html[data-decision-cards='1'] body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-selection-bar {
+  display: flex !important;
+}
+
+html[data-decision-cards='1'] body.housing-page #housing-results .konut-v2-root ~ .ib-decision-category-cards {
+  display: grid !important;
+}
+
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ .ib-decision-category-cards {
+  display: grid !important;
+}
+
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ #auto-vehicle-selection {
+  display: block !important;
+}
+
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ #auto-results-cards,
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ .auto-results-cards.auto-rec-cards {
+  display: none !important;
+}
+
+html[data-decision-cards='1'] body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-final-cta,
+html[data-decision-cards='1'] body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-final-cta,
+html[data-decision-cards='1'] body.finans-page #finans-results .finansman-v2-root ~ .vacation-final-cta,
+html[data-decision-cards='1'] body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-final-cta {
+  display: block !important;
+}
+
+html[data-decision-cards='1'] body.sigorta-page #sigorta-results .sigorta-v2-alts,
+html[data-decision-cards='1'] body.kasko-page #kasko-results .sigorta-v2-alts {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  .ib-decision-category-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-decision-card__signals {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-decision-card__actions {
+    flex-direction: column;
+  }
+
+  .ib-decision-card__actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

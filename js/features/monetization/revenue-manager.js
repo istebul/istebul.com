@@ -12,6 +12,12 @@ import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES
 import { applyLocalizedPricingToPlans } from './pricing-localization.js';
 import { isProSubscriptionStatus } from '../billing/pro-features.js';
 import { bindPaymentProductButtons } from '../../payments/payment-client.js';
+import {
+  PAYMENT_ACTIVATION_PENDING_TR,
+  PAYMENT_CANCEL_TR,
+  PAYMENT_SECURE_CHECKOUT_TR,
+  PAYMENT_SECURE_SHORT_TR
+} from '../../payments/payment-copy.js';
 
 function pt(key, vars = {}, fallback = '') {
   const fullKey = `pricingDynamic.${key}`;
@@ -189,7 +195,7 @@ export class RevenueManager {
           <p>${copy.body}</p>
         </div>
         <div class="revenue-upgrade-actions">
-          <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_banner">Pro'ya geç</button>
+          <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_banner">Pro erken erişim</button>
           <a href="/planlar" class="btn btn-outline" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="paywall_banner">Planları incele</a>
         </div>
       </aside>
@@ -210,10 +216,10 @@ export class RevenueManager {
             ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
           </ul>
           <div class="revenue-upgrade-actions">
-            <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_compact">Pro'ya geç</button>
+            <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_compact">Pro erken erişim</button>
             <button type="button" class="btn btn-outline" data-revenue-paywall-close>Şimdilik ücretsiz devam et</button>
           </div>
-          <p class="revenue-paywall-note">İstediğiniz zaman iptal edebilirsiniz. Ödeme iyzico / PayTR altyapısı ile güvenli şekilde alınır.</p>
+          <p class="revenue-paywall-note">${PAYMENT_ACTIVATION_PENDING_TR} Pro özellikler pilot erişim sürecindedir.</p>
         </div>
       </div>
     `;
@@ -342,16 +348,16 @@ export class RevenueManager {
     return `
       <div class="revenue-pricing-reassurance" role="region" aria-label="${pt('reassuranceAria', {}, 'Ödeme ve iptal güvencesi')}">
         <div class="revenue-pricing-reassurance-item">
-          <strong>${pt('paymentTitle', {}, 'iyzico · PayTR')}</strong>
-          <p>${pt('paymentDesc', {}, 'Ödeme iyzico (birincil) ve PayTR (yedek) altyapısı ile alınır; kart bilgileri sunucularımızda tutulmaz.')}</p>
+          <strong>${pt('paymentTitle', {}, 'Ödeme durumu')}</strong>
+          <p>${pt('paymentDesc', {}, PAYMENT_SECURE_CHECKOUT_TR)}</p>
         </div>
         <div class="revenue-pricing-reassurance-item">
           <strong>${pt('cancelTitle', {}, 'İptal')}</strong>
-          <p>${pt('cancelDescHtml', {}, 'Aboneliğinizi hesabınızdan veya destek kanalından istediğiniz zaman sonlandırabilirsiniz. <a href="/abonelik-iptal.html">İptal rehberi</a>')}</p>
+          <p>${pt('cancelDescHtml', {}, PAYMENT_CANCEL_TR)}</p>
         </div>
         <div class="revenue-pricing-reassurance-item">
-          <strong>${pt('trialTitle', {}, 'Deneme')}</strong>
-          <p>${pt('trialDesc', { days: PLANS.pro.trialDays }, `İlk Pro aboneliğinde ${PLANS.pro.trialDays} gün ücretsiz; deneme bitiminde seçtiğiniz dönem ücretlendirilir — sürpriz yok.`)}</p>
+          <strong>${pt('trialTitle', {}, 'Pro erken erişim')}</strong>
+          <p>${pt('trialDesc', {}, 'Pro özellikleri pilot erişim sürecindedir. Ödeme sağlayıcı aktivasyonu tamamlandığında bilgilendirme yapılır.')}</p>
         </div>
       </div>`;
   }
@@ -375,7 +381,7 @@ export class RevenueManager {
     const monthly = plans.pro.billing.monthly;
     const annual = plans.pro.billing.annual;
     const savingsFacts = getAnnualSavingsFacts();
-    const trialBadge = this.trialEligible
+    const trialBadge = this.trialEligible && PLANS.pro.trialDays > 0
       ? `<span class="revenue-trial-badge">${ptMarketing('pricing.trialBadge', PLANS.pro.trialLabel)}</span>`
       : '';
     const enterprise = plans.enterprise || PLANS.enterprise;
@@ -403,7 +409,7 @@ export class RevenueManager {
 
     const enterpriseCard = enterprise
       ? `
-        <article class="revenue-plan-card revenue-plan-card--enterprise" role="listitem">
+        <article class="revenue-plan-card revenue-plan-card--enterprise">
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge">${pt('badgeEnterprise', {}, 'Kurumsal')}</span>
             <h3 class="revenue-plan-title">${pt('enterpriseName', {}, enterprise.name)}</h3>
@@ -420,8 +426,8 @@ export class RevenueManager {
     const gridClass = 'revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--cards';
 
     const planCards = `
-      <div class="${gridClass}" role="list" aria-label="${pt('plansAria', {}, 'Plan seçenekleri')}">
-        <article class="revenue-plan-card" role="listitem">
+      <div class="${gridClass}" role="group" aria-label="${pt('plansAria', {}, 'Plan seçenekleri')}">
+        <article class="revenue-plan-card">
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge">${pt('badgeIndividual', {}, 'Bireysel')}</span>
             <h3 class="revenue-plan-title">${pt('freeName', {}, plans.free.name)}</h3>
@@ -430,10 +436,10 @@ export class RevenueManager {
           <p class="revenue-plan-desc">${pt('freeDesc', {}, plans.free.description)}</p>
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(freeHighlights)}</ul>
           <div class="revenue-plan-card-foot">
-            <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'TCO analizini başlat')}</a>
+            <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_dynamic" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'Ön değerlendirmeye başla')}</a>
           </div>
         </article>
-        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro role="listitem">
+        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro>
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge revenue-plan-badge--popular">${pt('popularBadge', {}, PRICING_MESSAGING.popularBadge)}</span>
             ${trialBadge}
@@ -446,14 +452,14 @@ export class RevenueManager {
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(proHighlights)}</ul>
           <div class="revenue-plan-card-foot">
             <div class="revenue-plan-cta-stack revenue-plan-cta-stack--tr">
-              <button type="button" class="btn btn-primary btn-lg btn-block" data-payment-product="pro_monthly" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">Pro'ya geç · ${monthly.priceDisplay}</button>
+              <button type="button" class="btn btn-primary btn-lg btn-block" data-payment-product="pro_monthly" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
               <div class="revenue-plan-cta-row">
                 <button type="button" class="btn btn-outline btn-sm btn-block" data-payment-product="pro_yearly" data-analytics-cta="cta_secondary_checkout" data-analytics-placement="pricing_dynamic_pro_annual">Yıllık Pro</button>
                 <button type="button" class="btn btn-ghost btn-sm btn-block" data-payment-product="premium_report" data-analytics-cta="cta_premium_report" data-analytics-placement="pricing_dynamic_premium_report">Premium rapor</button>
               </div>
-              <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ücretsiz TCO analizi')}</a>
+              <a href="/karar-asistani/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_decision_pricing_pro_secondary" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ön değerlendirmeye başla')}</a>
             </div>
-            <p class="revenue-plan-hint">${pt('proPriceHint', {}, PLANS.pro.priceHint)}${this.trialEligible ? pt('trialHint', { days: PLANS.pro.trialDays }, ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz`) : ''}</p>
+            <p class="revenue-plan-hint">${pt('proPriceHint', {}, PLANS.pro.priceHint)}${this.trialEligible && PLANS.pro.trialDays > 0 ? pt('trialHint', { days: PLANS.pro.trialDays }, ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz`) : ''}</p>
           </div>
         </article>
         ${enterpriseCard}
@@ -461,9 +467,9 @@ export class RevenueManager {
 
     const trustFooter = `
       <p class="revenue-risk-reversal" role="note">
-        <span>${pt('trustTrial', { days: PLANS.pro.trialDays }, `${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)`)}</span>
-        <span>${pt('trustPayment', {}, 'iyzico / PayTR ile güvenli ödeme')}</span>
-        <span>${pt('trustCancel', {}, 'Panelden iptal — taahhütsüz')}</span>
+        <span>${pt('trustTrial', {}, 'Pro pilot erişim')}</span>
+        <span>${pt('trustPayment', {}, PAYMENT_SECURE_SHORT_TR)}</span>
+        <span>${pt('trustCancel', {}, 'Destek kanalından iptal')}</span>
         <span>${pt('trustDisclaimer', {}, 'Skorlar bilgilendirme amaçlıdır')}</span>
       </p>
       <p class="pricing-trust-note" role="note">
@@ -595,7 +601,7 @@ export class RevenueManager {
         const productCode = selected === 'annual' ? 'pro_yearly' : 'pro_monthly';
         checkoutCta.dataset.paymentProduct = productCode;
         checkoutCta.textContent =
-          selected === 'annual' ? 'Yıllık Pro\'ya geç' : 'Pro\'ya geç';
+          selected === 'annual' ? 'Pro pilot erişim talep et' : 'Pro erken erişim talep et';
       }
 
       syncRoi(selected);
@@ -652,12 +658,12 @@ export class RevenueManager {
       <div class="revenue-subscription-card">
         <span class="revenue-upgrade-kicker">Yükseltme</span>
         <h3>Pro ile daha hızlı karar verin</h3>
-        <p>Sınırsız karşılaştırma, premium rapor ve öncelikli partner yönlendirmesi.${this.trialEligible ? ` İlk kez abone olanlara <strong>${PLANS.pro.trialDays} gün ücretsiz</strong>.` : ''}</p>
+        <p>Sınırsız karşılaştırma, premium rapor ve öncelikli partner yönlendirmesi.${this.trialEligible && PLANS.pro.trialDays > 0 ? ` İlk kez abone olanlara <strong>${PLANS.pro.trialDays} gün ücretsiz</strong>.` : ' Ödeme aktivasyonu sonrası bilgilendirme yapılır.'}</p>
         <div class="revenue-profile-billing">
           <label><input type="radio" name="profile-billing-interval" value="monthly" checked> Aylık (${PLANS.pro.billing.monthly.priceDisplay})</label>
           <label><input type="radio" name="profile-billing-interval" value="annual"> Yıllık (${PLANS.pro.billing.annual.savingsLabel})</label>
         </div>
-        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="profile_upgrade">Pro'ya geç</button>
+        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="profile_upgrade">Pro erken erişim</button>
         <a href="/planlar" class="btn btn-ghost btn-sm" data-native-route>Plan detayları</a>
       </div>
     `;

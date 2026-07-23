@@ -3,6 +3,7 @@
  * Scores and costs come from rule engines; this module only produces Turkish insight copy.
  */
 import { formatMoney } from '../../core/format.js';
+import { postAiProxy } from '../../core/ai-proxy-client.js';
 import { sanitizeAiNarrative } from '../../engines/decision-consultant.js';
 import {
   isTechnicalPreferenceValue,
@@ -10,6 +11,15 @@ import {
   stripTechnicalTokensFromCopy
 } from '../../core/user-facing-text.js';
 import { formatScore, formatScoreOutOf100 } from '../results/results-engine.js';
+import { buildAutoHouseholdInsightClause } from '../../auto/auto-wizard-profile.js';
+import {
+  buildKonutCashBufferInsightClause,
+  buildKonutCashBufferNextStepClause,
+  buildKonutCashBufferRiskClause,
+  buildKonutEarthquakeInsightClause,
+  buildKonutHouseholdInsightClause,
+  buildKonutLocationPreferenceInsightClause
+} from '../../konut/konut-wizard-profile.js';
 
 export const BANNED_WEAK_PHRASES = Object.freeze([
   'bu karar sizin için uygun olabilir',
@@ -194,7 +204,8 @@ export function normalizeInsightInput(raw = {}) {
     strengths: raw.strengths || [],
     weaknesses: raw.weaknesses || raw.cautions || [],
     warnings: raw.warnings || [],
-    marketAssessment: String(raw.marketAssessment || '').trim()
+    marketAssessment: String(raw.marketAssessment || '').trim(),
+    earthquakeActivityAssessment: String(raw.earthquakeActivityAssessment || '').trim()
   };
 }
 
@@ -251,7 +262,9 @@ export function buildInsightInputFromIntelligence(category, context = {}, intell
     locale: extras.locale || 'tr-TR',
     strengths: extras.strengths,
     weaknesses: extras.weaknesses,
-    marketAssessment: extras.marketAssessment || context.marketAssessment || ''
+    marketAssessment: extras.marketAssessment || context.marketAssessment || '',
+    earthquakeActivityAssessment:
+      extras.earthquakeActivityAssessment || context.earthquakeActivityAssessment || ''
   });
 }
 
@@ -260,6 +273,13 @@ function appendMarketAssessment(summary, input) {
   if (!market) return summary;
   if (summary.includes(market.slice(0, 40))) return summary;
   return `${summary} ${market}`.trim();
+}
+
+function appendEarthquakeActivityAssessment(summary, input) {
+  const activity = String(input.earthquakeActivityAssessment || '').trim();
+  if (!activity) return summary;
+  if (summary.includes(activity.slice(0, 40))) return summary;
+  return `${summary} ${activity}`.trim();
 }
 
 function buildAutoInsight(input) {
@@ -300,10 +320,12 @@ function buildAutoInsight(input) {
     budgetTry ? `bütçe bandı ${budgetTry}` : null
   ].filter(Boolean);
 
-  const why =
+  const householdClause = buildAutoHouseholdInsightClause(a);
+  const whyCore =
     whyParts.length ?
       `${whyParts.join(', ')} ile riskin ${overallRisk.toLowerCase()} kalmasının nedeni; yakıt, bakım ve ikinci el değerinin mevcut skor modelinde dengeli okunmasıdır.`
     : missingDataNote('kullanım ve bütçe');
+  const why = householdClause ? `${householdClause}. ${whyCore}` : whyCore;
 
   const riskItem = topRisk(input);
   const risk =
@@ -337,8 +359,15 @@ function buildKonutInsight(input) {
   const purpose = pickAnswer(a, ['purchasePurpose']) || 'kullanım amacınız';
   const financing = pickAnswer(a, ['useFinancing']);
   const { decision, overallRisk, label } = scoreFromInput(input);
-  const eq = safeNum(a.earthquakeRiskScore ?? input.costs.earthquakeRisk);
+  const eq = safeNum(a.earthquakeRiskScore ?? a.earthquakeRiskInput ?? input.costs.earthquakeRisk);
   const dti = safeNum(input.costs.dti ?? a.dti);
+
+  const locationClause = buildKonutLocationPreferenceInsightClause(a);
+  const householdClause = buildKonutHouseholdInsightClause(a);
+  const cashBufferClause = buildKonutCashBufferInsightClause(a);
+  const earthquakeClause = buildKonutEarthquakeInsightClause(a);
+  const cashBufferRisk = buildKonutCashBufferRiskClause(a);
+  const cashBufferNext = buildKonutCashBufferNextStepClause(a);
 
   const summary = [
     `${location} için konut kararında`,
@@ -351,9 +380,13 @@ function buildKonutInsight(input) {
     .join(' ');
 
   const whyBits = [];
+  if (locationClause) whyBits.push(locationClause);
+  if (householdClause) whyBits.push(householdClause);
+  if (cashBufferClause) whyBits.push(cashBufferClause);
   if (financing === 'evet' || financing === 'yes') whyBits.push('kredi/peşinat dengesi');
   if (dues != null) whyBits.push(`aidat beklentisi (${formatTry(dues, input.locale) || 'tanımlı'})`);
-  if (eq != null && eq >= 60) whyBits.push('deprem/zemin riski skoru yüksek');
+  if (earthquakeClause) whyBits.push(earthquakeClause);
+  else if (eq != null && eq >= 60) whyBits.push('deprem/zemin riski skoru yüksek');
   else if (eq != null) whyBits.push('zemin riski görece kontrollü');
   if (dti != null && dti > 45) whyBits.push(`borç/gelir baskısı (%${Math.round(dti)})`);
 
@@ -363,20 +396,24 @@ function buildKonutInsight(input) {
     : missingDataNote('lokasyon ve finansman');
 
   const risk =
-    eq != null && eq >= 65 ?
+    cashBufferRisk ||
+    (earthquakeClause && eq != null && eq >= 55 ?
+      `${earthquakeClause.charAt(0).toUpperCase()}${earthquakeClause.slice(1)}.`
+    : eq != null && eq >= 65 ?
       'Deprem ve zemin riski bu ilçe profilinde belirleyici; güncel zemin/deprem raporu teyit edilmeli.'
     : dues != null && dues > 5000 ?
       'Aidat ve site giderleri aylık nakit akışını sıkıştırabilir.'
     : topRisk(input)?.description ||
-      'Tapu, iskan ve ekspertiz bulguları model skorunu değiştirebilir; resmi evrak kontrolü şart.';
+      'Tapu, iskan ve ekspertiz bulguları model skorunu değiştirebilir; resmi evrak kontrolü şart.');
 
-  const nextStep =
+  const defaultNextStep =
     purpose.includes('Kiralamak') ?
       'Kira sözleşmesi, depozito ve aidat kalemlerini yıllık toplam maliyetle karşılaştırın.'
     : 'Kredi ön onayı ve bölge emsali (en az 3 ilan) ile teklif aşamasına geçmeden önce ekspertiz planlayın.';
+  const nextStep = cashBufferNext ? `${cashBufferNext} ${defaultNextStep}` : defaultNextStep;
 
   return {
-    summary: appendMarketAssessment(summary, input),
+    summary: appendEarthquakeActivityAssessment(appendMarketAssessment(summary, input), input),
     why,
     risk,
     nextStep
@@ -853,19 +890,62 @@ export function formatInsightBlocksAsExecutive(insight) {
   );
 }
 
+export const INSIGHT_COMMENTARY_UNAVAILABLE =
+  'AI yorumu şu anda üretilemedi. Aşağıdaki kural tabanlı özet görüntüleniyor.';
+
+/**
+ * Surface a visible fallback when executive summary / AI refresh fails (UI only).
+ * @param {HTMLElement|null} root
+ * @param {{ message?: string, execTextSelector?: string, sourceSelector?: string, sourceLabel?: string, forceExecText?: boolean, showNotice?: boolean }} [options]
+ */
+export function markInsightSummaryUnavailable(root, options = {}) {
+  if (!root) return;
+
+  const message = options.message || INSIGHT_COMMENTARY_UNAVAILABLE;
+  const notice = root.querySelector('[data-insight-fallback-notice]');
+  const summaryEl = root.querySelector('[data-insight-summary]');
+  const summaryEmpty =
+    !summaryEl || !String(summaryEl.textContent || '').trim() || summaryEl.textContent.trim() === '—';
+
+  if (notice && (options.showNotice || summaryEmpty)) {
+    notice.hidden = false;
+    notice.textContent = message;
+  }
+
+  if (options.execTextSelector) {
+    const execText = root.querySelector(options.execTextSelector);
+    if (execText) {
+      const pending = /hazırlanıyor/i.test(String(execText.textContent || ''));
+      if (pending || options.forceExecText) {
+        execText.textContent = message;
+      }
+    }
+  }
+
+  if (options.sourceSelector) {
+    const sourceEl = root.querySelector(options.sourceSelector);
+    if (sourceEl) {
+      sourceEl.textContent = options.sourceLabel || 'Kaynak: Kural tabanlı karar yorumu';
+    }
+  }
+}
+
 /**
  * HTML for V2 result panels (keeps existing section wrapper).
  */
 export function renderInsightBlocksHtml(insight, esc, options = {}) {
   const e = typeof esc === 'function' ? esc : (s) => String(s);
-  const i = insight || buildDecisionInsight({});
+  const insightInput = options.insightInput || null;
+  const i =
+    insight ||
+    (insightInput ? buildDecisionInsight(normalizeInsightInput(insightInput)) : buildDecisionInsight({}));
   const planTier = normalizePlanTier(options.planTier || i.planTier);
   const isPro = planTier === 'pro';
-  const insightInput = options.insightInput || null;
   const proInsight = isPro && insightInput ? buildProInsight({ ...insightInput, planTier: 'pro' }) : null;
 
   return `
     <div class="ib-insight-blocks">
+      <p class="ib-insight-blocks__fallback" data-insight-fallback-notice hidden></p>
       <h4 class="ib-insight-blocks__title">AI karar özeti</h4>
       <p class="ib-insight-blocks__text" data-insight-summary>${e(i.summary || '—')}</p>
       <h4 class="ib-insight-blocks__title">Neden bu sonuç?</h4>
@@ -930,8 +1010,16 @@ export function renderProInsightExtensionsHtml(proInsight, planTier, insightInpu
     ${renderProSection('Sonraki 90 Gün Önerisi', next90Html, isPro, e)}`;
 }
 
-export function hydrateInsightBlocks(root, insight) {
-  if (!root || !insight) return;
+export function hydrateInsightBlocks(root, insight, options = {}) {
+  if (!root) return;
+  if (!insight) {
+    markInsightSummaryUnavailable(root, options);
+    return;
+  }
+
+  const notice = root.querySelector('[data-insight-fallback-notice]');
+  if (notice) notice.hidden = true;
+
   const set = (sel, text) => {
     const el = root.querySelector(sel);
     if (el) el.textContent = text || '—';
@@ -959,6 +1047,9 @@ export function buildInsightProxyPrompt(input, insight) {
     `Risk: ${base.risk}`,
     `Skor: ${formatScoreOutOf100(i.scores?.decision)}`,
     i.marketAssessment ? `Piyasa değerlendirmesi (TCMB EVDS): ${i.marketAssessment}` : '',
+    i.earthquakeActivityAssessment ?
+      `Deprem aktivite değerlendirmesi (AFAD): ${i.earthquakeActivityAssessment}`
+    : '',
     'Rakam yazacaksan yalnızca verilen bağlamdaki tutarları kullan; yeni rakam uydurma.'
   ]
     .filter(Boolean)
@@ -980,31 +1071,24 @@ export async function fetchInsightWithProxy(rawInput = {}, options = {}) {
   }
 
   const prompt = buildInsightProxyPrompt(input, insight);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 5000);
 
   try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        context: { category: `${input.vertical}-executive-insight-v1` }
-      }),
-      signal: controller.signal
+    const proxy = await postAiProxy({
+      prompt,
+      context: { category: `${input.vertical}-executive-insight-v1` },
+      timeoutMs: options.timeoutMs || 5000
     });
-    clearTimeout(timeout);
-    if (!res.ok) {
+
+    if (!proxy.ok) {
       return { text: fallbackText, insight, source: 'fallback' };
     }
-    const data = await res.json().catch(() => ({}));
-    let text = sanitizeInsightText(extractAiProxyText(data), 950);
+
+    let text = sanitizeInsightText(extractAiProxyText(proxy.data), 950);
     if (!text || containsBannedWeakPhrase(text)) {
       return { text: fallbackText, insight, source: 'fallback' };
     }
     return { text, insight, source: 'ai' };
   } catch {
-    clearTimeout(timeout);
     return { text: fallbackText, insight, source: 'fallback' };
   }
 }

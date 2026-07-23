@@ -1,7 +1,8 @@
 /**
- * isteBul AI Listings — internal admin test panel (Executive AI Decision Center V5).
+ * isteBul AI Listings — admin operasyon paneli (Executive AI Decision Center V5).
  *
- * INTERNAL TEST ONLY. Not linked from homepage, categories, or admin nav.
+ * Admin-only: linked from admin CRM sidebar as "AI İlan Yönetimi" (/admin/ai-listings/).
+ * Not linked from public homepage, categories, or sitemap.
  * approved means internally approved only; public publishing remains disabled.
  *
  * Enable locally: localStorage.setItem('istebul_ai_listings_admin', 'on')
@@ -20,6 +21,7 @@ import {
   buildListingCardHtml,
   buildListingSkeletonHtml,
   buildPremiumDashboardHtml,
+  buildPublishConfirmFormHtml,
   buildStatusFilterChipsHtml,
   computeKpiStats,
   extractLatestAnalysis,
@@ -30,6 +32,7 @@ import {
   previewImportContent,
   buildAcquisitionErrorsExportText,
   resolveActiveStatusFilter,
+  resolvePublishAttempt,
   resolveEdgeBaseUrl,
   resolveImportAnalyzeFlag,
   safeRenderText,
@@ -119,6 +122,8 @@ import {
   buildCompareSelectionKey
 } from './ai-listings-admin-drawer-state.js';
 import { computeNormalizedKpiStats, filterListingsForDisplay } from './ai-listings-admin-kpi.js';
+import { normalizeAdminDataset } from './ai-listings-dataset.js';
+import { clearAnalyticsMemoCache } from './ai-listings-admin-analytics-stats.js';
 import { clearScenarioSimulatorMemoCache } from '../ai-scenario-simulator/index.js';
 import {
   buildScenarioInput,
@@ -138,7 +143,14 @@ import {
 import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
-import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/index.js';
+import { buildComparePanelHtml, buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import {
+  buildNegotiationInput,
+  runNegotiationIntelligenceEngine,
+  buildNegotiationPanelHtml,
+  buildNegotiationShellHtml
+} from '../ai-negotiation-intelligence/index.js';
 import { formatErrorFallbackLabel } from './ai-listings-admin-labels.js';
 
 /** @type {Record<string, unknown>|null} */
@@ -421,6 +433,10 @@ function animateKpiCounters(root = document) {
   root.querySelectorAll('[data-kpi-counter]').forEach((el) => {
     const card = el.closest('[data-kpi-value]');
     const targetRaw = card?.getAttribute('data-kpi-value') ?? '0';
+    if (targetRaw === '—' || String(targetRaw).includes('%')) {
+      el.textContent = String(targetRaw);
+      return;
+    }
     const target = Number(targetRaw);
     if (!Number.isFinite(target)) {
       el.textContent = String(targetRaw);
@@ -449,34 +465,119 @@ function renderKpiCards(listings) {
   const statsKey = JSON.stringify(stats);
   if (statsKey === lastKpiStatsKey && kpiEl.childElementCount > 0) return;
   lastKpiStatsKey = statsKey;
-  kpiEl.innerHTML = buildKpiCardsHtml(stats);
-  if (activeAdminView === 'decision') animateKpiCounters(kpiEl);
+  kpiEl.innerHTML = buildKpiCardsHtml(stats, listings);
+  animateKpiCounters(kpiEl);
 }
 
 function renderRepositoryKpiCards(listings) {
   const kpiEl = $('ai-listings-repo-kpi');
-  if (!kpiEl) return;
+  if (!kpiEl || activeAdminView !== 'repository') return;
   const { query } = buildRepositoryDashboardHtml(listings, {
     categoryTab: repoCategoryTab,
     filters: repoFilters,
     search: searchQuery
   });
-  const statsKey = JSON.stringify(query.stats);
+  const statsKey = JSON.stringify({ stats: query.stats, total: listings.length });
   if (statsKey === lastRepoKpiStatsKey && kpiEl.childElementCount > 0) return;
   lastRepoKpiStatsKey = statsKey;
-  kpiEl.innerHTML = buildRepositoryKpiCardsHtml(query.stats);
-  if (activeAdminView === 'repository') animateKpiCounters(kpiEl);
+  kpiEl.innerHTML = buildRepositoryKpiCardsHtml(query.stats, listings);
+  animateKpiCounters(kpiEl);
 }
 
 function renderAnalyticsKpiCards(listings) {
   const kpiEl = $('ai-listings-analytics-kpi');
-  if (!kpiEl) return;
+  if (!kpiEl || activeAdminView !== 'analytics') return;
   const { analytics } = buildAnalyticsDashboardHtml(listings);
-  const statsKey = JSON.stringify(analytics.kpi);
+  const statsKey = JSON.stringify({ kpi: analytics.kpi, total: listings.length });
   if (statsKey === lastAnalyticsKpiStatsKey && kpiEl.childElementCount > 0) return;
   lastAnalyticsKpiStatsKey = statsKey;
-  kpiEl.innerHTML = buildAnalyticsKpiCardsHtml(analytics.kpi ?? {});
-  if (activeAdminView === 'analytics') animateKpiCounters(kpiEl);
+  kpiEl.innerHTML = buildAnalyticsKpiCardsHtml(analytics.kpi ?? {}, listings);
+  animateKpiCounters(kpiEl);
+}
+
+function buildAdminPanelSkeletonHtml() {
+  return `<div class="ai-listings-admin__panel-skeleton" aria-busy="true">
+    <div class="ai-listings-admin__skeleton-block"></div>
+    <div class="ai-listings-admin__skeleton-block"></div>
+    <div class="ai-listings-admin__skeleton-block ai-listings-admin__skeleton-block--short"></div>
+  </div>`;
+}
+
+/**
+ * @param {string} message
+ * @param {string} [actionLabel]
+ * @returns {string}
+ */
+function buildAdminPanelErrorHtml(message, actionLabel = 'Yeniden dene') {
+  return `<div class="ai-listings-admin__panel-error" role="alert">
+    <h3>Veri yüklenemedi</h3>
+    <p>${safeRenderText(message)}</p>
+    <button type="button" class="ai-listings-admin__btn" data-admin-retry>${safeRenderText(actionLabel)}</button>
+  </div>`;
+}
+
+/**
+ * @param {HTMLElement|null|undefined} root
+ */
+function bindAdminPanelRetry(root) {
+  root?.querySelector('[data-admin-retry]')?.addEventListener('click', () => {
+    void loadListings();
+  });
+}
+
+/**
+ * @param {string} view
+ */
+function syncAdminViewPanels(view) {
+  const workspace = $('ai-listings-workspace');
+  if (workspace) {
+    workspace.classList.toggle('ai-listings-admin__workspace--decision', view === 'decision');
+    workspace.classList.toggle('ai-listings-admin__workspace--full', view !== 'decision');
+  }
+
+  document.querySelectorAll('[data-admin-panel]').forEach((panel) => {
+    const panelView = panel.getAttribute('data-admin-panel');
+    panel.toggleAttribute('hidden', panelView !== view);
+  });
+}
+
+/**
+ * @param {string} view
+ */
+function showAdminPanelLoading(view) {
+  const hostId =
+    view === 'repository'
+      ? 'ai-listings-repository-content'
+      : view === 'analytics'
+        ? 'ai-listings-analytics-content'
+        : view === 'collector'
+          ? 'ai-listings-collector-content'
+          : view === 'recommendations'
+            ? 'ai-listings-recommendations-content'
+            : null;
+  const host = hostId ? $(hostId) : null;
+  if (host) host.innerHTML = buildAdminPanelSkeletonHtml();
+}
+
+/**
+ * @param {string} view
+ * @param {string} message
+ */
+function showAdminPanelError(view, message) {
+  const hostId =
+    view === 'repository'
+      ? 'ai-listings-repository-content'
+      : view === 'analytics'
+        ? 'ai-listings-analytics-content'
+        : view === 'collector'
+          ? 'ai-listings-collector-content'
+          : view === 'recommendations'
+            ? 'ai-listings-recommendations-content'
+            : null;
+  const host = hostId ? $(hostId) : null;
+  if (!host) return;
+  host.innerHTML = buildAdminPanelErrorHtml(message);
+  bindAdminPanelRetry(host);
 }
 
 function setAdminView(view) {
@@ -491,6 +592,7 @@ function setAdminView(view) {
             ? 'recommendations'
             : 'decision';
   activeAdminView = next;
+  syncAdminViewPanels(next);
 
   document.querySelectorAll('[data-admin-view]').forEach((tab) => {
     const isActive = tab.getAttribute('data-admin-view') === next;
@@ -523,11 +625,12 @@ function setAdminView(view) {
   } else {
     renderExecutiveDashboard();
     renderKpiCards(cachedListings);
+    renderListingsList(cachedListings);
   }
 }
 
 function renderCollectorView() {
-  const detailEl = $('ai-listings-detail');
+  const detailEl = $('ai-listings-collector-content');
   if (!detailEl) return;
 
   detailEl.innerHTML = buildCollectorDashboardHtml(collectorPreviewResult);
@@ -537,7 +640,7 @@ function renderCollectorView() {
 }
 
 function updateCollectorActionState() {
-  const root = $('ai-listings-detail');
+  const root = $('ai-listings-collector-content');
   const readyCount = Number(collectorPreviewResult?.repository_ready_rows ?? 0);
   const hasErrors = (collectorPreviewResult?.errors?.length ?? 0) > 0;
   const saveBtn = root?.querySelector('[data-collector-action="save"]');
@@ -643,7 +746,7 @@ function bindCollectorDashboardEvents(root) {
 }
 
 function renderAnalyticsView() {
-  const detailEl = $('ai-listings-detail');
+  const detailEl = $('ai-listings-analytics-content');
   if (!detailEl) return;
 
   const { html, chartBuilders } = buildAnalyticsDashboardHtml(cachedListings);
@@ -720,19 +823,26 @@ function bindRepositoryDashboardEvents(root) {
 }
 
 function renderRecommendationsView() {
-  const detailEl = $('ai-listings-detail');
+  const detailEl = $('ai-listings-recommendations-content');
   if (!detailEl) return;
 
-  const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
-    generated: recommendationGenerated,
-    compareMode: compareModeEnabled,
-    compareSelectedIds
-  });
-  if (result) cachedRecommendationResult = result;
+  try {
+    const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
+      generated: recommendationGenerated,
+      compareMode: compareModeEnabled,
+      compareSelectedIds
+    });
+    if (result) cachedRecommendationResult = result;
 
-  detailEl.innerHTML = html;
-  bindRecommendationsDashboardEvents(detailEl);
-  clearTimelineHost();
+    detailEl.innerHTML = html;
+    bindRecommendationsDashboardEvents(detailEl);
+    clearTimelineHost();
+  } catch (error) {
+    console.error('[ai-listings-admin] recommendations render failed:', error);
+    detailEl.innerHTML = buildAdminPanelErrorHtml('Öneriler görünümü yüklenemedi.');
+    bindAdminPanelRetry(detailEl);
+    clearTimelineHost();
+  }
 }
 
 function closeDecisionCoachPanel(root) {
@@ -1026,6 +1136,25 @@ function bindRecommendationsDashboardEvents(root) {
     renderRecommendationsView();
   });
 
+  root.querySelector('[data-cmp-action="compare"]')?.addEventListener('click', () => {
+    if (compareSelectedIds.length < 2) {
+      setStatus('Karşılaştırma için en az 2 öneri seçin.', 'info');
+      return;
+    }
+    try {
+      openComparePanel(root, { title: getDrawerTitleTr('compare') });
+    } catch (error) {
+      console.error('[ai-listings-admin] compare panel failed:', error);
+      setStatus(getModuleUnavailableMessageTr('compare'), 'error');
+    }
+  });
+
+  const clearBtn = root.querySelector('[data-cmp-action="clear"]');
+  if (clearBtn) {
+    if (compareSelectedIds.length > 0) clearBtn.removeAttribute('hidden');
+    else clearBtn.setAttribute('hidden', '');
+  }
+
   root.querySelectorAll('[data-rec-coach-id]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
@@ -1097,7 +1226,7 @@ function bindRecommendationsDashboardEvents(root) {
 }
 
 function renderRepositoryView() {
-  const detailEl = $('ai-listings-detail');
+  const detailEl = $('ai-listings-repository-content');
   if (!detailEl) return;
 
   const { html } = buildRepositoryDashboardHtml(cachedListings, {
@@ -1171,6 +1300,46 @@ function getRecommendationById(recordId) {
   });
 }
 
+/**
+ * @param {string} listingId
+ * @returns {Record<string, unknown>|null}
+ */
+function findListingById(listingId) {
+  return (
+    cachedListings.find((item) => String(item.id) === String(listingId)) ??
+    (String(selectedListing?.id ?? '') === String(listingId) ? selectedListing : null)
+  );
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} listing
+ * @param {Record<string, unknown>|null} [latestAnalysis]
+ * @returns {Record<string, unknown>|null}
+ */
+function buildNegotiationInputFromListing(listing, latestAnalysis = null) {
+  if (!listing) return null;
+
+  const analysis =
+    latestAnalysis ??
+    extractLatestAnalysis(listing) ??
+    (listing.latest_analysis && typeof listing.latest_analysis === 'object'
+      ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
+      : null);
+
+  return buildNegotiationInput({
+    category: listing.category,
+    listingPrice: listing.price,
+    location: listing.location,
+    attributes: listing.attributes || {},
+    confidence: analysis?.confidence ?? 0.5,
+    marketReference: analysis?.market_reference ?? analysis?.marketReference ?? {},
+    qualitySignal: {
+      listingQualityScore: analysis?.quality_score,
+      verificationLevel: analysis?.verification_level ?? 'none'
+    }
+  });
+}
+
 function syncRecommendationCache() {
   const result = ensureRecommendationCache(cachedListings, recommendationProfile);
   if (result) {
@@ -1218,6 +1387,8 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     hasPersonalization: false
   };
 
+  ctx.hasNegotiation = Number(listing?.price) > 0 && Boolean(rec?.id ?? listing?.id);
+
   try {
     const pool = runListingDataPoolEngine([listing], { skipCache: true });
     ctx.dataCompleteness = Number(pool.avgDataCompleteness ?? 0);
@@ -1252,7 +1423,6 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     ctx.trustScore = exp?.decisionSnapshot?.trustScore ?? rec?.trust_score ?? '—';
     ctx.reportScore = edr?.reportScore ?? '—';
     ctx.hasOwnershipCost = Boolean(cost?.total_cost);
-    ctx.hasNegotiation = Array.isArray(pd?.negotiationScenario) && pd.negotiationScenario.length > 0;
     ctx.decisionSummary = pd?.summary ?? ctx.decisionSummary;
     ctx.scenarioTeaser = `Tahmini karar skoru ${pd?.decisionScore ?? '—'}; senaryolarla etkiyi inceleyin.`;
 
@@ -1313,6 +1483,58 @@ function bindWorkspaceEvents(root) {
   });
 }
 
+function closeComparePanel(root) {
+  const host = root.querySelector('#ai-cmp-panel-host') ?? document.querySelector('#ai-cmp-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-cmp-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--cmp-open');
+}
+
+/**
+ * @param {HTMLElement} root
+ * @param {{ title?: string, result?: Record<string, unknown>|null }} [options]
+ */
+function openComparePanel(root, options = {}) {
+  const host = root.querySelector('#ai-cmp-panel-host') ?? document.querySelector('#ai-cmp-panel-host');
+  if (!host) return;
+
+  const title = options.title ?? getDrawerTitleTr('compare');
+  let result = options.result ?? null;
+
+  if (result == null && compareSelectedIds.length >= 2) {
+    const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+    const recommendations = compareSelectedIds
+      .map((id) => getRecommendationById(String(id)))
+      .filter((item) => item?.id);
+    if (recommendations.length >= 2) {
+      result = runCompareEngine(buildCompareInput(recommendations, profile), { skipCache: false });
+    }
+  }
+
+  host.innerHTML = buildComparePanelHtml(result, { title });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--cmp-open');
+  bindComparePanelClose(host, root);
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindComparePanelClose(host, root) {
+  const close = () => {
+    closeComparePanel(root);
+    if (isDrawerOpen(aiDrawerState) && aiDrawerState.activeDrawerType === 'compare') {
+      closeAiListingsDrawer(root);
+    }
+  };
+  host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', close);
+}
+
 function closeScenarioPanel(root) {
   const host = root.querySelector('#ai-ss-panel-host');
   if (host) {
@@ -1321,6 +1543,60 @@ function closeScenarioPanel(root) {
   }
   root.querySelector('[data-ss-backdrop]')?.setAttribute('hidden', '');
   document.body.classList.remove('ai-listings-admin--ss-open');
+}
+
+function closeNegotiationPanel(root) {
+  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-neg-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--neg-open');
+}
+
+function openNegotiationPanel(root, listingId, options = {}) {
+  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
+  if (!host) return;
+
+  const title = options.title ?? getDrawerTitleTr('negotiation');
+  const listing = findListingById(listingId);
+
+  if (!listing) {
+    host.innerHTML = buildNegotiationPanelHtml(null, { title });
+    host.hidden = false;
+    document.body.classList.add('ai-listings-admin--neg-open');
+    bindNegotiationPanelClose(host, root);
+    return;
+  }
+
+  const latest =
+    extractLatestAnalysis(listing) ??
+    (listing.latest_analysis && typeof listing.latest_analysis === 'object'
+      ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
+      : null);
+  const input = buildNegotiationInputFromListing(listing, latest);
+  const result = input ? runNegotiationIntelligenceEngine(input) : null;
+
+  host.innerHTML = buildNegotiationPanelHtml(result, { title });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--neg-open');
+  bindNegotiationPanelClose(host, root);
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindNegotiationPanelClose(host, root) {
+  const close = () => {
+    closeNegotiationPanel(root);
+    if (isDrawerOpen(aiDrawerState) && aiDrawerState.activeDrawerType === 'negotiation') {
+      closeAiListingsDrawer(root);
+    }
+  };
+  host.querySelector('[data-neg-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-neg-backdrop]')?.addEventListener('click', close);
 }
 
 function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', options = {}) {
@@ -1694,7 +1970,7 @@ function closeNewMenu() {
 function toggleFilterPanel(forceOpen) {
   const sidebar = $('ai-listings-sidebar');
   const btn = $('ai-listings-filter-toggle');
-  if (!sidebar || !btn) return;
+  if (!sidebar || !btn || activeAdminView !== 'decision') return;
   const isMobile = window.matchMedia('(max-width: 1100px)').matches;
   if (!isMobile) return;
   const shouldOpen = forceOpen ?? !sidebar.classList.contains('ai-listings-admin__sidebar--open');
@@ -1785,6 +2061,7 @@ function closeAllAiPanelHosts(root) {
   closeExecutiveReportPanel(root);
   closeComparePanel(root);
   closeScenarioPanel(root);
+  closeNegotiationPanel(root);
 }
 
 function syncDrawerBodyScroll() {
@@ -1832,8 +2109,10 @@ function renderActiveAiListingsDrawer(root) {
   const listingId = aiDrawerState.activeDrawerListingId;
   const title = getDrawerTitleTr(type);
 
-  if (type === 'purchase' || type === 'negotiation') {
+  if (type === 'purchase') {
     openPurchaseDecisionPanel(root, listingId, { title, focus: type });
+  } else if (type === 'negotiation') {
+    openNegotiationPanel(root, listingId, { title });
   } else if (type === 'explain' || type === 'quality') {
     openExplainabilityPanel(root, listingId, { title, focus: type });
   } else if (type === 'report') {
@@ -1862,7 +2141,7 @@ function bindWorkspaceEmptyEvents(root) {
 function renderListingsList(listings) {
   const listEl = $('ai-listings-list');
   const countEl = $('ai-listings-list-count');
-  if (!listEl) return;
+  if (!listEl || activeAdminView !== 'decision') return;
 
   const filtered = filterListingsBySearch(listings);
   if (countEl) countEl.textContent = String(filtered.length);
@@ -1981,47 +2260,90 @@ async function loadListings() {
   if (limit) params.set('limit', limit);
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  listEl.innerHTML = buildListingSkeletonHtml(5);
+  if (activeAdminView === 'decision') {
+    listEl.innerHTML = buildListingSkeletonHtml(5);
+  }
+  if (activeAdminView !== 'decision') {
+    showAdminPanelLoading(activeAdminView);
+  }
 
   const result = await edgeRequest(`/listings${query}`);
   if (!result.ok) {
-    listEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    if (activeAdminView === 'decision') {
+      listEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    } else {
+      showAdminPanelError(activeAdminView, result.message);
+    }
+    cachedListings = [];
+    clearAnalyticsMemoCache();
     renderKpiCards([]);
+    renderRepositoryKpiCards([]);
+    renderAnalyticsKpiCards([]);
     setStatus(result.message, 'error');
     return;
   }
 
-  cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  cachedListings = normalizeAdminDataset(/** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []));
+  clearAnalyticsMemoCache();
   syncRecommendationCache();
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
-  renderListingsList(cachedListings);
+
   if (selectedListing) {
     const refreshed = cachedListings.find((item) => String(item.id) === String(selectedListing.id));
-    if (refreshed) selectedListing = refreshed;
-  } else if (activeAdminView === 'repository') {
+    selectedListing = refreshed ?? null;
+  }
+
+  if (activeAdminView === 'repository') {
+    renderRepositoryKpiCards(cachedListings);
     renderRepositoryView();
   } else if (activeAdminView === 'analytics') {
+    renderAnalyticsKpiCards(cachedListings);
     renderAnalyticsView();
   } else if (activeAdminView === 'collector') {
     renderCollectorView();
+  } else if (activeAdminView === 'recommendations') {
+    renderRecommendationsView();
   } else {
-    renderExecutiveDashboard();
+    renderListingsList(cachedListings);
+    if (selectedListing) {
+      void showListingDetail(selectedListing);
+    } else {
+      renderExecutiveDashboard();
+    }
   }
-  setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
+
+  setStatus(
+    cachedListings.length
+      ? `${cachedListings.length} ilan yüklendi.`
+      : 'İlan bulunamadı — filtreleri kontrol edin veya yeni ilan ekleyin.',
+    cachedListings.length ? 'success' : 'info'
+  );
+}
+
+/**
+ * @returns {HTMLElement|null}
+ */
+function resolveAiListingsAdminMountRoot() {
+  return (
+    document.getElementById('ai-listings-admin-root') ??
+    document.getElementById('ai-listings-admin') ??
+    document.querySelector('[data-ai-listings-admin-root]')
+  );
 }
 
 function mountGlobalPanelHosts() {
-  const main = $('ai-listings-admin');
-  if (!main || main.querySelector('#ai-ss-panel-host')) return;
+  const main = resolveAiListingsAdminMountRoot();
+  if (!main || main.querySelector('#ai-cmp-panel-host')) return;
   const wrap = document.createElement('div');
   wrap.innerHTML = [
     buildExecutiveDecisionShellHtml(),
     buildExplainabilityShellHtml(),
     buildExecutiveReportShellHtml(),
     buildCompareShellHtml(),
-    buildScenarioShellHtml()
+    buildScenarioShellHtml(),
+    buildNegotiationShellHtml()
   ].join('');
   main.appendChild(wrap);
 }
@@ -2048,6 +2370,7 @@ function renderListingDetailContent(detailEl, listingData, latest, events) {
   if (detailMount) {
     detailMount.innerHTML = `
       ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
+      ${buildPublishConfirmFormHtml()}
       <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
         <label>
           Red nedeni
@@ -2068,7 +2391,21 @@ function renderListingDetailContent(detailEl, listingData, latest, events) {
       const action = btn.getAttribute('data-qa-action');
       if (!action) return;
       if (action === 'reject') {
+        $('ai-listings-publish-form')?.setAttribute('hidden', '');
         $('ai-listings-reject-form')?.removeAttribute('hidden');
+        return;
+      }
+      if (action === 'publish') {
+        const attempt = resolvePublishAttempt(listingData, latest, { confirmed: false });
+        if (!attempt.proceed && attempt.showConfirm) {
+          $('ai-listings-reject-form')?.setAttribute('hidden', '');
+          $('ai-listings-publish-form')?.removeAttribute('hidden');
+          return;
+        }
+        if (!attempt.proceed) {
+          setStatus(attempt.message ?? 'Yayınlama engellendi.', 'error');
+          return;
+        }
         return;
       }
       if (action === 'pdf') {
@@ -2088,12 +2425,25 @@ function renderListingDetailContent(detailEl, listingData, latest, events) {
       setStatus('Red nedeni zorunludur.', 'error');
       return;
     }
+    $('ai-listings-publish-form')?.setAttribute('hidden', '');
     runQaAction(id, 'reject', { reason });
   });
   $('ai-listings-cancel-reject-btn')?.addEventListener('click', () => {
     $('ai-listings-reject-form')?.setAttribute('hidden', '');
     const reasonEl = $('ai-listings-reject-reason');
     if (reasonEl) reasonEl.value = '';
+  });
+  $('ai-listings-confirm-publish-btn')?.addEventListener('click', () => {
+    const attempt = resolvePublishAttempt(listingData, latest, { confirmed: true });
+    if (!attempt.proceed) {
+      setStatus(attempt.message ?? 'Yayınlama engellendi.', 'error');
+      return;
+    }
+    $('ai-listings-publish-form')?.setAttribute('hidden', '');
+    runQaAction(id, 'publish');
+  });
+  $('ai-listings-cancel-publish-btn')?.addEventListener('click', () => {
+    $('ai-listings-publish-form')?.setAttribute('hidden', '');
   });
 
   bindDuplicateDetailActions(detailEl);

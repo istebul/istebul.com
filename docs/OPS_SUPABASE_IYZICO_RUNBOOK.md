@@ -10,6 +10,37 @@ Bu rehber, **Hafta 1** maddelerini (30 günlük plan) uygular: veritabanı migra
 
 ---
 
+## Commercial agreement gate (2026-06-18)
+
+| Alan | Durum |
+|------|--------|
+| **Status** | `READY-INACTIVE` |
+| **Live payments** | `NO-GO` |
+| **Sandbox smoke** | `DEFERRED` |
+| **Reason** | Commercial payment provider agreement pending |
+
+**Karar:** Ödeme sağlayıcı ticari anlaşması tamamlanmadan **canlı ödeme açılmaz**. `IYZICO_BASE_URL` production canlı endpoint’e (`https://api.iyzipay.com`) alınmaz. Sandbox smoke, merchant panel erişimi ve anlaşma oluşana kadar **HOLD** — bu runbook’taki Bölüm 4 ve sonrası operasyonel adımlar referans içindir; otomatik GO yoktur.
+
+**Mevcut teknik durum (kod):**
+
+- HMAC unit test + docs hazır (PR #402, main `5afaba37+`).
+- Edge functions (`create-payment-session`, `iyzico-webhook`) deploy edilebilir; secrets yoksa veya sandbox değilse checkout **503** / webhook **NOT_CONFIGURED** — kasıtlı inaktif davranış.
+- Canlı ödeme runtime’ı ticari GO olmadan etkinleştirilmez.
+
+**Production’da sağlayıcı enable öncesi:** Operasyon + ticari onay ile açık **manuel GO** gerekir. Secret değerlerini bu belgeye veya repoya yazmayın.
+
+**Anlaşma tamamlandıktan sonra minimum sıra:**
+
+1. Merchant / sandbox panel erişimini doğrula
+2. Supabase’de sandbox env secret **adlarını** tanımla (`IYZICO_API_KEY`, `IYZICO_SECRET_KEY`, `IYZICO_BASE_URL`, `IYZICO_WEBHOOK_SECRET`, `PAYMENT_SUCCESS_URL`, `PAYMENT_FAILURE_URL`)
+3. Sandbox checkout smoke (`create-payment-session` → initialize success)
+4. Webhook log: `signature_valid: true`
+5. Entitlement oluşumu (`user_entitlements` / Pro)
+6. Operasyonel **GO** kaydı
+7. Ancak ondan sonra **live enable** değerlendirmesi (`IYZICO_BASE_URL` canlı endpoint)
+
+---
+
 ## Ön koşullar
 
 - [ ] Supabase hesabında bu projeye **Owner** veya migration yetkisi

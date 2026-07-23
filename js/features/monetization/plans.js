@@ -4,7 +4,7 @@ import { BRAND_VOICE } from '../../core/brand-voice.js';
 export const PRICING_MESSAGING = Object.freeze({
   headline: 'Yanlış araç seçimi yıllık maliyette çok daha pahalıya patlar',
   subhead:
-    'Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. isteBul karar altyapısı: ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
+    'Bu planlar İSTEBUL AI karar altyapısına aittir (GarsonAI / İSTEBUL Business değil). Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. Ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
   popularBadge: 'En popüler',
   roiTitle: 'Karar maliyeti hesabı',
   roiDisclaimer:
@@ -26,29 +26,29 @@ export const PLANS = {
   },
   pro: {
     id: 'pro',
-    name: 'isteBul Pro',
-    priceLabel: 'Aylık abonelik',
-    priceHint: 'iyzico / PayTR ile güvenli ödeme · dilediğiniz zaman iptal',
+    name: 'İSTEBUL AI Pro',
+    priceLabel: 'Erken erişim',
+    priceHint: 'Ödeme aktivasyonu sonrası bilgilendirme · pilot erişim sürecinde',
     description: 'Detaylı TCO, senaryo karşılaştırma, gelişmiş AI açıklama ve premium rapor',
-    trialDays: 7,
-    trialLabel: '7 gün ücretsiz dene',
+    trialDays: 0,
+    trialLabel: 'Erken erişim talep et',
     billing: {
       monthly: {
         id: 'monthly',
         label: 'Aylık',
-        priceDisplay: '₺299',
-        periodLabel: '/ ay',
-        checkoutLabel: 'Aylık Pro — karar netliğini aç'
+        priceDisplay: 'Erken erişim',
+        periodLabel: '',
+        checkoutLabel: 'Pro erken erişim talep et'
       },
       annual: {
         id: 'annual',
         label: 'Yıllık',
-        priceDisplay: '₺2.870',
-        periodLabel: '/ yıl',
-        monthlyEquivalent: '₺239 / ay',
-        savingsLabel: '12 aylık ödemeye göre daha az',
-        discountPercent: 20,
-        checkoutLabel: 'Yıllık Pro — aylık ₺239 ile devam et'
+        priceDisplay: 'Pilot erişim',
+        periodLabel: '',
+        monthlyEquivalent: 'Aktivasyon sonrası',
+        savingsLabel: 'Fiyat aktivasyon sonrası duyurulur',
+        discountPercent: 0,
+        checkoutLabel: 'Pro pilot erişim talep et'
       }
     },
     highlights: [
@@ -60,7 +60,7 @@ export const PLANS = {
       'Öncelikli destek ve müzakere içgörüleri',
       'Premium export / raporlama'
     ],
-    cta: 'Karar riskini azalt'
+    cta: 'Erken erişim talep et'
   },
   enterprise: {
     id: 'enterprise',

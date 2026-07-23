@@ -9,6 +9,12 @@ export const SITE_ORIGIN = routeMeta.siteOrigin;
 export const ROUTE_DOCUMENT_META = Object.freeze(routeMeta.surfaces);
 
 export const MARKETING_SURFACE_IDS = Object.freeze([
+    'platform-landing',
+    'neden-istebul'
+]);
+
+/** @deprecated AI long-scroll sections live on `/ai/` only (EPIC-003). */
+export const AI_LANDING_SURFACE_IDS = Object.freeze([
     'home',
     'home-economic-indicators',
     'how-it-works',
@@ -46,6 +52,7 @@ export function resolveContentRouteSurface(pathname = '/') {
 const APP_PATHS = Object.freeze({
     '/secenekler': 'ilanlar',
     '/ilanlar': 'ilanlar',
+    '/decision-options': 'ilanlar',
     '/karsilastir': 'compare',
     '/favoriler': 'favoriler',
     '/gecmis': 'history',

@@ -161,6 +161,7 @@ export function buildHousingScenarios(base) {
 
   return [
     {
+      id: 'lower-budget',
       title: 'Daha düşük bütçeli konut',
       monthlyEffect: '-2.100 TL',
       totalEffect: '-%11 toplam maliyet',
@@ -169,6 +170,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(-2100, -4, -2)
     },
     {
+      id: 'higher-down-payment',
       title: 'Daha yüksek peşinat',
       monthlyEffect: '-3.450 TL',
       totalEffect: '-%8 faiz yükü',
@@ -177,6 +179,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(-3450, -9, -1)
     },
     {
+      id: 'shorter-term',
       title: 'Daha kısa vade',
       monthlyEffect: '+2.950 TL',
       totalEffect: '-%17 toplam faiz',
@@ -185,6 +188,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(2950, 6, 3)
     },
     {
+      id: 'lower-dues',
       title: 'Daha düşük aidatlı alternatif',
       monthlyEffect: '-950 TL',
       totalEffect: '-%4 yıllık sahip olma maliyeti',
@@ -193,6 +197,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(-950, -6, -1)
     },
     {
+      id: 'newer-building',
       title: 'Daha yeni bina',
       monthlyEffect: '+1.380 TL',
       totalEffect: '+%6 satın alma maliyeti',
@@ -201,6 +206,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(1380, -8, 5)
     },
     {
+      id: 'central-compact',
       title: 'Daha merkezi ama küçük metrekare',
       monthlyEffect: '+640 TL',
       totalEffect: '+%5 satın alma maliyeti',
@@ -209,6 +215,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(640, -4, 0)
     },
     {
+      id: 'suburban-spacious',
       title: 'Daha uzak ama geniş metrekare',
       monthlyEffect: '-760 TL',
       totalEffect: '-%4 satın alma maliyeti',
@@ -217,6 +224,7 @@ export function buildHousingScenarios(base) {
       score: makeScore(-760, 5, 4)
     },
     {
+      id: 'rent-and-save',
       title: 'Kirada kal, birikim artır',
       monthlyEffect: '-4.900 TL',
       totalEffect: 'Kısa vadede nakit rezerv +',

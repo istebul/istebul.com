@@ -41,6 +41,64 @@ app.get('/js/app.bundle.js', (_req, res, next) => {
   res.sendFile(path.join(distJs, bundle));
 });
 
+/** PR-564 — serve bundled Platform Landing Preview (TS → ESM) without changing `/`. */
+app.get('/js/runtime/platform-shell-preview.js', (_req, res, next) => {
+  const fs = require('fs');
+  const distFile = path.join(__dirname, 'dist', 'js', 'runtime', 'platform-shell-preview.js');
+  if (fs.existsSync(distFile)) {
+    res.type('application/javascript');
+    return res.sendFile(distFile);
+  }
+  try {
+    const esbuild = require('esbuild');
+    const result = esbuild.buildSync({
+      entryPoints: [path.join(__dirname, 'js', 'runtime', 'platform-shell-preview.js')],
+      bundle: true,
+      format: 'esm',
+      platform: 'browser',
+      target: 'es2020',
+      write: false
+    });
+    res.type('application/javascript');
+    return res.send(result.outputFiles[0].text);
+  } catch {
+    return next();
+  }
+});
+
+/** PR-565/566 — serve AI Landing modules (does not change `/`). */
+function serveAiLandingModule(relativeEntry) {
+  return (_req, res, next) => {
+    const fs = require('fs');
+    const distFile = path.join(__dirname, 'dist', relativeEntry);
+    if (fs.existsSync(distFile)) {
+      res.type('application/javascript');
+      return res.sendFile(distFile);
+    }
+    try {
+      const esbuild = require('esbuild');
+      const result = esbuild.buildSync({
+        entryPoints: [path.join(__dirname, relativeEntry)],
+        bundle: true,
+        format: 'esm',
+        platform: 'browser',
+        target: 'es2020',
+        write: false
+      });
+      res.type('application/javascript');
+      return res.send(result.outputFiles[0].text);
+    } catch {
+      return next();
+    }
+  };
+}
+
+app.get('/js/ai/ai-landing-foundation.js', serveAiLandingModule('js/ai/ai-landing-foundation.js'));
+app.get('/js/ai/ai-landing-boot.js', serveAiLandingModule('js/ai/ai-landing-boot.js'));
+
+/** EPIC-500 — Business MVP app (bundles src/business TS; no auth/API). */
+app.get('/js/business/business-app.js', serveAiLandingModule('js/business/business-app.js'));
+
 app.use('/js/chunks', express.static(path.join(__dirname, 'dist', 'js', 'chunks'), {
   fallthrough: false,
   setHeaders: (res) => {
@@ -52,6 +110,15 @@ app.use(express.static(path.join(__dirname), {
   etag: true,
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0
 }));
+
+// P7-J CX Vite assets (built to dist/r/cx-assets)
+app.use(
+  '/r/cx-assets',
+  express.static(path.join(__dirname, 'dist', 'r', 'cx-assets'), {
+    etag: true,
+    maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
+  }),
+);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(helmet.hsts({
@@ -89,6 +156,37 @@ app.get('*', (req, res, next) => {
     const autoIndex = path.join(__dirname, 'auto', 'index.html');
     if (fs.existsSync(autoIndex)) {
       return res.sendFile(autoIndex);
+    }
+  }
+
+  if (raw === '/platform-preview' || raw === '/platform-preview/') {
+    const previewIndex = path.join(__dirname, 'platform-preview', 'index.html');
+    if (fs.existsSync(previewIndex)) {
+      return res.sendFile(previewIndex);
+    }
+  }
+
+  if (raw === '/ai' || raw === '/ai/') {
+    const aiIndex = path.join(__dirname, 'ai', 'index.html');
+    if (fs.existsSync(aiIndex)) {
+      return res.sendFile(aiIndex);
+    }
+  }
+
+  if (raw === '/r/onay' || raw === '/r/onay/') {
+    const confirmIndex = path.join(__dirname, 'r', 'onay', 'index.html');
+    if (fs.existsSync(confirmIndex)) {
+      return res.sendFile(confirmIndex);
+    }
+  }
+
+  // P7-J Customer Experience Platform SPA (/r/{slug}). Prefer built dist; keep /r/onay above.
+  if (raw === '/r' || raw === '/r/' || raw.startsWith('/r/')) {
+    const cxIndex = path.join(__dirname, 'dist', 'r', 'index.html');
+    const reservationIndex = path.join(__dirname, 'r', 'index.html');
+    const file = fs.existsSync(cxIndex) ? cxIndex : reservationIndex;
+    if (fs.existsSync(file)) {
+      return res.sendFile(file);
     }
   }
 

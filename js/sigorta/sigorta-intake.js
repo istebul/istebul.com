@@ -96,6 +96,14 @@ export function saveSigortaLead(formData) {
       ...formData,
       session_id: getVerticalSessionId(VERTICAL)
     }
+  }).then((res) => {
+    if (res.ok) {
+      trackAnalytics('insurance_lead_submit', {
+        selected_option: formData.selected_option,
+        interest_type: formData.interest_type
+      });
+    }
+    return res;
   });
 }
 

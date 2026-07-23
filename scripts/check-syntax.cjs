@@ -17,6 +17,7 @@ const requiredAssets = [
   'assets/images/placeholder.svg',
   'assets/images/hero-illustration.svg',
   'assets/images/og-image.svg',
+  'assets/images/og-image.png',
   'assets/brand/istebul-icon.svg',
   'assets/icons/favicon-16.png',
   'assets/icons/favicon-32.png',

@@ -31,7 +31,7 @@
         "Karar Merkezi QA sürecinden geçmiş kayıtlar"
       ],
       "ctaHref": "/karar-asistani/",
-      "ctaLabel": "Karar analizini başlat",
+      "ctaLabel": "Kararını analiz et",
       "relatedLandings": ["ikinci-el-rehberi", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
     },
     {
@@ -48,24 +48,24 @@
         "Şeffaf metodoloji açıklaması"
       ],
       "ctaHref": "/karar-asistani/",
-      "ctaLabel": "Karar analizini başlat",
+      "ctaLabel": "Kararını analiz et",
       "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "finansman-rehberi"]
     },
     {
       "slug": "planlar",
       "path": "/planlar",
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. Pilot erişim — ödeme aktivasyonu sonrası bilgilendirme.",
       "h1": "Planlar ve fiyatlandırma",
-      "intro": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "intro": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.",
       "bullets": [
         "Başlangıç: sınırlı analiz ve 2 karşılaştırma",
         "Pro: derin TCO, AI karar notu, premium export",
         "Enterprise: API, webhook, SLA",
         "İstediğiniz zaman iptal"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Ücretsiz analiz başlat",
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
       "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-alim-karar-asistani"]
     },
     {
@@ -81,8 +81,8 @@
         "İkinci el ve sıfır araç karşılaştırmaları",
         "Şeffaf metodoloji ve karar skoru"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Analiz başlat",
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
       "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
@@ -98,8 +98,8 @@
         "Operasyonel bilgilendirmeler",
         "KVKK ve güvenlik duyuruları"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Ücretsiz analiz",
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
       "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi"]
     },
     {
@@ -110,7 +110,7 @@
       "h1": "Aktif kampanyalar",
       "intro": "Pro deneme, ücretsiz Auto analizi ve pilot partner fırsatları. Koşullar değişebilir; finansal taahhüt içermez.",
       "bullets": [
-        "Pro plan 7 gün deneme",
+        "Pro pilot erişim",
         "Ücretsiz Auto karar analizi",
         "Pilot partner fırsatları",
         "Kampanya koşulları değişebilir"

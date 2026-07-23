@@ -13,6 +13,7 @@ Bu klasör, **teknik bilgisi olmayan site sahibi** için hazırlanmış indirile
 | [03-tanitim-pazarlama.md](./03-tanitim-pazarlama.md) | Tanıtım | Sosyal medya, PR |
 | [04-canli-veri-is-ortakligi.md](./04-canli-veri-is-ortakligi.md) | Canlı veri & partner | İş geliştirme |
 | [05-konusma-sablonlari.md](./05-konusma-sablonlari.md) | Hazır cümleler | Satış, görüşme |
+| [06-linkedin-etkilesim-rehberi.md](./06-linkedin-etkilesim-rehberi.md) | LinkedIn yorum ve etkileşim | Üçüncü taraf gönderilere profesyonel yorum |
 
 **PDF oluşturma (en kolay):**  
 `ISTEBUL-SITE-SAHIBI-TAM-PAKET.html` dosyasını Chrome veya Edge ile açın → `Ctrl+P` (Mac: `Cmd+P`) → Hedef: **PDF olarak kaydet**.

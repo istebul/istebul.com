@@ -1,7 +1,8 @@
 /**
- * isteBul AI Listings — internal admin test panel utilities.
+ * isteBul AI Listings — admin operasyon paneli utilities.
  *
- * INTERNAL TEST ONLY — not linked from public navigation.
+ * Admin-only panel at /admin/ai-listings/ (sidebar: AI İlan Yönetimi).
+ * Not linked from public navigation or sitemap.
  * Panel is hidden unless localStorage istebul_ai_listings_admin === "on".
  *
  * approved means internally approved only; public publishing remains disabled.
@@ -491,55 +492,41 @@ export function computeKpiStats(listings, options = {}) {
  * @param {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number, trends?: Record<string, { label: string, hint: string, positive: boolean }> }} stats
  * @returns {string}
  */
-export function buildKpiCardsHtml(stats) {
+export function buildKpiCardsHtml(stats, listings = []) {
+  const isEmpty = !Array.isArray(listings) || listings.length === 0;
+  const countValue = (value) => (isEmpty ? '—' : value);
   const cards = [
     {
       key: 'total',
-      label: 'Toplam Kayıt',
-      value: stats.total ?? 0,
+      label: 'Toplam İlan',
+      value: countValue(stats.total),
       icon: '📋',
-      hint: 'görünür kayıtlar',
+      hint: 'aktif kayıt',
       trend: stats.trends?.total
     },
     {
-      key: 'active',
-      label: 'Aktif Kayıt',
-      value: stats.active ?? stats.total ?? 0,
-      icon: '✅',
-      hint: 'arşiv hariç',
-      trend: stats.trends?.total
-    },
-    {
-      key: 'duplicate',
-      label: 'Mükerrer',
-      value: stats.duplicate ?? 0,
-      icon: '🔗',
-      hint: 'mükerrer tespit',
-      trend: stats.trends?.pending
-    },
-    {
-      key: 'avg-ai',
-      label: 'Ortalama AI',
-      value: stats.averageAi ?? 0,
+      key: 'analyzed-today',
+      label: 'Bugün Analiz',
+      value: countValue(stats.analyzedToday),
       icon: '🤖',
-      hint: 'AI skoru ort.',
+      hint: 'bugün tamamlanan',
       trend: stats.trends?.['analyzed-today']
     },
     {
       key: 'high-risk',
       label: 'Yüksek Risk',
-      value: stats.highRisk ?? 0,
+      value: countValue(stats.highRisk),
       icon: '⚠',
       hint: 'risk ≥ 61',
       trend: stats.trends?.['high-risk']
     },
     {
-      key: 'today-added',
-      label: 'Bugün Eklenen',
-      value: stats.todayAdded ?? stats.analyzedToday ?? 0,
-      icon: '📅',
-      hint: 'bugün eklenen',
-      trend: stats.trends?.['analyzed-today']
+      key: 'pending',
+      label: 'İncelemede',
+      value: countValue(stats.pendingReview),
+      icon: '🔎',
+      hint: 'bekleyen QA',
+      trend: stats.trends?.pending
     }
   ];
 
@@ -639,6 +626,8 @@ export function computeExecutiveDashboardStats(listings) {
  */
 export function buildExecutiveDashboardHtml(listings) {
   const stats = computeExecutiveDashboardStats(listings);
+  const isEmpty = !Array.isArray(listings) || listings.length === 0;
+  const countValue = (value) => (isEmpty ? '—' : value);
 
   const metricCards = [
     { label: 'Son 24 Saat Analiz', value: stats.analyzedLast24h, suffix: '', hint: 'son 24 saat' },
@@ -1054,6 +1043,66 @@ export function buildQaActionsHtml(status) {
     .join('');
 
   return buttons || '<p class="ai-listings-admin__muted">Bu durum için işlem yok.</p>';
+}
+
+export const PUBLISH_CHECKLIST_INCOMPLETE_MESSAGE =
+  'Yayınlamadan önce kalite kontrol maddeleri tamamlanmalı.';
+
+export const PUBLISH_CONFIRM_PROMPT =
+  'Bu kaydı production\'da yayınlamak üzeresiniz. Kalite kontrol tamamlandı mı?';
+
+/**
+ * @param {Record<string, unknown>|null|undefined} listing
+ * @param {Record<string, unknown>|null|undefined} [latestAnalysis]
+ * @returns {boolean}
+ */
+export function isPublishChecklistComplete(listing, latestAnalysis = null) {
+  const checklist = buildQualityChecklist(listing, latestAnalysis);
+  const passed = countChecklistPassed(checklist);
+  const total = Object.keys(checklist).length;
+  return total > 0 && passed === total;
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} listing
+ * @param {Record<string, unknown>|null|undefined} [latestAnalysis]
+ * @param {{ confirmed?: boolean }} [options]
+ * @returns {{ proceed: boolean, showConfirm: boolean, message: string|null }}
+ */
+export function resolvePublishAttempt(listing, latestAnalysis = null, options = {}) {
+  const confirmed = Boolean(options.confirmed);
+
+  if (!isPublishChecklistComplete(listing, latestAnalysis)) {
+    return {
+      proceed: false,
+      showConfirm: false,
+      message: PUBLISH_CHECKLIST_INCOMPLETE_MESSAGE
+    };
+  }
+
+  if (!confirmed) {
+    return {
+      proceed: false,
+      showConfirm: true,
+      message: PUBLISH_CONFIRM_PROMPT
+    };
+  }
+
+  return { proceed: true, showConfirm: false, message: null };
+}
+
+/**
+ * @returns {string}
+ */
+export function buildPublishConfirmFormHtml() {
+  return `
+      <div id="ai-listings-publish-form" class="ai-listings-admin__publish-form" hidden>
+        <p class="ai-listings-admin__warning-inline">${safeRenderText(PUBLISH_CONFIRM_PROMPT)}</p>
+        <div class="ai-listings-admin__drawer-actions">
+          <button type="button" id="ai-listings-confirm-publish-btn" class="ai-listings-admin__btn ai-listings-admin__btn--success">Yayınlamayı onayla</button>
+          <button type="button" id="ai-listings-cancel-publish-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
+        </div>
+      </div>`;
 }
 
 /**

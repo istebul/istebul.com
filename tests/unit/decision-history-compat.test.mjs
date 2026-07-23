@@ -177,3 +177,12 @@ test('buildComparisonItemFromHistoryEntry works with normalized legacy entry', (
     assert.equal(item.periodicCost, 210000);
     assert.equal(canAddHistoryEntryToComparison(legacyEntry), true);
 });
+
+test('normalizeDecisionHistoryEntry keeps legacy entries working without resultSummary', () => {
+    const normalized = normalizeDecisionHistoryEntry(legacyEntry);
+
+    assert.ok(normalized);
+    assert.equal(normalized.resultSummary, undefined);
+    assert.equal(normalized.riskLevel, 'Orta risk');
+    assert.equal(normalized.score, 82);
+});

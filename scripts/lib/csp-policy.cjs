@@ -1,19 +1,31 @@
 /**
- * Shared Content-Security-Policy strings for _headers and netlify.toml.
+ * Shared Content-Security-Policy strings for Cloudflare Pages _headers.
  * Keep script-src without 'unsafe-inline' on public pages (inline scripts → external files).
  */
 
 const ORIGIN_HOSTS = 'https://www.istebul.com https://istebul.com';
 
+/** AdSense verification + runtime (no ad slots in HTML; CSP must allow script/connect/frame). */
+const ADSENSE_SCRIPT_HOSTS =
+  ' https://pagead2.googlesyndication.com https://www.googlesyndication.com';
+
+const ADSENSE_CONNECT_HOSTS =
+  ' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.googlesyndication.com';
+
+const ADSENSE_FRAME_HOSTS =
+  ' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com';
+
 const SCRIPT_HOSTS =
   "'self' " +
   ORIGIN_HOSTS +
-  ' https://plausible.io https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms https://challenges.cloudflare.com https://cdn.jsdelivr.net';
+  ' https://plausible.io https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms https://challenges.cloudflare.com https://cdn.jsdelivr.net' +
+  ADSENSE_SCRIPT_HOSTS;
 
 const CONNECT_HOSTS =
   "'self' " +
   ORIGIN_HOSTS +
-  ' https://*.supabase.co wss://*.supabase.co https://plausible.io https://cloudflareinsights.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://www.clarity.ms https://challenges.cloudflare.com https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com';
+  ' https://*.supabase.co wss://*.supabase.co https://plausible.io https://cloudflareinsights.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://www.clarity.ms https://challenges.cloudflare.com https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com' +
+  ADSENSE_CONNECT_HOSTS;
 
 const STYLE_HOSTS =
   "'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com";
@@ -37,7 +49,7 @@ function buildCsp({ allowInlineScripts = false } = {}) {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    'frame-src https://challenges.cloudflare.com',
+    'frame-src https://challenges.cloudflare.com' + ADSENSE_FRAME_HOSTS,
     "frame-ancestors 'none'",
     'upgrade-insecure-requests'
   ].join('; ');
@@ -46,4 +58,13 @@ function buildCsp({ allowInlineScripts = false } = {}) {
 const CSP_PUBLIC = buildCsp({ allowInlineScripts: false });
 const CSP_ADMIN = buildCsp({ allowInlineScripts: true });
 
-module.exports = { buildCsp, CSP_PUBLIC, CSP_ADMIN, ORIGIN_HOSTS, WORKER_SRC };
+module.exports = {
+  buildCsp,
+  CSP_PUBLIC,
+  CSP_ADMIN,
+  ORIGIN_HOSTS,
+  WORKER_SRC,
+  ADSENSE_SCRIPT_HOSTS,
+  ADSENSE_CONNECT_HOSTS,
+  ADSENSE_FRAME_HOSTS
+};

@@ -1,6 +1,7 @@
 # Cloudflare Pages routing — keep dynamic rules under 100 (CF limit).
 # Static files (/*.html, /auto/index.html, /admin/index.html, …) are served directly.
-# Admin panel: dist/admin/index.html — no _redirects rules required.
+# Admin panel: dist/admin/index.html + dist/admin/<slug>/index.html — no _redirects rules.
+# Deep links (/admin/listings, /admin/decision-center, …) are physical build output (before /* SPA fallback).
 
 # --- Static asset passthrough (before SPA fallback) ---
 /css/*       /css/:splat       200
@@ -15,12 +16,22 @@
 /ilanlar /secenekler/ 301
 /ilanlar/ /secenekler/ 301
 
+# --- English decision-options alias → seçenekler (canonical) ---
+/decision-options /secenekler/ 301
+/decision-options/ /secenekler/ 301
+
 # --- Legacy karar-analizi → canonical karar-asistani ---
 /karar-analizi /karar-asistani/ 301
 /karar-analizi/ /karar-asistani/ 301
 
 # --- Legacy account URL ---
 /account.html /profil/ 301
+
+# --- Legacy vertical URL aliases (canonical shells) ---
+/finansman /finans/ 301
+/finansman/ /finans/ 301
+/araba /auto/ 301
+/araba/ /auto/ 301
 
 # --- Legacy / junk URLs ---
 /index.php/*  /  410
@@ -99,6 +110,22 @@
 
 # --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
 /api/* /api/:splat 200
+
+# --- GarsonAI API (Pages Functions) ---
+/garson/api/* /garson/api/:splat 200
+
+# --- PWA alias redirects (before SPA fallback) ---
+/service-worker.js /sw.js 301
+/manifest.webmanifest /manifest.json 301
+/offline.html /offline 301
+
+# --- GarsonAI reservation deep links (before SPA fallback) ---
+/r/onay /r/onay/index.html 200
+/r/onay/ /r/onay/index.html 200
+/r/cx-assets/* /r/cx-assets/:splat 200
+/r /r/index.html 200
+/r/ /r/index.html 200
+/r/* /r/index.html 200
 
 # --- SPA fallback (MUST be last) ---
 /* /index.html 200

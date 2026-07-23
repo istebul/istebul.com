@@ -2,6 +2,10 @@
  * Paths that must bypass the SPA router (standalone HTML, Auto app, legal, partner).
  */
 import { getExternalRedirect, stripPathname } from './route-surface.js';
+import {
+  isPlatformProductEntryPath,
+  normalizePlatformProductEntryPath
+} from './platform-url-contract.js';
 
 const AUTO_PATH_PREFIX = '/auto';
 const REHBER_PREFIX = '/rehber';
@@ -23,7 +27,9 @@ const STATIC_ALIASES = Object.freeze({
   '/finans': '/finans/',
   '/finansman': '/finans/',
   '/sigorta': '/sigorta/',
-  '/kasko': '/kasko/'
+  '/kasko': '/kasko/',
+  '/restoran': '/restoran/'
+  /* /business handled via platform-url-contract product entries */
 });
 
 /**
@@ -49,6 +55,11 @@ export function resolveFullPageNavigation(href) {
 
   if (stripped === REHBER_PREFIX || stripped.startsWith(`${REHBER_PREFIX}/`)) {
     return pathname.endsWith('/') ? pathname : `${pathname.replace(/\/$/, '')}/`;
+  }
+
+  /* Platform product entries: /ai/, /garson/, /business/ — same escape contract */
+  if (isPlatformProductEntryPath(pathname)) {
+    return normalizePlatformProductEntryPath(pathname);
   }
 
   if (/\.html$/i.test(pathname)) {

@@ -18,6 +18,7 @@ import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
   hydrateInsightBlocks,
+  markInsightSummaryUnavailable,
   renderInsightBlocksHtml
 } from '../ai/ai-insight-engine.js';
 import {
@@ -32,6 +33,16 @@ import {
   buildEvdsRiskLayer,
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
+import {
+  buildAfadAiActivitySentence,
+  fetchAndBuildAfadRiskLayer,
+  mountAfadRiskLayer
+} from '../results/results-afad-risk-layer.js';
+import {
+  buildTuikReferenceLayer,
+  fetchTuikReferenceSnapshot,
+  mountTuikReferenceLayer
+} from '../results/results-tuik-reference-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
 import {
   renderResultsHeroLayout,
@@ -40,6 +51,101 @@ import {
 import { withTimeout } from '../../core/async-utils.js';
 
 const KONUT_SUMMARY_TIMEOUT_MS = 10000;
+
+/**
+ * Konut state'inden AFAD snapshot province/district çözümlemesi.
+ * @param {object} [state]
+ * @returns {{ province: string, district: string }|null}
+ */
+export function resolveKonutAfadLocation(state = {}) {
+  const province = String(state.city || state.province || '').trim();
+  const district = String(state.district || '').trim();
+  if (!province && !district) return null;
+  return { province, district };
+}
+
+/**
+ * Konut sonuç hero aside — AFAD bilgilendirme katmanı (skor üretmez).
+ * @param {HTMLElement|null} root
+ * @param {object} [state]
+ * @param {typeof fetch} [fetchImpl]
+ */
+export async function hydrateKonutAfadRiskLayer(root, state = {}, fetchImpl) {
+  if (!root) return null;
+
+  const location = resolveKonutAfadLocation(state);
+  if (!location) return null;
+
+  const layer = await fetchAndBuildAfadRiskLayer({
+    province: location.province,
+    district: location.district,
+    fetchImpl
+  });
+
+  mountAfadRiskLayer(root, layer);
+  return layer;
+}
+
+/**
+ * Konut sonuç hero aside — TÜİK referans katmanı (skor üretmez).
+ * @param {HTMLElement|null} root
+ * @param {object} [_state]
+ * @param {typeof fetch} [fetchImpl]
+ */
+export async function hydrateKonutTuikReferenceLayer(root, _state = {}, fetchImpl) {
+  if (!root || typeof document === 'undefined') return null;
+
+  root.querySelector('[data-tuik-reference-layer]')?.remove();
+
+  const snapshot = await fetchTuikReferenceSnapshot({
+    vertical: 'konut',
+    fetchImpl
+  });
+  if (!snapshot) return null;
+
+  const layer = buildTuikReferenceLayer(snapshot, { vertical: 'konut' });
+  if (!layer?.hasData) return null;
+
+  const wrap = document.createElement('div');
+  if (!mountTuikReferenceLayer(wrap, layer)) return null;
+
+  const card = wrap.firstElementChild;
+  if (!card) return null;
+
+  const afadLayer = root.querySelector('[data-afad-risk-layer]');
+  const evdsLayer = root.querySelector('[data-evds-risk-layer]');
+  const economicMount = root.querySelector('[data-results-economic-mount]');
+
+  if (afadLayer?.parentNode) {
+    afadLayer.insertAdjacentElement('afterend', card);
+    return layer;
+  }
+
+  if (evdsLayer?.parentNode) {
+    evdsLayer.insertAdjacentElement('afterend', card);
+    return layer;
+  }
+
+  if (economicMount?.parentNode) {
+    economicMount.insertAdjacentElement('afterend', card);
+    return layer;
+  }
+
+  root.prepend(card);
+  return layer;
+}
+
+/**
+ * Executive summary fetch context — AFAD aktivite cümlesi (OD-2C-3b, skor üretmez).
+ * @param {object} [baseContext]
+ * @param {ReturnType<typeof fetchAndBuildAfadRiskLayer>|null} [afadLayer]
+ */
+export function buildKonutExecutiveSummaryContext(baseContext = {}, afadLayer) {
+  return {
+    ...baseContext,
+    earthquakeActivityAssessment: buildAfadAiActivitySentence(afadLayer)
+  };
+}
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -728,6 +834,8 @@ export async function mountKonutResultsV2({
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'konut');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  const afadLayer = await hydrateKonutAfadRiskLayer(root, state);
+  await hydrateKonutTuikReferenceLayer(root, state);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
@@ -777,7 +885,7 @@ export async function mountKonutResultsV2({
     const summary = await withTimeout(
       fetchExecutiveSummaryV3(
         'konut',
-        model.intelligence?.context || {},
+        buildKonutExecutiveSummaryContext(model.intelligence?.context || {}, afadLayer),
         model.intelligence || {
           decisionScore: model.decisionScore,
           confidenceScore: model.confidenceScore,
@@ -801,7 +909,14 @@ export async function mountKonutResultsV2({
       null
     );
 
-    if (!summary) return model;
+    if (!summary) {
+      markInsightSummaryUnavailable(root.querySelector('[data-konut-v2-insight-root]'), {
+        execTextSelector: '[data-konut-v2-exec-text]',
+        sourceSelector: '[data-konut-v2-source]',
+        forceExecText: true
+      });
+      return model;
+    }
 
     if (summary.insight) {
       model.insight = summary.insight;

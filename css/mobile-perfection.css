@@ -67,7 +67,7 @@ body.modal-open {
   }
 
   .nav-auth-mobile .btn {
-    min-height: 36px;
+    min-height: var(--ib-touch);
     padding-inline: 0.62rem;
     font-size: 0.76rem;
     font-weight: 700;

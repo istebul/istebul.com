@@ -7,6 +7,10 @@ const LOCALE_IDS = ['tr', 'en', 'de', 'ar', 'it', 'fr', 'es', 'ja', 'zh'];
 
 const REQUIRED_KEYS = [
   'nav.products',
+  'nav.decisionCategories',
+  'nav.productAi',
+  'nav.productGarson',
+  'nav.productBusiness',
   'nav.resources',
   'footer.newsletterTitle',
   'footer.consentHtml',
@@ -23,6 +27,10 @@ const REQUIRED_KEYS = [
   'spaPages.planlar.ctaPrimary',
   'faq.q0',
   'footerNav.products',
+  'footerNav.support',
+  'footerNav.helpCenter',
+  'footerNav.categoriesSubhead',
+  'footerNav.plans',
 ];
 
 function getNested(obj, path) {
@@ -40,3 +48,26 @@ for (const localeId of LOCALE_IDS) {
     }
   });
 }
+
+test('PR-561 pricing copy scopes homepage plans to İSTEBUL AI only', () => {
+  const tr = marketingCopy.tr.pricing;
+  assert.match(tr.kicker, /İSTEBUL AI/);
+  assert.match(tr.lead, /İSTEBUL AI/);
+  assert.match(tr.lead, /GarsonAI/);
+  assert.match(tr.lead, /İSTEBUL Business/);
+  assert.match(tr.lead, /yalnızca|burada yer almaz/i);
+  assert.equal(tr.proTitle, 'İSTEBUL AI Pro');
+  assert.match(tr.starterCta, /İSTEBUL AI/);
+  assert.match(tr.proCta, /İSTEBUL AI/);
+  assert.match(tr.midCtaPrimary, /İSTEBUL AI/);
+  // Prices unchanged
+  assert.equal(tr.starterPrice, 'Ücretsiz');
+  assert.equal(tr.proPrice, 'Erken erişim');
+
+  for (const localeId of LOCALE_IDS) {
+    const pricing = marketingCopy[localeId].pricing;
+    assert.match(pricing.kicker, /İSTEBUL AI/);
+    assert.match(pricing.lead, /İSTEBUL AI/);
+    assert.match(pricing.lead, /GarsonAI/);
+  }
+});

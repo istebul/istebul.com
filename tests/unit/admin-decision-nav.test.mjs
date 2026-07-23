@@ -3,6 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+/** Parse _redirects into active rule source paths (ignore comments and blanks). */
+function parseRedirectRuleSources(redirectsText) {
+  return String(redirectsText)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split(/\s+/)[0])
+    .filter(Boolean);
+}
+
 const {
   resolveAdminPanelAccess,
   verifyAdminSessionAccess
@@ -55,8 +65,9 @@ test('verifyAdminSessionAccess returns boolean session flag', async () => {
   assert.equal(typeof result.sessionIsAdmin, 'boolean');
 });
 
-test('admin listing management href is under /admin', () => {
-  assert.equal(ADMIN_LISTING_MANAGEMENT_HREF, '/admin/listings');
+test('admin listing management href targets AI listings panel (not CRM listings)', () => {
+  assert.equal(ADMIN_LISTING_MANAGEMENT_HREF, '/admin/ai-listings/');
+  assert.notEqual(ADMIN_LISTING_MANAGEMENT_HREF, '/admin/listings');
 });
 
 test('injectAdminListingManagementNav module defines admin-only nav contract', () => {
@@ -64,22 +75,57 @@ test('injectAdminListingManagementNav module defines admin-only nav contract', (
   assert.match(src, /nav-item--admin-only/);
   assert.match(src, /AI İlan Yönetimi/);
   assert.match(src, /ADMIN_LISTING_MANAGEMENT_HREF/);
+  assert.match(src, /bindAdminExternalNavLinks/);
   assert.doesNotMatch(src, /DECISION_CENTER_HREF/);
+});
+
+test('admin-panel.html includes static AI İlan Yönetimi link', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin-panel.html'), 'utf8');
+  assert.match(html, /href="\/admin\/ai-listings\/"/);
+  assert.match(html, /data-admin-listing-nav-injected="ai-listings"/);
+  assert.match(html, />AI İlan Yönetimi</);
+  assert.match(html, /data-page-target="listings"/);
+  assert.match(html, />Karar Seçenekleri</);
+  assert.doesNotMatch(html, /data-page-target="decision-center"/);
+});
+
+test('Karar Seçenekleri and AI İlan Yönetimi titles distinguish classic CRM from AI engine', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin-panel.html'), 'utf8');
+  const listingsNav = html.match(/data-page-target="listings"[^>]*title="([^"]+)"/);
+  assert.ok(listingsNav, 'listings nav has title tooltip');
+  assert.match(listingsNav[1], /AI İlan Yönetimi/);
+  const aiNav = html.match(/href="\/admin\/ai-listings\/"[^>]*title="([^"]+)"/);
+  assert.ok(aiNav, 'AI listings nav has title tooltip');
+  assert.match(aiNav[1], /Karar Seçenekleri/);
 });
 
 test('public decision center routes redirect to profil', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.match(redirects, /\/karar-merkezi \/profil\/ 301/);
-  assert.match(redirects, /\/decision-center \/profil\/ 301/);
-  assert.doesNotMatch(redirects, /\/admin\/karar-merkezi/);
-  assert.doesNotMatch(redirects, /\/admin\/decision-center/);
+  const rules = parseRedirectRuleSources(redirects);
+  assert.ok(
+    rules.some((src) => src === '/karar-merkezi' || src === '/karar-merkezi/'),
+    'karar-merkezi redirect rule exists'
+  );
+  assert.ok(
+    rules.some((src) => src === '/decision-center' || src === '/decision-center/'),
+    'decision-center redirect rule exists'
+  );
+  assert.ok(
+    rules.every((src) => !src.startsWith('/admin/')),
+    'no /admin/* redirect rules (comments must not count)'
+  );
 });
 
 test('admin listing routes are static (no _redirects under /admin)', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.doesNotMatch(redirects, /^\/admin\//m);
+  const rules = parseRedirectRuleSources(redirects);
+  assert.ok(
+    rules.every((src) => !src.startsWith('/admin/')),
+    'admin deep links are physical build output, not _redirects rules'
+  );
   const buildScript = fs.readFileSync(path.join(process.cwd(), 'scripts/production-build.cjs'), 'utf8');
-  assert.match(buildScript, /admin\/listings\/index\.html/);
+  assert.match(buildScript, /admin\/ai-listings\/index\.html/);
+  assert.doesNotMatch(buildScript, /admin\/listings\/index\.html',\s*'admin\/ai-listings/);
 });
 
 test('admin route guard paths', () => {
@@ -108,4 +154,31 @@ test('ai-listings bootstrap enforces admin route guard', () => {
 
 test('forbidden page exists for 403 redirect', () => {
   assert.ok(fs.existsSync(path.join(process.cwd(), 'admin/forbidden.html')));
+});
+
+test('forbidden page uses shared admin polish stylesheet', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin/forbidden.html'), 'utf8');
+  assert.match(html, /admin-premium-polish\.css/);
+  assert.doesNotMatch(html, /<style[\s>]/);
+  assert.match(html, /class="admin-forbidden-page"/);
+  assert.match(html, /class="admin-forbidden"/);
+  assert.match(html, /admin-forbidden__link--primary/);
+  assert.match(html, /href="\/admin-panel\.html"/);
+  assert.match(html, /href="\/profil\/"/);
+});
+
+test('admin-premium-polish defines forbidden shell accessibility styles', () => {
+  const css = fs.readFileSync(path.join(process.cwd(), 'css/admin-premium-polish.css'), 'utf8');
+  assert.match(css, /\.admin-forbidden\b/);
+  assert.match(css, /\.admin-forbidden__link:focus-visible/);
+  assert.match(css, /min-height:\s*44px/);
+});
+
+test('renderAdminForbiddenHtml uses shared forbidden shell markup', () => {
+  const src = fs.readFileSync(path.join(process.cwd(), 'js/admin/admin-route-guard.js'), 'utf8');
+  assert.match(src, /admin-forbidden__title/);
+  assert.match(src, /admin-forbidden__actions/);
+  assert.match(src, /ensureAdminForbiddenStyles/);
+  assert.match(src, /yetkili admin kullanıcılar/);
+  assert.doesNotMatch(src, /Bu sayfa yalnızca admin kullanıcılar/);
 });

@@ -1,7 +1,59 @@
 /**
  * Listing gallery + video markup for detail and grid cards.
  */
+import { attachVehicleImageFallback } from '../auto/vehicle-image.js';
 import { resolveListingImages, resolveListingVideo } from '../features/listings/listing-media.js';
+import {
+  isVehicleListingCategory,
+  mapListingToVehicleImageInput,
+  resolveTrustGatedListingImages
+} from './listing-trust-ui.js';
+
+const LISTING_IMAGE_SELECTOR =
+  '.listing-image, .listing-gallery-hero, .listing-gallery-thumb img, .comparison-vehicle-visual img';
+
+const GENERIC_LISTING_IMAGE_PLACEHOLDER = '/assets/images/placeholder.svg';
+
+/**
+ * CSP-safe runtime placeholder for non-vehicle listing images.
+ * @param {HTMLImageElement|object} img
+ */
+function attachGenericListingImageFallback(img) {
+  if (!img || img.dataset.genericFallbackBound === '1') return;
+  img.dataset.genericFallbackBound = '1';
+  img.addEventListener('error', () => {
+    if (img.dataset.genericFallbackApplied === '1') return;
+    img.dataset.genericFallbackApplied = '1';
+    img.src = GENERIC_LISTING_IMAGE_PLACEHOLDER;
+  });
+}
+
+/**
+ * Bind CSP-safe runtime image error fallback for non-vehicle listing surfaces only.
+ * @param {ParentNode|null|undefined} root
+ * @param {Record<string, unknown>} [listing]
+ */
+export function bindListingGenericImageFallbacks(root, listing = {}) {
+  if (!root?.querySelectorAll || isVehicleListingCategory(listing.category)) return;
+
+  root.querySelectorAll(LISTING_IMAGE_SELECTOR).forEach((img) => {
+    attachGenericListingImageFallback(img);
+  });
+}
+
+/**
+ * Bind CSP-safe runtime image error fallback for araç listing surfaces only.
+ * @param {ParentNode|null|undefined} root
+ * @param {Record<string, unknown>} [listing]
+ */
+export function bindListingVehicleImageFallbacks(root, listing = {}) {
+  if (!root?.querySelectorAll || !isVehicleListingCategory(listing.category)) return;
+
+  const vehicleInput = mapListingToVehicleImageInput(listing);
+  root.querySelectorAll(LISTING_IMAGE_SELECTOR).forEach((img) => {
+    attachVehicleImageFallback(img, vehicleInput);
+  });
+}
 
 /**
  * @param {object} listing
@@ -11,7 +63,9 @@ import { resolveListingImages, resolveListingVideo } from '../features/listings/
 export function renderListingGalleryHtml(listing, escapeHtml, safeImageUrl) {
   const esc = escapeHtml || ((s) => String(s ?? ''));
   const img = safeImageUrl || ((u) => u);
-  const images = resolveListingImages(listing).map((url) => img(url));
+  const images = (resolveTrustGatedListingImages(listing) ?? resolveListingImages(listing)).map((url) =>
+    img(url)
+  );
   const video = resolveListingVideo(listing);
   const title = esc(listing.title || 'Araç seçeneği');
 
@@ -71,7 +125,7 @@ export function bindListingGallery(root) {
  * @param {object} listing
  */
 export function listingMediaCount(listing) {
-  const images = resolveListingImages(listing);
+  const images = resolveTrustGatedListingImages(listing) ?? resolveListingImages(listing);
   const video = resolveListingVideo(listing);
   return images.length + (video ? 1 : 0);
 }

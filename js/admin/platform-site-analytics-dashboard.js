@@ -20,6 +20,19 @@ const SITE_CATEGORIES = [
   { id: 'kasko', label: 'Kasko' }
 ];
 
+/** Shared vertical + canonical lead submit event names for admin KPI parity. */
+export const PLATFORM_LEAD_SUBMIT_EVENT_ALIASES = Object.freeze([
+  'lead_submitted',
+  'lead_submit',
+  'auto_lead_submit',
+  'housing_lead_submit',
+  'home_lead_submit',
+  'vacation_lead_submit',
+  'finans_lead_submit',
+  'insurance_lead_submit',
+  'kasko_lead_submit'
+]);
+
 const EVENT_ALIASES = Object.freeze({
   homepage_view: ['homepage_view', 'landing_visit'],
   category_card_click: ['category_card_click'],
@@ -70,15 +83,7 @@ const EVENT_ALIASES = Object.freeze({
     'home_lead_open',
     'vacation_lead_open'
   ],
-  lead_submitted: [
-    'lead_submitted',
-    'lead_submit',
-    'auto_lead_submit',
-    'finans_lead_submit',
-    'vacation_lead_submit',
-    'home_lead_submit',
-    'insurance_lead_submit'
-  ],
+  lead_submitted: [...PLATFORM_LEAD_SUBMIT_EVENT_ALIASES],
   pdf_downloaded: ['pdf_downloaded', 'insurance_pdf_download'],
   cta_clicked: ['cta_clicked', 'cta_click', 'hero_cta_click']
 });

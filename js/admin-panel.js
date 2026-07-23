@@ -48,9 +48,13 @@ import {
   getPartnerCrmWinProbability,
   renderPartnerPipelineBoardHtml
 } from './features/sales/partner-crm-pipeline.js';
-import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
+import {
+  registerAdminPageHandlers,
+  showAdminPage,
+  bootAdminPageFromUrl
+} from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
-import { injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
+import { bindAdminExternalNavLinks, injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
@@ -84,7 +88,8 @@ import {
   renderPagePathDetailPanel,
   renderPlatformAnalyticsEmptyGuide,
   exportPlatformAnalyticsCsv,
-  FILTER_PRESETS
+  FILTER_PRESETS,
+  PLATFORM_LEAD_SUBMIT_EVENT_ALIASES
 } from './admin/platform-site-analytics-dashboard.js';
 import {
   ANALYTICS_DATA_MODES,
@@ -232,6 +237,7 @@ async function showApp() {
   partnerEndpointsAdmin.loadPartnerEndpoints();
   loadPartnerApplications();
   loadPartnerDispatchLogs();
+  bootAdminPageFromUrl();
 }
 
 function closeAdminSidebar() {
@@ -293,6 +299,15 @@ async function loadOpsAiAssistantPage() {
   );
 }
 
+async function refreshLinkedInOpsAssistant() {
+  await loadLinkedInOpsAssistantPage();
+}
+
+async function loadLinkedInOpsAssistantPage() {
+  const { loadLinkedInOpsAssistant } = await import('./admin/linkedin-ops-assistant.js');
+  await loadLinkedInOpsAssistant(escapeHtml);
+}
+
 function internalDashboardDepsBase() {
   return {
     sb,
@@ -319,6 +334,70 @@ async function loadCompanyDashboard(kind, rootId) {
     escapeHtml,
     renderAdminDataSourceNotices
   );
+}
+
+/**
+ * Dashboard KPI + topbar badge: critical + error operational_events (24h).
+ * @param {number} alertCount
+ */
+function applyDashboardSystemAlerts(alertCount) {
+  const count = Number.isFinite(Number(alertCount)) ? Math.max(0, Math.floor(Number(alertCount))) : 0;
+  const statEl = document.getElementById('stat-system-alerts');
+  if (statEl) statEl.textContent = String(count);
+
+  const badgeEl = document.getElementById('admin-notify-badge');
+  if (!badgeEl) return;
+  if (count > 0) {
+    badgeEl.textContent = String(count);
+    badgeEl.hidden = false;
+  } else {
+    badgeEl.textContent = '0';
+    badgeEl.hidden = true;
+  }
+}
+
+/**
+ * @param {Array<{ severity?: string, events?: number }>} severityRows
+ * @returns {number}
+ */
+function sumCriticalErrorAlertCount(severityRows) {
+  let total = 0;
+  for (const row of severityRows || []) {
+    if (row.severity === 'critical' || row.severity === 'error') {
+      total += Number(row.events) || 0;
+    }
+  }
+  return total;
+}
+
+async function refreshDashboardSystemAlerts() {
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const opsEventsRes = await fetchAdminTable(sb, {
+      table: 'operational_events',
+      select: 'created_at, severity',
+      limit: 2000,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('operational_events')
+          .select('created_at, severity')
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(2000)
+    });
+
+    if (opsEventsRes.error && !(opsEventsRes.data || []).length) {
+      applyDashboardSystemAlerts(0);
+      return;
+    }
+
+    const { rollupSeverity24h } = await import('./features/ops/ops-health.js');
+    const alertCount = sumCriticalErrorAlertCount(rollupSeverity24h(opsEventsRes.data || []));
+    applyDashboardSystemAlerts(alertCount);
+  } catch {
+    applyDashboardSystemAlerts(0);
+  }
 }
 
 async function loadOperationalHealth() {
@@ -425,47 +504,47 @@ async function loadOperationalHealth() {
     ${renderAdminDataSourceNotices(opsHealthBatch)}
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Critical (24h)</div>
+        <div class="stat-label">Kritik (24s)</div>
         <div class="stat-value" style="color:var(--danger)">${bySeverity.critical || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Errors (24h)</div>
+        <div class="stat-label">Hatalar (24s)</div>
         <div class="stat-value" style="color:var(--danger)">${bySeverity.error || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Warnings (24h)</div>
+        <div class="stat-label">Uyarılar (24s)</div>
         <div class="stat-value">${bySeverity.warning || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Webhook / dispatch fails</div>
+        <div class="stat-label">Webhook / teslimat hataları</div>
         <div class="stat-value">${webhookFails}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Auth failures</div>
+        <div class="stat-label">Kimlik doğrulama hataları</div>
         <div class="stat-value">${authFails}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Payment failures</div>
+        <div class="stat-label">Ödeme hataları</div>
         <div class="stat-value">${paymentFails}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Performance regressions</div>
+        <div class="stat-label">Performans gerilemeleri</div>
         <div class="stat-value">${perfWarns}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Abuse signals</div>
+        <div class="stat-label">Kötüye kullanım sinyalleri</div>
         <div class="stat-value">${abuseHits}</div>
       </div>
     </div>
 
     <p class="text-muted-sm mb-12">Sentry (client) + <code>operational_events</code> + partner dispatch logs + admin audit. Export: <code>npm run metrics:ops</code></p>
 
-    ${opsEventsRes.error && !allOpsEvents.length ? `<p class="empty">Ops events yüklenemedi: ${escapeHtml(opsEventsRes.error.message)} — <code>supabase/migrations/20260530_operational_observability.sql</code> deploy edin.</p>` : ''}
+    ${opsEventsRes.error && !allOpsEvents.length ? `<p class="empty">Operasyon olayları yüklenemedi: ${escapeHtml(opsEventsRes.error.message)} — <code>supabase/migrations/20260530_operational_observability.sql</code> deploy edin.</p>` : ''}
 
-    <h3 style="margin:16px 0 10px">Top signals (24h rollup)</h3>
+    <h3 style="margin:16px 0 10px">Öne çıkan sinyaller (24s özet)</h3>
     ${healthTable.length ? `
       <table class="table">
-        <thead><tr><th>Category</th><th>Event</th><th>Severity</th><th>Count</th><th>Errors</th><th>Last</th></tr></thead>
+        <thead><tr><th>Kategori</th><th>Olay</th><th>Şiddet</th><th>Adet</th><th>Hatalar</th><th>Son</th></tr></thead>
         <tbody>
           ${healthTable.map((row) => `
             <tr>
@@ -479,12 +558,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Henüz operational event yok.</p>'}
+    ` : '<p class="empty">Henüz operasyon olayı yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Recent critical / error events</h3>
+    <h3 style="margin:20px 0 10px">Son kritik / hata olayları</h3>
     ${recentEvents.length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Severity</th><th>Event</th><th>Source</th><th>Detail</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Şiddet</th><th>Olay</th><th>Kaynak</th><th>Detay</th></tr></thead>
         <tbody>
           ${recentEvents.slice(0, 40).map((row) => `
             <tr>
@@ -497,12 +576,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Son 24 saatte critical/error yok.</p>'}
+    ` : '<p class="empty">Son 24 saatte kritik veya hata olayı yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Lead delivery failures</h3>
+    <h3 style="margin:20px 0 10px">Lead teslimat hataları</h3>
     ${failedLeads.length ? `
       <table class="table">
-        <thead><tr><th>Lead</th><th>Zaman</th><th>Status</th><th>Hata</th></tr></thead>
+        <thead><tr><th>Lead</th><th>Zaman</th><th>Durum</th><th>Hata</th></tr></thead>
         <tbody>
           ${failedLeads.map((row) => `
             <tr>
@@ -514,12 +593,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">dispatch_failed lead yok.</p>'}
+    ` : '<p class="empty">Gönderim hatası (dispatch_failed) lead kaydı yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Partner webhook failures (log)</h3>
+    <h3 style="margin:20px 0 10px">Partner webhook hataları (log)</h3>
     ${failedDispatchLogs.length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Route</th><th>Endpoint</th><th>HTTP</th><th>Hata</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Rota</th><th>Uç nokta</th><th>HTTP</th><th>Hata</th></tr></thead>
         <tbody>
           ${failedDispatchLogs.map((row) => `
             <tr>
@@ -532,12 +611,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Webhook fail log yok.</p>'}
+    ` : '<p class="empty">Başarısız webhook log kaydı yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Admin audit (son 40)</h3>
+    <h3 style="margin:20px 0 10px">Yönetici denetimi (son 40)</h3>
     ${(auditRes.data || []).length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Actor</th><th>Action</th><th>Entity</th><th>Summary</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Aktör</th><th>İşlem</th><th>Varlık</th><th>Özet</th></tr></thead>
         <tbody>
           ${auditRes.data.map((row) => `
             <tr>
@@ -550,8 +629,214 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Audit kaydı yok.</p>'}
+    ` : '<p class="empty">Denetim kaydı yok.</p>'}
   `;
+}
+
+const OPS_DOMAIN_LABEL_TR = Object.freeze({
+  'Revenue Ops': 'Gelir operasyonları',
+  'Customer Ops': 'Müşteri operasyonları',
+  'Partner Ops': 'Partner operasyonları',
+  'Analytics Automation': 'Analitik otomasyonu',
+  'Lifecycle Automation': 'Yaşam döngüsü otomasyonu',
+  'Operational Alerts': 'Operasyonel uyarılar',
+  'AI Decision Ops': 'AI karar operasyonları',
+  'Internal Dashboards': 'İç paneller',
+  Observability: 'Gözlemlenebilirlik'
+});
+
+const OPS_HIGHLIGHT_PHRASE_TR = Object.freeze([
+  ['Pipeline realized', 'Gerçekleşen pipeline'],
+  ['Lifecycle enrolls', 'Lifecycle kayıtları'],
+  ['Deterministic scoring live', 'Deterministik skorlama aktif'],
+  ['AI proxy pressure signals', 'AI proxy baskı sinyali'],
+  ['Triggered rules', 'Tetiklenen kural'],
+  ['Failed messages', 'Başarısız mesaj'],
+  ['Enrollments 7d', '7g kayıt'],
+  ['Events sampled', 'Örneklenen olay'],
+  ['Recovery rate', 'Kurtarma oranı'],
+  ['Return visits', 'Geri dönüş'],
+  ['Unhealthy EP', 'Sağlıksız uç nokta'],
+  ['Retry due', 'Yeniden deneme bekleyen'],
+  ['Active subs', 'Aktif abonelik'],
+  ['Funnel CR', 'Huni CR'],
+  ['Dispatch', 'Teslimat'],
+  ['Critical', 'Kritik'],
+  ['Errors', 'Hatalar']
+]);
+
+const OPS_HEALTH_STATUS_TR = Object.freeze({
+  healthy: 'sağlıklı',
+  warning: 'uyarı',
+  critical: 'kritik',
+  error: 'hata',
+  ok: 'tamam',
+  green: 'yeşil',
+  yellow: 'sarı',
+  red: 'kırmızı'
+});
+
+const OPS_SEVERITY_TR = Object.freeze({
+  critical: 'Kritik',
+  error: 'Hata',
+  warning: 'Uyarı',
+  info: 'Bilgi'
+});
+
+const OPS_DOMAIN_VALUE_TR = Object.freeze({
+  revenue: 'Gelir',
+  customer: 'Müşteri',
+  partner: 'Partner',
+  operations: 'Operasyon',
+  analytics: 'Analitik',
+  lifecycle: 'Yaşam döngüsü',
+  observability: 'Gözlemlenebilirlik',
+  ai: 'AI',
+  dashboard: 'Panel',
+  conversion: 'Dönüşüm',
+  growth: 'Büyüme'
+});
+
+const OPS_ALERT_MESSAGE_TR = Object.freeze({
+  'Critical operational events in last 24h — check Observability and Stripe/partner webhooks.':
+    'Son 24 saatte kritik operasyonel olaylar — Gözlemlenebilirlik ve Stripe/partner webhook’larını kontrol edin.',
+  'Error event spike (≥10/24h) — review ops_health rollup.':
+    'Hata olayı artışı (≥10/24s) — ops_health özetini inceleyin.',
+  'Partner webhook/dispatch failures elevated — run partner-retry workflow.':
+    'Partner webhook/teslimat hataları yükseldi — partner-retry iş akışını çalıştırın.',
+  'Lead dispatch success rate below 70% — check partner endpoints and HMAC secrets.':
+    'Lead teslimat başarı oranı %70 altında — partner uç noktalarını ve HMAC secret’larını kontrol edin.',
+  'Partner dispatch p95 latency exceeds 15m SLA — review endpoint latency and circuit breakers.':
+    'Partner teslimat p95 gecikmesi 15 dk SLA’yı aşıyor — uç nokta gecikmesi ve devre kesicileri inceleyin.',
+  'Large dispatch_failed retry backlog — confirm partner-retry workflow is running.':
+    'Büyük dispatch_failed yeniden deneme birikimi — partner-retry iş akışının çalıştığını doğrulayın.',
+  'Partner endpoint marked unhealthy — verify webhook URL and HMAC secret.':
+    'Partner uç noktası sağlıksız işaretlendi — webhook URL ve HMAC secret’ı doğrulayın.',
+  'Partner circuit breaker open — failover or manual endpoint reset required.':
+    'Partner devre kesici açık — failover veya manuel uç nokta sıfırlaması gerekli.',
+  'Active partner endpoint(s) with no successful dispatch in 7d — partner inactivity.':
+    '7 günde başarılı teslimat olmayan aktif partner uç noktası — partner hareketsizliği.',
+  'Multiple leads reached dispatch_dead after max retries — manual partner ops required.':
+    'Birden fazla lead maksimum denemeden sonra dispatch_dead durumuna ulaştı — manuel partner ops gerekli.',
+  'Multiple subscriptions set to cancel at period end — retention outreach.':
+    'Birden fazla abonelik dönem sonunda iptal için işaretlendi — elde tutma iletişimi.',
+  'Checkout abandon volume high — confirm lifecycle checkout_abandon_recovery enrollments.':
+    'Checkout terk hacmi yüksek — lifecycle checkout_abandon_recovery kayıtlarını doğrulayın.',
+  'Lifecycle message failures — verify email provider and lifecycle-cron.':
+    'Lifecycle mesaj hataları — e-posta sağlayıcısı ve lifecycle-cron’u doğrulayın.',
+  'Analytics export hit row cap — warehouse upgrade recommended for Series A diligence.':
+    'Analitik dışa aktarımı satır limitine ulaştı — Series A incelemesi için depo yükseltmesi önerilir.',
+  'AI proxy rate-limit pressure — review Groq quota and session caps.':
+    'AI proxy rate-limit baskısı — Groq kotası ve oturum limitlerini inceleyin.',
+  'Conversion crash — funnel CR dropped sharply vs prior 24h. Check CRO, landing, and auto wizard.':
+    'Dönüşüm çöküşü — huni CR önceki 24 saate göre keskin düştü. CRO, landing ve auto wizard’ı kontrol edin.',
+  'Checkout failures elevated — review Stripe checkout, payment errors, and abandon recovery.':
+    'Checkout hataları yükseldi — Stripe checkout, ödeme hataları ve terk kurtarmayı inceleyin.',
+  'Stripe webhook failures detected — verify signature secret, endpoint uptime, and Cloudflare worker logs.':
+    'Stripe webhook hataları tespit edildi — imza secret, uç nokta çalışma süresi ve Cloudflare worker loglarını doğrulayın.',
+  'Partner dispatch failures elevated — run partner-retry and check endpoint health.':
+    'Partner teslimat hataları yükseldi — partner-retry çalıştırın ve uç nokta sağlığını kontrol edin.',
+  'Unusual churn signal — multiple cancel-at-period-end or churn event spike. Trigger retention outreach.':
+    'Olağandışı churn sinyali — birden fazla dönem sonu iptali veya churn artışı. Elde tutma iletişimini tetikleyin.',
+  'Lead volume anomaly — lead submits dropped vs prior 24h. Check acquisition, SEO, and form health.':
+    'Lead hacmi anomalisi — lead gönderimleri önceki 24 saate göre düştü. Edinim, SEO ve form sağlığını kontrol edin.',
+  'Analytics volume anomaly — event ingest may be broken or traffic collapsed. Check analytics-ingest and CDN.':
+    'Analitik hacim anomalisi — olay alımı bozulmuş veya trafik çökmüş olabilir. analytics-ingest ve CDN’i kontrol edin.'
+});
+
+function formatOpsDomainLabel(label) {
+  return OPS_DOMAIN_LABEL_TR[label] || label;
+}
+
+function formatOpsHighlightLine(line) {
+  let out = String(line || '');
+  for (const [from, to] of OPS_HIGHLIGHT_PHRASE_TR) {
+    out = out.replace(from, to);
+  }
+  if (out === 'Observability') return OPS_DOMAIN_LABEL_TR.Observability;
+  return out;
+}
+
+function formatOpsHealthLabel(value) {
+  const key = String(value || '').toLowerCase();
+  return OPS_HEALTH_STATUS_TR[key] || value;
+}
+
+function formatOpsSeverityLabel(value) {
+  const key = String(value || '').toLowerCase();
+  return OPS_SEVERITY_TR[key] || value;
+}
+
+function formatOpsDomainValue(value) {
+  const key = String(value || '').toLowerCase();
+  return OPS_DOMAIN_VALUE_TR[key] || value;
+}
+
+function formatOpsAlertMessage(message) {
+  return OPS_ALERT_MESSAGE_TR[message] || message;
+}
+
+const FUNNEL_STEP_LABEL_TR = Object.freeze({
+  landing_visit: 'İniş',
+  hero_cta_click: 'Hero CTA',
+  auto_start: 'Auto başlangıç',
+  wizard_complete: 'Wizard tamamlama',
+  results_view: 'Sonuçlar',
+  lead_submit: 'Lead',
+  pricing_view: 'Fiyatlandırma',
+  checkout_start: 'Checkout başlangıç',
+  checkout_complete: 'Checkout tamamlandı',
+  paid_conversion: 'Ücretli dönüşüm'
+});
+
+const FUNNEL_STEP_LABEL_FALLBACK_TR = Object.freeze({
+  Landing: 'İniş',
+  'Hero CTA': 'Hero CTA',
+  'Auto start': 'Auto başlangıç',
+  'Wizard complete': 'Wizard tamamlama',
+  Results: 'Sonuçlar',
+  Lead: 'Lead',
+  Pricing: 'Fiyatlandırma',
+  'Checkout start': 'Checkout başlangıç',
+  'Checkout complete': 'Checkout tamamlandı',
+  'Paid conversion': 'Ücretli dönüşüm'
+});
+
+function formatFunnelStepLabel(step) {
+  const key = String(step?.key || '').toLowerCase();
+  if (key && FUNNEL_STEP_LABEL_TR[key]) return FUNNEL_STEP_LABEL_TR[key];
+  const label = String(step?.label || step || '');
+  return FUNNEL_STEP_LABEL_FALLBACK_TR[label] || label;
+}
+
+const CEO_SUMMARY_PHRASE_TR = Object.freeze([
+  ['partner win rate', 'partner kazanma oranı'],
+  ['Retention dönüş', 'Geri dönüş'],
+  ['Retention ', 'Geri dönüş '],
+  ['churn sinyali (cancel at period end)', 'kayıp sinyali (dönem sonu iptal)'],
+  ['churn signal (cancel at period end)', 'kayıp sinyali (dönem sonu iptal)'],
+  ['Landing→paid', 'İniş→ücretli'],
+  ['Landing → paid', 'İniş → ücretli'],
+  ['(north star)', '(kuzey yıldızı)']
+]);
+
+function formatCeoSummaryLine(line) {
+  let out = String(line || '');
+  for (const [from, to] of CEO_SUMMARY_PHRASE_TR) {
+    out = out.replace(from, to);
+  }
+  return out;
+}
+
+const OPS_RUNBOOK_LABEL_TR = Object.freeze({
+  'Deploy checklist': 'Dağıtım kontrol listesi',
+  'Ops automation roadmap': 'Ops otomasyon yol haritası',
+  'Platform expansion': 'Platform genişlemesi',
+  'Partner webhooks': "Partner webhook'ları"
+});
+
+function formatOpsRunbookLabel(label) {
+  return OPS_RUNBOOK_LABEL_TR[label] || label;
 }
 
 async function loadOpsCommandCenter() {
@@ -785,23 +1070,23 @@ async function loadOpsCommandCenter() {
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${healthColor}">
-      <strong>Overall: ${escapeHtml(center.overallHealth)}</strong>
-      <span class="text-muted-sm"> · ${center.alerts.triggeredCount} alert rule(s) triggered</span>
+      <strong>Genel: ${escapeHtml(formatOpsHealthLabel(center.overallHealth))}</strong>
+      <span class="text-muted-sm"> · ${center.alerts.triggeredCount} uyarı kuralı tetiklendi</span>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
-        ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+        ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(formatCeoSummaryLine(line))}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Automation domains</h3>
+    <h3 style="margin:0 0 12px">Otomasyon alanları</h3>
     <div class="stat-grid">
       ${center.domains
         .map(
           (d) => `
         <div class="stat-card">
-          <div class="stat-label">${escapeHtml(d.label)}</div>
-          <div class="stat-value" style="font-size:14px">${escapeHtml(d.status)}</div>
+          <div class="stat-label">${escapeHtml(formatOpsDomainLabel(d.label))}</div>
+          <div class="stat-value" style="font-size:14px">${escapeHtml(formatOpsHealthLabel(d.status))}</div>
           <ul class="text-muted-sm" style="margin:8px 0 0;padding-left:16px;font-size:12px">
-            ${d.highlights.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}
+            ${d.highlights.map((h) => `<li>${escapeHtml(formatOpsHighlightLine(h))}</li>`).join('')}
           </ul>
         </div>`
         )
@@ -809,80 +1094,80 @@ async function loadOpsCommandCenter() {
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">P13 CEO alerts (early intervention)</h3>
+    <h3 style="margin:0 0 12px">P13 CEO uyarıları (erken müdahale)</h3>
     <div class="stat-card" style="margin-bottom:12px;padding:12px 14px;border-left:4px solid ${ceoSnap.overallHealth === 'critical' ? 'var(--danger)' : ceoSnap.overallHealth === 'healthy' ? 'var(--success)' : 'var(--warning)'}">
-      <strong>CEO health: ${escapeHtml(ceoSnap.overallHealth)}</strong>
-      <span class="text-muted-sm"> · ${ceoSnap.alerts.triggeredCount} rule(s) · hourly <code>ceo-alerts.yml</code></span>
+      <strong>CEO sağlığı: ${escapeHtml(formatOpsHealthLabel(ceoSnap.overallHealth))}</strong>
+      <span class="text-muted-sm"> · ${ceoSnap.alerts.triggeredCount} kural · saatlik <code>ceo-alerts.yml</code></span>
     </div>
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Funnel CR</div>
+        <div class="stat-label">Huni CR</div>
         <div class="stat-value">${ceoSnap.metrics.conversion.funnelCrPct24h ?? '—'}%</div>
-        <div class="text-muted-sm">Δ prior ${ceoSnap.metrics.conversion.funnelDropPct ?? 0}%</div>
+        <div class="text-muted-sm">Önceki döneme göre Δ ${ceoSnap.metrics.conversion.funnelDropPct ?? 0}%</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Checkout</div>
-        <div class="stat-value">${ceoSnap.metrics.checkout.failureCount24h ?? 0} issues</div>
-        <div class="text-muted-sm">Stripe WH fails ${ceoSnap.metrics.stripe.webhookFailCount24h ?? 0}</div>
+        <div class="stat-value">${ceoSnap.metrics.checkout.failureCount24h ?? 0} sorun</div>
+        <div class="text-muted-sm">Stripe webhook hataları ${ceoSnap.metrics.stripe.webhookFailCount24h ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Leads 24h</div>
+        <div class="stat-label">Leadler 24s</div>
         <div class="stat-value">${ceoSnap.metrics.leads.leads24h ?? 0}</div>
-        <div class="text-muted-sm">prior ${ceoSnap.metrics.leads.leadsPrior24h ?? 0}</div>
+        <div class="text-muted-sm">önceki ${ceoSnap.metrics.leads.leadsPrior24h ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Analytics vol</div>
+        <div class="stat-label">Analitik hacim</div>
         <div class="stat-value">${ceoSnap.metrics.analytics.events24h ?? 0}</div>
-        <div class="text-muted-sm">drop ${ceoSnap.metrics.analytics.volumeDropPct ?? 0}%</div>
+        <div class="text-muted-sm">düşüş ${ceoSnap.metrics.analytics.volumeDropPct ?? 0}%</div>
       </div>
     </div>
     ${
       ceoSnap.alerts.triggered.length
         ? `<ul style="margin:12px 0 0;padding-left:18px;font-size:13px">${ceoSnap.alerts.triggered
-            .map((a) => `<li><strong>${escapeHtml(a.severity)}</strong> — ${escapeHtml(a.message)}</li>`)
+            .map((a) => `<li><strong>${escapeHtml(formatOpsSeverityLabel(a.severity))}</strong> — ${escapeHtml(formatOpsAlertMessage(a.message))}</li>`)
             .join('')}</ul>`
-        : '<p class="text-muted-sm" style="margin:12px 0 0">No CEO threshold alerts in current window.</p>'
+        : '<p class="text-muted-sm" style="margin:12px 0 0">Pencerede CEO eşik uyarısı yok.</p>'
     }
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">P12 Partner delivery ops (24h)</h3>
+    <h3 style="margin:0 0 12px">P12 Partner teslimat ops (24s)</h3>
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Dispatch success</div>
+        <div class="stat-label">Teslimat başarısı</div>
         <div class="stat-value">${escapeHtml(String(p12.dispatchMonitoring?.successRatePct24h ?? '—'))}%</div>
-        <div class="text-muted-sm">${p12.dispatchMonitoring?.attempts24h ?? 0} attempts · p95 ${Math.round((p12.dispatchMonitoring?.p95DurationMs ?? 0) / 1000)}s</div>
+        <div class="text-muted-sm">${p12.dispatchMonitoring?.attempts24h ?? 0} deneme · p95 ${Math.round((p12.dispatchMonitoring?.p95DurationMs ?? 0) / 1000)}s</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">SLA (&lt;15m p95)</div>
-        <div class="stat-value">${p12.sla?.breached ? '⚠️ Breach' : '✓ OK'}</div>
+        <div class="stat-value">${p12.sla?.breached ? '⚠️ İhlal' : '✓ Tamam'}</div>
         <div class="text-muted-sm">target ${Math.round((p12.sla?.targetP95Ms ?? 900000) / 60000)}m</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Retry queue</div>
-        <div class="stat-value">${p12.retryAutomation?.retryDueNow ?? 0} due</div>
-        <div class="text-muted-sm">failed ${p12.retryAutomation?.dispatch_failed ?? 0} · dead ${p12.retryAutomation?.dispatch_dead ?? 0}</div>
+        <div class="stat-label">Yeniden deneme kuyruğu</div>
+        <div class="stat-value">${p12.retryAutomation?.retryDueNow ?? 0} bekleyen</div>
+        <div class="text-muted-sm">başarısız ${p12.retryAutomation?.dispatch_failed ?? 0} · dead ${p12.retryAutomation?.dispatch_dead ?? 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Webhook health</div>
-        <div class="stat-value">${p12.webhookHealth?.unhealthyCount ?? 0} unhealthy</div>
-        <div class="text-muted-sm">circuit ${p12.webhookHealth?.circuitOpenCount ?? 0} · inactive ${p12.webhookHealth?.inactiveEndpointCount ?? 0}</div>
+        <div class="stat-label">Webhook sağlığı</div>
+        <div class="stat-value">${p12.webhookHealth?.unhealthyCount ?? 0} sağlıksız</div>
+        <div class="text-muted-sm">devre ${p12.webhookHealth?.circuitOpenCount ?? 0} · pasif ${p12.webhookHealth?.inactiveEndpointCount ?? 0}</div>
       </div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Triggered alerts</h3>
+    <h3 style="margin:0 0 12px">Tetiklenen uyarılar</h3>
     ${
       center.alerts.triggered.length
         ? `<table class="table">
-        <thead><tr><th>Severity</th><th>Domain</th><th>Message</th><th>Metric</th><th>Value</th></tr></thead>
+        <thead><tr><th>Şiddet</th><th>Alan</th><th>Mesaj</th><th>Metrik</th><th>Değer</th></tr></thead>
         <tbody>
           ${center.alerts.triggered
             .map(
               (a) => `
             <tr>
-              <td><span class="badge ${a.severity === 'critical' ? 'badge-red' : 'badge-yellow'}">${escapeHtml(a.severity)}</span></td>
-              <td>${escapeHtml(a.domain)}</td>
-              <td>${escapeHtml(a.message)}</td>
+              <td><span class="badge ${a.severity === 'critical' ? 'badge-red' : 'badge-yellow'}">${escapeHtml(formatOpsSeverityLabel(a.severity))}</span></td>
+              <td>${escapeHtml(formatOpsDomainValue(a.domain))}</td>
+              <td>${escapeHtml(formatOpsAlertMessage(a.message))}</td>
               <td><code>${escapeHtml(a.metric)}</code></td>
               <td>${escapeHtml(String(a.value))}</td>
             </tr>`
@@ -890,14 +1175,14 @@ async function loadOpsCommandCenter() {
             .join('')}
         </tbody>
       </table>`
-        : '<p class="empty">No threshold alerts in current window.</p>'
+        : '<p class="empty">Pencerede eşik uyarısı yok.</p>'
     }
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Runbooks</h3>
+    <h3 style="margin:0 0 12px">Runbook'lar</h3>
     <ul style="font-size:13px;line-height:1.6">
       ${center.runbooks
-        .map((r) => `<li><code>${escapeHtml(r.path)}</code> — ${escapeHtml(r.label)}</li>`)
+        .map((r) => `<li><code>${escapeHtml(r.path)}</code> — ${escapeHtml(formatOpsRunbookLabel(r.label))}</li>`)
         .join('')}
     </ul>
   `;
@@ -1525,63 +1810,63 @@ async function loadExecutiveKpis() {
 
   el.innerHTML = `
     ${renderAdminDataSourceNotices(executiveKpiBatch)}
-    <p class="text-muted-sm" style="margin:0 0 16px">CEO decision dashboard · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
+    <p class="text-muted-sm" style="margin:0 0 16px">Yatırımcı KPI · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;background:rgba(37,99,235,0.08);border-radius:10px">
-      <strong>Executive summary</strong>
+      <strong>Yatırımcı özeti</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
-        ${dash.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+        ${dash.ceoSummary.map((line) => `<li>${escapeHtml(formatCeoSummaryLine(line))}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Traffic &amp; revenue</h3>
+    <h3 style="margin:0 0 12px">Trafik &amp; gelir</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${dash.traffic.pageViews}</div><div class="stat-sub">${dash.traffic.uniqueSessions ?? '—'} sessions</div></div>
-      <div class="stat-card"><div class="stat-label">Auto starts</div><div class="stat-value">${dash.traffic.autoStarts}</div></div>
+      <div class="stat-card"><div class="stat-label">Sayfa görüntüleme</div><div class="stat-value">${dash.traffic.pageViews}</div><div class="stat-sub">${dash.traffic.uniqueSessions ?? '—'} oturum</div></div>
+      <div class="stat-card"><div class="stat-label">Auto başlangıçları</div><div class="stat-value">${dash.traffic.autoStarts}</div></div>
       <div class="stat-card"><div class="stat-label">MRR</div><div class="stat-value">${dash.revenue.mrrTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${dash.revenue.arpuTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">${dash.churn.activeSubscriptions} active · ${dash.churn.trialingSubscriptions} trial</div></div>
-      <div class="stat-card"><div class="stat-label">Attributed revenue</div><div class="stat-value">${dash.revenue.attributedRevenueTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">Churn signal</div><div class="stat-value">${dash.churn.cancelAtPeriodEnd}</div><div class="stat-sub">${dash.churn.grossChurnSignalPct}% cancel at period end</div></div>
+      <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${dash.revenue.arpuTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">${dash.churn.activeSubscriptions} aktif · ${dash.churn.trialingSubscriptions} deneme</div></div>
+      <div class="stat-card"><div class="stat-label">İlişkilendirilen gelir</div><div class="stat-value">${dash.revenue.attributedRevenueTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Kayıp sinyali</div><div class="stat-value">${dash.churn.cancelAtPeriodEnd}</div><div class="stat-sub">${dash.churn.grossChurnSignalPct}% dönem sonunda iptal</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Conversion rates</h3>
+    <h3 style="margin:0 0 12px">Dönüşüm oranları</h3>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Funnel (landing→lead)</div><div class="stat-value">${fmtPct(dash.conversions.funnelConversionPct)}</div><div class="stat-sub">${c.leads} / ${c.landing}</div></div>
-      <div class="stat-card"><div class="stat-label">Wizard completion</div><div class="stat-value">${fmtPct(dash.conversions.wizardCompletionPct)}</div><div class="stat-sub">${c.wizardComplete} / ${c.autoStarts}</div></div>
-      <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${fmtPct(dash.conversions.leadConversionPct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Checkout conversion</div><div class="stat-value">${fmtPct(dash.conversions.checkoutConversionPct)}</div><div class="stat-sub">${c.checkoutComplete} / ${c.checkoutStart}</div></div>
-      <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value">${fmtPct(dash.conversions.paidConversionPct)}</div><div class="stat-sub">${c.paid} paid</div></div>
-      <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${fmtPct(dash.conversions.referralConversionPct)}</div><div class="stat-sub">${c.referralConvert} / ${c.referralLand}</div></div>
+      <div class="stat-card"><div class="stat-label">Wizard tamamlama</div><div class="stat-value">${fmtPct(dash.conversions.wizardCompletionPct)}</div><div class="stat-sub">${c.wizardComplete} / ${c.autoStarts}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead dönüşümü</div><div class="stat-value">${fmtPct(dash.conversions.leadConversionPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout dönüşümü</div><div class="stat-value">${fmtPct(dash.conversions.checkoutConversionPct)}</div><div class="stat-sub">${c.checkoutComplete} / ${c.checkoutStart}</div></div>
+      <div class="stat-card"><div class="stat-label">Ücretli dönüşüm</div><div class="stat-value">${fmtPct(dash.conversions.paidConversionPct)}</div><div class="stat-sub">${c.paid} ücretli</div></div>
+      <div class="stat-card"><div class="stat-label">Referans dönüşümü</div><div class="stat-value">${fmtPct(dash.conversions.referralConversionPct)}</div><div class="stat-sub">${c.referralConvert} / ${c.referralLand}</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Retention</h3>
+    <h3 style="margin:0 0 12px">Elde tutma</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Return visits</div><div class="stat-value">${dash.retention.returnVisits}</div></div>
-      <div class="stat-card"><div class="stat-label">Engagement events</div><div class="stat-value">${dash.retention.engagementEvents}</div></div>
-      <div class="stat-card"><div class="stat-label">Lifecycle enrolls</div><div class="stat-value">${dash.retention.lifecycleEnrolls}</div></div>
-      <div class="stat-card"><div class="stat-label">Abandon recovery</div><div class="stat-value">${fmtPct(dash.retention.recoveryRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Geri dönüş ziyaretleri</div><div class="stat-value">${dash.retention.returnVisits}</div></div>
+      <div class="stat-card"><div class="stat-label">Etkileşim olayları</div><div class="stat-value">${dash.retention.engagementEvents}</div></div>
+      <div class="stat-card"><div class="stat-label">Lifecycle kayıtları</div><div class="stat-value">${dash.retention.lifecycleEnrolls}</div></div>
+      <div class="stat-card"><div class="stat-label">Terk geri kazanımı</div><div class="stat-value">${fmtPct(dash.retention.recoveryRatePct)}</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Partner lead quality</h3>
+    <h3 style="margin:0 0 12px">Partner lead kalitesi</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Leads (CRM)</div><div class="stat-value">${dash.partnerLeadQuality.totalLeads}</div></div>
-      <div class="stat-card"><div class="stat-label">Avg lead score</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} high intent (≥70)</div></div>
-      <div class="stat-card"><div class="stat-label">Dispatch success</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.dispatchRatePct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Partner win rate</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.partnerWinRatePct)}</div></div>
-      <div class="stat-card"><div class="stat-label">Pipeline realized</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">est. ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Leadler (CRM)</div><div class="stat-value">${dash.partnerLeadQuality.totalLeads}</div></div>
+      <div class="stat-card"><div class="stat-label">Ortalama lead skoru</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} yüksek niyet (≥70)</div></div>
+      <div class="stat-card"><div class="stat-label">Teslimat başarısı</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.dispatchRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner kazanma oranı</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.partnerWinRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Gerçekleşen pipeline</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">tahmini ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Executive funnel (step CR)</h3>
+    <h3 style="margin:0 0 12px">Yatırımcı hunisi (adım CR)</h3>
     <table class="table">
-      <thead><tr><th>Step</th><th>Events</th><th>Step CR</th><th>From landing</th></tr></thead>
+      <thead><tr><th>Adım</th><th>Olaylar</th><th>Adım CR</th><th>Landing'den</th></tr></thead>
       <tbody>
         ${dash.funnel.map((row) => `
           <tr>
-            <td>${escapeHtml(row.label)}</td>
+            <td>${escapeHtml(formatFunnelStepLabel(row))}</td>
             <td><strong>${row.count}</strong></td>
             <td>${row.stepCrPct == null ? '—' : `${row.stepCrPct}%`}</td>
             <td>${row.overallCrPct == null ? '—' : `${row.overallCrPct}%`}</td>
@@ -1591,9 +1876,9 @@ async function loadExecutiveKpis() {
     </table>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Top acquisition channels</h3>
+    <h3 style="margin:0 0 12px">En iyi edinim kanalları</h3>
     <table class="table">
-      <thead><tr><th>Channel</th><th>Leads</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
+      <thead><tr><th>Kanal</th><th>Leadler</th><th>Ücretli</th><th>Gelir ₺</th></tr></thead>
       <tbody>
         ${dash.topChannels.length ? dash.topChannels.map((ch) => `
           <tr>
@@ -1609,7 +1894,7 @@ async function loadExecutiveKpis() {
     ${unitEconomicsHtml}
 
     <details style="margin-top:16px">
-      <summary>Snapshot JSON (board export)</summary>
+      <summary>Anlık görüntü JSON (board export)</summary>
       <pre style="white-space:pre-wrap;font-size:12px;max-height:360px;overflow:auto;">${escapeHtml(JSON.stringify({ executive: dash, unitEconomics: unitModel }, null, 2))}</pre>
     </details>
   `;
@@ -1749,7 +2034,7 @@ async function loadDashboard() {
     const convPct =
       leads.length > 0 ? Math.round((wonLeads.length / leads.length) * 1000) / 10 : 0;
     setStat('stat-conversion', leads.length ? `%${convPct}` : '—');
-    setStat('stat-system-alerts', '0');
+    await refreshDashboardSystemAlerts();
     await loadEvdsStatusCard();
   } catch {
     /* dashboard stats are best-effort */
@@ -2785,20 +3070,20 @@ function renderGrowthCommandCenter(rows) {
 
   return `
     <div class="growth-command-center" style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border,#e5e7eb)">
-      <h3 style="margin:0 0 8px 0">Growth Command Center</h3>
-      <p class="text-muted" style="margin:0 0 14px;font-size:13px">North star: qualified leads → paid conversion. Export: <code>npm run metrics:growth</code> · <code>npm run metrics:growth:command</code></p>
+      <h3 style="margin:0 0 8px 0">Büyüme komuta merkezi</h3>
+      <p class="text-muted" style="margin:0 0 14px;font-size:13px">Kuzey yıldızı: nitelikli lead → ücretli dönüşüm. Export: <code>npm run metrics:growth</code> · <code>npm run metrics:growth:command</code></p>
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-label">Leads (north star)</div><div class="stat-value">${ns.qualifiedLeads}</div><div class="stat-sub">${ns.landingToLeadPct ?? '—'}% landing→lead</div></div>
-        <div class="stat-card"><div class="stat-label">Paid conversions</div><div class="stat-value">${ns.paidConversions}</div><div class="stat-sub">${ns.landingToPaidPct ?? '—'}% landing→paid</div></div>
-        <div class="stat-card"><div class="stat-label">Checkout CR</div><div class="stat-value">${ns.checkoutCrPct ?? '—'}%</div><div class="stat-sub">${ns.checkoutComplete} / ${ns.checkoutStart} starts</div></div>
-        <div class="stat-card"><div class="stat-label">Retention returns</div><div class="stat-value">${retention.returnVisits}</div><div class="stat-sub">${retention.recoveryRatePct ?? '—'}% abandon recovery</div></div>
-        <div class="stat-card"><div class="stat-label">Paid click capture</div><div class="stat-value">${paidClicks}</div><div class="stat-sub">${paidSignals} conversion signals</div></div>
-        <div class="stat-card"><div class="stat-label">Experiments</div><div class="stat-value">${experimentExposures}</div><div class="stat-sub">${experimentConversions} conversions · ${experimentExposures ? conversionPct(experimentConversions, experimentExposures) : '—'}</div></div>
+        <div class="stat-card"><div class="stat-label">Leadler (kuzey yıldızı)</div><div class="stat-value">${ns.qualifiedLeads}</div><div class="stat-sub">${ns.landingToLeadPct ?? '—'}% landing→lead</div></div>
+        <div class="stat-card"><div class="stat-label">Ücretli dönüşümler</div><div class="stat-value">${ns.paidConversions}</div><div class="stat-sub">${ns.landingToPaidPct ?? '—'}% landing→paid</div></div>
+        <div class="stat-card"><div class="stat-label">Checkout CR</div><div class="stat-value">${ns.checkoutCrPct ?? '—'}%</div><div class="stat-sub">${ns.checkoutComplete} / ${ns.checkoutStart} başlangıç</div></div>
+        <div class="stat-card"><div class="stat-label">Geri dönüş ziyaretleri</div><div class="stat-value">${retention.returnVisits}</div><div class="stat-sub">${retention.recoveryRatePct ?? '—'}% terk geri kazanımı</div></div>
+        <div class="stat-card"><div class="stat-label">Ücretli tıklama yakalama</div><div class="stat-value">${paidClicks}</div><div class="stat-sub">${paidSignals} dönüşüm sinyali</div></div>
+        <div class="stat-card"><div class="stat-label">Deneyler</div><div class="stat-value">${experimentExposures}</div><div class="stat-sub">${experimentConversions} dönüşüm · ${experimentExposures ? conversionPct(experimentConversions, experimentExposures) : '—'}</div></div>
       </div>
       <div style="height:14px"></div>
-      <h4 style="margin:0 0 10px 0;font-size:14px">Paid platforms (P5.1)</h4>
+      <h4 style="margin:0 0 10px 0;font-size:14px">Ücretli platformlar (P5.1)</h4>
       <table class="table" style="margin-bottom:16px">
-        <thead><tr><th>Platform</th><th>Clicks</th><th>Landings</th><th>Leads</th><th>Checkout</th><th>Paid</th><th>Lead CR</th></tr></thead>
+        <thead><tr><th>Platform</th><th>Tıklama</th><th>İniş</th><th>Leadler</th><th>Checkout</th><th>Ücretli</th><th>Lead CR</th></tr></thead>
         <tbody>
           ${paidPlatforms.length ? paidPlatforms.map((p) => `
             <tr>
@@ -2813,9 +3098,9 @@ function renderGrowthCommandCenter(rows) {
           `).join('') : '<tr><td colspan="7">Henüz paid platform verisi yok — UTM + click ID ile trafik bekleniyor.</td></tr>'}
         </tbody>
       </table>
-      <h4 style="margin:0 0 10px 0;font-size:14px">Acquisition channels (leads)</h4>
+      <h4 style="margin:0 0 10px 0;font-size:14px">Edinim kanalları (lead)</h4>
       <table class="table">
-        <thead><tr><th>Channel</th><th>Leads</th><th>Checkouts</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
+        <thead><tr><th>Kanal</th><th>Leadler</th><th>Checkout</th><th>Ücretli</th><th>Gelir ₺</th></tr></thead>
         <tbody>
           ${channels.slice(0, 8).map((ch) => `
             <tr>
@@ -2923,7 +3208,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
   const checkoutStarted = countFunnelStep(kpiRows, 'checkout_start');
   const checkoutCompleted = countFunnelStep(kpiRows, 'checkout_complete');
   const paidConversions = countFunnelStep(kpiRows, 'paid_conversion');
-  const leadSubmit = countEvents(kpiRows, 'lead_submit') + countEvents(kpiRows, 'auto_lead_submit');
+  const leadSubmit = countEventsAny(kpiRows, PLATFORM_LEAD_SUBMIT_EVENT_ALIASES);
   const partnerOk = countEvents(kpiRows, 'partner_dispatch_success');
   const partnerFail = countEvents(kpiRows, 'partner_dispatch_failed');
   const financeStart = countEvents(kpiRows, 'finance_funnel_start');
@@ -2986,9 +3271,9 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     ['wizard_complete', 'Wizard tamam'],
     ['results_view', 'Sonuç görüntüleme'],
     ['lead_submit', 'Lead gönderimi'],
-    ['pricing_view', 'Pricing görüntüleme'],
+    ['pricing_view', 'Fiyatlandırma görüntüleme'],
     ['checkout_start', 'Checkout başlangıç'],
-    ['checkout_complete', 'Checkout tamam'],
+    ['checkout_complete', 'Checkout tamamlandı'],
     ['paid_conversion', 'Ücretli dönüşüm']
   ];
 
@@ -3003,8 +3288,9 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     kpiRows,
     ['paid_conversion', 'checkout_completed', 'checkout_complete', 'revenue_attributed']
   );
+  const leadSubmitEventNames = new Set(PLATFORM_LEAD_SUBMIT_EVENT_ALIASES);
   const channelLeads = kpiRows
-    .filter((row) => row.event_name === 'lead_submit' || row.event_name === 'auto_lead_submit')
+    .filter((row) => leadSubmitEventNames.has(row.event_name))
     .reduce((acc, row) => {
       const props = row.properties || {};
       const channel =
@@ -3023,7 +3309,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     <div style="height:24px"></div>
     ${windowNote}
     ${renderGrowthCommandCenter(kpiRows)}
-    <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
+    <h3 style="margin:0 0 14px 0;">Yönetici büyüme hunisi (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
     <table class="table">
       <thead><tr><th>Adım</th><th>Olay</th><th>Önceki adıma CR</th></tr></thead>
@@ -3053,21 +3339,21 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Conversion özeti</h3>
+    <h3 style="margin:0 0 14px 0;">Dönüşüm özeti</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${pageViews}</div></div>
-      <div class="stat-card"><div class="stat-label">CTA clicks</div><div class="stat-value">${ctaClicks}</div><div class="stat-sub">${conversionPct(ctaClicks, pageViews)}</div></div>
-      <div class="stat-card"><div class="stat-label">Auth conversion</div><div class="stat-value">${authLoginOk + authRegisterOk}</div><div class="stat-sub">${conversionPct(authLoginOk + authRegisterOk, authModal)}</div></div>
-      <div class="stat-card"><div class="stat-label">Signup</div><div class="stat-value">${authRegisterOk}</div><div class="stat-sub">${conversionPct(authRegisterOk, authModal)}</div></div>
+      <div class="stat-card"><div class="stat-label">Sayfa görüntüleme</div><div class="stat-value">${pageViews}</div></div>
+      <div class="stat-card"><div class="stat-label">CTA tıklamaları</div><div class="stat-value">${ctaClicks}</div><div class="stat-sub">${conversionPct(ctaClicks, pageViews)}</div></div>
+      <div class="stat-card"><div class="stat-label">Kimlik doğrulama dönüşümü</div><div class="stat-value">${authLoginOk + authRegisterOk}</div><div class="stat-sub">${conversionPct(authLoginOk + authRegisterOk, authModal)}</div></div>
+      <div class="stat-card"><div class="stat-label">Kayıt</div><div class="stat-value">${authRegisterOk}</div><div class="stat-sub">${conversionPct(authRegisterOk, authModal)}</div></div>
       <div class="stat-card"><div class="stat-label">Checkout</div><div class="stat-value">${checkoutCompleted}</div><div class="stat-sub">${conversionPct(checkoutCompleted, checkoutStarted)}</div></div>
-      <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value">${paidConversions}</div><div class="stat-sub">${conversionPct(paidConversions, checkoutStarted)}</div></div>
-      <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${leadSubmit}</div><div class="stat-sub">${conversionPct(leadSubmit, pageViews)}</div></div>
-      <div class="stat-card"><div class="stat-label">Partner dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
-      <div class="stat-card"><div class="stat-label">Finance funnel</div><div class="stat-value">${financeStart}</div></div>
+      <div class="stat-card"><div class="stat-label">Ücretli dönüşüm</div><div class="stat-value">${paidConversions}</div><div class="stat-sub">${conversionPct(paidConversions, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead dönüşümü</div><div class="stat-value">${leadSubmit}</div><div class="stat-sub">${conversionPct(leadSubmit, pageViews)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner teslimatı OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
+      <div class="stat-card"><div class="stat-label">Finans hunisi</div><div class="stat-value">${financeStart}</div></div>
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Auto funnel drop-off</h3>
+    <h3 style="margin:0 0 14px 0;">Auto huni düşüşü</h3>
     <table class="table">
       <thead><tr><th>Adım</th><th>Olay</th><th>Düşüş</th><th>Adım CR</th></tr></thead>
       <tbody>
@@ -3083,30 +3369,30 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     </table>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Partner acquisition (P2)</h3>
+    <h3 style="margin:0 0 14px 0;">Partner edinimi (P2)</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Partner landing</div><div class="stat-value">${partnerLanding}</div></div>
-      <div class="stat-card"><div class="stat-label">Applications</div><div class="stat-value">${partnerApply}</div><div class="stat-sub">${conversionPct(partnerApply, partnerLanding)}</div></div>
-      <div class="stat-card"><div class="stat-label">Onboarding views</div><div class="stat-value">${partnerOnboarding}</div><div class="stat-sub">${conversionPct(partnerOnboarding, partnerApply)}</div></div>
-      <div class="stat-card"><div class="stat-label">Webhook drafts</div><div class="stat-value">${partnerWebhookDraft}</div></div>
-      <div class="stat-card"><div class="stat-label">Dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner iniş</div><div class="stat-value">${partnerLanding}</div></div>
+      <div class="stat-card"><div class="stat-label">Başvurular</div><div class="stat-value">${partnerApply}</div><div class="stat-sub">${conversionPct(partnerApply, partnerLanding)}</div></div>
+      <div class="stat-card"><div class="stat-label">Onboarding görüntüleme</div><div class="stat-value">${partnerOnboarding}</div><div class="stat-sub">${conversionPct(partnerOnboarding, partnerApply)}</div></div>
+      <div class="stat-card"><div class="stat-label">Webhook taslakları</div><div class="stat-value">${partnerWebhookDraft}</div></div>
+      <div class="stat-card"><div class="stat-label">Teslimat OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Growth engine (P1)</h3>
+    <h3 style="margin:0 0 14px 0;">Büyüme motoru (P1)</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Pricing views</div><div class="stat-value">${pricingViews}</div><div class="stat-sub">${conversionPct(checkoutStarted, pricingViews)} → checkout</div></div>
-      <div class="stat-card"><div class="stat-label">Checkout abandoned</div><div class="stat-value">${checkoutAbandoned}</div><div class="stat-sub">${conversionPct(checkoutAbandoned, checkoutStarted)}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral land</div><div class="stat-value">${referralLand}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral share</div><div class="stat-value">${referralShare}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral convert</div><div class="stat-value">${referralConvert}</div><div class="stat-sub">${conversionPct(referralConvert, referralLand)}</div></div>
-      <div class="stat-card"><div class="stat-label">Link created</div><div class="stat-value">${referralLinkCreated}</div></div>
-      <div class="stat-card"><div class="stat-label">Link clicked</div><div class="stat-value">${referralLinkClicked}</div><div class="stat-sub">${conversionPct(referralSignup, referralLinkClicked)} → signup</div></div>
-      <div class="stat-card"><div class="stat-label">Referral signup</div><div class="stat-value">${referralSignup}</div></div>
-      <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${referralConversion}</div><div class="stat-sub">${conversionPct(referralConversion, referralSignup)}</div></div>
-      <div class="stat-card"><div class="stat-label">Lifecycle enroll</div><div class="stat-value">${lifecycleEnroll}</div></div>
-      <div class="stat-card"><div class="stat-label">Upsell views</div><div class="stat-value">${upsellViews}</div><div class="stat-sub">${conversionPct(upsellClicks, upsellViews)} click</div></div>
-      <div class="stat-card"><div class="stat-label">Upsell conversion</div><div class="stat-value">${upsellConversions}</div><div class="stat-sub">${conversionPct(upsellConversions, upsellClicks)}</div></div>
+      <div class="stat-card"><div class="stat-label">Fiyatlandırma görüntüleme</div><div class="stat-value">${pricingViews}</div><div class="stat-sub">${conversionPct(checkoutStarted, pricingViews)} → checkout</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout terk</div><div class="stat-value">${checkoutAbandoned}</div><div class="stat-sub">${conversionPct(checkoutAbandoned, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans iniş</div><div class="stat-value">${referralLand}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans paylaşım</div><div class="stat-value">${referralShare}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans dönüşüm</div><div class="stat-value">${referralConvert}</div><div class="stat-sub">${conversionPct(referralConvert, referralLand)}</div></div>
+      <div class="stat-card"><div class="stat-label">Link oluşturma</div><div class="stat-value">${referralLinkCreated}</div></div>
+      <div class="stat-card"><div class="stat-label">Link tıklama</div><div class="stat-value">${referralLinkClicked}</div><div class="stat-sub">${conversionPct(referralSignup, referralLinkClicked)} → kayıt</div></div>
+      <div class="stat-card"><div class="stat-label">Referans kayıt</div><div class="stat-value">${referralSignup}</div></div>
+      <div class="stat-card"><div class="stat-label">Referans dönüşüm</div><div class="stat-value">${referralConversion}</div><div class="stat-sub">${conversionPct(referralConversion, referralSignup)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lifecycle kayıt</div><div class="stat-value">${lifecycleEnroll}</div></div>
+      <div class="stat-card"><div class="stat-label">Upsell görüntüleme</div><div class="stat-value">${upsellViews}</div><div class="stat-sub">${conversionPct(upsellClicks, upsellViews)} tıklama</div></div>
+      <div class="stat-card"><div class="stat-label">Upsell dönüşüm</div><div class="stat-value">${upsellConversions}</div><div class="stat-sub">${conversionPct(upsellConversions, upsellClicks)}</div></div>
     </div>
     ${Object.keys(growthByChannel).length ? `
       <div style="height:12px"></div>
@@ -3121,19 +3407,19 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     ` : ''}
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Revenue attribution (UTM)</h3>
+    <h3 style="margin:0 0 14px 0;">Gelir ilişkilendirme (UTM)</h3>
     <div class="stat-grid">
       ${Object.entries(attributionMap).length ? Object.entries(attributionMap).map(([source, cents]) => `
         <div class="stat-card">
           <div class="stat-label">${escapeHtml(source)}</div>
           <div class="stat-value">${(cents / 100).toLocaleString('tr-TR')} ₺</div>
         </div>
-      `).join('') : '<p class="empty">Henüz revenue_attributed event yok.</p>'}
+      `).join('') : '<p class="empty">Henüz revenue_attributed olayı yok.</p>'}
     </div>
 
     <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Admin CRM outcomes</h3>
-    <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
+    <h3 style="margin:0 0 14px 0;">Admin CRM sonuçları</h3>
+    <p class="text-muted">${crmEvents.length} CRM olayı (son 2500 kayıt içinde)</p>
   `;
 
   bindPlatformAnalyticsToolbar(el, filterId, dataMode);
@@ -3330,7 +3616,7 @@ async function loadPartnerDispatchLogs() {
             <td>${escapeHtml(row.trigger_source)}</td>
             <td>${row.http_status ?? '—'}</td>
             <td>${row.duration_ms != null ? row.duration_ms + 'ms' : '—'}</td>
-            <td>${row.success ? '<span class="badge badge-green">OK</span>' : '<span class="badge badge-red">FAIL</span>'}</td>
+            <td>${row.success ? '<span class="badge badge-green">Başarılı</span>' : '<span class="badge badge-red">Başarısız</span>'}</td>
             <td title="${safeAttr(row.error_message || '')}">${escapeHtml(formatDispatchError(row.error_message))}</td>
           </tr>
         `).join('')}
@@ -3932,7 +4218,7 @@ function renderDispatchPanelHtml(lead, logs) {
             <td>${formatShortDate(row.created_at)}</td>
             <td>${escapeHtml(row.endpoint_name || '—')}</td>
             <td>${row.http_status ?? '—'}</td>
-            <td>${row.success ? '<span class="badge badge-green">OK</span>' : `<span class="badge badge-red" title="${safeAttr(row.error_message || '')}">FAIL</span>`}</td>
+            <td>${row.success ? '<span class="badge badge-green">Başarılı</span>' : `<span class="badge badge-red" title="${safeAttr(row.error_message || '')}">Başarısız</span>`}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -4430,6 +4716,7 @@ registerAdminPageHandlers({
     refreshInternalDashboard('partner_ops', 'dashboard-partner-ops-root'),
   'dashboard-support': () => refreshInternalDashboard('support', 'dashboard-support-root'),
   'ops-ai-assistant': () => refreshOpsAiAssistant(),
+  'linkedin-ops-assistant': () => refreshLinkedInOpsAssistant(),
   'investor-metrics': () => loadExecutiveKpis(),
   observability: () => loadOperationalHealth(),
   'ops-command-center': () => loadOpsCommandCenter(),
@@ -4471,12 +4758,7 @@ function bindAdminPanelEvents() {
     });
   });
 
-  document.querySelectorAll('[data-nav-href]').forEach((el) => {
-    el.addEventListener('click', () => {
-      const href = el.getAttribute('data-nav-href');
-      if (href) window.location.assign(href);
-    });
-  });
+  bindAdminExternalNavLinks();
 
   initAdminMobileNav();
   initAdminShell();

@@ -21,11 +21,11 @@ export function renderBillingV1PricingGrid(opts = {}) {
   const monthly = pro.billing.monthly;
 
   const proCta = paymentReady
-    ? `<button type="button" class="btn btn-primary btn-block billing-v1-cta-pro" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="billing_v1_pro">Pro'ya geç</button>`
-    : `<a href="/planlar" class="btn btn-primary btn-block" data-native-route>Erken erişim — Planlar</a>`;
+    ? `<button type="button" class="btn btn-primary btn-block billing-v1-cta-pro" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="billing_v1_pro">İSTEBUL AI Pro'ya geç</button>`
+    : `<a href="/planlar" class="btn btn-primary btn-block" data-native-route>İSTEBUL AI erken erişim — Planlar</a>`;
 
   return `
-    <div class="billing-v1-pricing-grid" data-billing-v1-pricing role="list" aria-label="Üyelik planları">
+    <div class="billing-v1-pricing-grid" data-billing-v1-pricing role="list" aria-label="İSTEBUL AI üyelik planları">
       <article class="billing-v1-plan-card" role="listitem">
         <span class="billing-v1-plan-kicker">Free</span>
         <h3 class="billing-v1-plan-name">${esc(free.name)}</h3>
@@ -34,7 +34,7 @@ export function renderBillingV1PricingGrid(opts = {}) {
         <ul class="billing-v1-plan-features">
           ${free.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}
         </ul>
-        <a href="/auto/" class="btn btn-outline btn-block">Ücretsiz analiz başlat</a>
+        <a href="/karar-asistani/" class="btn btn-outline btn-block">İSTEBUL AI ile başla</a>
       </article>
 
       <article class="billing-v1-plan-card billing-v1-plan-card--pro" role="listitem">
@@ -47,7 +47,7 @@ export function renderBillingV1PricingGrid(opts = {}) {
           ${pro.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}
         </ul>
         ${proCta}
-        <a href="/planlar" class="btn btn-ghost btn-sm btn-block" data-native-route>Plan detayları</a>
+        <a href="/planlar" class="btn btn-ghost btn-sm btn-block" data-native-route>İSTEBUL AI plan detayları</a>
       </article>
 
       <article class="billing-v1-plan-card billing-v1-plan-card--partner" role="listitem">

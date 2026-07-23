@@ -21,7 +21,12 @@ const copyDataSubdir = (subdir) => {
 };
 const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
-const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'gdpr.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
+const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'business/index.html',
+  'business/analizler/index.html',
+  'business/raporlar/index.html',
+  'business/danisman/index.html',
+  'business/bildirimler/index.html',
+  'business/ayarlar/index.html', 'platform-preview/index.html', 'ai/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'restoran/index.html', 'r/index.html', 'r/onay/index.html', 'garson/index.html', 'garson/mutfak/index.html', 'garson/basvuru/index.html', 'garson/demo/index.html', 'garson/giris/index.html', 'garson/panel/index.html', 'garson/panel/menu/index.html', 'garson/panel/rezervasyonlar/index.html', 'garson/panel/siparisler/index.html', 'garson/panel/musteriler/index.html', 'garson/panel/masalar/index.html', 'garson/panel/mutfak/index.html', 'garson/panel/whatsapp/index.html', 'garson/panel/analitik/index.html', 'garson/panel/bildirimler/index.html', 'garson/panel/ayarlar/index.html', 'garson/zeka/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'gdpr.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
     'css/admin-internal-dashboards.css',
     'css/admin-ops-ai-assistant.css', 'css/admin-ai-listings.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css', 'admin/ai-listings.html', 'admin/forbidden.html'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
@@ -30,7 +35,44 @@ const { injectLocaleShellMeta, loadLocaleIds } = require('./lib/locale-shell-met
 const { injectVerticalFaqs } = require('./lib/seo-vertical-faq.cjs');
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
+const { injectHomeCategoryPrerender } = require('./lib/inject-home-category-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
+
+function runInjectHomeCategoryPrerender(html) {
+  const os = require('os');
+  const tmpIn = path.join(os.tmpdir(), `ib-home-cat-in-${process.pid}-${Date.now()}.html`);
+  const tmpOut = path.join(os.tmpdir(), `ib-home-cat-out-${process.pid}-${Date.now()}.html`);
+  const injectorPath = path.join(__dirname, 'lib/inject-home-category-prerender.cjs');
+
+  fs.writeFileSync(tmpIn, html, 'utf8');
+
+  const script = `
+    const fs = require('fs');
+    const { injectHomeCategoryPrerender } = require(${JSON.stringify(injectorPath)});
+    injectHomeCategoryPrerender(fs.readFileSync(${JSON.stringify(tmpIn)}, 'utf8'))
+      .then((output) => {
+        fs.writeFileSync(${JSON.stringify(tmpOut)}, output, 'utf8');
+      })
+      .catch((error) => {
+        console.error(error);
+        process.exit(1);
+      });
+  `;
+
+  const result = spawnSync(process.execPath, ['-e', script], { stdio: 'inherit' });
+  try {
+    if (result.status !== 0) {
+      throw new Error('injectHomeCategoryPrerender failed during production build');
+    }
+    return fs.readFileSync(tmpOut, 'utf8');
+  } finally {
+    for (const filePath of [tmpIn, tmpOut]) {
+      try {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      } catch {}
+    }
+  }
+}
 const { buildHashedCssAssets } = require('./lib/css-build.cjs');
 const runCssBundles = spawnSync(process.execPath, [path.join(root, 'scripts/generate-css-bundles.cjs')], {
   cwd: root,
@@ -217,6 +259,16 @@ staticFiles.forEach((file) => {
   }
 });
 
+const decisionCategoryCardCssSrc = 'js/features/decision-cards/decision-category-card.css';
+const decisionCategoryCardCssEntry = 'css/decision-category-card.css';
+if (fs.existsSync(path.join(root, decisionCategoryCardCssSrc))) {
+  fs.mkdirSync(path.join(root, 'css'), { recursive: true });
+  fs.copyFileSync(
+    path.join(root, decisionCategoryCardCssSrc),
+    path.join(root, decisionCategoryCardCssEntry)
+  );
+}
+
 buildHashedCssAssets({
   root,
   assetRefs,
@@ -259,8 +311,13 @@ pendingStaticFiles.forEach(({ file, source }) => {
       `/js/runtime/route-bootstrap-head.js?v=${bootstrapHash}`
     );
     html = injectPremiumPrerender(html);
+    /* PR-568: AI category prerender lives on /ai/, not Platform Landing root */
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
+  }
+
+  if (file === 'ai/index.html') {
+    html = runInjectHomeCategoryPrerender(html);
   }
 
   writeFile(file, minifyHtml(html));
@@ -358,6 +415,62 @@ esbuild.buildSync({
   minify: true,
   sourcemap: false,
   outfile: siteSocialInitOut
+});
+
+/* PR-564 — Platform Landing Preview mount (standalone; does not touch /) */
+const platformShellPreviewOut = path.join(dist, 'js/runtime/platform-shell-preview.js');
+ensureDir(platformShellPreviewOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/platform-shell-preview.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: platformShellPreviewOut
+});
+
+/* EPIC-500 — İSTEBUL Business MVP app (standalone /business; no auth/API) */
+const businessAppOut = path.join(dist, 'js/business/business-app.js');
+ensureDir(businessAppOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/business/business-app.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: businessAppOut
+});
+
+/* PR-565 — İSTEBUL AI Landing Foundation (standalone /ai/; no cutover) */
+const aiLandingFoundationOut = path.join(dist, 'js/ai/ai-landing-foundation.js');
+ensureDir(aiLandingFoundationOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/ai/ai-landing-foundation.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: aiLandingFoundationOut
+});
+
+/* PR-566 — İSTEBUL AI Landing Clone boot (hydrate /ai; does not touch /) */
+const aiLandingBootOut = path.join(dist, 'js/ai/ai-landing-boot.js');
+ensureDir(aiLandingBootOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/ai/ai-landing-boot.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: aiLandingBootOut
 });
 
 const emitRuntimeScript = (relativePath) => {
@@ -477,6 +590,13 @@ if (fs.existsSync(tatilAppSrc)) {
     if (tatilCssHashed) {
       tatilHtml = tatilHtml.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      tatilHtml = tatilHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(tatilHtmlPath, minifyHtml(tatilHtml));
   }
 }
@@ -510,6 +630,7 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   const tatilCssHashed = assetRefs.get('css/tatil.css');
   const themesCssHashed = assetRefs.get('css/vertical-themes.css');
   const finansHeroCssHashed = assetRefs.get('css/finans-hero.css');
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
   if (tatilCssHashed) {
     html = html.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
   }
@@ -519,7 +640,54 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   if (finansHeroCssHashed) {
     html = html.replace(/\/css\/finans-hero(?:\.[a-f0-9]+)?\.css/g, `/${finansHeroCssHashed}`);
   }
+  if (decisionCardCssHashed) {
+    html = html.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
+  }
   fs.writeFileSync(htmlPath, minifyHtml(html));
+}
+
+/** GarsonAI admin panel — code-split entry under js/chunks/ (excluded from main SPA budget). */
+function bundleGarsonAdminPanelPages(entryRel, htmlRels, scriptPattern) {
+  const entrySrc = path.join(root, entryRel);
+  if (!fs.existsSync(entrySrc)) return;
+
+  const outdir = path.join(dist, 'js/chunks/garson-admin-panel');
+  fs.mkdirSync(outdir, { recursive: true });
+
+  esbuild.buildSync({
+    entryPoints: [entrySrc],
+    bundle: true,
+    splitting: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    entryNames: 'bootstrap-[hash]',
+    chunkNames: 'chunk-[hash]',
+    outdir
+  });
+
+  const entryFile = fs
+    .readdirSync(outdir)
+    .find((name) => /^bootstrap-[A-Z0-9]+\.js$/.test(name));
+  if (!entryFile) {
+    throw new Error('Garson admin panel bootstrap bundle was not generated.');
+  }
+
+  const scriptUrl = `/js/chunks/garson-admin-panel/${entryFile}`;
+
+  htmlRels.forEach((htmlRel) => {
+    const htmlPath = path.join(dist, htmlRel);
+    if (!fs.existsSync(htmlPath)) return;
+
+    let html = fs.readFileSync(htmlPath, 'utf8');
+    html = html.replace(scriptPattern, scriptUrl);
+    fs.writeFileSync(htmlPath, minifyHtml(html));
+  });
 }
 
 bundleVerticalPage(
@@ -545,6 +713,73 @@ bundleVerticalPage(
 );
 
 bundleVerticalPage(
+  'js/restoran/restoran-app.js',
+  'restoran/index.html',
+  'restoran-runtime',
+  /\/js\/restoran\/restoran-app\.js/g
+);
+
+bundleVerticalPage(
+  'js/restoran/reservation-page.js',
+  'r/index.html',
+  'reservation-runtime',
+  /\/js\/restoran\/reservation-page\.js/g
+);
+
+bundleVerticalPage(
+  'js/restoran/reservation-confirm-page.js',
+  'r/onay/index.html',
+  'reservation-confirm-runtime',
+  /\/js\/restoran\/reservation-confirm-page\.js/g
+);
+
+bundleVerticalPage(
+  'js/restoran/kds-admin.js',
+  'garson/mutfak/index.html',
+  'kds-admin-runtime',
+  /\/js\/restoran\/kds-admin\.js/g
+);
+
+bundleVerticalPage(
+  'js/restoran/garson-launch.js',
+  'garson/basvuru/index.html',
+  'garson-launch-runtime',
+  /\/js\/restoran\/garson-launch\.js/g
+);
+
+bundleVerticalPage(
+  'js/restoran/admin-portal.js',
+  'garson/giris/index.html',
+  'garson-admin-runtime',
+  /\/js\/restoran\/admin-portal\.js/g
+);
+
+bundleGarsonAdminPanelPages(
+  'js/restoran/admin/bootstrap.js',
+  [
+    'garson/panel/index.html',
+    'garson/panel/menu/index.html',
+    'garson/panel/rezervasyonlar/index.html',
+    'garson/panel/siparisler/index.html',
+    'garson/panel/musteriler/index.html',
+    'garson/panel/masalar/index.html',
+    'garson/panel/mutfak/index.html',
+    'garson/panel/whatsapp/index.html',
+    'garson/panel/analitik/index.html',
+    'garson/panel/bildirimler/index.html',
+    'garson/panel/ayarlar/index.html'
+  ],
+  /\/js\/restoran\/admin\/bootstrap\.js/g
+);
+
+bundleVerticalPage(
+  'js/restoran/dashboard/admin-ai-page.js',
+  'garson/zeka/index.html',
+  'garson-ai-dashboard-runtime',
+  /\/js\/restoran\/dashboard\/admin-ai-page\.js/g
+);
+
+bundleVerticalPage(
   'js/verticals/listing-analysis/listing-analysis-app.js',
   'ilan-analizi/index.html',
   'listing-analysis-runtime',
@@ -562,9 +797,8 @@ bundleVerticalPage(
 const aiListingsAdminHtmlPath = path.join(dist, 'admin', 'ai-listings.html');
 if (fs.existsSync(aiListingsAdminHtmlPath)) {
   const aiListingsAdminHtml = fs.readFileSync(aiListingsAdminHtmlPath, 'utf8');
-  ['admin/listings/index.html', 'admin/ai-listings/index.html'].forEach((aliasRel) => {
-    writeFile(aliasRel, aiListingsAdminHtml);
-  });
+  // /admin/listings/ is reserved for CRM deep-link shell (Karar Seçenekleri).
+  writeFile('admin/ai-listings/index.html', aiListingsAdminHtml);
 }
 
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {
@@ -605,6 +839,13 @@ if (fs.existsSync(housingAppSrc)) {
     if (housingCssHashed) {
       housingHtml = housingHtml.replace(/\/css\/real-estate(?:\.[a-f0-9]+)?\.css/g, `/${housingCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      housingHtml = housingHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(housingHtmlPath, minifyHtml(housingHtml));
   }
 }
@@ -624,6 +865,13 @@ if (fs.existsSync(autoHtmlPath)) {
     /\/assets\/auto-runtime\/auto-app(?:\.[a-f0-9]+)?\.js(?:\?v=[^"']+)?/g,
     `/assets/auto-runtime/${autoAppFile}`
   );
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+  if (decisionCardCssHashed) {
+    autoHtml = autoHtml.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
+  }
   fs.writeFileSync(autoHtmlPath, minifyHtml(autoHtml));
 }
 
@@ -798,6 +1046,7 @@ if (gscCode) {
   );
 }
 
+const { getAdminDeepLinkSlugs } = require('./lib/admin-deep-links.cjs');
 const {
   getGa4MeasurementId,
   applyGa4ConsentHeadToHtmlFiles
@@ -810,5 +1059,34 @@ if (ga4Id) {
   console.warn('[ga4] GA4_MEASUREMENT_ID not set — skip gtag head (see docs/ZIYARETCI_ANALITIK_KURULUM.md)');
 }
 
+const { applyAdSenseHeadToHtmlFiles } = require('./lib/inject-adsense-head.cjs');
+const adsenseResult = applyAdSenseHeadToHtmlFiles(dist);
+console.log(`[adsense] head script injected into ${adsenseResult.injected} HTML file(s)`);
+
+/** Admin deep links — physical shells so /admin/* is not rewritten by /* SPA fallback */
+const adminIndexPath = path.join(dist, 'admin', 'index.html');
+if (fs.existsSync(adminIndexPath)) {
+  const adminShellHtml = fs.readFileSync(adminIndexPath, 'utf8');
+  const adminDeepLinkSlugs = getAdminDeepLinkSlugs();
+  adminDeepLinkSlugs.forEach((slug) => {
+    const routeDir = path.join(dist, 'admin', slug);
+    fs.mkdirSync(routeDir, { recursive: true });
+    fs.writeFileSync(path.join(routeDir, 'index.html'), adminShellHtml);
+  });
+  console.log(`[admin] deep-link shells: ${adminDeepLinkSlugs.length} route(s)`);
+}
+
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
+
+const erpBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-restaurant-admin-erp.cjs')], {
+  cwd: root,
+  stdio: 'inherit',
+});
+if (erpBuild.status !== 0) process.exit(erpBuild.status || 1);
+
+const cxBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-restaurant-customer-cx.cjs')], {
+  cwd: root,
+  stdio: 'inherit',
+});
+if (cxBuild.status !== 0) process.exit(cxBuild.status || 1);

@@ -54,9 +54,7 @@ export async function initRetentionLtvEngine() {
   tickWeeklyVisit(milestones);
 
   document.addEventListener('retention:decision-saved', (event) => {
-    const detail = event.detail || {};
-    saveDecisionSnapshot(detail);
-    recordHabitAction('saved_decision', undefined, framework.habitLoop?.engagementWeights);
+    handleRetentionDecisionSaved(event.detail || {}, framework.habitLoop?.engagementWeights);
   });
 
   window.addEventListener('pageshow', () => {
@@ -68,6 +66,17 @@ export async function initRetentionLtvEngine() {
       fireRevisitLifecycle(trigger).catch(() => {});
     }
   });
+}
+
+/**
+ * @param {object} [detail]
+ * @param {Record<string, number>} [habitWeights]
+ */
+export function handleRetentionDecisionSaved(detail = {}, habitWeights) {
+  saveDecisionSnapshot(detail);
+  if (detail.passive !== true) {
+    recordHabitAction('saved_decision', undefined, habitWeights);
+  }
 }
 
 /** Bridge for modules without direct analytics import */

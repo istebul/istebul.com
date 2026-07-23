@@ -50,16 +50,27 @@ if (fs.existsSync(distDir)) {
   }
 }
 
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
+
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const routeSections = [
-  'id="home"',
-  'id="how-it-works"',
+const aiHtmlPath = path.join(root, 'ai/index.html');
+if (!fs.existsSync(aiHtmlPath)) {
+  fail('ai/index.html missing — AI product entry required after Platform Cutover');
+}
+const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
+
+for (const msg of collectPlatformAiSurfaceFailures(indexHtml, aiHtml)) {
+  fail(msg);
+}
+
+/* SPA shell sections remain on root index (not AI long-scroll). */
+const spaShellSections = [
   'id="page-karar-analizi"',
   'id="ilanlar"',
   'id="compare"',
   'id="profil"'
 ];
-for (const marker of routeSections) {
+for (const marker of spaShellSections) {
   if (!indexHtml.includes(marker)) fail(`index.html missing section ${marker}`);
 }
 
@@ -70,6 +81,16 @@ if (!fs.existsSync(bootstrapFile)) {
 const bootstrapSource = fs.readFileSync(bootstrapFile, 'utf8');
 if (!bootstrapSource.includes('karar-asistani')) {
   fail('route bootstrap missing /karar-asistani alias');
+}
+
+const redirects = fs.readFileSync(path.join(root, '_redirects'), 'utf8');
+for (const rule of [
+  '/finansman /finans/ 301',
+  '/finansman/ /finans/ 301',
+  '/araba /auto/ 301',
+  '/araba/ /auto/ 301'
+]) {
+  if (!redirects.includes(rule)) fail(`_redirects missing legacy vertical rule: ${rule}`);
 }
 if (!indexHtml.includes('route-bootstrap-head.js')) {
   fail('index.html must reference route-bootstrap-head.js');

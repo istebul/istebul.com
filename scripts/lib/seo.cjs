@@ -105,6 +105,9 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra, ogTy
   <meta property="og:type" content="${escapeHtml(ogType)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   <meta property="og:image" content="${escapeHtml(ogImage)}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
@@ -190,7 +193,7 @@ function renderSeoNav() {
   return `<header class="seo-header">
     ${SEO_BRAND_LOGO}
     <nav class="seo-nav" aria-label="Ana navigasyon">
-      <a href="/auto/">Karar Analizi</a>
+      <a href="/karar-asistani/">Ön değerlendirme</a>
       <a href="/karar-asistani/">Karar Asistanı</a>
       <a href="/rehber/arac-alim-karar-asistani/">Rehber</a>
       <a href="/partner-olun.html">Partner</a>
@@ -270,8 +273,44 @@ function renderGuideStandardBlocks(slug) {
   </div>`;
 }
 
-function renderGuideCta(cta, usePremium) {
-  if (usePremium) return renderPremiumGuideCta();
+const PREMIUM_VERTICAL_CTAS = {
+  finance: { href: '/finans/', label: 'Finans tam analizine devam et' },
+  housing: { href: '/konut/', label: 'Konut tam analizine devam et' },
+  travel: { href: '/tatil/', label: 'Tatil tam analizine devam et' },
+  insurance: { href: '/sigorta/', label: 'Sigorta tam analizine devam et' },
+  kasko: { href: '/kasko/', label: 'Kasko tam analizine devam et' },
+  auto: { href: '/auto/', label: 'Araç maliyet analizini başlat' },
+  default: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
+};
+
+const GUIDE_SLUG_VERTICAL = {
+  'finansman-rehberi': 'finance',
+  'arac-kredisi-hesaplama': 'finance',
+  'konut-karar-rehberi': 'housing',
+  'arac-sigortasi-karsilastirma': 'insurance'
+};
+
+function inferGuideVertical(slug) {
+  if (GUIDE_SLUG_VERTICAL[slug]) return GUIDE_SLUG_VERTICAL[slug];
+  if (/konut|ev-|mortgage/i.test(slug || '')) return 'housing';
+  if (/tatil|seyahat|otel/i.test(slug || '')) return 'travel';
+  if (/kasko/i.test(slug || '')) return 'kasko';
+  if (/sigorta/i.test(slug || '')) return 'insurance';
+  if (/finans|kredi/i.test(slug || '')) return 'finance';
+  if (/arac|tco|suv|sedan|elektrikli|ikinci-el|ticari-arac/i.test(slug || '')) return 'auto';
+  return 'default';
+}
+
+function resolvePremiumGuideCta(cta, guideSlug) {
+  if (cta?.href && cta?.label) {
+    return { href: cta.href, label: cta.label };
+  }
+  const vertical = inferGuideVertical(guideSlug);
+  return PREMIUM_VERTICAL_CTAS[vertical] || PREMIUM_VERTICAL_CTAS.default;
+}
+
+function renderGuideCta(cta, usePremium, guideSlug) {
+  if (usePremium) return renderPremiumGuideCta(resolvePremiumGuideCta(cta, guideSlug));
   if (!cta) return '';
   const secondary =
     cta.secondary ?
@@ -329,31 +368,31 @@ const GUIDE_INTERNAL_LINKS = {
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji ve skor şeffaflığı' },
-    { href: '/#landing-faq', label: 'Sık sorulan sorular (SSS)' }
+    { href: '/ai/#landing-faq', label: 'Sık sorulan sorular (SSS)' }
   ],
   'elektrikli-arac-rehberi': [
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ],
   'finansman-rehberi': [
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ],
   'tco-rehberi': [
     { href: '/auto/', label: 'Araç TCO analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ],
   'ikinci-el-rehberi': [
     { href: '/auto/', label: 'Araç karar analizi' },
     { href: '/finans/', label: 'Finansman analizi' },
     { href: '/metodoloji/', label: 'Metodoloji' },
-    { href: '/#landing-faq', label: 'SSS' }
+    { href: '/ai/#landing-faq', label: 'SSS' }
   ]
 };
 
@@ -423,12 +462,12 @@ function renderInternalLinks(slug) {
   </section>`;
 }
 
-function renderPremiumGuideCta() {
+function renderPremiumGuideCta(cta = PREMIUM_VERTICAL_CTAS.default) {
   return `<section class="seo-cta seo-cta--premium" aria-labelledby="seo-premium-cta-title">
     <h2 id="seo-premium-cta-title">Kararınızı veriyle destekleyin</h2>
     <p>isteBul yapay zekâ destekli karar analizi ile maliyet, risk ve uygunluk değerlendirmesini birkaç dakika içinde oluşturun.</p>
     <div class="seo-cta-row-inner">
-      <a class="seo-cta-btn" href="/auto/">Ücretsiz Analize Başla</a>
+      <a class="seo-cta-btn" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a>
     </div>
     <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Bilgilendirme amaçlı — finansal tavsiye değildir</p>
   </section>`;
@@ -468,7 +507,7 @@ function renderSeoFooter({ site, guideLinks }) {
         <h2>Platform</h2>
         <ul>
           <li><a href="/">Ana sayfa</a></li>
-          <li><a href="/auto/">Ücretsiz analiz</a></li>
+          <li><a href="/karar-asistani/">Ön değerlendirme başlat</a></li>
           <li><a href="/secenekler/">Seçenekler</a></li>
           <li><a href="/karsilastir/">Karşılaştır</a></li>
         </ul>
@@ -498,7 +537,9 @@ function renderSeoFooter({ site, guideLinks }) {
 }
 
 const GUIDE_CTAS = {
-  'finansman-rehberi': { href: '/finans/', label: 'Finansman analizini başlat' },
+  'finansman-rehberi': { href: '/finans/', label: 'Finans tam analizine devam et' },
+  'konut-karar-rehberi': { href: '/konut/', label: 'Konut tam analizine devam et' },
+  'arac-sigortasi-karsilastirma': { href: '/sigorta/', label: 'Sigorta tam analizine devam et' },
   'tco-rehberi': {
     href: '/auto/',
     label: 'Araç TCO analizini başlat',
@@ -801,7 +842,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
       ${faqHtml}
       ${internalLinksHtml}
       ${related}
-      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta, usePremiumCta)}
+      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta, usePremiumCta, guideSlug)}
       </article>
     </div>
   </main>
@@ -825,9 +866,9 @@ function buildCorporateRichPages(distDir, site) {
       relatedLinks: [
         { href: '/metodoloji/', label: 'Metodoloji' },
         { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
-        { href: '/auto/', label: 'Ücretsiz analiz' }
+        { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
       ],
-      cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' }
+      cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
     },
     {
       filename: 'iletisim.html',
@@ -843,7 +884,7 @@ function buildCorporateRichPages(distDir, site) {
         { href: '/hakkimizda.html', label: 'Hakkımızda' },
         { href: '/kvkk.html', label: 'KVKK' }
       ],
-      cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
+      cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' },
       extraHtml: renderContactCards()
     },
     {
@@ -859,9 +900,9 @@ function buildCorporateRichPages(distDir, site) {
         { href: '/iletisim.html', label: 'İletişim' },
         { href: '/kvkk.html', label: 'KVKK' },
         { href: '/planlar', label: 'Planlar' },
-        { href: '/auto/', label: 'Ücretsiz analiz' }
+        { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
       ],
-      cta: { href: '/auto/', label: 'Analize başla' },
+      cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' },
       extraHtml: renderHelpFaqSection()
     }
   ];
@@ -931,7 +972,7 @@ function buildRehberHubIndex(distDir, site, landingConfig) {
       { name: 'Rehber', path: prefix }
     ],
     relatedLinks: links.slice(0, 5),
-    cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
+    cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' },
     kicker: 'Kaynaklar · Rehber merkezi',
     extraHtml: hubListHtml
   });
@@ -986,7 +1027,7 @@ function injectCorporateMeta(distDir) {
         `<nav class="seo-footer-links" aria-label="SEO rehber">
       <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
       <a href="/rehber/tco-rehberi/">TCO rehberi</a>
-      <a href="/auto/">Karar analizi</a>
+      <a href="/karar-asistani/">Ön değerlendirme başlat</a>
     </nav>
   </footer>`
       );
@@ -1043,7 +1084,7 @@ function buildSeoPages(distDir) {
       { name: page.h1, path: pagePath }
     ];
     const relatedLinks = resolveRelatedLinks(page, landingBySlug, hubsBySlug);
-    const guideCta = GUIDE_CTAS[page.slug] || { href: '/auto/', label: 'Ücretsiz karar analizine başla' };
+    const guideCta = GUIDE_CTAS[page.slug] || { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' };
     const html = renderContentPage({
       site,
       page,
@@ -1084,7 +1125,7 @@ function buildSeoPages(distDir) {
       path: hub.path,
       breadcrumbs,
       relatedLinks,
-      cta: { href: hub.ctaHref || '/auto/', label: hub.ctaLabel || 'Başla' }
+      cta: { href: hub.ctaHref || '/karar-asistani/', label: hub.ctaLabel || 'Ön değerlendirme başlat' }
     });
 
     const segments = hub.path.replace(/^\/|\/$/g, '').split('/');
@@ -1112,7 +1153,7 @@ function buildDataSourcesPage(distDir, site) {
     { href: '/metodoloji/', label: 'Metodoloji' },
     { href: '/hakkimizda.html', label: 'Hakkımızda' },
     { href: '/gizlilik.html', label: 'Gizlilik' },
-    { href: '/auto/', label: 'Ücretsiz analiz' }
+    { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
   ];
   const extraHtml = `${renderDataSourcesCards(page.sources)}${renderDataSourcesDisclaimer(page.disclaimer)}`;
   const html = renderContentPage({
@@ -1146,7 +1187,7 @@ function buildMethodologyPage(distDir, site) {
   ];
   const relatedLinks = [
     { href: '/veri-kaynaklari/', label: 'Veri kaynakları' },
-    { href: '/auto/', label: 'Auto analiz' },
+    { href: '/auto/', label: 'Araç maliyet analizi' },
     { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
     { href: '/karar-asistani/', label: 'Karar asistanı' }
   ];
@@ -1165,7 +1206,7 @@ function buildMethodologyPage(distDir, site) {
     path: pathName,
     breadcrumbs,
     relatedLinks,
-    cta: { href: '/auto/', label: 'Metodolojiyi dene — Auto analiz' }
+    cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
   });
 
   const outDir = path.join(distDir, 'metodoloji');

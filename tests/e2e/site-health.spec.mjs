@@ -1,7 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { completeKonutWizard } from './helpers/konut-wizard.mjs';
+import { completeFinansWizard, openFinansWizard } from './helpers/finans-wizard.mjs';
 
 const PAGES = [
-  { path: '/', heading: /yalnız değilsiniz/i },
+  { path: '/', heading: /İSTEBUL|platform/i },
+  { path: '/ai/', heading: /yalnız değilsiniz/i },
   { path: '/auto/', selector: '#vacation-flow, #auto-flow, .vacation-main, main' },
   { path: '/konut/', selector: 'main' },
   { path: '/tatil/', selector: 'main' },
@@ -10,7 +13,7 @@ const PAGES = [
   { path: '/kasko/', heading: /kasko|veriye dayalı/i }
 ];
 
-const RESPONSIVE_PATHS = ['/', '/auto/'];
+const RESPONSIVE_PATHS = ['/', '/ai/', '/auto/'];
 const VIEWPORTS = [
   { label: 'mobile', width: 390, height: 844 },
   { label: 'tablet', width: 768, height: 1024 }
@@ -58,9 +61,14 @@ test.describe('Site health — readability and layout', () => {
   test('homepage uses consolidated CSS bundles', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    const styleLinks = await page.locator('link[rel="stylesheet"]').count();
-    // Home may load one additional static stylesheet besides consolidated bundles.
-    expect(styleLinks).toBeLessThanOrEqual(4);
+    const styleHrefs = await page.locator('link[rel="stylesheet"]').evaluateAll((nodes) =>
+      nodes.map((n) => n.getAttribute('href') || '')
+    );
+    const platformSheets = styleHrefs.filter((href) => /\/css\/platform-[^"']+\.css/.test(href)).length;
+    const coreSheets = styleHrefs.length - platformSheets;
+    // SPA core stays consolidated; Platform Landing may add dedicated platform-*.css sheets.
+    expect(coreSheets).toBeLessThanOrEqual(4);
+    expect(platformSheets).toBeGreaterThan(0);
     const bundle = await page.locator('link[href*="homepage.bundle"]').count();
     expect(bundle).toBeGreaterThan(0);
   });
@@ -72,6 +80,24 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('#kasko-wizard')).toBeVisible();
   }
 
+  async function completeKaskoWizard(page) {
+    await openKaskoWizard(page);
+    await page.locator('#kasko-wizard [data-manual="age"]').fill('35');
+    await page.locator('#kasko-wizard [data-field="license_years"][data-value="11plus"]').click();
+    await page.locator('#kasko-wizard [data-field="usage_type"][data-value="ozel"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="vehicle_category"][data-value="suv"]').click();
+    await page.locator('#kasko-wizard [data-field="vehicle_year_band"][data-value="0-3"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="coverage_level"][data-value="full"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="risk_perception"][data-value="yuksek"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="budget_level"][data-value="yuksek"]').click();
+    await page.locator('#kasko-next').click();
+    await expect(page.locator('#kasko-results')).toBeVisible();
+  }
+
   test('/kasko/ wizard shell is interactive', async ({ page }) => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
@@ -81,31 +107,89 @@ test.describe('Site health — readability and layout', () => {
   test('/kasko/ completes flow and shows AI results', async ({ page }) => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
-    await openKaskoWizard(page);
-
-    await page.locator('#kasko-wizard [data-manual="age"]').fill('35');
-    await page.locator('#kasko-wizard [data-field="license_years"][data-value="11plus"]').click();
-    await page.locator('#kasko-wizard [data-field="usage_type"][data-value="ozel"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="vehicle_category"][data-value="suv"]').click();
-    await page.locator('#kasko-wizard [data-field="vehicle_year_band"][data-value="0-3"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="coverage_level"][data-value="full"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="risk_perception"][data-value="yuksek"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="budget_level"][data-value="yuksek"]').click();
-    await page.locator('#kasko-next').click();
-
-    await expect(page.locator('#kasko-results')).toBeVisible();
+    await completeKaskoWizard(page);
     await expect(page.locator('#kasko-results .kasko-v2-root')).toBeVisible();
     await expect(page.locator('#kasko-results .ib-insight-blocks')).toContainText(/karar|skor|teminat|risk/i);
     await expect(page.locator('#kasko-wizard')).toBeHidden();
   });
+
+  test('/kasko/ without decision_cards flag keeps legacy card renderer hidden', async ({ page }) => {
+    await page.goto('/kasko/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+    await expect(page.locator('#kasko-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#kasko-results .vacation-result-card').first()).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/kasko/?decision_cards=1 shows decision category cards with stable score', async ({ page }) => {
+    await page.goto('/kasko/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+
+    const cards = page.locator('#kasko-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/kasko/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/kasko/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+
+    const target = page.locator('#kasko-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#kasko-selection-bar')).toBeVisible();
+    await expect(page.locator('#kasko-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#kasko-results .vacation-selection-picked')).toContainText(/ekonomik/i);
+  });
+
+  test('/kasko/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/kasko/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+    await expect(page.locator('#kasko-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  async function completeSigortaWizard(page) {
+    await page.locator('#sigorta-hero-cta').click();
+    await expect(page.locator('#sigorta-wizard')).toBeVisible();
+
+    await page.locator('#sigorta-wizard [data-field="insurance_type"][data-value="arac"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-manual="age"]').fill('35');
+    await page.locator('#sigorta-wizard [data-field="license_years"][data-value="3-10"]').click();
+    await page.locator('#sigorta-wizard [data-field="usage_type"][data-value="ozel"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="vehicle_category"][data-value="otomobil"]').click();
+    await page.locator('#sigorta-wizard [data-field="vehicle_year_band"][data-value="4-10"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="risk_perception"][data-value="orta"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="budget_level"][data-value="orta"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await expect(page.locator('#sigorta-results')).toBeVisible();
+  }
 
   test('/sigorta/ wizard shell is interactive', async ({ page }) => {
     await page.goto('/sigorta/');
@@ -115,45 +199,441 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('#sigorta-wizard button, #sigorta-wizard [role="button"]').first()).toBeVisible();
   });
 
-  async function openFinansWizard(page) {
-    await page.locator('#finans-flow').scrollIntoViewIfNeeded();
-    await page.locator('#finans-hero-cta').click({ force: true });
-    await expect(page.locator('#finans-wizard')).toBeVisible();
+  test('/sigorta/?decision_cards=1 shows decision category cards with engine score', async ({ page }) => {
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+
+    const cards = page.locator('#sigorta-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    const engineScoreText = await page
+      .locator('#sigorta-results .sigorta-v2-kpi--decision strong')
+      .innerText();
+    const engineScore = engineScoreText.replace(/\/100/i, '').trim();
+    expect(scoreAttr).toBe(engineScore);
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/sigorta/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+
+    const target = page.locator('#sigorta-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#sigorta-selection-bar')).toBeVisible();
+    await expect(page.locator('#sigorta-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#sigorta-results .vacation-selection-picked')).toContainText(/ekonomik/i);
+  });
+
+  test('/sigorta/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+
+    const defaultSelected = page.locator('#sigorta-results .ib-decision-category-card.is-selected').first();
+    const defaultOption = await defaultSelected.getAttribute('data-option');
+
+    const target = page.locator('#sigorta-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    if (defaultOption) {
+      await expect(
+        page.locator(`#sigorta-results .ib-decision-category-card[data-option="${defaultOption}"]`)
+      ).toHaveClass(/is-selected/);
+    }
+    await expect(page.locator('#sigorta-results .sigorta-v2-coverage')).toBeVisible();
+  });
+
+  test('/sigorta/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+    await expect(page.locator('#sigorta-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  async function completeTatilWizard(page) {
+    await page.waitForSelector('#vacation-hero-cta', { state: 'visible', timeout: 15000 });
+    await page.locator('#vacation-hero-cta').click();
+    await expect(page.locator('#vacation-wizard')).toBeVisible();
+
+    await page.locator('#vacation-wizard [data-field="vacation_goal"][data-value="deniz"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="vacation_type"][data-value="deniz-resort"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="people_type"][data-value="aile"]').click();
+    await page.locator('#vacation-travelers-count').fill('4');
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="budget_range"][data-value="dengeli"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard input[name="date_flexibility"][value="undecided"]').check();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="transport_preference"][data-value="ucak"]').click();
+    await page.locator('#vacation-wizard [data-field="comfort_expectation"][data-value="dengeli"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard .vacation-chip').first().click();
+    await page.locator('#vacation-next').click();
+    await page.locator('#vacation-next').click();
+
+    await expect(page.locator('#vacation-wizard')).toBeHidden({ timeout: 15000 });
+    await expect(page.locator('#vacation-results')).toBeVisible({ timeout: 15000 });
+    await page.waitForFunction(() => {
+      const root = document.querySelector('#vacation-results .tatil-v2-root');
+      return Boolean(root?.querySelector('.tatil-v2-panel'));
+    }, null, { timeout: 15000 });
   }
 
   test('/finans/ wizard completes flow and shows V2 results', async ({ page }) => {
     await page.goto('/finans/');
     await page.waitForLoadState('domcontentloaded');
-    await openFinansWizard(page);
+    await completeFinansWizard(page);
 
-    await page.locator('#finans-wizard [data-field="purpose"][data-value="konut"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="amount_range"][data-value="1m"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="term_months"][data-value="36"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="capacity_range"][data-value="25k"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-manual="monthly_income"]').fill('55000');
-    await page.locator('#finans-wizard [data-manual="monthly_expense"]').fill('18000');
-    await page.locator('#finans-wizard [data-manual="existing_debt"]').fill('6000');
-    await page.locator('#finans-wizard [data-field="income_type"][data-value="stabil"]').click();
-    await page.locator('#finans-wizard [data-field="early_payment"][data-value="belki"]').click();
-    await page.locator('#finans-next').click();
-
-    await page.locator('#finans-wizard [data-field="rate_sensitivity"][data-value="orta"]').click();
-    await page.locator('#finans-wizard [data-field="risk_tolerance"][data-value="dengeli"]').click();
-    await page.locator('#finans-next').click();
-
-    await expect(page.locator('#finans-results')).toBeVisible();
-    await expect(page.locator('#finans-results .finansman-v2-root')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('#finans-wizard')).toBeHidden();
     await expect(page.locator('#finans-next')).not.toHaveClass(/is-loading/);
     await expect(page.locator('[data-finansman-v2-pdf]')).toContainText(/PDF olarak kaydet/i);
+  });
+
+  test('/finans/ without decision_cards flag keeps legacy card renderer hidden', async ({ page }) => {
+    await page.goto('/finans/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+    await expect(page.locator('#finans-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#finans-results .vacation-result-card').first()).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/finans/?decision_cards=1 shows decision category cards with engine score', async ({ page }) => {
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
+    const cards = page.locator('#finans-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    const engineScoreText = await page
+      .locator('#finans-results .ib-results-score-ring__gauge strong')
+      .innerText();
+    const engineScore = engineScoreText.replace(/\/100/i, '').trim();
+    expect(scoreAttr).toBe(engineScore);
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/finans/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
+    const target = page.locator('#finans-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#finans-selection-bar')).toBeVisible();
+    await expect(page.locator('#finans-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#finans-results .vacation-selection-picked')).toContainText(/uzun vade|düşük taksit/i);
+  });
+
+  test('/finans/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
+    const defaultSelected = page.locator('#finans-results .ib-decision-category-card.is-selected').first();
+    const defaultOption = await defaultSelected.getAttribute('data-option');
+
+    const target = page.locator('#finans-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    if (defaultOption) {
+      await expect(
+        page.locator(`#finans-results .ib-decision-category-card[data-option="${defaultOption}"]`)
+      ).toHaveClass(/is-selected/);
+    }
+    await expect(page.locator('#finans-results .finansman-v2-rate-table')).toBeVisible();
+  });
+
+  test('/finans/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+    await expect(page.locator('#finans-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/tatil/ without decision_cards flag keeps legacy card renderer hidden', async ({ page }) => {
+    await page.goto('/tatil/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+    await expect(page.locator('#vacation-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#vacation-results .vacation-result-card').first()).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/tatil/?decision_cards=1 shows decision category cards with stable score', async ({ page }) => {
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+
+    const cards = page.locator('#vacation-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    const signalCount = await firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal').count();
+    expect(signalCount).toBeGreaterThanOrEqual(2);
+    expect(signalCount).toBeLessThanOrEqual(4);
+  });
+
+  test('/tatil/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+
+    const target = page.locator('#vacation-results .ib-decision-category-card[data-option="kusadasi-didim"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#vacation-selection-bar')).toBeVisible();
+    await expect(page.locator('#vacation-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#vacation-results .vacation-selection-picked')).toContainText(/kuşadası|didim/i);
+  });
+
+  test('/tatil/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+
+    const target = page.locator('#vacation-results .ib-decision-category-card[data-option="kusadasi-didim"]');
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    await expect(page.locator('#vacation-results .tatil-v2-alts')).toBeVisible();
+  });
+
+  test('/tatil/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+    await expect(page.locator('#vacation-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  async function prepareAutoPage(page, path = '/auto/', options = {}) {
+    const { clearKararMahkemesiStorage = false } = options;
+    await page.addInitScript((clearKarar) => {
+      try {
+        sessionStorage.setItem('istebul_auto_soft_gate_dismissed', '1');
+        if (clearKarar) {
+          localStorage.removeItem('kararMahkemesiBeta');
+        }
+      } catch {
+        /* ignore */
+      }
+    }, clearKararMahkemesiStorage);
+    await page.goto(path);
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('.wizard-progress')).toBeVisible({ timeout: 20000 });
+  }
+
+  async function completeAutoWizard(page) {
+    await page.locator('[data-wizard-key="budget"].wizard-option', { hasText: '1 – 2 milyon TL' }).click();
+    await page.locator('[data-wizard-key="usage"].wizard-option', { hasText: 'Aile' }).click();
+    await page.locator('[data-wizard-key="household_size"].wizard-option', { hasText: '3-4 kişi' }).click();
+    await page.getByRole('button', { name: /Devam et/i }).click();
+
+    await page.locator('.wizard-option', { hasText: 'SUV' }).first().click();
+    await page.locator('.wizard-option', { hasText: 'Hibrit' }).click();
+    await page.getByRole('button', { name: /Devam et/i }).click();
+
+    await page.locator('[data-wizard-key="km"].wizard-option', { hasText: '10.000 – 20.000 km' }).click();
+    await page.locator('[data-wizard-key="city_ratio"].wizard-option', { hasText: 'Dengeli kullanım' }).click();
+    await page.locator('[data-wizard-key="ownership_months"].wizard-option', { hasText: '36 ay' }).click();
+    await page.locator('[data-wizard-key="location"].wizard-option', { hasText: 'İzmir' }).click();
+    await page.getByRole('button', { name: /Devam et/i }).click();
+
+    await page.locator('[data-wizard-key="loan"].wizard-option', { hasText: 'Evet' }).click();
+    await page.getByRole('button', { name: /Analizi başlat/i }).click();
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible({ timeout: 20000 });
+
+    const gate = page.locator('#auto-soft-auth-gate');
+    if (await gate.isVisible().catch(() => false)) {
+      await page.getByRole('button', { name: /Önizlemeyle devam et/i }).click();
+    }
+  }
+
+  test('/auto/ without decision_cards flag keeps legacy compact cards visible', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page);
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#auto-results-cards.auto-rec-cards')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/auto/?decision_cards=1 shows decision category cards with vehicle score', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+
+    const cards = page.locator('#auto-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+    await expect(page.locator('#auto-results-cards.auto-rec-cards')).toHaveCount(0);
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    const suitabilitySignal = firstCard.locator('.ib-decision-card__signal', { hasText: /Uygunluk/i });
+    await expect(suitabilitySignal).toContainText(/3-4 kişilik hane/i);
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    const signalCount = await firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal').count();
+    expect(signalCount).toBeGreaterThanOrEqual(2);
+    expect(signalCount).toBeLessThanOrEqual(4);
+  });
+
+  test('/auto/?decision_cards=1 card CTA selects vehicle', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+
+    const target = page.locator('#auto-results .ib-decision-category-card').nth(1);
+    const vehicleName = await target.locator('.ib-decision-card__title').innerText();
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#auto-vehicle-selection')).toBeVisible();
+    await expect(page.locator('.auto-vehicle-selection-confirmed')).toContainText(vehicleName.trim());
+  });
+
+  test('/auto/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+
+    const target = page.locator('#auto-results .ib-decision-category-card').nth(1);
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    await expect(page.locator('#auto-results .ib-auto-compare-matrix')).toBeVisible();
+  });
+
+  test('/auto/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+    await expect(page.locator('#auto-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/auto/ without karar_mahkemesi flag keeps beta card hidden', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/', { clearKararMahkemesiStorage: true });
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible();
+    await expect(page.locator('#ib-results-detail [data-karar-mahkemesi-beta]')).toHaveCount(0);
+    await expect(page.locator('#auto-results [data-karar-mahkemesi-beta]')).toHaveCount(0);
+  });
+
+  test('/auto/?karar_mahkemesi=1 mounts single Karar Mahkemesi beta card in results detail', async ({
+    page
+  }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?karar_mahkemesi=1');
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible();
+    await expect(page.locator('#ib-results-detail')).toBeVisible();
+
+    const detailBeta = page.locator('#ib-results-detail [data-karar-mahkemesi-beta]');
+    await expect(detailBeta).toHaveCount(1);
+    await expect(page.locator('#auto-results [data-karar-mahkemesi-beta]')).toHaveCount(1);
+    await expect(detailBeta).toHaveCount(1);
+  });
+
+  test('/auto/?karar_mahkemesi=1 @390px karar mahkemesi beta card does not overflow on mobile', async ({
+    page
+  }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await prepareAutoPage(page, '/auto/?karar_mahkemesi=1');
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible();
+    await expect(page.locator('#ib-results-detail [data-karar-mahkemesi-beta]')).toHaveCount(1);
+    await expect(page.locator('#auto-results [data-karar-mahkemesi-beta]')).toHaveCount(1);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      const betaCard = document.querySelector('#ib-results-detail [data-karar-mahkemesi-beta]');
+      const metrics = document.querySelector(
+        '#ib-results-detail [data-karar-mahkemesi-beta] .karar-mahkemesi-beta__metrics'
+      );
+      return {
+        document: doc.scrollWidth > doc.clientWidth + 2,
+        betaCard: betaCard ? betaCard.scrollWidth > betaCard.clientWidth + 2 : false,
+        metrics: metrics ? metrics.scrollWidth > metrics.clientWidth + 2 : false
+      };
+    });
+    expect(overflow.document).toBe(false);
+    expect(overflow.betaCard).toBe(false);
+    expect(overflow.metrics).toBe(false);
   });
 
   test('/finans/ @ mobile completes wizard without stuck loading', async ({ page }) => {
@@ -185,6 +665,232 @@ test.describe('Site health — readability and layout', () => {
       return el.scrollWidth === el.clientWidth;
     });
     expect(overflow).toBe(true);
+  });
+
+  test('/konut/ cash buffer question saves and appears in AI insight @390px', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/konut/');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('#housing-wizard')).toBeVisible();
+
+    const wizard = page.locator('#housing-wizard');
+    const clickNext = async () => {
+      await page.evaluate(() => document.getElementById('housing-next')?.click());
+      await page.waitForTimeout(150);
+    };
+
+    await wizard.locator('[data-field="purchasePurpose"][data-value="Satın almak istiyorum"]').click();
+    await clickNext();
+
+    await expect(wizard).toContainText(/Peşinat sonrası kaç aylık güvenlik payınız kalıyor/i);
+    await wizard.locator('[data-field="cash_buffer_months"][data-value="0-1"]').click();
+
+    await wizard.locator('[data-input="totalBudget"]').fill('4000000');
+    await wizard.locator('[data-input="downPayment"]').fill('1200000');
+    await wizard.locator('[data-input="monthlyCapacity"]').fill('45000');
+    await wizard.locator('[data-input="monthlyIncome"]').fill('80000');
+    await wizard.locator('[data-input="useFinancing"]').selectOption('evet');
+    await wizard.locator('[data-input="loanAmount"]').fill('2800000');
+    await clickNext();
+
+    await wizard.locator('[data-input="city"]').selectOption({ label: 'İstanbul' });
+    await wizard.locator('[data-input="district"]').fill('Kadıköy');
+    await wizard.locator('[data-action="toggle-location"][data-value="ulasim"]').click();
+    await clickNext();
+
+    await wizard.locator('[data-field="homeType"][data-value="Daire"]').click();
+    await wizard.locator('[data-input="householdSize"]').fill('4');
+    await clickNext();
+
+    await wizard.locator('[data-action="toggle-risk"]').filter({ hasText: 'Deprem' }).click();
+    await clickNext();
+
+    const v2Root = page.locator('#housing-results .konut-v2-root');
+    await expect(v2Root).toBeVisible({ timeout: 25000 });
+
+    await expect(v2Root.locator('[data-insight-why]')).toContainText(/güvenlik payı|nakit/i);
+    await expect(v2Root.locator('[data-insight-risk]')).toContainText(/nakit tamponu|Peşinat sonrası/i);
+    await expect(v2Root.locator('.konut-v2-hero-badge--score')).toContainText(/\d+/);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/konut/ without decision_cards flag keeps decision cards hidden', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    await expect(page.locator('#housing-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#housing-results .konut-v2-root')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/konut/ TÜİK reference layer stays isolated in hero aside', async ({ page }) => {
+    test.setTimeout(90000);
+
+    const konutTuikReferenceMock = {
+      ok: true,
+      data: {
+        status: 'reference',
+        source: 'tuik',
+        lastReviewed: '2026-06-08',
+        categories: [
+          {
+            id: 'konut_satis_istatistikleri',
+            title: 'Konut Satış İstatistikleri',
+            relatedVerticals: ['konut'],
+            usage: 'Konut piyasası hacmi referansı.',
+            scoreImpact: false
+          },
+          {
+            id: 'yillik_enflasyon_oranlari',
+            title: 'Yıllık enflasyon oranları',
+            relatedVerticals: ['konut'],
+            usage: 'Makro enflasyon bağlamı.',
+            scoreImpact: false
+          }
+        ],
+        attribution: {
+          provider: 'Türkiye İstatistik Kurumu (TÜİK)',
+          url: 'https://www.tuik.gov.tr/',
+          disclaimer: 'Ham veri yeniden satılmaz veya ticari olarak paketlenmez.'
+        }
+      },
+      meta: { scoreImpact: false }
+    };
+
+    await page.route('**/api/tuik-snapshot**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(konutTuikReferenceMock)
+      });
+    });
+
+    await page.goto('/konut/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const v2Root = page.locator('#housing-results .konut-v2-root');
+    await expect(v2Root).toBeVisible();
+
+    const scoreBadge = v2Root.locator('.konut-v2-hero-badge--score');
+    const scoreRing = v2Root.locator('.ib-results-score-ring');
+    await expect(scoreBadge).toContainText(/\d+/);
+    await expect(scoreRing).toBeVisible();
+    const scoreBefore = (await scoreBadge.innerText()).match(/\d+/)?.[0];
+    expect(scoreBefore).toBeTruthy();
+
+    const tuikLayer = v2Root.locator('[data-tuik-reference-layer]');
+    await expect(tuikLayer).toBeVisible();
+
+    await expect(scoreRing.locator('[data-tuik-reference-layer]')).toHaveCount(0);
+
+    const heroAside = v2Root.locator('.ib-results-hero-aside');
+    await expect(heroAside).toBeVisible();
+    await expect(heroAside.locator('[data-tuik-reference-layer]')).toBeVisible();
+
+    await expect(tuikLayer.locator('.ib-tuik-reference-layer__title')).toContainText('TÜİK referans verisi');
+    const disclaimer = tuikLayer.locator('.ib-tuik-reference-layer__disclaimer');
+    await expect(disclaimer).toContainText(/Karar skoru üretmez/);
+    await expect(disclaimer).toContainText(/Ham tablo yayınlamaz/);
+
+    const tuikText = (await tuikLayer.innerText()).toLowerCase();
+    for (const phrase of ['tavsiye eder', 'skoru artırır', 'canlı bağlı', 'resmi api', 'upstream']) {
+      expect(tuikText).not.toContain(phrase);
+    }
+
+    const execRoot = v2Root.locator('[data-konut-v2-insight-root]');
+    await expect(execRoot).toBeVisible();
+    const execText = (await execRoot.innerText()).toLowerCase();
+    expect(execText).not.toContain('tüik referans verisi');
+
+    const scoreAfter = (await scoreBadge.innerText()).match(/\d+/)?.[0];
+    expect(scoreAfter).toBe(scoreBefore);
+    await expect(scoreRing.locator('strong')).toContainText(/\d+\/100/);
+  });
+
+  test('/konut/?decision_cards=1 shows decision category cards with scenario score', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const cards = page.locator('#housing-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(4);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/konut/?decision_cards=1 primary CTA highlights scenario card', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const target = page.locator('#housing-results .ib-decision-category-card[data-option="lower-budget"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(target.locator('.ib-decision-card-select')).toContainText(/incele/i);
+  });
+
+  test('/konut/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const target = page.locator('#housing-results .ib-decision-category-card').nth(1);
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+
+    await target.locator('.ib-decision-card-secondary').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#housing-results .konut-v2-alts')).toBeVisible();
+  });
+
+  test('/konut/?decision_cards=1 keeps cash_buffer AI insight @390px without overflow', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page, { cashBuffer: '0-1' });
+
+    await expect(page.locator('#housing-results .ib-decision-category-card').first()).toBeVisible();
+    await expect(page.locator('#housing-results [data-insight-why]')).toContainText(/güvenlik payı|nakit/i);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/konut/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+    await expect(page.locator('#housing-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
   });
 
   test('/sigorta/ arac flow skips marital status and reaches results', async ({ page }) => {

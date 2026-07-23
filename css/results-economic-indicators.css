@@ -214,26 +214,28 @@
 
 .ib-results-economic--compact .ib-results-economic__date {
   margin: 0.08rem 0 0;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   line-height: 1.2;
 }
 
 .ib-results-economic--compact .ib-results-economic__foot {
   margin: 0.35rem 0 0;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: rgba(37, 99, 235, 0.88);
 }
 
 @media (max-width: 420px) {
-  .ib-results-economic--compact .ib-results-economic__grid {
-    grid-template-columns: repeat(3, minmax(72px, 1fr));
-    gap: 0.28rem;
-  }
-
   .ib-results-economic--compact .ib-results-economic__value {
     font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ib-results-economic--compact .ib-results-economic__grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 }
 

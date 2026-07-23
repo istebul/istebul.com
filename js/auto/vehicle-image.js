@@ -21,7 +21,10 @@ import {
   resolvePhotoVehicleAsset,
   resolveVehicleDisplayImage,
   resolveVehicleImageFallback,
-  vehicleImageMatchesName
+  resolveVehicleImageTrust,
+  normalizeVehicleImageIdentity,
+  vehicleImageMatchesName,
+  isApprovedCatalogImage
 } from './vehicle-image-resolver.js';
 
 export {
@@ -39,7 +42,9 @@ export {
   resolveLocalVehicleAsset,
   resolvePhotoVehicleAsset,
   resolveVehicleImageFallback,
-  vehicleImageMatchesName
+  vehicleImageMatchesName,
+  resolveVehicleImageTrust,
+  normalizeVehicleImageIdentity
 };
 
 export function resolveVehicleImage(vehicle, options) {
@@ -53,6 +58,9 @@ export function resolveVehicleImageUrl(vehicle, options) {
 
 export { resolveVehicleDisplayImage, buildVehicleImageFallbackChain };
 
+/** Deterministic trust copy when real vehicle photo cannot be shown. */
+export const VEHICLE_IMAGE_UNVERIFIED_LABEL = 'Görsel doğrulanamadı';
+
 function fallbackDataAttributes(chain) {
   const byLevel = Object.fromEntries(chain.map((entry) => [entry.level, entry.url]));
   return {
@@ -64,6 +72,146 @@ function fallbackDataAttributes(chain) {
   };
 }
 
+function imageSlugFromUrl(url) {
+  return String(url || '').split('?')[0].trim();
+}
+
+/**
+ * True when URL points to illustrative Auto catalog SVG (not premium placeholder).
+ * @param {string} url
+ */
+function isIllustrativeAutoCatalogImageUrl(url) {
+  const slug = imageSlugFromUrl(url);
+  if (!slug || slug === imageSlugFromUrl(PREMIUM_VEHICLE_PLACEHOLDER)) return false;
+  return isApprovedCatalogImage(url) && slug.endsWith('.svg');
+}
+
+/**
+ * UI-safe image payload for Auto surfaces (placeholder-first when trust is not exact).
+ * @param {object|null|undefined} vehicle
+ */
+export function buildVehicleImageUiPayload(vehicle) {
+  if (!vehicle || typeof vehicle !== 'object') {
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    return {
+      imageUrl: placeholderUrl,
+      imageTrust: {
+        matchLevel: 'no_match',
+        sourceTrust: 'placeholder',
+        showRealImage: false,
+        reason: 'no_verified_image_source'
+      }
+    };
+  }
+
+  const trust = resolveVehicleImageTrust(vehicle);
+  return {
+    imageUrl: trust.showRealImage ? trust.url : assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK),
+    imageTrust: {
+      matchLevel: trust.matchLevel,
+      sourceTrust: trust.sourceTrust,
+      showRealImage: trust.showRealImage,
+      reason: trust.reason
+    }
+  };
+}
+
+/** UI-safe image URL — never returns catalog SVG for partial/no_match trust. */
+export function resolveVehicleImageUrlForUi(vehicle) {
+  return buildVehicleImageUiPayload(vehicle).imageUrl;
+}
+
+/**
+ * Resolve compare-card image for Auto-sourced items (legacy catalog URLs sanitized).
+ * @param {object} item
+ * @returns {{ imageUrl: string, imageAlt: string }|null}
+ */
+export function resolveAutoComparisonImageItem(item = {}) {
+  const title = String(item.title || 'Seçenek');
+  const label = VEHICLE_IMAGE_UNVERIFIED_LABEL;
+  const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+  const rawImage = String(item.image || '');
+
+  if (item.imageTrust?.showRealImage === true && rawImage) {
+    return { imageUrl: rawImage, imageAlt: title };
+  }
+
+  if (item.imageTrust && item.imageTrust.showRealImage === false) {
+    return {
+      imageUrl: rawImage || placeholderUrl,
+      imageAlt: label
+    };
+  }
+
+  if (rawImage && isIllustrativeAutoCatalogImageUrl(rawImage)) {
+    return { imageUrl: placeholderUrl, imageAlt: label };
+  }
+
+  if (!rawImage) return null;
+
+  return { imageUrl: rawImage, imageAlt: title };
+}
+
+/**
+ * Apply placeholder-only state after verified external image load failure.
+ * @param {HTMLImageElement|object} img
+ */
+function applyVerifiedImageLoadErrorFallback(img) {
+  const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+  const label = VEHICLE_IMAGE_UNVERIFIED_LABEL;
+
+  img.src = placeholderUrl;
+  img.alt = label;
+  if ('title' in img) img.title = label;
+  img.dataset.fallbackApplied = 'verified-error-placeholder';
+  img.dataset.showRealImage = '0';
+  img.dataset.imageTrust = 'placeholder';
+  img.dataset.imageMatch = 'no_match';
+  img.dataset.imageErrorFallback = '1';
+  img.dataset.fallbackExact = '';
+  img.dataset.fallbackBrand = '';
+  img.dataset.fallbackSegment = '';
+  img.dataset.fallbackGeneric = '';
+  img.dataset.fallbackSrc = placeholderUrl;
+  img.dataset.finalFallbackSrc = placeholderUrl;
+
+  const parent = img.parentElement;
+  if (parent && typeof parent.classList?.add === 'function') {
+    parent.classList.add('auto-vehicle-image', 'auto-vehicle-image--unverified');
+    if (!parent.querySelector?.('.auto-vehicle-image__trust-copy')) {
+      const span = typeof document !== 'undefined' ? document.createElement('span') : null;
+      if (span) {
+        span.className = 'auto-vehicle-image__trust-copy';
+        span.textContent = label;
+        parent.appendChild(span);
+      }
+    }
+  }
+}
+
+/**
+ * Bind error handler for verified external images — placeholder only, no catalog chain.
+ * @param {HTMLImageElement|object} img
+ */
+function attachVerifiedExternalImageErrorFallback(img) {
+  const finalFallback = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+
+  img.dataset.fallbackExact = '';
+  img.dataset.fallbackBrand = '';
+  img.dataset.fallbackSegment = '';
+  img.dataset.fallbackGeneric = '';
+  img.dataset.fallbackSrc = finalFallback;
+  img.dataset.finalFallbackSrc = finalFallback;
+
+  if (img.dataset.fallbackBound === '1') return;
+  img.dataset.fallbackBound = '1';
+
+  img.addEventListener('error', () => {
+    if (img.dataset.fallbackApplied === 'verified-error-placeholder') return;
+    applyVerifiedImageLoadErrorFallback(img);
+  });
+}
+
 /**
  * CSP-safe per-image fallback chain: exact → brand → segment → generic → placeholder.
  * @param {HTMLImageElement|null|undefined} img
@@ -71,6 +219,38 @@ function fallbackDataAttributes(chain) {
  */
 export function attachVehicleImageFallback(img, vehicle) {
   if (!img || typeof img.addEventListener !== 'function') return;
+
+  if (img.dataset.imageTrust === 'verified_external' && img.dataset.showRealImage === '1') {
+    attachVerifiedExternalImageErrorFallback(img);
+    return;
+  }
+
+  const trust = resolveVehicleImageTrust(vehicle);
+  if (!trust.showRealImage) {
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    img.src = placeholderUrl;
+    img.dataset.vehicleImage = '1';
+    img.dataset.showRealImage = '0';
+    img.dataset.imageTrust = trust.sourceTrust;
+    img.dataset.imageMatch = trust.matchLevel;
+    img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
+    return;
+  }
+
+  if (trust.sourceTrust === 'verified_external') {
+    const primary = trust.url;
+    const finalFallback = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+
+    img.src = primary;
+    img.dataset.vehicleImage = '1';
+    img.dataset.showRealImage = '1';
+    img.dataset.imageTrust = trust.sourceTrust;
+    img.dataset.imageMatch = trust.matchLevel;
+    img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
+    attachVerifiedExternalImageErrorFallback(img);
+    img.dataset.finalFallbackSrc = finalFallback;
+    return;
+  }
 
   const chain = buildVehicleImageFallbackChain(vehicle);
   const primary = chain[0]?.url || assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
@@ -85,6 +265,9 @@ export function attachVehicleImageFallback(img, vehicle) {
   img.dataset.fallbackSrc = fallbacks.segment || fallbacks.brand || finalFallback;
   img.dataset.finalFallbackSrc = finalFallback;
   img.dataset.vehicleImage = '1';
+  img.dataset.showRealImage = '1';
+  img.dataset.imageTrust = trust.sourceTrust;
+  img.dataset.imageMatch = trust.matchLevel;
   img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
 
   if (img.dataset.fallbackBound === '1') return;
@@ -111,10 +294,6 @@ export function attachVehicleImageFallback(img, vehicle) {
   });
 }
 
-function imageSlugFromUrl(url) {
-  return String(url || '').split('?')[0].trim();
-}
-
 /**
  * @param {object|null|undefined} vehicle
  * @param {(s: unknown) => string} esc
@@ -130,15 +309,26 @@ export function renderVehicleImageHtml(vehicle, esc, opts = {}) {
     isFirst = false
   } = opts;
 
-  const chain = buildVehicleImageFallbackChain(vehicle);
-  const url = resolveVehicleDisplayImage(vehicle);
-  const fallbacks = fallbackDataAttributes(chain);
-  const alt = String(vehicle?.name || 'Araç görseli');
+  const trust = resolveVehicleImageTrust(vehicle);
   const cls = className ? ` class="${esc(className)}"` : '';
   const vehicleName = String(vehicle?.name || '');
   const priority = fetchPriority || (isFirst || loading === 'eager' ? 'high' : 'auto');
+  const imgAttrs = ` data-vehicle-image="1" data-image-trust="${esc(trust.sourceTrust)}" data-image-match="${esc(trust.matchLevel)}" data-show-real-image="${trust.showRealImage ? '1' : '0'}" data-vehicle-name="${esc(vehicleName)}" loading="${esc(loading)}" decoding="async" fetchpriority="${esc(priority)}" width="${width}" height="${height}"`;
 
-  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls} data-vehicle-image="1" data-fallback-exact="${esc(fallbacks.exact)}" data-fallback-brand="${esc(fallbacks.brand)}" data-fallback-segment="${esc(fallbacks.segment)}" data-fallback-generic="${esc(fallbacks.generic)}" data-fallback-src="${esc(fallbacks.segment || fallbacks.brand || fallbacks.final)}" data-final-fallback-src="${esc(fallbacks.final)}" data-vehicle-name="${esc(vehicleName)}" loading="${esc(loading)}" decoding="async" fetchpriority="${esc(priority)}" width="${width}" height="${height}">`;
+  if (!trust.showRealImage) {
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    const label = VEHICLE_IMAGE_UNVERIFIED_LABEL;
+    return `<div class="auto-vehicle-image auto-vehicle-image--unverified">` +
+      `<img src="${esc(placeholderUrl)}" alt="${esc(label)}" title="${esc(label)}"${cls}${imgAttrs}>` +
+      `<span class="auto-vehicle-image__trust-copy">${esc(label)}</span>` +
+      `</div>`;
+  }
+
+  const url = trust.url;
+  const finalFallback = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+  const alt = String(vehicle?.name || 'Araç görseli');
+
+  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls}${imgAttrs} data-fallback-exact="" data-fallback-brand="" data-fallback-segment="" data-fallback-generic="" data-fallback-src="${esc(finalFallback)}" data-final-fallback-src="${esc(finalFallback)}">`;
 }
 
 /**
@@ -149,6 +339,7 @@ export function bindVehicleImageFallbacks(root) {
   if (!root?.querySelectorAll) return;
 
   root.querySelectorAll('img[data-vehicle-image]').forEach((img) => {
+    if (img.dataset.showRealImage === '0') return;
     const vehicleName = img.dataset.vehicleName || img.alt || '';
     attachVehicleImageFallback(img, { name: vehicleName });
   });
@@ -204,11 +395,13 @@ export function reportVehicleImageLoading(root) {
  */
 export function toRecommendationVehicle(vehicle) {
   if (!vehicle || typeof vehicle !== 'object') {
-    return { name: '', image_url: null, imageUrl: DEFAULT_VEHICLE_FALLBACK };
+    const payload = buildVehicleImageUiPayload(null);
+    return { name: '', image_url: null, ...payload };
   }
+
   return {
     ...vehicle,
-    imageUrl: resolveVehicleDisplayImage(vehicle)
+    ...buildVehicleImageUiPayload(vehicle)
   };
 }
 

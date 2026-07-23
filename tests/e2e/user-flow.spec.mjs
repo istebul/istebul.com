@@ -9,6 +9,12 @@ const waitForSpaReady = async (page) => {
   });
 };
 
+const waitForAiLandingReady = async (page) => {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector('#hero-v4-title', { timeout: 15000 });
+  await page.waitForSelector('nav.seo-nav', { timeout: 15000 });
+};
+
 const dismissCookieBanner = async (page) => {
   const accept = page.locator('[data-cookie-accept]');
   if (await accept.isVisible().catch(() => false)) {
@@ -103,12 +109,57 @@ const waitForGecmisRouteBootstrap = async (page) => {
   }), 1200);
 };
 
+/** Deferred renderDecisionAssistant / loadDecisionHistory must finish before assistant DOM seeding. */
+const waitForKararAsistaniRouteBootstrap = async (page) => {
+  await page.waitForFunction(() => window.appReady === true, null, { timeout: 15000 });
+  await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+  await page.waitForFunction(
+    () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+    null,
+    { timeout: 15000 }
+  );
+  await page.evaluate((idleTimeoutMs) => new Promise((resolve) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => resolve(), { timeout: idleTimeoutMs });
+    } else {
+      setTimeout(resolve, 400);
+    }
+  }), 1200);
+};
+
+const assistantDecisionToolbarLocator = (page) =>
+  page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+
+const renderAssistantDecisionResult = async (page, { category, answers }) => {
+  const renderStatus = await page.evaluate(({ category, answers }) => {
+    const app = window.app;
+    if (!app?.buildDecisionResult || !app?.ui?.renderDecisionResults) {
+      return { ok: false, reason: 'assistant api not ready' };
+    }
+
+    app.assistantCategory = category;
+    app.assistantAnswers = answers;
+    const categoryConfig = app.getResolvedDecisionAssistantConfig()?.[category];
+    if (!categoryConfig) return { ok: false, reason: `${category} config missing` };
+
+    const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+    if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+
+    app.ui.renderDecisionResults(result);
+    return { ok: true };
+  }, { category, answers });
+
+  expect(renderStatus).toEqual({ ok: true });
+  await expect(page.locator('.assistant-decision-hero .assistant-kicker')).toContainText(/Ön değerlendirme tamamlandı/i, { timeout: 15000 });
+  await expect(assistantDecisionToolbarLocator(page)).toBeVisible({ timeout: 15000 });
+};
+
 /**
  * Pre-existing /gecmis flake (Faz 2D mobile + deferred loadDecisionHistory race, not 2E-2):
  * wait until history cards survive trailing idle reload / loadComparisonHistory guard.
  */
-const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {}) => {
-  const isStable = ({ categoryId, minCards }) => {
+const waitForGecmisHistoryStable = async (page, { categoryId, entryId, minCards = 1 } = {}) => {
+  const isStable = ({ categoryId, entryId, minCards }) => {
     const list = document.getElementById('history-list');
     if (!list) return false;
     if (list.querySelector('.history-auth-gate')) return false;
@@ -120,10 +171,16 @@ const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {
       );
       if (!kicker?.textContent?.trim()) return false;
     }
+    if (entryId) {
+      const actionBtn = list.querySelector(
+        `[data-decision-delete="${entryId}"], [data-decision-repeat="${entryId}"], [data-decision-compare-add="${entryId}"]`
+      );
+      if (!actionBtn) return false;
+    }
     return true;
   };
 
-  await page.waitForFunction(isStable, { categoryId, minCards }, { timeout: 15000 });
+  await page.waitForFunction(isStable, { categoryId, entryId, minCards }, { timeout: 15000 });
   await page.evaluate((idleTimeoutMs) => new Promise((resolve) => {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => resolve(), { timeout: idleTimeoutMs });
@@ -132,7 +189,7 @@ const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {
     }
   }), 1200);
   await page.evaluate(() => window.app.loadDecisionHistory());
-  await page.waitForFunction(isStable, { categoryId, minCards }, { timeout: 15000 });
+  await page.waitForFunction(isStable, { categoryId, entryId, minCards }, { timeout: 15000 });
 };
 
 /** @deprecated use waitForGecmisHistoryStable */
@@ -149,12 +206,44 @@ const gecmisHistoryCard = (page, categoryId) => {
 };
 
 const clickGecmisCompareAdd = async (page, entryId) => {
-  await waitForGecmisHistoryStable(page);
+  await waitForGecmisHistoryStable(page, { entryId });
   const compareBtn = entryId
     ? page.locator(`[data-decision-compare-add="${entryId}"]`)
     : page.locator('[data-decision-compare-add]').first();
   await expect(compareBtn).toBeVisible({ timeout: 15000 });
   await compareBtn.click({ timeout: 15000 });
+};
+
+const clickGecmisHistoryAction = async (page, { action, entryId, categoryId } = {}) => {
+  const selectors = {
+    delete: `[data-decision-delete="${entryId}"]`,
+    repeat: `[data-decision-repeat="${entryId}"]`,
+    compare: entryId ? `[data-decision-compare-add="${entryId}"]` : '[data-decision-compare-add]'
+  };
+  const selector = selectors[action];
+  if (!selector) {
+    throw new Error(`Unknown /gecmis history action: ${action}`);
+  }
+
+  await waitForGecmisHistoryStable(page, { categoryId, entryId });
+  const actionBtn = action === 'compare' && !entryId
+    ? page.locator(selector).first()
+    : page.locator(selector);
+  await expect(actionBtn).toBeVisible({ timeout: 15000 });
+  await actionBtn.click({ timeout: 15000 });
+};
+
+/** Wait for decision memory insights panel to survive deferred /gecmis re-renders. */
+const waitForGecmisInsightsReady = async (page, { minCards = 2 } = {}) => {
+  await waitForGecmisHistoryStable(page, { minCards });
+  await page.waitForFunction(({ minCards }) => {
+    const insights = document.querySelector('[data-decision-memory-insights]');
+    if (!insights) return false;
+    if (minCards >= 2) {
+      return Boolean(insights.querySelector('[data-memory-insight="top-category"]'));
+    }
+    return Boolean(insights.querySelector('[data-memory-insights-soft]'));
+  }, { minCards }, { timeout: 15000 });
 };
 
 test.describe('isteBul kritik kullanıcı akışları', () => {
@@ -165,9 +254,10 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('#main-nav')).toBeVisible();
-    await expect(page).toHaveTitle(/isteBul/);
-    await expect(page.locator('#hero-v4-title')).toContainText(/yalnız değilsiniz|not alone/i);
-    await expect(page.locator('#home')).toBeVisible();
+    await expect(page).toHaveTitle(/isteBul|İSTEBUL/i);
+    await expect(page.locator('#platform-landing')).toBeVisible();
+    await expect(page.locator('#neden-istebul')).toBeVisible();
+    await expect(page.locator('#hero-v4-title')).toHaveCount(0);
 
     await page.goto('/secenekler/');
     await waitForSpaReady(page);
@@ -276,7 +366,8 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
-    await expect(page.locator('#hero-v4-title')).toContainText(/yalnız değilsiniz/i);
+    await expect(page.locator('#platform-landing')).toBeVisible();
+    await expect(page.locator('#hero-v4-title')).toHaveCount(0);
 
     const navToggle = page.locator('.nav-toggle');
     if (await navToggle.isVisible().catch(() => false)) {
@@ -314,14 +405,14 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       const strip = page.locator('[data-decision-journey-strip]');
       await expect(strip).toBeVisible({ timeout: 15000 });
       await expect(strip).toContainText('Karar yolculuğu');
-      await expect(strip.getByRole('link', { name: 'Karar Merkezi' })).toBeVisible();
-      await expect(strip.getByRole('link', { name: 'Seçenekler' })).toBeVisible();
+      await expect(strip.getByRole('link', { name: 'Ön değerlendirme' })).toBeVisible();
+      await expect(strip.getByRole('link', { name: 'Karar seçenekleri' })).toBeVisible();
       await expect(strip.getByRole('link', { name: 'Karşılaştır' })).toBeVisible();
       await expect(strip.locator('.ib-decision-journey-step.is-active')).toHaveText(activeLabel);
     };
 
-    await assertJourneyStrip('/karar-asistani/', 'Karar Merkezi');
-    await assertJourneyStrip('/secenekler/', 'Seçenekler');
+    await assertJourneyStrip('/karar-asistani/', 'Ön değerlendirme');
+    await assertJourneyStrip('/secenekler/', 'Karar seçenekleri');
     await assertJourneyStrip('/karsilastir/', 'Karşılaştır');
   });
 
@@ -333,13 +424,15 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const emptyState = page.locator('#listings-grid .marketplace-empty-state');
     await expect(emptyState).toBeVisible({ timeout: 15000 });
 
-    const primaryCta = emptyState.getByRole('link', { name: /Karar analizini başlat/i });
+    const primaryCta = emptyState.getByRole('link', { name: /Ön değerlendirme başlat/i });
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(primaryCta).toHaveClass(/btn-primary/);
 
     const tcoCta = emptyState.getByRole('link', { name: /TCO analizini başlat/i });
     await expect(tcoCta).toBeVisible();
     await expect(tcoCta).toHaveClass(/btn-outline/);
+    await expect(tcoCta).toHaveAttribute('href', /\/auto\/?$/);
   });
 
   test('karar asistanı sonuç ekranında decision result summary görünür', async ({ page }) => {
@@ -389,6 +482,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     const summary = page.locator('[data-decision-result-summary]');
     await expect(summary).toBeVisible({ timeout: 15000 });
+    await expect(summary).toContainText(/Ön değerlendirme sonucu/i);
+    await expect(summary).toContainText(/Ön değerlendirme sinyalleri tek bakışta/i);
+    await expect(summary).not.toContainText(/Nihai karar sinyalleri/i);
     await expect(summary.locator('[data-result-summary-field="fit-summary"] span').first()).toHaveText('Uygunluk özeti');
     await expect(summary.locator('[data-result-summary-field="risk-summary"] span').first()).toHaveText('Risk özeti');
     await expect(summary.locator('[data-result-summary-field="tco-summary"] span').first()).toHaveText('TCO özeti');
@@ -435,7 +531,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const rationale = page.locator('[data-decision-result-ai-rationale]');
     await expect(rationale).toBeVisible({ timeout: 15000 });
     await expect(rationale.getByRole('heading', { name: /AI destekli karar gerekçesi/i })).toBeVisible();
-    await expect(rationale).toContainText(/mevcut skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
+    await expect(rationale).toContainText(/ön değerlendirmedeki skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
 
     const rationaleText = await rationale.innerText();
     expect(rationaleText).toMatch(/skor|TCO|risk|uygunluk/i);
@@ -535,6 +631,143 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await assertLocatorWithinViewport(feedback, MOBILE_2C_VIEWPORT.width);
   });
 
+  test('karar asistanı ev sonucundan konut sihirbazına güvenli ön doldurma', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    const renderStatus = await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'ev';
+      app.assistantAnswers = {
+        province: 'İstanbul',
+        district: 'Kadıköy',
+        propertyType: 'daire',
+        purpose: 'live',
+        budget: '7250000',
+        location: 'central',
+        priority: 'lowMonthly'
+      };
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.ev;
+      if (!categoryConfig) return { ok: false, reason: 'ev config missing' };
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+      app.ui.renderDecisionResults(result);
+      return { ok: true };
+    });
+    expect(renderStatus).toEqual({ ok: true });
+
+    await expect(page.locator('.assistant-decision-hero .assistant-kicker')).toContainText(/Ön değerlendirme tamamlandı/i);
+
+    const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+    await expect(toolbarContinue).toBeVisible({ timeout: 15000 });
+    await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
+    await expect(toolbarContinue).toHaveClass(/btn-primary/);
+    await expect(toolbarContinue).toHaveAttribute('href', /\/konut\/\?/);
+
+    const handoff = page.locator('[data-assistant-vertical-handoff] a[data-native-route]');
+    await expect(handoff).toBeVisible({ timeout: 15000 });
+    await expect(handoff).toHaveText(/Tam analize devam et/i);
+    await expect(handoff).toHaveClass(/btn-primary/);
+    await expect(handoff).toHaveAttribute('href', /\/konut\/\?/);
+
+    await Promise.all([
+      page.waitForURL(/\/konut\/\?/, { timeout: 15000 }),
+      handoff.click()
+    ]);
+
+    await page.waitForSelector('#housing-wizard', { timeout: 15000 });
+    const prefillHint = page.locator('[data-housing-assistant-prefill]');
+    await expect(prefillHint).toBeVisible({ timeout: 15000 });
+    await expect(prefillHint).toContainText('Karar Asistanı profilinizden bazı bilgiler önceden dolduruldu');
+
+    await expect(page.locator('[data-field="purchasePurpose"].is-selected')).toHaveAttribute(
+      'data-value',
+      'Satın almak istiyorum'
+    );
+
+    await page.locator('#housing-next').click();
+    await expect(page.locator('[data-input="totalBudget"]')).toHaveValue('7250000');
+
+    await page.locator('[data-input="monthlyIncome"]').fill('45000');
+    await page.locator('[data-input="monthlyCapacity"]').fill('25000');
+    await page.locator('select[data-input="useFinancing"]').selectOption('evet');
+    await page.locator('[data-input="loanAmount"]').fill('5000000');
+
+    await page.locator('#housing-next').click();
+    await expect(page.locator('select[data-input="city"]')).toHaveValue('İstanbul');
+    await expect(page.locator('[data-input="district"]')).toHaveValue('Kadıköy');
+
+    await page.locator('#housing-next').click();
+    await expect(page.locator('[data-field="homeType"].is-selected')).toHaveAttribute('data-value', 'Daire');
+  });
+
+  test('karar asistanı arac sonucunda browse CTA secondary kalır', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
+
+    await renderAssistantDecisionResult(page, {
+      category: 'arac',
+      answers: { budget: '900000', usage: 'city', fuel: 'hybrid', body: 'sedan' }
+    });
+
+    const toolbarContinue = assistantDecisionToolbarLocator(page);
+    await expect(toolbarContinue).toHaveClass(/btn-primary/);
+    await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
+
+    const browseCta = page.locator('[data-browse-decision-listings]');
+    await expect(browseCta).toBeVisible({ timeout: 15000 });
+    await expect(browseCta).toHaveClass(/btn-outline/);
+    await expect(browseCta).toHaveText(/Karar skoruna göre seçenekleri incele/i);
+  });
+
+  test('karar asistanı finansman sonucunda browse CTA gösterilmez', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
+
+    await renderAssistantDecisionResult(page, {
+      category: 'finansman',
+      answers: { purpose: 'konut', amount: '500000', term: '120' }
+    });
+
+    const toolbarContinue = assistantDecisionToolbarLocator(page);
+    await expect(toolbarContinue).toHaveAttribute('href', /\/finans\/\?/);
+    await expect(page.locator('[data-browse-decision-listings]')).toHaveCount(0);
+  });
+
+  test('karar asistanı canonical vertical handoff hedefleri', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
+
+    const cases = [
+      { category: 'arac', answers: { budget: '900000' }, href: /\/auto\/\?budget=900000/ },
+      { category: 'tatil', answers: { vacationType: 'familyResort', budget: '25000' }, href: /\/tatil\/\?/ },
+      { category: 'finansman', answers: { purpose: 'konut', budget: '500000', term: '60' }, href: /\/finans\/\?/ },
+      { category: 'sigorta', answers: { insuranceType: 'saglik', risk_perception: 'dusuk' }, href: /\/sigorta\/\?/ },
+      { category: 'kasko', answers: { vehicle_category: 'otomobil', vehicle_year_band: '0-3' }, href: /\/kasko\/\?/ }
+    ];
+
+    for (const item of cases) {
+      await renderAssistantDecisionResult(page, item);
+
+      const toolbarContinue = assistantDecisionToolbarLocator(page);
+      await expect(toolbarContinue).toHaveAttribute('href', item.href);
+      await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
+    }
+  });
+
   test('karar geçmişi canonical entry schemaVersion=1 kaydeder ve geçmiş sayfası yüklenir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
@@ -589,15 +822,18 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
     await page.evaluate(() => {
       window.app.currentUser = { id: 'e2e-canonical-history-user', name: 'E2E User' };
       window.app.loadDecisionHistory();
     });
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
-    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
+    const card = gecmisHistoryCard(page, 'auto');
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Toyota Corolla/i);
 
-    const signalStrip = page.locator('[data-decision-history-signal-strip]').first();
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible();
     await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText(/Uygunluk/i);
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Risk/i);
@@ -607,12 +843,29 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).not.toContainText(/^—$/);
     await expect(signalStrip.locator('[data-history-signal="history-tco"]')).not.toContainText(/^—$/);
     await expect(signalStrip.locator('[data-history-signal="history-profile"]')).not.toContainText(/^—$/);
+
+    const resultSummary = card.locator('[data-decision-history-result-summary]');
+    await expect(resultSummary).toBeVisible({ timeout: 15000 });
+    await expect(resultSummary).toContainText(/Kayıtlı karar sinyalleri/i);
+    await expect(resultSummary).toContainText(/\/100/);
+    await expect(resultSummary).toContainText(/Risk/i);
+    await expect(resultSummary).toContainText(/TCO/i);
+    await expect(resultSummary).toContainText(/Profil/i);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    const metrics = card.locator('.decision-history-metrics');
+    await expect(detailPanel).toBeVisible();
+    await expect(metrics).not.toBeVisible();
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await expect(metrics).toBeVisible();
+    await expect(metrics).toContainText(/Tahmini fiyat|Fiyat/i);
   });
 
   test('karar geçmişi legacy entry ile yüklenir ve sinyal şeridi fallback gösterir', async ({ page }) => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-legacy-history-user';
@@ -640,14 +893,106 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     });
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
-    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
+    const card = gecmisHistoryCard(page, 'auto');
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Toyota Corolla/i);
 
-    const signalStrip = page.locator('.decision-history-card').first().locator('[data-decision-history-signal-strip]');
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
     await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText('82/100');
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Orta risk/i);
     await expect(signalStrip.locator('[data-history-signal="history-profile"]')).toContainText(/Dengeli araç profili/i);
+
+    // 2D-1c intentionally surfaces persisted snapshots only; no legacy fallback generation.
+    await expect(card.locator('[data-decision-history-result-summary]')).toHaveCount(0);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    await expect(detailPanel).toBeVisible();
+    await expect(signalStrip).toBeVisible();
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await expect(card.locator('.decision-history-metrics')).toBeVisible();
+    await expect(card.locator('.decision-history-answers')).toContainText(/İl:\s*İstanbul/i);
+    await expect(signalStrip).toBeVisible();
+  });
+
+  test('gecmis schemaVersion=1 kaydı resultSummary olmadan strip ve details davranışı', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-v1-no-summary-user';
+      window.app.currentUser = { id: userId, name: 'E2E V1 No Summary' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'v1-no-summary-1',
+        schemaVersion: 1,
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 85,
+        riskLevel: 'Orta risk',
+        yearlyCost: 220000,
+        decisionProfile: 'Toyota Corolla dengeli profil',
+        summary: 'Toyota Corolla öne çıkıyor.',
+        topPick: {
+          name: 'Toyota Corolla',
+          score: 85,
+          price: 1800000,
+          yearlyCost: 220000,
+          monthlyPayment: 17000,
+          riskLevel: 'Orta risk'
+        },
+        answers: [{ label: 'İl', value: 'Ankara' }]
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto', entryId: 'v1-no-summary-1' });
+    const card = gecmisHistoryCard(page, 'auto');
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Toyota Corolla/i);
+
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
+    await expect(signalStrip).toBeVisible({ timeout: 15000 });
+    await expect(card.locator('[data-decision-history-result-summary]')).toHaveCount(0);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    const metrics = card.locator('.decision-history-metrics');
+    await expect(detailPanel).toBeVisible();
+    await expect(metrics).not.toBeVisible();
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await expect(metrics).toBeVisible();
+    await expect(metrics).toContainText(/Tahmini fiyat|Fiyat/i);
+    await expect(card.locator('.decision-history-answers')).toContainText(/İl:\s*Ankara/i);
+    await expect(signalStrip).toBeVisible();
+  });
+
+  test('gecmis bozuk history localStorage JSON crash olmadan empty state gösterir', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-corrupt-history-user';
+      window.app.currentUser = { id: userId, name: 'E2E Corrupt User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, '{bad');
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
+    await expect(page.locator('#history-list .empty-state h3')).toHaveText('Geçmiş bulunamadı', { timeout: 15000 });
+    await expect(page.locator('#history-list .decision-history-card')).toHaveCount(0);
+    expect(pageErrors).toEqual([]);
   });
 
   test('karar geçmişi sinyal şeridi @390px yatay taşma yapmaz', async ({ page }) => {
@@ -672,6 +1017,28 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
         yearlyCost: 240000,
         decisionProfile: 'Toyota Corolla, araç kararınızda en dengeli seçenek olarak öne çıkıyor.',
         summary: 'Toyota Corolla en güçlü eşleşme.',
+        resultSummary: {
+          fit: {
+            label: 'Uyum',
+            value: '88/100',
+            detail: 'Profil ile güçlü eşleşme'
+          },
+          risk: {
+            label: 'Risk',
+            value: 'Düşük risk',
+            detail: 'Yan maliyetler dengeli'
+          },
+          tco: {
+            label: 'TCO özeti',
+            value: '240.000 TL/yıl',
+            detail: 'Toplam dönemsel maliyet kontrol altında'
+          },
+          profile: {
+            label: 'Profil',
+            value: 'Toyota Corolla Hybrid',
+            detail: 'Profil detayı mobil görünümde uzun metinle taşmadan kalmalı'
+          }
+        },
         topPick: {
           name: 'Toyota Corolla Hybrid',
           score: 88,
@@ -692,6 +1059,20 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-signal-strip]');
+
+    const resultSummary = card.locator('[data-decision-history-result-summary]');
+    await expect(resultSummary).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-result-summary]');
+    await assertLocatorWithinViewport(resultSummary, MOBILE_2C_VIEWPORT.width);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    await expect(detailPanel).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-detail] .decision-history-detail-summary');
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-detail-panel');
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-metrics');
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-answers');
+
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
 
@@ -788,6 +1169,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-recent-snippet-user';
@@ -836,14 +1218,17 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('karar merkezi karar hafızası bağlamı ≥2 kayıtta görünür', async ({ page }) => {
+    const memoryUserId = 'e2e-memory-context-user';
+
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
-    await page.evaluate(() => {
-      const userId = 'e2e-memory-context-user';
-      window.app.currentUser = { id: userId, name: 'E2E Memory Context User' };
-      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+    const seedStatus = await page.evaluate((userId) => {
+      const app = window.app;
+      app.currentUser = { id: userId, name: 'E2E Memory Context User' };
+      const storageKey = `${'istebul_decision_history'}:${userId}`;
       const entries = [
         {
           id: 'context-1',
@@ -869,9 +1254,13 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
         }
       ];
       localStorage.setItem(storageKey, JSON.stringify(entries));
-      window.app.decisionHistory = entries;
-      window.app.ui.renderDecisionMemoryContext(entries);
-    });
+      app.decisionHistory = entries;
+      app.ui.renderDecisionMemoryContext(entries);
+      const stored = localStorage.getItem(storageKey);
+      const parsed = JSON.parse(stored || '[]');
+      return { count: parsed.length, firstId: parsed[0]?.id || null };
+    }, memoryUserId);
+    expect(seedStatus).toEqual({ count: 2, firstId: 'context-1' });
 
     const context = page.locator('[data-decision-memory-context]');
     await expect(context).toBeVisible({ timeout: 15000 });
@@ -881,12 +1270,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(context.locator('[data-memory-context="risk-tendency"]')).toContainText(/Düşük risk \(2\/2\)/);
     await expect(context.locator('[data-memory-context="top-profile"]')).toContainText(/Dengeli araç profili/);
 
-    const storageSnapshot = await page.evaluate(() => {
-      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+    const storageSnapshot = await page.evaluate((userId) => {
+      const storageKey = `${'istebul_decision_history'}:${userId}`;
       const stored = localStorage.getItem(storageKey);
       const parsed = JSON.parse(stored || '[]');
       return { count: parsed.length, firstId: parsed[0]?.id || null };
-    });
+    }, memoryUserId);
     expect(storageSnapshot.count).toBe(2);
     expect(storageSnapshot.firstId).toBe('context-1');
   });
@@ -895,6 +1284,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-memory-context-empty-user';
@@ -963,6 +1353,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-snippet-mobile-user';
@@ -999,6 +1390,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-arac-label-user';
@@ -1015,6 +1407,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
     const kicker = page.locator('.decision-history-card [data-history-category="auto"]').first();
     await expect(kicker).toBeVisible({ timeout: 15000 });
     await expect(kicker).toHaveText('Araba');
@@ -1024,6 +1417,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-ev-label-user';
@@ -1040,6 +1434,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisHistoryStable(page, { categoryId: 'konut' });
     const kicker = page.locator('.decision-history-card [data-history-category="konut"]').first();
     await expect(kicker).toBeVisible({ timeout: 15000 });
     await expect(kicker).toHaveText('Konut');
@@ -1049,6 +1444,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-snippet-category-user';
@@ -1209,6 +1605,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-snippet-category-mobile-user';
@@ -1318,6 +1715,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-compat-snippet-user';
@@ -1383,9 +1781,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis delete action kaydı siler ve localStorage günceller', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-delete-user';
@@ -1414,8 +1814,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisHistoryStable(page, { entryId: 'delete-target', minCards: 2 });
     await expect(page.locator('.decision-history-card')).toHaveCount(2, { timeout: 15000 });
-    await page.locator('[data-decision-delete="delete-target"]').click();
+    await clickGecmisHistoryAction(page, { action: 'delete', entryId: 'delete-target' });
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişten silindi/i })).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.decision-history-card')).toHaveCount(1);
     await expect(page.locator('.decision-history-card').first()).toContainText(/Kadıköy daire/i);
@@ -1427,10 +1828,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     expect(remaining).toEqual(['delete-keep']);
   });
 
-  test('gecmis canonical ev kaydı Tekrar aç ile karar asistanını açar', async ({ page }) => {
+  test('gecmis canonical ev kaydı Tam analize devam et ile konut verticalına gider', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-repeat-ev-user';
@@ -1451,22 +1854,8 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
-    await page.locator('[data-decision-repeat="repeat-ev-canonical"]').click();
-    await expect(page).toHaveURL(/\/karar-asistani\/?$/, { timeout: 15000 });
-
-    const assistantState = await page.waitForFunction(() => {
-      if (window.app?.assistantCategory !== 'ev') return null;
-      return {
-        category: window.app.assistantCategory,
-        budget: window.app.assistantAnswers?.budget || null,
-        hasWizard: Boolean(document.querySelector('#assistant-category-rail .assistant-category'))
-      };
-    }, null, { timeout: 15000 }).then((handle) => handle.jsonValue());
-
-    expect(assistantState.category).toBe('ev');
-    expect(String(assistantState.budget)).toBe('5000000');
-    expect(assistantState.hasWizard).toBe(true);
+    await clickGecmisHistoryAction(page, { action: 'repeat', entryId: 'repeat-ev-canonical', categoryId: 'konut' });
+    await expect(page).toHaveURL(/\/konut\/\?/, { timeout: 15000 });
   });
 
   test('gecmis boş durum authenticated kullanıcıda görünür', async ({ page }) => {
@@ -1490,9 +1879,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis karar hafızası içgörüleri canonical kayıtlarla görünür', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-memory-insights-user';
@@ -1527,6 +1918,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisInsightsReady(page, { minCards: 2 });
     const insights = page.locator('[data-decision-memory-insights]');
     await expect(insights).toBeVisible({ timeout: 15000 });
     await expect(insights).toContainText(/Karar hafızası içgörüleri/i);
@@ -1584,7 +1976,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(emptyState).toBeVisible({ timeout: 15000 });
     await expect(emptyState.getByRole('heading', { name: /Karar öncesi seçenekleri burada toplayın/i })).toBeVisible();
 
-    const primaryCta = emptyState.getByRole('link', { name: /Karar analizini başlat/i });
+    const primaryCta = emptyState.getByRole('link', { name: /Kararını analiz et/i });
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
     await expect(primaryCta).toHaveClass(/btn-primary/);
@@ -1785,4 +2177,178 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(compareCta).toHaveAttribute('href', /\/karsilastir\/?$/);
     await expect(compareCta).toHaveClass(/btn-outline/);
   });
+});
+
+/** Faz 3D-1A — locks hub vs vertical journey split from category journey audit. */
+const HOME_CATEGORY_VERTICAL_HREFS = Object.freeze({
+  araba: '/auto/',
+  konut: '/konut/',
+  tatil: '/tatil/',
+  finansman: '/finans/',
+  sigorta: '/sigorta/',
+  kasko: '/kasko/'
+});
+
+/**
+ * Tam analiz yüzeyi marker'ları — site-health.spec.mjs overflow smoke'ını tamamlar;
+ * orada yalnızca yatay taşma kontrol edilir, wizard/flow görünürlüğü değil.
+ */
+const VERTICAL_ANALYSIS_SURFACE_GUARDS = Object.freeze([
+  { path: '/auto/', selector: '#auto-wizard' },
+  { path: '/konut/', selector: '#housing-flow' },
+  { path: '/tatil/', selector: '#vacation-flow' },
+  { path: '/finans/', selector: '#finans-flow' },
+  { path: '/sigorta/', selector: '#sigorta-flow' },
+  { path: '/kasko/', selector: '#kasko-flow' }
+]);
+
+const forceTurkishHomeLocale = async (page) => {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('istebul_locale', 'tr');
+    } catch {
+      // ignore
+    }
+  });
+};
+
+test.describe('Faz 3D-1A category journey guards', () => {
+  test('Platform nav CTA and AI Landing hero/sticky CTA target /karar-asistani/', async ({ page }) => {
+    await forceTurkishHomeLocale(page);
+    await page.goto('/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const navCta = page.locator('.nav-cta-decision');
+    await expect(navCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(navCta).toContainText(/Ön değerlendirme/i);
+
+    await page.goto('/ai/');
+    await waitForAiLandingReady(page);
+    await dismissCookieBanner(page);
+
+    const heroCta = page.locator('[data-hero-cta-primary]');
+    await expect(heroCta).toBeVisible();
+    await expect(heroCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(heroCta).toContainText(/Ön değerlendirme/i);
+
+    const stickyCta = page.locator('.cro-sticky-cta a[data-cro-cta-sticky]');
+    await expect(stickyCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(stickyCta).toContainText(/Ön değerlendirme/i);
+  });
+
+  test('AI Landing kategori kartları guard vertical href canonical', async ({ page }) => {
+    await forceTurkishHomeLocale(page);
+    await page.goto('/ai/');
+    await waitForAiLandingReady(page);
+    await dismissCookieBanner(page);
+    await page.locator('#home-vertical-focus').scrollIntoViewIfNeeded();
+
+    await expect(page.locator('#home-category-grid a[data-category-id]')).toHaveCount(6, {
+      timeout: 15000
+    });
+
+    for (const [categoryId, href] of Object.entries(HOME_CATEGORY_VERTICAL_HREFS)) {
+      const card = page.locator(`#home-category-grid a[data-category-id="${categoryId}"]`);
+      await expect(card).toHaveCount(1);
+      await expect(card).toHaveAttribute('href', href);
+      await expect(card).toContainText(/Tam analiz/i);
+    }
+  });
+
+  test('karar-asistani hub assistant form guard yüklenir', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-karar-analizi');
+    await expect(page.locator('#premium-karar-analizi-root')).toBeAttached({ timeout: 15000 });
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#assistant-intent-text')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#decision-assistant-form')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#assistant-category-rail .assistant-category').first()).toBeAttached({
+      timeout: 15000
+    });
+  });
+
+  test('karar-asistani hayalini anlat paneli wizardı ön doldurur, redirect yapmaz', async ({ page }) => {
+    await page.route('**/ai-proxy', (route) => route.abort());
+
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#assistant-intent-form button[type="submit"]')).toContainText('Kriterleri anla ve ön doldur');
+
+    await page.fill(
+      '#assistant-intent-text',
+      '3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun. Bakımı pahalı olmasın.'
+    );
+    await page.locator('#assistant-intent-form button[type="submit"]').click();
+
+    await expect(page.locator('[data-assistant-intent-summary]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-assistant-intent-summary]')).toContainText(/Bütçe/i);
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/);
+    await expect(page.locator('#decision-assistant-form')).toBeVisible();
+  });
+
+  test('karar-asistani hayalini anlat city ve household handoff üretir', async ({ page }) => {
+    await page.route('**/ai-proxy', (route) => route.abort());
+
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+
+    await page.fill(
+      '#assistant-intent-text',
+      'Konya\'da 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun.'
+    );
+    await page.locator('#assistant-intent-form button[type="submit"]').click();
+
+    await expect(page.locator('[data-assistant-intent-summary]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-assistant-intent-summary]')).toContainText(/Konya/i);
+    await expect(page.locator('[data-assistant-intent-summary]')).toContainText(/Hane büyüklüğü/i);
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/);
+
+    const answers = await page.evaluate(() => ({ ...window.app.assistantAnswers }));
+    await renderAssistantDecisionResult(page, { category: 'arac', answers });
+
+    const handoff = assistantDecisionToolbarLocator(page);
+    await expect(handoff).toHaveAttribute('href', /city=Konya/);
+    await expect(handoff).toHaveAttribute('href', /household_size=3-4/);
+    await expect(handoff).not.toHaveAttribute('href', /^\/auto\/\?$/);
+  });
+
+  test('karar-asistani hayalini anlat Izmir summary labels stay user friendly', async ({ page }) => {
+    await page.route('**/ai-proxy', (route) => route.abort());
+
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('#assistant-intent-form')).toBeVisible({ timeout: 15000 });
+
+    await page.fill(
+      '#assistant-intent-text',
+      'İzmir\'de 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun.'
+    );
+    await page.locator('#assistant-intent-form button[type="submit"]').click();
+
+    const summary = page.locator('[data-assistant-intent-summary]');
+    await expect(summary).toBeVisible({ timeout: 15000 });
+    await expect(summary).toContainText(/İzmir/i);
+    await expect(summary).toContainText(/SUV/);
+    await expect(summary).toContainText(/Geniş iç hacim/i);
+    await expect(summary).not.toContainText(/gasoline/i);
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/);
+    await expect(page).not.toHaveURL(/\/auto\//);
+  });
+
+  for (const { path, selector } of VERTICAL_ANALYSIS_SURFACE_GUARDS) {
+    test(`vertical guard ${path} tam analiz yüzeyi yükler`, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.locator(selector)).toBeVisible({ timeout: 15000 });
+    });
+  }
 });

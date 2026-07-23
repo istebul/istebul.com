@@ -6,22 +6,20 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Erişim Reddedildi | isteBul Admin</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <style>
-    body { font-family: Inter, system-ui, sans-serif; margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f8fafc; color: #0f172a; }
-    .card { max-width: 28rem; padding: 2rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; text-align: center; }
-    h1 { margin: 0 0 0.75rem; font-size: 1.4rem; }
-    p { margin: 0.5rem 0; color: #475569; }
-    a { color: #2563eb; text-decoration: none; font-weight: 600; }
-    a:hover { text-decoration: underline; }
-  </style>
+  <link rel="stylesheet" href="/css/admin-premium-polish.css?v=3">
 </head>
-<body>
-  <main class="card">
-    <h1>403 — Erişim reddedildi</h1>
-    <p>Bu alan yalnızca yetkili admin kullanıcılar içindir.</p>
-    <p><a href="/profil/">Karar Merkezi</a> (kullanıcı paneli)</p>
-    <p><a href="/admin-panel.html">Admin girişi</a></p>
-    <p><a href="/">Ana sayfa</a></p>
+<body class="admin-forbidden-page">
+  <main class="admin-forbidden" role="alert" aria-labelledby="admin-forbidden-title">
+    <p class="admin-forbidden__eyebrow">403</p>
+    <h1 id="admin-forbidden-title" class="admin-forbidden__title">Erişim reddedildi</h1>
+    <p class="admin-forbidden__lead">Bu alan yalnızca yetkili admin kullanıcılar içindir.</p>
+    <nav class="admin-forbidden__actions" aria-label="Yönlendirmeler">
+      <a class="admin-forbidden__link" href="/profil/">
+        Karar Merkezi <span class="admin-forbidden__hint">(kullanıcı paneli)</span>
+      </a>
+      <a class="admin-forbidden__link admin-forbidden__link--primary" href="/admin-panel.html">Admin girişi</a>
+      <a class="admin-forbidden__link admin-forbidden__link--ghost" href="/">Ana sayfa</a>
+    </nav>
   </main>
 </body>
 </html>

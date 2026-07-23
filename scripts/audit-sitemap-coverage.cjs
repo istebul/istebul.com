@@ -8,6 +8,7 @@ const root = path.join(__dirname, '..');
 const dist = path.join(root, 'dist');
 
 const REQUIRED_IN_SITEMAP = [
+  'https://www.istebul.com/ai/',
   'https://www.istebul.com/planlar',
   'https://www.istebul.com/blog',
   'https://www.istebul.com/duyurular',

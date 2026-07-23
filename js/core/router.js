@@ -16,37 +16,31 @@ import {
 } from '../runtime/route-surface.js';
 import { pulseRouteSection } from '../runtime/perceived-performance.js';
 import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full-page-navigation.js';
+import {
+    isLegacyAiHomeHash,
+    resolveLegacyAiHomeRedirect
+} from '../runtime/platform-url-contract.js';
 
-/** Marketing sections on index.html (long-scroll landing). */
+/**
+ * Marketing sections on index.html (long-scroll landing).
+ * Order matches PR-560 visual IA (CSS flex order in istebul-premium-final-v7.css).
+ */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
-    'home',
-    'home-economic-indicators',
-    'how-it-works',
-    'home-vertical-focus',
-    'home-features-strip',
-    'pricing',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip'
+    'platform-landing',
+    'neden-istebul'
 ]);
 
-/** Hash targets on the marketing page. */
+/** Hash targets on the Platform Landing page (PR-568). */
 export const MARKETING_HASH_IDS = Object.freeze([
-    'home',
-    'home-economic-indicators',
-    'home-vertical-focus',
-    'home-features-strip',
-    'how-it-works',
-    'pricing',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip'
+    'platform-landing',
+    'platform-products',
+    'neden-istebul'
 ]);
 
-/** Legacy hash shortcuts on homepage (long-scroll). */
+/** Legacy hash shortcuts — AI marketing moved to /ai (PR-568). */
 const MARKETING_PATH_ALIASES = Object.freeze({
-    '/metodoloji-ozet': 'how-it-works',
-    '/planlar-ozet': 'pricing'
+    '/metodoloji-ozet': 'neden-istebul',
+    '/planlar-ozet': 'platform-products'
 });
 
 /** Clears inline display overrides (e.g. showHomeSections uses !important). */
@@ -70,6 +64,7 @@ export class Router {
             { path: '/', component: 'home' },
             { path: '/secenekler', component: 'ilanlar' },
             { path: '/ilanlar', component: 'ilanlar' },
+            { path: '/decision-options', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
             { path: '/planlar', component: 'page-planlar' },
@@ -276,9 +271,22 @@ export class Router {
         const path = stripped.replace(/\/$/, '') || '/';
 
         const fullPageTarget = resolveFullPageNavigation(path);
-        if (fullPageTarget && fullPageTarget !== rawPath) {
-            window.location.replace(fullPageTarget);
+        if (fullPageTarget) {
+            const dest = new URL(fullPageTarget, window.location.origin);
+            dest.search = window.location.search || '';
+            dest.hash = window.location.hash || '';
+            window.location.replace(`${dest.pathname}${dest.search}${dest.hash}`);
             return;
+        }
+
+        /* Dispose stale AI-home hashes on Platform root — never remount AI long-scroll here. */
+        const hashId = window.location.hash?.slice(1);
+        if (path === '/' && hashId && isLegacyAiHomeHash(hashId)) {
+            const redirect = resolveLegacyAiHomeRedirect(hashId);
+            if (redirect) {
+                window.location.replace(redirect);
+                return;
+            }
         }
 
         this.currentRoute = path;
@@ -304,7 +312,6 @@ export class Router {
             return;
         }
 
-        const hashId = window.location.hash?.slice(1);
         if (path === '/' && hashId && MARKETING_HASH_IDS.includes(hashId)) {
             this.showHomeSections();
             this.updateNavLinks(path, hashId);

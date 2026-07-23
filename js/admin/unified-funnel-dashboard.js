@@ -59,7 +59,8 @@ export const FUNNEL_STAGE_ALIASES = Object.freeze({
     'lead_submitted',
     'vacation_lead_submit',
     'home_lead_submit',
-    'insurance_lead_submit'
+    'insurance_lead_submit',
+    'kasko_lead_submit'
   ]
 });
 

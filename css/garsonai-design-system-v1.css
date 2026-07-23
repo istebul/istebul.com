@@ -1,0 +1,305 @@
+/**
+ * GarsonAI Enterprise Design System v1
+ * Scope: .garsonai-page and GarsonAI product surfaces
+ * 8px spacing · WCAG AA contrast · blue primary · orange accent
+ */
+
+.garsonai-page {
+  /* Color — dark navy shell */
+  --gai-bg: #070b14;
+  --gai-bg-elevated: #0d1322;
+  --gai-bg-surface: #111827;
+  --gai-bg-glass: rgba(17, 24, 39, 0.72);
+  --gai-bg-card: rgba(15, 23, 42, 0.65);
+  --gai-border: rgba(148, 163, 184, 0.14);
+  --gai-border-strong: rgba(148, 163, 184, 0.24);
+
+  /* Text */
+  --gai-text: #f1f5f9;
+  --gai-text-muted: #94a3b8;
+  --gai-text-dim: #64748b;
+
+  /* Brand */
+  --gai-primary: #3b82f6;
+  --gai-primary-hover: #2563eb;
+  --gai-primary-soft: rgba(59, 130, 246, 0.14);
+  --gai-accent: #f97316;
+  --gai-accent-hover: #ea580c;
+  --gai-accent-soft: rgba(249, 115, 22, 0.14);
+
+  /* Semantic */
+  --gai-success: #22c55e;
+  --gai-success-soft: rgba(34, 197, 94, 0.14);
+  --gai-warning: #eab308;
+  --gai-warning-soft: rgba(234, 179, 8, 0.14);
+  --gai-info: #38bdf8;
+  --gai-info-soft: rgba(56, 189, 248, 0.14);
+
+  /* Spacing (8px base) */
+  --gai-space-1: 0.25rem;  /* 4px */
+  --gai-space-2: 0.5rem;   /* 8px */
+  --gai-space-3: 0.75rem;  /* 12px */
+  --gai-space-4: 1rem;     /* 16px */
+  --gai-space-5: 1.25rem;  /* 20px */
+  --gai-space-6: 1.5rem;   /* 24px */
+  --gai-space-8: 2rem;     /* 32px */
+  --gai-space-10: 2.5rem;  /* 40px */
+  --gai-space-12: 3rem;    /* 48px */
+  --gai-space-16: 4rem;    /* 64px */
+
+  /* Typography */
+  --gai-font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --gai-text-xs: 0.75rem;
+  --gai-text-sm: 0.875rem;
+  --gai-text-base: 1rem;
+  --gai-text-lg: 1.125rem;
+  --gai-text-xl: 1.25rem;
+  --gai-text-2xl: 1.5rem;
+  --gai-text-3xl: 1.875rem;
+  --gai-text-4xl: 2.25rem;
+  --gai-text-5xl: clamp(2rem, 4.5vw, 3rem);
+  --gai-leading-tight: 1.15;
+  --gai-leading-normal: 1.5;
+  --gai-tracking-wide: 0.04em;
+
+  /* Radius */
+  --gai-radius-sm: 8px;
+  --gai-radius-md: 12px;
+  --gai-radius-lg: 16px;
+  --gai-radius-xl: 24px;
+  --gai-radius-full: 999px;
+
+  /* Shadows */
+  --gai-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --gai-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32);
+  --gai-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --gai-shadow-glow: 0 0 0 1px rgba(59, 130, 246, 0.2), 0 20px 60px rgba(59, 130, 246, 0.08);
+
+  /* Motion */
+  --gai-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --gai-duration-fast: 150ms;
+  --gai-duration: 250ms;
+  --gai-duration-slow: 400ms;
+
+  /* Layout */
+  --gai-container: min(1120px, calc(100% - var(--gai-space-8)));
+  --gai-header-height: 64px;
+  --gai-announce-height: 38px;
+
+  color: var(--gai-text);
+  background: var(--gai-bg);
+  font-family: var(--gai-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.garsonai-page *,
+.garsonai-page *::before,
+.garsonai-page *::after {
+  box-sizing: border-box;
+}
+
+/* ── Buttons ── */
+
+.gai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gai-space-2);
+  min-height: 44px;
+  padding: 0 var(--gai-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--gai-radius-md);
+  font-family: inherit;
+  font-size: var(--gai-text-sm);
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--gai-duration-fast) var(--gai-ease),
+    border-color var(--gai-duration-fast) var(--gai-ease),
+    color var(--gai-duration-fast) var(--gai-ease),
+    box-shadow var(--gai-duration-fast) var(--gai-ease),
+    transform var(--gai-duration-fast) var(--gai-ease);
+}
+
+.gai-btn:focus-visible {
+  outline: 2px solid var(--gai-primary);
+  outline-offset: 2px;
+}
+
+.gai-btn--primary {
+  background: linear-gradient(135deg, var(--gai-primary) 0%, var(--gai-primary-hover) 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+
+.gai-btn--primary:hover {
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+  transform: translateY(-1px);
+}
+
+.gai-btn--accent {
+  background: linear-gradient(135deg, var(--gai-accent) 0%, var(--gai-accent-hover) 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+}
+
+.gai-btn--accent:hover {
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
+}
+
+.gai-btn--secondary {
+  background: transparent;
+  color: var(--gai-text);
+  border-color: var(--gai-border-strong);
+}
+
+.gai-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.gai-btn--ghost {
+  background: transparent;
+  color: var(--gai-text-muted);
+  min-height: 36px;
+  padding: 0 var(--gai-space-3);
+}
+
+.gai-btn--ghost:hover {
+  color: var(--gai-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gai-btn--sm {
+  min-height: 36px;
+  padding: 0 var(--gai-space-4);
+  font-size: var(--gai-text-xs);
+}
+
+.gai-btn__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ── Badges ── */
+
+.gai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gai-space-1);
+  padding: var(--gai-space-1) var(--gai-space-3);
+  border-radius: var(--gai-radius-full);
+  font-size: var(--gai-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--gai-tracking-wide);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.gai-badge--new {
+  background: var(--gai-accent-soft);
+  color: var(--gai-accent);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.gai-badge--primary {
+  background: var(--gai-primary-soft);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.gai-badge--success {
+  background: var(--gai-success-soft);
+  color: #86efac;
+}
+
+.gai-badge--warning {
+  background: var(--gai-warning-soft);
+  color: #fde047;
+}
+
+.gai-badge--info {
+  background: var(--gai-info-soft);
+  color: #7dd3fc;
+}
+
+/* ── Cards ── */
+
+.gai-card {
+  border: 1px solid var(--gai-border);
+  border-radius: var(--gai-radius-lg);
+  background: var(--gai-bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--gai-shadow-sm);
+  transition:
+    border-color var(--gai-duration) var(--gai-ease),
+    box-shadow var(--gai-duration) var(--gai-ease),
+    transform var(--gai-duration) var(--gai-ease);
+}
+
+.gai-card--interactive:hover {
+  border-color: var(--gai-border-strong);
+  box-shadow: var(--gai-shadow-md);
+  transform: translateY(-2px);
+}
+
+/* ── Forms (shared with basvuru) ── */
+
+.garsonai-page .garson-launch-form__field label {
+  color: var(--gai-text);
+}
+
+.garsonai-page .garson-launch-form__field input,
+.garsonai-page .garson-launch-form__field textarea {
+  background: var(--gai-bg-elevated);
+  border-color: var(--gai-border-strong);
+  color: var(--gai-text);
+}
+
+.garsonai-page .garson-launch-form__field input:focus,
+.garsonai-page .garson-launch-form__field textarea:focus {
+  outline: none;
+  border-color: var(--gai-primary);
+  box-shadow: 0 0 0 3px var(--gai-primary-soft);
+}
+
+/* ── Section typography ── */
+
+.gai-section-title {
+  margin: 0 0 var(--gai-space-3);
+  font-size: clamp(var(--gai-text-2xl), 3vw, var(--gai-text-3xl));
+  font-weight: 700;
+  line-height: var(--gai-leading-tight);
+  letter-spacing: -0.02em;
+}
+
+.gai-section-lead {
+  margin: 0 0 var(--gai-space-8);
+  max-width: 58ch;
+  color: var(--gai-text-muted);
+  font-size: var(--gai-text-lg);
+  line-height: var(--gai-leading-normal);
+}
+
+.gai-container {
+  width: var(--gai-container);
+  margin-inline: auto;
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .garsonai-page *,
+  .garsonai-page *::before,
+  .garsonai-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

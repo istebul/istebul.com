@@ -2,6 +2,8 @@
  * AI Listings Admin — normalized KPI dataset (Sprint-29).
  */
 
+import { normalizeAdminDataset } from './ai-listings-dataset.js';
+
 /**
  * @param {Record<string, unknown>} listing
  * @returns {Record<string, unknown>|null}
@@ -20,7 +22,7 @@ export const HIGH_RISK_THRESHOLD = 61;
  * @returns {Array<Record<string, unknown>>}
  */
 export function normalizeListingsDataset(listings) {
-  return Array.isArray(listings) ? listings : [];
+  return normalizeAdminDataset(listings);
 }
 
 /**
@@ -61,8 +63,8 @@ export function isArchivedListing(listing) {
  * @returns {boolean}
  */
 export function isDuplicateListing(listing) {
-  const dup = listing?.duplicate_status ?? listing?.duplicate_label;
-  if (dup === 'duplicate' || dup === 'mukerrer') return true;
+  const dup = String(listing?.duplicate_status ?? listing?.duplicate_label ?? '').toLowerCase();
+  if (dup === 'duplicate' || dup === 'mukerrer' || dup === 'exact' || dup === 'similar') return true;
   if (listing?.is_duplicate === true) return true;
   return false;
 }
@@ -72,6 +74,7 @@ export function isDuplicateListing(listing) {
  * @returns {number|null}
  */
 function safeScore(value) {
+  if (value == null || value === '') return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
@@ -171,14 +174,14 @@ export function computeNormalizedKpiStats(listings, options = {}) {
         positive: analyzedDelta >= 0
       },
       'high-risk': {
-        label: highRisk > 0 ? `-${Math.min(2, highRisk)}` : '0',
+        label: String(highRisk),
         hint: 'risk eşiği',
         positive: highRisk === 0
       },
       pending: {
-        label: pendingReview > 0 ? `+${Math.min(pendingReview, 3)}` : '0',
+        label: String(pendingReview),
         hint: 'inceleme kuyruğu',
-        positive: pendingReview >= 0
+        positive: pendingReview === 0
       }
     }
   };

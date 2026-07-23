@@ -22,11 +22,14 @@ if (!/^https:\/\/www\.istebul\.com$/.test(origin)) {
 
 const home = meta.surfaces?.home;
 if (!home?.title || !home.description) fail('home surface missing title/description');
-if (home.title && !/AI|karar/i.test(home.title + home.description)) {
-  fail('home meta should reflect AI decision platform positioning');
+/* EPIC-002: root is Platform Landing; home surface JSON may lag — accept platform or AI decision copy */
+if (home.title && !/AI|karar|platform|İSTEBUL|ISTEBUL/i.test(home.title + home.description)) {
+  fail('home meta should reflect Platform Landing or decision positioning');
 }
 
-const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+const sitemapArtifact = require('./lib/platform-landing-surface-contract.cjs').resolveSitemapArtifact(root);
+const sitemap = sitemapArtifact.xml;
+if (!sitemap) fail(`sitemap missing (${sitemapArtifact.path})`);
 const robots = fs.readFileSync(path.join(root, 'robots.txt'), 'utf8');
 
 if (!robots.includes('Sitemap: https://www.istebul.com/sitemap.xml')) {
@@ -35,6 +38,7 @@ if (!robots.includes('Sitemap: https://www.istebul.com/sitemap.xml')) {
 
 const requiredSitemapPaths = [
   'https://www.istebul.com/',
+  'https://www.istebul.com/ai/',
   'https://www.istebul.com/auto/',
   'https://www.istebul.com/konut/',
   'https://www.istebul.com/tatil/',
@@ -80,10 +84,18 @@ function checkPage(rel, checks) {
   if (checks.aiCopy && !/AI|karar|TCO|maliyet/i.test(html.slice(0, 8000))) {
     fail(`${rel}: weak decision-platform messaging in head/hero region`);
   }
+  if (checks.platformCopy && !/İSTEBUL|ISTEBUL|platform|GarsonAI/i.test(html.slice(0, 8000))) {
+    fail(`${rel}: weak platform-landing messaging in head/hero region`);
+  }
 }
 
 checkPage('index.html', {
   canonical: 'https://www.istebul.com/',
+  aiCopy: false,
+  platformCopy: true
+});
+checkPage('ai/index.html', {
+  canonical: 'https://www.istebul.com/ai/',
   aiCopy: true
 });
 checkPage('auto/index.html', {
@@ -112,6 +124,14 @@ if (!indexHtml.includes('route-bootstrap-head.js')) {
 }
 if (/<script>\s*\/\* ROUTE_BOOTSTRAP_START/i.test(indexHtml)) {
   fail('index.html must not inline route bootstrap script');
+}
+
+/* EPIC-002 indexability surfaces — single shared contract */
+const { collectPlatformAiSurfaceFailures } = require('./lib/platform-landing-surface-contract.cjs');
+const aiHtmlPath = path.join(root, 'ai/index.html');
+const aiHtml = fs.existsSync(aiHtmlPath) ? fs.readFileSync(aiHtmlPath, 'utf8') : '';
+for (const msg of collectPlatformAiSurfaceFailures(indexHtml, aiHtml)) {
+  fail(msg);
 }
 
 if (failed) process.exit(1);

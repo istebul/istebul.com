@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -49,5 +50,22 @@ describe('ops-decision-assistant', () => {
     const brief = buildOpsDecisionBrief(ctx, { analyticsEvents: [] });
     const json = buildSanitizedOpsBriefForAi(brief);
     assert.ok(JSON.parse(json).insights);
+  });
+});
+
+describe('ops-ai-assistant-views', () => {
+  it('ops assistant CTA labels stay canonical', () => {
+    const source = fs.readFileSync(
+      new URL('../../js/features/ops/ops-ai-assistant-views.js', import.meta.url),
+      'utf8'
+    );
+
+    assert.match(source, /Operasyon Komuta Merkezi/);
+    assert.match(source, /CEO Özeti/);
+    assert.match(source, /ops-command-center/);
+    assert.match(source, /dashboard-ceo/);
+
+    assert.doesNotMatch(source, /Ops Command Center/);
+    assert.doesNotMatch(source, /CEO Dashboard/);
   });
 });

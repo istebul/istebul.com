@@ -1,0 +1,314 @@
+/**
+ * PR-566 — İSTEBUL AI Landing Clone surface.
+ * Ensures cloned marketing sections render as a normal long-scroll page
+ * (home route hide/show rules from index.html are NOT applied here).
+ */
+
+.ib-ai-landing-clone-page {
+  background: var(--color-bg, #fafaf8);
+}
+
+.ib-ai-landing-clone-page .seo-main.ib-ai-landing--clone {
+  max-width: none;
+  padding: 0;
+  display: block;
+}
+
+/* Show all AI marketing sections (override any legacy display:none utilities) */
+.ib-ai-landing-clone-page #main-content > section[id] {
+  display: block !important;
+}
+
+.ib-ai-landing-clone-page .cro-sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0));
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.08));
+}
+
+.ib-ai-landing-clone-page .cro-sticky-cta .btn {
+  pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+.ib-ai-landing-clone-page .seo-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(250, 250, 248, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.ib-ai-landing-clone-page .ib-ai-landing-foundation-footer {
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .ib-ai-landing-clone-page .cro-sticky-cta {
+    display: none;
+  }
+}
+
+/* —— EPIC-003A: Hero dashboard render stabilization ——
+ * /ai/ clone page lacks body.ib-enterprise, so enterprise-scoped dashboard
+ * chart/grid rules never apply. Global style.css also applies light panel
+ * backgrounds, mobile scale(0.82), contain:layout, and premiumFadeLift blur. */
+
+.ib-ai-landing-clone-page #home .hero-image,
+.ib-ai-landing-clone-page #home .decision-preview.ib-glass-dashboard {
+  contain: none;
+  overflow: visible !important;
+  min-height: auto;
+  max-width: 100%;
+  width: 100%;
+  margin-left: 0;
+  align-self: stretch;
+  animation: none;
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transform-style: flat;
+  will-change: auto;
+}
+
+.ib-ai-landing-clone-page #home .decision-preview::before {
+  display: none;
+}
+
+.ib-ai-landing-clone-page #home .ib-glass-dashboard {
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.9)) !important;
+  border: 1px solid rgba(148, 163, 184, 0.36) !important;
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 32px 64px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  padding: 1rem 1.1rem 1.15rem;
+  gap: 0.75rem;
+}
+
+.ib-ai-landing-clone-page #home .ib-glass-dashboard .preview-category-label {
+  color: #dbeafe;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-grid--platform {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-ring {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-ring-inner {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.52), rgba(139, 92, 246, 0.4));
+  border: 1px solid rgba(147, 197, 253, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-ring-inner strong {
+  font-size: 1.7rem;
+  color: #ffffff;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-ring-inner span {
+  font-size: 0.9rem;
+  color: #dbeafe;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-label,
+.ib-ai-landing-clone-page #home .ib-dash-score-tier {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-score-tier {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+@media (min-width: 520px) {
+  .ib-ai-landing-clone-page #home .ib-dash-kpi-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-stat {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-stat span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #cbd5e1;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-stat strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.08rem;
+  color: #ffffff;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-stat--risk strong {
+  color: #4ade80;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-detail-link {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-detail-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  min-width: 0;
+  overflow: visible;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-chart {
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  min-width: 0;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-chart-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #cbd5e1;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-donut {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 0.35rem;
+  border-radius: 50%;
+  background: conic-gradient(
+    #3b82f6 0 38%,
+    #8b5cf6 38% 68%,
+    #22d3ee 68% 100%
+  );
+  mask: radial-gradient(circle at center, transparent 52%, #000 53%);
+  -webkit-mask: radial-gradient(circle at center, transparent 52%, #000 53%);
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.62rem;
+  color: #e2e8f0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ib-ai-landing-clone-page #home .ib-dash-donut-legend .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ib-ai-landing-clone-page #home .swatch-a { background: #3b82f6; }
+.ib-ai-landing-clone-page #home .swatch-b { background: #8b5cf6; }
+.ib-ai-landing-clone-page #home .swatch-c { background: #22d3ee; }
+
+.ib-ai-landing-clone-page #home .ib-dash-line-chart {
+  display: block;
+  width: 100%;
+  height: 64px;
+}
+
+@media (max-width: 768px) {
+  .ib-ai-landing-clone-page #home .decision-preview,
+  .ib-ai-landing-clone-page #home .hero-image {
+    transform: none !important;
+    margin-top: 0 !important;
+    min-height: auto !important;
+    max-width: 100% !important;
+  }
+
+  .ib-ai-landing-clone-page #home .ib-dash-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-ai-landing-clone-page #home .ib-dash-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-ai-landing-clone-page #home .decision-preview {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

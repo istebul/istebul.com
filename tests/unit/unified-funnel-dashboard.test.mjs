@@ -54,11 +54,23 @@ test('resolveFunnelStage maps lead_submit and auto_lead_submit to lead_submit', 
   assert.equal(resolveFunnelStage('auto_lead_submit'), 'lead_submit');
 });
 
+test('resolveFunnelStage maps kasko_lead_submit to lead_submit', () => {
+  assert.equal(resolveFunnelStage('kasko_lead_submit'), 'lead_submit');
+  assert.ok(FUNNEL_STAGE_ALIASES.lead_submit.includes('kasko_lead_submit'));
+});
+
 test('buildUnifiedFunnelMetrics counts kasko_wizard_complete in results', () => {
   const rows = [{ event_name: 'kasko_wizard_complete', session_id: 'k1' }];
   const metrics = buildUnifiedFunnelMetrics(rows);
   const kasko = metrics.find((m) => m.id === 'kasko');
   assert.ok(kasko.results >= 1);
+});
+
+test('buildUnifiedFunnelMetrics counts insurance_lead_submit for sigorta', () => {
+  const rows = [{ event_name: 'insurance_lead_submit', session_id: 's1' }];
+  const metrics = buildUnifiedFunnelMetrics(rows);
+  const sigorta = metrics.find((m) => m.id === 'sigorta');
+  assert.ok(sigorta.leads >= 1);
 });
 
 test('renderUnifiedFunnelDashboard shows cutover note', () => {
@@ -73,4 +85,12 @@ test('admin-panel fetch chain includes vertical_events', async () => {
   const src = await readFile(new URL('../../js/admin-panel.js', import.meta.url), 'utf8');
   assert.match(src, /table: 'vertical_events'/);
   assert.match(src, /\.\.\.\(verticalRes\.data \|\| \[\]\)/);
+});
+
+test('admin-panel legacy lead KPI uses shared lead submit aliases', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const src = await readFile(new URL('../../js/admin-panel.js', import.meta.url), 'utf8');
+  assert.match(src, /PLATFORM_LEAD_SUBMIT_EVENT_ALIASES/);
+  assert.match(src, /countEventsAny\(kpiRows, PLATFORM_LEAD_SUBMIT_EVENT_ALIASES\)/);
+  assert.match(src, /new Set\(PLATFORM_LEAD_SUBMIT_EVENT_ALIASES\)/);
 });

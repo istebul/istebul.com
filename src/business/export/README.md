@@ -1,0 +1,80 @@
+# Export Engine
+
+İSTEBUL Business **Export Engine** — `DocumentModel` / `DashboardModel` girdilerinden `ExportResult` ve artifact sözleşmeleri.
+
+## Architecture Freeze v1.0
+
+Tanım katmanı; gerçek PDF/DOCX/XLSX/PPTX/HTML/CSV veya dosya kaydı yoktur.
+
+## Dizinler
+
+| Klasör | Amaç |
+|--------|------|
+| `models/` | ExportRequest, ExportResult, … |
+| `ports/` | Motor ve pipeline portları |
+| `pipeline/` | Aşama tanımları |
+| `pipeline/runtime/` | Pipeline Runtime (PR-106A) — doğrulama + iskelet ExportModel |
+| `modelBuilder/runtime/` | Export Model Builder (PR-106B) — formatlardan bağımsız projeksiyon |
+| `renderer/runtime/` | Renderer Runtime (PR-106C) — format-bağımsız RenderDocument |
+| `format/runtime/` | Format Runtime (PR-106D) — formata özgü FormatDocument temsilleri |
+| `summary/runtime/` | Export Summary Runtime (PR-106E) — deterministik pipeline özeti |
+| `integration/runtime/` | End-to-End Export Runtime (PR-106F) — facade + pipeline runner |
+| `registry/` | Profil, format, şablon, artifact |
+| `constants/` | Sabitler |
+| `formats/` | Format kayıt sözleşmesi |
+| `templates/` | Şablon kayıt sözleşmesi |
+
+Detay: `Export Engine Specification.md`
+
+## Pipeline Runtime (PR-106A)
+
+`ExportPipelineRuntime` frozen aşamaları koordine eder:
+
+1. **Export Validation** (`export-dogrulama`) — gerçek kaynak doğrulama
+2. Format / Template / Composition / Artifact — structured `not-implemented`
+3. **Export Result** (`export-sonuc`) — her durumda geçerli `ExportResult`
+
+Validation başarılıysa bag'e iskelet `ExportModel` yazılır. Renderer, format dosyası ve bayt üretimi yoktur.
+
+## Export Model Builder (PR-106B)
+
+`ExportModelBuilderRuntime` DocumentModel / DashboardResult üzerinden formatlardan bağımsız `ExportModel` üretir (projection only).
+
+- Parçalar: Metadata, Content, Document / Dashboard / Report / Section / Widget / KPI References
+- Pipeline bag: `exportModelRuntimeResult` + iskelet `bag.exportModel`
+- PR-106A orchestrator dosyalarına dokunmaz (`applyExportModelBuilderToPipelineResult`)
+
+## Renderer Runtime (PR-106C)
+
+`RendererRuntime` ExportModel üzerinden format-bağımsız `RenderDocument` üretir (projection only).
+
+- Parçalar: Metadata, Header, Sections, Content Blocks, Footer
+- Deterministik bölüm/blok sırası
+- Pipeline bag: `exportRendererRuntimeResult` + `bag.render`
+- PR-106A–106B dosyalarına dokunmaz (`applyExportRendererToPipelineResult`)
+
+## Format Runtime (PR-106D)
+
+`FormatRuntime` RenderDocument üzerinden formata özgü `FormatDocument` temsilleri üretir (projection only; dosya yok).
+
+- Temsiller: PDF, HTML, DOCX, Markdown, JSON
+- Deterministik format sırası
+- Pipeline bag: `exportFormatRuntimeResult` + `bag.format`
+- PR-106A–106C dosyalarına dokunmaz (`applyExportFormatToPipelineResult`)
+
+## Export Summary Runtime (PR-106E)
+
+`ExportSummaryRuntime` Validation / ExportModel / RenderDocument / FormatDocument[] üzerinden deterministik özet üretir (projection only).
+
+- Bölümler: Metadata, Validation, Export Model, Renderer, Format, Execution, Warnings
+- Pipeline bag: `exportSummaryRuntimeResult` + foundation `bag.summary`
+- PR-106A–106D dosyalarına dokunmaz (`applyExportSummaryToPipelineResult`)
+
+## End-to-End Export Runtime (PR-106F)
+
+`ExportRuntimeFacade` / `ExportPipelineRunner` Validation → Export Model → Renderer → Format → Summary → ExportResult akışını birleştirir.
+
+- Validation başarısızsa Model / Renderer / Format atlanır; Summary yine çalışır
+- Her durumda geçerli foundation `ExportResult` döner
+- Pipeline bag: mevcut `validation`, `exportModel`, `render`, `format`, `summary` + runtime sonuç anahtarları
+- PR-106A–106E dosyalarına dokunmaz (`apply*` köprüleri)

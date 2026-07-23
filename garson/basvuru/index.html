@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b14">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>GarsonAI Başvuru | Restoranını Dijitalleştir</title>
+  <meta name="description" content="GarsonAI restoran başvuru formu — restoranınızı dijital garson platformuna taşıyın. 24 saat kurulum, WhatsApp entegrasyonu ve QR menü.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/garsonai-design-system-v1.css">
+  <link rel="stylesheet" href="/css/garsonai-landing-v1.css">
+  <link rel="stylesheet" href="/css/garsonai-auth-onboarding-v1.css">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/restoran/garson-launch.js"></script>
+</head>
+<body class="garsonai-page gai-auth-page garson-launch-page">
+
+  <header class="gai-header">
+    <div class="gai-header__shell">
+      <a class="gai-header__brand" href="/garson/" aria-label="GarsonAI ana sayfa">
+        <img class="gai-header__logo" src="/assets/brand/istebul-icon.svg" alt="" width="36" height="36" decoding="async">
+        <span class="gai-header__wordmark"><span>isteBul</span><span>GarsonAI</span></span>
+      </a>
+
+      <nav id="garson-auth-nav" class="gai-header__nav" aria-label="GarsonAI navigasyonu">
+        <a href="/garson/">Ana sayfa</a>
+        <a href="/garson/demo/">Demo</a>
+        <a href="/garson/giris/">Giriş Yap</a>
+      </nav>
+
+      <div class="gai-header__actions">
+        <a class="gai-btn gai-btn--secondary gai-btn--sm" href="/garson/demo/">Demo</a>
+        <button class="gai-header__toggle" type="button" id="garson-auth-nav-toggle" aria-controls="garson-auth-nav" aria-expanded="false" aria-label="Menü">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="gai-auth-main garson-launch-main">
+    <div class="gai-auth-split gai-auth-split--reverse">
+      <div class="gai-auth-copy">
+        <p class="gai-badge gai-badge--new gai-auth-copy__badge">İş Ortaklığı</p>
+        <h1 id="garson-basvuru-title" class="gai-auth-copy__title garson-launch-hero__title">
+          GarsonAI ile
+          <span>Restoranını Dijitalleştir</span>
+        </h1>
+        <p class="gai-auth-copy__lead garson-launch-hero__lead">
+          Kısa formu doldurun. Ön kayıt sonrası ekibimiz sizinle iletişime geçebilir;
+          ürünü hemen denemek için demo restoranı da açabilirsiniz.
+        </p>
+
+        <section class="gai-glass-card" aria-labelledby="garson-basvuru-form-title">
+          <h2 id="garson-basvuru-form-title" class="gai-glass-card__title">Restoran başvurusu</h2>
+          <p class="gai-glass-card__subtitle">
+            Zorunlu alanlar işaretlidir. Diğer bilgiler isteğe bağlıdır; daha sonra da tamamlanabilir.
+          </p>
+
+          <p class="gai-form-trust-note" role="note">
+            Bilgileriniz yalnızca başvuru görüşmesi için kullanılır. Otomatik kayıt sistemi bu sayfada henüz bağlı değildir.
+          </p>
+
+          <form id="garson-basvuru-form" class="garson-launch-form gai-form-grid" novalidate>
+            <fieldset class="gai-form-fieldset gai-field--full">
+              <legend class="gai-form-fieldset__legend">Temel bilgiler</legend>
+
+              <div class="gai-form-fieldset__grid">
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-restaurant-name">
+                    İşletme adı
+                    <span class="gai-field__required" aria-hidden="true">*</span>
+                  </label>
+                  <p id="garson-restaurant-name-hint" class="gai-field__hint">Tabeladaki veya bilinen işletme adınız.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <input
+                      id="garson-restaurant-name"
+                      name="restaurant_name"
+                      type="text"
+                      required
+                      autocomplete="organization"
+                      placeholder="Örn. Demo Cafe"
+                      aria-describedby="garson-restaurant-name-hint"
+                      aria-required="true"
+                    >
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-contact-name">
+                    Yetkili adı soyadı
+                    <span class="gai-field__required" aria-hidden="true">*</span>
+                  </label>
+                  <p id="garson-contact-name-hint" class="gai-field__hint">Görüşme yapılacak kişinin adı.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <input
+                      id="garson-contact-name"
+                      name="contact_name"
+                      type="text"
+                      required
+                      autocomplete="name"
+                      placeholder="Ad Soyad"
+                      aria-describedby="garson-contact-name-hint"
+                      aria-required="true"
+                    >
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-phone">
+                    Telefon
+                    <span class="gai-field__required" aria-hidden="true">*</span>
+                  </label>
+                  <p id="garson-phone-hint" class="gai-field__hint">WhatsApp veya arama için cep numarası.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <input
+                      id="garson-phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      autocomplete="tel"
+                      inputmode="tel"
+                      placeholder="05XX XXX XX XX"
+                      aria-describedby="garson-phone-hint"
+                      aria-required="true"
+                    >
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-city">
+                    Şehir
+                    <span class="gai-field__required" aria-hidden="true">*</span>
+                  </label>
+                  <p id="garson-city-hint" class="gai-field__hint">İşletmenin bulunduğu şehir.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <input
+                      id="garson-city"
+                      name="city"
+                      type="text"
+                      required
+                      autocomplete="address-level2"
+                      placeholder="İstanbul"
+                      aria-describedby="garson-city-hint"
+                      aria-required="true"
+                    >
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <details class="gai-form-optional gai-field--full">
+              <summary class="gai-form-optional__summary">
+                İsteğe bağlı ek bilgiler
+                <span class="gai-form-optional__meta">e-posta, işletme türü, masa, not</span>
+              </summary>
+              <div class="gai-form-optional__body gai-form-fieldset__grid">
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-email">E-posta <span class="gai-field__optional-tag">İsteğe bağlı</span></label>
+                  <p id="garson-email-hint" class="gai-field__hint">Yazılı bilgilendirme için tercih edilir.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <input
+                      id="garson-email"
+                      name="email"
+                      type="email"
+                      autocomplete="email"
+                      placeholder="ornek@restoran.com"
+                      aria-describedby="garson-email-hint"
+                    >
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-business-type">İşletme türü <span class="gai-field__optional-tag">İsteğe bağlı</span></label>
+                  <p id="garson-business-type-hint" class="gai-field__hint">Konseptinizi kısaca seçin.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <select id="garson-business-type" name="business_type" aria-describedby="garson-business-type-hint">
+                      <option value="" selected>Seçmek istemiyorum</option>
+                      <option value="cafe">Cafe</option>
+                      <option value="restaurant">Restoran</option>
+                      <option value="fast_food">Fast Food</option>
+                      <option value="pastane">Pastane</option>
+                      <option value="otel">Otel</option>
+                      <option value="market">Market</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field">
+                  <label for="garson-table-count">Masa sayısı <span class="gai-field__optional-tag">İsteğe bağlı</span></label>
+                  <p id="garson-table-count-hint" class="gai-field__hint">Yaklaşık kapasite yeterlidir.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <select id="garson-table-count" name="table_count" aria-describedby="garson-table-count-hint">
+                      <option value="" selected>Seçmek istemiyorum</option>
+                      <option value="20">20’ye kadar</option>
+                      <option value="50">50’ye kadar</option>
+                      <option value="100">100’e kadar</option>
+                      <option value="100+">100+</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field gai-field--full">
+                  <label for="garson-monthly-orders">Aylık sipariş / yoğunluk <span class="gai-field__optional-tag">İsteğe bağlı</span></label>
+                  <p id="garson-monthly-orders-hint" class="gai-field__hint">Örn. 800 paket, 400 masa içi — kısa yazmanız yeterli.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <textarea
+                      id="garson-monthly-orders"
+                      name="monthly_orders"
+                      rows="2"
+                      placeholder="Kısaca yazın"
+                      aria-describedby="garson-monthly-orders-hint"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="gai-field garson-launch-form__field gai-field--full">
+                  <label for="garson-note">Ek not <span class="gai-field__optional-tag">İsteğe bağlı</span></label>
+                  <p id="garson-note-hint" class="gai-field__hint">Özel istek veya mevcut sistemleriniz.</p>
+                  <div class="gai-field__control gai-field--no-icon">
+                    <textarea
+                      id="garson-note"
+                      name="note"
+                      rows="3"
+                      placeholder="İsterseniz ekleyin"
+                      aria-describedby="garson-note-hint"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <div class="gai-kvkk-consent gai-field--full">
+              <label class="gai-kvkk-consent__label" for="garson-kvkk-consent">
+                <input
+                  id="garson-kvkk-consent"
+                  name="kvkk_consent"
+                  type="checkbox"
+                  value="1"
+                  required
+                  aria-required="true"
+                  aria-describedby="garson-kvkk-help"
+                >
+                <span>
+                  <a href="/kvkk.html" target="_blank" rel="noopener noreferrer">KVKK Aydınlatma Metni</a>’ni
+                  okudum; başvuru görüşmesi amacıyla iletişim bilgilerimin işlenmesini kabul ediyorum.
+                  <span class="gai-field__required" aria-hidden="true">*</span>
+                </span>
+              </label>
+              <p id="garson-kvkk-help" class="gai-field__hint">
+                Ayrıntılar için
+                <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirmesi</a>
+                ve
+                <a href="/gizlilik.html">gizlilik politikası</a>.
+              </p>
+            </div>
+
+            <div class="gai-form-actions gai-field--full">
+              <button type="submit" class="gai-btn gai-btn--accent gai-btn--glow garson-launch-form__submit">
+                Başvuruyu tamamla
+              </button>
+              <a class="gai-btn gai-btn--secondary" href="/garson/demo/">Önce demo restoranı incele</a>
+            </div>
+          </form>
+
+          <p id="garson-basvuru-success" class="gai-success-banner garson-launch-form__success" hidden role="status" aria-live="polite">
+            Teşekkürler. Formu tamamladınız. Bu aşamada başvurunuz otomatik bir sisteme kaydedilmez; canlı ön kayıt henüz bağlı değildir. Demo restoranı inceleyebilir veya iletişim kanallarımızdan bize ulaşabilirsiniz.
+          </p>
+        </section>
+
+        <ul class="gai-auth-trust" aria-label="Güven rozetleri">
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            KVKK bilgilendirmesi
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+            SSL
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm12.5 1.5a1 1 0 00-1 1v7a1 1 0 001 1h1.5a.5.5 0 00.5-.5v-8a.5.5 0 00-.5-.5h-1.5z"/></svg>
+            WhatsApp Business API
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Cloudflare
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/></svg>
+            Supabase
+          </li>
+        </ul>
+      </div>
+
+      <aside class="gai-onboard-visual" aria-label="Onboarding süreci">
+        <section class="gai-glass-card">
+          <h2 class="gai-glass-card__title">Kurulum yol haritası</h2>
+          <p class="gai-glass-card__subtitle">Başvurudan canlıya geçişe genel bakış.</p>
+
+          <ol class="gai-timeline">
+            <li class="gai-timeline__item gai-timeline__item--active">
+              <span class="gai-timeline__num" aria-hidden="true">1</span>
+              <div>
+                <h3 class="gai-timeline__title">Başvuru</h3>
+                <p class="gai-timeline__desc">Temel bilgilerinizi bırakın; ekibimiz uygun olduğunda dönüş yapsın.</p>
+              </div>
+            </li>
+            <li class="gai-timeline__item">
+              <span class="gai-timeline__num" aria-hidden="true">2</span>
+              <div>
+                <h3 class="gai-timeline__title">Kurulum</h3>
+                <p class="gai-timeline__desc">Restoran hesabınız ve panel erişimi hazırlanır.</p>
+              </div>
+            </li>
+            <li class="gai-timeline__item">
+              <span class="gai-timeline__num" aria-hidden="true">3</span>
+              <div>
+                <h3 class="gai-timeline__title">Menü Aktarımı</h3>
+                <p class="gai-timeline__desc">Ürünleriniz dijital menüye aktarılır.</p>
+              </div>
+            </li>
+            <li class="gai-timeline__item">
+              <span class="gai-timeline__num" aria-hidden="true">4</span>
+              <div>
+                <h3 class="gai-timeline__title">WhatsApp</h3>
+                <p class="gai-timeline__desc">WhatsApp Business API bağlantısı tamamlanır.</p>
+              </div>
+            </li>
+            <li class="gai-timeline__item">
+              <span class="gai-timeline__num" aria-hidden="true">5</span>
+              <div>
+                <h3 class="gai-timeline__title">Canlıya Geçiş</h3>
+                <p class="gai-timeline__desc">Sipariş, mutfak ve rezervasyon akışı devreye girer.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div class="gai-info-cards" aria-label="Canlı bilgi kartları">
+            <article class="gai-info-card gai-info-card--highlight">
+              <span class="gai-info-card__label">Kurulum Süresi</span>
+              <span class="gai-info-card__value">24 Saat</span>
+            </article>
+            <article class="gai-info-card">
+              <span class="gai-info-card__label">WhatsApp Aktivasyonu</span>
+              <span class="gai-info-card__value">10 dk</span>
+            </article>
+            <article class="gai-info-card">
+              <span class="gai-info-card__label">QR Menü</span>
+              <span class="gai-info-card__value">Hazır</span>
+            </article>
+            <article class="gai-info-card gai-info-card--highlight">
+              <span class="gai-info-card__label">Komisyon</span>
+              <span class="gai-info-card__value">%0</span>
+            </article>
+            <article class="gai-info-card gai-info-card--highlight" style="grid-column: 1 / -1;">
+              <span class="gai-info-card__label">Destek</span>
+              <span class="gai-info-card__value">7/24</span>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="gai-auth-footer garson-launch-footer">
+    <nav class="gai-auth-footer__nav garson-launch-footer__nav" aria-label="GarsonAI alt bağlantılar">
+      <a href="/garson/">GarsonAI</a>
+      <a href="/garson/demo/">Demo</a>
+      <a href="/garson/giris/">Giriş</a>
+      <a href="/kvkk.html">KVKK</a>
+      <a href="/gizlilik.html">Gizlilik</a>
+      <a href="/yardim.html">Yardım</a>
+      <a href="/">isteBul</a>
+    </nav>
+    <p class="gai-auth-footer__copy garson-launch-footer__copy">© <span id="garson-auth-year">2026</span> isteBul · GarsonAI</p>
+  </footer>
+
+  <script>
+    (function () {
+      var toggle = document.getElementById('garson-auth-nav-toggle');
+      var nav = document.getElementById('garson-auth-nav');
+      if (toggle && nav) {
+        toggle.addEventListener('click', function () {
+          var open = nav.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+
+      var form = document.getElementById('garson-basvuru-form');
+      var submitBtn = form && form.querySelector('button[type="submit"]');
+      if (form && submitBtn) {
+        form.addEventListener('submit', function () {
+          submitBtn.classList.add('is-loading');
+          window.setTimeout(function () {
+            submitBtn.classList.remove('is-loading');
+          }, 600);
+        });
+      }
+
+      var year = document.getElementById('garson-auth-year');
+      if (year) year.textContent = String(new Date().getFullYear());
+    })();
+  </script>
+</body>
+</html>

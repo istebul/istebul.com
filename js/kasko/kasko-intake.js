@@ -72,3 +72,7 @@ export function trackKaskoResultsView(meta = {}) {
   track('kasko_results_view', meta);
   return callIntake({ type: 'event', event_type: 'kasko_results_view', ...meta });
 }
+
+export function trackKaskoWizardComplete(meta = {}) {
+  track('kasko_wizard_complete', meta);
+}

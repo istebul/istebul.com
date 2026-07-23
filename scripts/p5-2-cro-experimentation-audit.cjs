@@ -75,9 +75,16 @@ if (!ops.includes('ib:wizard-rendered') || !ops.includes('wizard_step_advance'))
   fail('growth-ops must wire wizard CRO conversions');
 }
 
-const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-if (!index.includes('data-cro-trust-headline')) {
-  fail('index.html must expose trust experiment selector');
+/* CRO selectors live on AI product surface after Platform Cutover */
+const aiIndex = fs.readFileSync(path.join(root, 'ai/index.html'), 'utf8');
+if (!aiIndex.includes('data-hero-cta-primary')) {
+  fail('ai/index.html must expose hero CRO experiment selector');
+}
+if (!aiIndex.includes('data-cro-cta-sticky') && !aiIndex.includes('data-cro-cta-secondary')) {
+  fail('ai/index.html must expose CRO CTA experiment selectors');
+}
+if (!ops.includes('[data-cro-trust-headline]') && !ops.includes('#trust')) {
+  fail('growth-ops must retain trust-zone CRO wiring');
 }
 
 if (failed) process.exit(1);

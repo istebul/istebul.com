@@ -66,7 +66,7 @@ export function renderUserDashboardTabPanels(ctx = {}) {
       }
       <div class="account-quick-actions">
         <a href="/karsilastir" class="btn btn-primary">Karşılaştırma Merkezine Git</a>
-        <a href="/auto/" class="btn btn-outline">Yeni analiz başlat</a>
+        <a href="/karar-asistani/" class="btn btn-outline">Ön değerlendirmeye başla</a>
       </div>
     </section>
 
@@ -217,7 +217,7 @@ export function renderUserDashboardTabPanels(ctx = {}) {
         <p>Sık sorulan sorular, destek kanalları ve platform rehberleri.</p>
       </header>
       <div class="account-help-grid">
-        ${renderHelpCard({ icon: 'help-circle', title: 'Sık sorulan sorular', description: 'Abonelik, analiz ve hesap soruları', href: '/#landing-faq' })}
+        ${renderHelpCard({ icon: 'help-circle', title: 'Sık sorulan sorular', description: 'Abonelik, analiz ve hesap soruları', href: '/ai/#landing-faq' })}
         ${renderHelpCard({ icon: 'message-square', title: 'Destek talebi', description: 'Ekibimize doğrudan ulaşın', href: '/iletisim.html' })}
         ${renderHelpCard({ icon: 'book-open', title: 'Metodoloji', description: 'Skorlama ve karar mantığı', href: '/metodoloji/' })}
         ${renderHelpCard({ icon: 'credit-card', title: 'Planlar', description: 'Ücretsiz ve Pro plan karşılaştırması', href: '/planlar' })}

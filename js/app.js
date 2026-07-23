@@ -7,8 +7,7 @@ import {
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
-import { initHomeCategories } from './runtime/home-categories.js';
-import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
+import { initPlatformLanding } from './runtime/platform-shell-landing.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
 import {
@@ -41,7 +40,6 @@ import { submitUserListingToAiEngine } from './core/ai-listings-bridge.js';
 import { scoreVehicleMatch } from './engines/decision-consultant.js';
 import {
   ensureAccountManager,
-  ensureCatalogData,
   ensureRevenueManager,
   ensureUpsellEngine,
   getRevenueManager,
@@ -56,8 +54,7 @@ import {
     matchesDecisionHistoryActionId
 } from './ui/decision-history-compat.js';
 import {
-    resolveAssistantCategoryFromHistoryEntry,
-    shouldRedirectHistoryEntryToAutoVertical
+    resolveAssistantCategoryFromHistoryEntry
 } from './ui/decision-history-category.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
@@ -80,6 +77,8 @@ import {
   buildAssistantInsightInput,
   buildVerticalContinueHref
 } from './features/assistant/assistant-category-bridge.js';
+import { extractAssistantIntentFromText } from './features/assistant/assistant-intent-extractor.js';
+import { mapIntentToAssistantAnswers } from './features/assistant/intent-to-assistant-mapper.js';
 import { buildDecisionInsight } from './features/ai/ai-insight-engine.js';
 import {
     mapBillingPortalError,
@@ -97,8 +96,11 @@ import {
     syncHtmlRouteSurface,
     tryExternalRouteRedirect
 } from './runtime/route-surface.js';
-import { resolveVehicleImageUrl } from './auto/vehicle-image.js';
-
+import { resolveFullPageNavigation } from './runtime/full-page-navigation.js';
+import {
+    isLegacyAiHomeHash,
+    resolveLegacyAiHomeRedirect
+} from './runtime/platform-url-contract.js';
 window.lucide = window.lucide || {
     createIcons() {},
     icons: {}
@@ -125,6 +127,15 @@ import {
 import { bootstrapLiveDataIntegrations } from './runtime/live-data-integrations.js';
 import { bootstrapAiListingsIntegrations } from './runtime/ai-listings-integrations.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
+import { buildVehicleImageUiPayload } from './auto/vehicle-image.js';
+import { resolveListingImages } from './features/listings/listing-media.js';
+import {
+    hasPublicSourceUrl,
+    isVehicleListingCategory,
+    mapListingToVehicleImageInput,
+    resolveListingTrustGatedImageUrl,
+    resolvePublicExternalUrl
+} from './ui/listing-trust-ui.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
 import {
     buildCheckoutTriggerEvent,
@@ -140,8 +151,6 @@ class App {
         this.ui = new UIManager();
         this.router = new Router();
         this.account = null;
-        this.ilan = null;
-        this.profil = null;
         this.messagingModule = null;
         this._billingPortalInFlight = false;
         this.currentUser = null;
@@ -188,8 +197,8 @@ class App {
 
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
-            initHomeCategories();
-            initHomeEconomicIndicators();
+            // PR-568: / is Platform Landing; AI marketing hydrators live on /ai/
+            initPlatformLanding();
 
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {
@@ -1267,6 +1276,8 @@ class App {
             decisionAssistantForm.addEventListener('submit', (e) => this.handleDecisionAssistantSubmit(e));
             decisionAssistantForm.addEventListener('change', (e) => this.handleDecisionAssistantChange(e));
         }
+
+        this.bindAssistantIntentForm();
 
         const newsletterForm = document.getElementById('newsletter-form');
         if (newsletterForm) {
@@ -2359,8 +2370,101 @@ class App {
             stepIndex: this.assistantStep,
             steps
         });
+        this.bindAssistantIntentForm();
         this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
         this.ui.renderDecisionMemoryContext?.(this.decisionHistory);
+    }
+
+    bindAssistantIntentForm() {
+        const form = document.getElementById('assistant-intent-form');
+        if (!form || form.dataset.intentBound === '1') return;
+        form.dataset.intentBound = '1';
+        form.addEventListener('submit', (event) => {
+            void this.handleAssistantIntentSubmit(event);
+        });
+    }
+
+    mapIntentUsageToAssistantAnswers(answers = {}) {
+        const usageMap = {
+            long: 'longRoad',
+            business: 'prestige',
+            family: 'family',
+            city: 'city'
+        };
+        const next = { ...answers };
+        if (next.usage && usageMap[next.usage]) {
+            next.usage = usageMap[next.usage];
+        }
+        return next;
+    }
+
+    setAssistantIntentStatus(message = '', tone = 'info') {
+        const status = document.getElementById('assistant-intent-status');
+        if (!status) return;
+        status.textContent = message;
+        status.dataset.tone = tone;
+    }
+
+    setAssistantIntentLoading(isLoading) {
+        const form = document.getElementById('assistant-intent-form');
+        const submitBtn = form?.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = Boolean(isLoading);
+            submitBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+        }
+    }
+
+    async handleAssistantIntentSubmit(event) {
+        event.preventDefault();
+
+        const textarea = document.getElementById('assistant-intent-text');
+        const text = String(textarea?.value ?? '').trim();
+        if (!text) {
+            this.setAssistantIntentStatus('Lütfen ihtiyacınızı birkaç cümleyle yazın.', 'error');
+            this.ui.showError?.('Lütfen ihtiyacınızı birkaç cümleyle yazın.');
+            textarea?.focus();
+            return;
+        }
+
+        this.setAssistantIntentLoading(true);
+        this.setAssistantIntentStatus('Niyetiniz çözümleniyor…', 'loading');
+
+        try {
+            const intent = await extractAssistantIntentFromText(text);
+            const mapped = mapIntentToAssistantAnswers(intent);
+
+            if (!mapped) {
+                this.setAssistantIntentStatus(
+                    'Şu an bu alan yalnızca araç ihtiyacını ön doldurabiliyor. Araç için bütçe, kullanım amacı veya gövde tipi yazarak deneyin.',
+                    'error'
+                );
+                this.ui.showError?.(
+                    'Şu an bu alan yalnızca araç ihtiyacını ön doldurabiliyor. Araç için bütçe, kullanım amacı veya gövde tipi yazarak deneyin.'
+                );
+                return;
+            }
+
+            this.assistantCategory = mapped.categoryId;
+            this.assistantAnswers = {
+                ...this.assistantAnswers,
+                ...this.mapIntentUsageToAssistantAnswers(mapped.answers)
+            };
+            this.assistantStep = 0;
+            this.lastDecisionResult = null;
+
+            const resultsContainer = document.getElementById('assistant-results');
+            if (resultsContainer) resultsContainer.innerHTML = '';
+
+            this.renderDecisionAssistant();
+            this.ui.renderAssistantIntentSummaryPanel?.(mapped);
+            this.setAssistantIntentStatus('Kriterler ön değerlendirme sorularına aktarıldı. Tam skoru görmek için kategori akışında devam edin.', 'success');
+            this.ui.showSuccess?.('Karar asistanı soruları niyetinize göre ön dolduruldu.');
+        } catch (error) {
+            this.setAssistantIntentStatus('Niyet çözümlenemedi. Lütfen tekrar deneyin veya soruları elle doldurun.', 'error');
+            this.ui.showError?.('Niyet çözümlenemedi. Lütfen tekrar deneyin.');
+        } finally {
+            this.setAssistantIntentLoading(false);
+        }
     }
 
     getAssistantWizardSteps(categoryConfig) {
@@ -3443,7 +3547,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
     getSourceTypeLabel(type) {
         const labels = {
-            listing: 'İlan kaynağı',
+            listing: 'Seçenek kaynağı',
             finance: 'Kredi kaynağı',
             insurance: 'Sigorta kaynağı',
             travel: 'Tatil/ulaşım kaynağı'
@@ -3704,7 +3808,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
     }
 
-    saveDecisionHistory(result) {
+    saveDecisionHistory(result, options = {}) {
         const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
         if (!storageKey) {
             this.decisionHistory = [];
@@ -3716,7 +3820,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         const topPick = result.recommendations[0];
         const history = this.readStoredArray(storageKey);
-        const filtered = mergeDecisionHistoryEntry(history, record, 12);
+        const maxEntries = Number(options.maxEntries) > 0 ? Number(options.maxEntries) : 12;
+        const filtered = mergeDecisionHistoryEntry(history, record, maxEntries);
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
         this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
@@ -3749,19 +3854,24 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
-        if (shouldRedirectHistoryEntryToAutoVertical(record)) {
-            window.location.href = '/auto/';
-            return;
+        const assistantCategory = resolveAssistantCategoryFromHistoryEntry(record);
+        const rawAnswers = record.rawAnswers || {};
+
+        if (assistantCategory) {
+            const verticalHref = buildVerticalContinueHref(assistantCategory, rawAnswers);
+            if (verticalHref && verticalHref !== '/') {
+                window.location.href = verticalHref;
+                return;
+            }
         }
 
-        const assistantCategory = resolveAssistantCategoryFromHistoryEntry(record);
         if (!assistantCategory || !this.decisionAssistant[assistantCategory]) {
-            this.ui.showError('Kaydedilen karar bulunamadı.');
+            this.router.navigate('/karar-asistani');
             return;
         }
 
         this.assistantCategory = assistantCategory;
-        this.assistantAnswers = record.rawAnswers || {};
+        this.assistantAnswers = rawAnswers;
         this.assistantStep = Math.max(this.getAssistantWizardSteps(this.getResolvedDecisionAssistantConfig()[this.assistantCategory]).length - 1, 0);
         this.router.navigate('/karar-asistani');
         this.renderDecisionAssistant();
@@ -4071,7 +4181,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.activeCategory = options.category || null;
         this.renderCategorySurfaces();
-        this.router.navigate('/secenekler');
+        this.router.navigate('/secenekler/');
         this.applyListingFilterFormOptions(options);
         await this.loadListings(options);
         this.saveSearchHistory('Karar sonucu: ' + (this.getListingFilterChips(options).slice(0, 4).join(' / ') || 'Sonuca uygun seçenekler'));
@@ -4211,7 +4321,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
               email: this.currentUser?.email || null
             });
             if (params.get('trial') === '1') {
-                this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
+                this.ui.showSuccess('Pro özellikleri etkin. Pilot erişim sürecindesiniz.');
             } else if (params.get('plan') === 'annual') {
                 this.ui.showSuccess('Yıllık Pro aboneliğiniz aktif. İndirimli planla tüm premium özellikler açıldı.');
             } else {
@@ -4270,6 +4380,15 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     handleCheckoutDeepLink() {
         const params = new URLSearchParams(window.location.search);
         const wantsCheckout = params.get('checkout') === 'pro';
+        const path = window.location.pathname === '/index.html'
+            ? '/'
+            : (window.location.pathname.replace(/\/$/, '') || '/');
+
+        /* Platform root no longer hosts AI #pricing — send checkout deep links to /ai/. */
+        if (path === '/' && window.location.hash === '#pricing') {
+            window.location.replace('/ai/#pricing');
+            return;
+        }
 
         if (window.location.hash === '#pricing') {
             document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -5019,13 +5138,38 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const costBreakdown = periodicEstimate.breakdown || {};
         const bestFinance = this.createFinanceComparisons(Number(listing.price || 0), categoryId)[0] || {};
         const score = this.getListingDecisionScore(listing);
+        const sourceUrl = resolvePublicExternalUrl(listing) || null;
+        const isVehicle = isVehicleListingCategory(categoryId);
+        let image = null;
+        let imageTrust;
+
+        if (isVehicle) {
+            const vehicleInput = mapListingToVehicleImageInput({ ...listing, category: categoryId });
+            const uiPayload = buildVehicleImageUiPayload(vehicleInput);
+            image = resolveListingTrustGatedImageUrl({ ...listing, category: categoryId }) || uiPayload.imageUrl;
+            imageTrust = uiPayload.imageTrust;
+        } else {
+            image = resolveListingImages(listing)[0] || '/assets/images/placeholder.svg';
+        }
+
+        const listingImageSeed = {
+            category: categoryId,
+            title: listing.title || 'Seçenek',
+            images: listing.images,
+            image_url: listing.image_url ?? listing.imageUrl ?? null,
+            vehicleBrand: listing.vehicleBrand,
+            attributes: listing.attributes,
+            year: listing.year,
+            model_year: listing.model_year
+        };
+
         return {
             id: 'cmp-listing-' + listing.id,
             signature: 'listing:' + categoryId + ':' + listing.id,
-            sourceType: 'İlan',
+            sourceType: 'Seçenek',
             categoryId,
             categoryName: this.getCategoryName(categoryId),
-            title: listing.title || 'İlan',
+            title: listing.title || 'Seçenek',
             price: Number(listing.price || 0),
             periodicCost,
             costBreakdown,
@@ -5037,6 +5181,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             calculationRows: this.createListingComparisonRows(listing, periodicCost, bestFinance),
             tags: this.getListingDecisionTags(listing, score),
             comment: this.createListingComparisonComment(listing, periodicCost),
+            sourceUrl,
+            image,
+            ...(imageTrust ? { imageTrust } : {}),
+            listingImageSeed,
             createdAt: new Date().toISOString()
         };
     }
@@ -5068,7 +5216,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const details = [
             { label: 'Kategori', value: categoryName },
             { label: 'Konum', value: listing.location || 'Belirtilmemiş' },
-            { label: 'Kaynak', value: listing.external_url ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt' },
+            { label: 'Kaynak', value: this.listingHasResolvablePublicSource(listing) ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt' },
             { label: 'Güncellik', value: listing.created_at ? new Date(listing.created_at).toLocaleDateString('tr-TR') : 'Tarih yok' }
         ];
 
@@ -5085,20 +5233,24 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
     createListingComparisonRows(listing = {}, periodicCost = 0, bestFinance = {}) {
         const categoryId = listing.category;
-        const purchaseLabel = categoryId === 'arac' ? 'İlan araç bedeli' : categoryId === 'ev' ? 'İlan alım bedeli' : categoryId === 'tatil' ? 'İlan paket bedeli' : 'İlan bedeli';
+        const purchaseLabel = categoryId === 'arac' ? 'Seçenek araç bedeli' : categoryId === 'ev' ? 'Seçenek alım bedeli' : categoryId === 'tatil' ? 'Seçenek paket bedeli' : 'Seçenek bedeli';
         const periodicLabel = this.getCategoryTotalLabel(categoryId);
         return [
-            { label: purchaseLabel, value: Number(listing.price || 0), note: 'İlan üzerinde görünen ana bedel' },
+            { label: purchaseLabel, value: Number(listing.price || 0), note: 'Seçenek üzerinde görünen ana bedel' },
             { label: periodicLabel, value: periodicCost, note: this.getCategoryTotalNote(categoryId) },
             { label: 'Aylık ödeme', value: Number(bestFinance.monthlyPayment || 0), note: bestFinance.bank ? bestFinance.bank + ' simülasyonu' : 'Finansman simülasyonu yok' },
             { label: 'Toplam geri ödeme', value: Number(bestFinance.totalPayment || 0), note: bestFinance.term ? bestFinance.term + ' ay vade' : 'Finansman simülasyonu yok' }
         ];
     }
 
+    listingHasResolvablePublicSource(listing = {}) {
+        return hasPublicSourceUrl(listing) || Boolean(resolvePublicExternalUrl(listing));
+    }
+
     getListingDecisionTags(listing = {}, score = 0) {
         const tags = [];
-        if (score >= 86) tags.push('Güçlü ilan');
-        if (listing.external_url) tags.push('Kaynak bağlantılı');
+        if (score >= 86) tags.push('Güçlü seçenek');
+        if (this.listingHasResolvablePublicSource(listing)) tags.push('Kaynak bağlantılı');
         if (listing.created_at && (Date.now() - new Date(listing.created_at).getTime()) < 5 * 86400000) tags.push('Güncel');
         tags.push(this.getCategoryName(listing.category));
         return tags.slice(0, 4);
@@ -5107,7 +5259,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     createListingComparisonComment(listing = {}, periodicCost = 0) {
         const costText = this.formatCurrency(periodicCost);
         if (listing.category === 'arac') {
-            return (listing.title || 'Bu araç') + ' için ilan bedeline ek olarak yakıt/enerji, sigorta, kasko ve bakım yükü yaklaşık ' + costText + ' seviyesinde varsayıldı. Satın alma öncesi ekspertiz, tramer ve güncel kasko teklifi kontrol edilmeli.';
+            return (listing.title || 'Bu araç') + ' için seçenek bedeline ek olarak yakıt/enerji, sigorta, kasko ve bakım yükü yaklaşık ' + costText + ' seviyesinde varsayıldı. Satın alma öncesi ekspertiz, tramer ve güncel kasko teklifi kontrol edilmeli.';
         }
         if (listing.category === 'ev') {
             return (listing.title || 'Bu ev') + ' için alım bedeline ek yıllık aidat/bakım, vergi, sigorta ve yenileme payı yaklaşık ' + costText + ' olarak ele alındı. Tapu, deprem ve gerçek m2 fiyatı doğrulanmalı.';
@@ -5115,7 +5267,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         if (listing.category === 'tatil') {
             return (listing.title || 'Bu tatil') + ' için paket dışı ulaşım, aktivite, transfer ve sigorta yükü yaklaşık ' + costText + ' olarak simüle edildi. Sezon ve iptal koşulları son fiyatı değiştirebilir.';
         }
-        return 'İlan karşılaştırması fiyat, tahmini dönemsel maliyet ve finansman simülasyonu üzerinden üretildi.';
+        return 'Seçenek karşılaştırması fiyat, tahmini dönemsel maliyet ve finansman simülasyonu üzerinden üretildi.';
     }
 
     getFavoriteIds() {
@@ -5156,56 +5308,13 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         return true;
     }
 
-    getAutoComparisonImage(vehicle) {
-        if (vehicle?.image || vehicle?.imageUrl || vehicle?.visual) {
-            return vehicle.image || vehicle.imageUrl || vehicle.visual;
-        }
-
-        return resolveVehicleImageUrl(vehicle);
-    }
-
-    addAutoVehicleToComparison(vehicle) {
-        if (!vehicle) return;
-
-        const score = Number(vehicle.score || 0);
-
-        this.addComparisonItem({
-            id: `auto-compare-${vehicle.name}`,
-            signature: `auto-${vehicle.name}`,
-            categoryId: 'arac',
-            categoryName: 'Araç Karşılaştırma',
-            sourceType: 'isteBul Auto',
-            title: vehicle.name,
-            image: this.getAutoComparisonImage(vehicle),
-            score,
-            riskLevel: score >= 85 ? 'Düşük risk'
-                : score >= 70 ? 'Dengeli'
-                : 'Kontrol gerekli',
-            price: Number(vehicle.price || vehicle.costs?.purchase || 0),
-            periodicCost: Number(vehicle.costs?.annual || 0),
-            yearlyCost: Number(vehicle.costs?.annual || 0),
-            monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0),
-            tags: [
-                vehicle.fuel || 'Araç',
-                vehicle.segment || 'AI analiz'
-            ],
-            comment: vehicle.reasons?.[0] || 'AI araç karar analizi sonucu önerildi.',
-            details: [
-                { label: 'En iyi kullanım', value: vehicle.usage || '-' },
-                { label: 'Yakıt tipi', value: vehicle.fuel || '-' }
-            ],
-            reasons: vehicle.reasons || [],
-            risks: vehicle.risks || []
-        });
-    }
-
     toggleFavorite(listingId) {
         const normalizedId = listingId.toString();
         if (!Array.isArray(this.favorites)) this.favorites = [];
         const existing = this.favorites.find((item) => item.id.toString() === normalizedId);
         if (existing) {
             this.favorites = this.favorites.filter((item) => item.id.toString() !== normalizedId);
-            this.ui.showSuccess('İlan favorilerinizden çıkarıldı.');
+            this.ui.showSuccess('Seçenek favorilerinizden çıkarıldı.');
         } else {
             const listing = (this.currentListings || []).find((item) => item.id.toString() === normalizedId) ||
                 (this.currentDetailListing?.id?.toString() === normalizedId ? this.currentDetailListing : null) ||
@@ -5215,7 +5324,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 return;
             }
             this.favorites.push(listing);
-            this.ui.showSuccess('İlan favorilerinize eklendi.');
+            this.ui.showSuccess('Seçenek favorilerinize eklendi.');
         }
 
         this.saveFavorites();
@@ -5544,21 +5653,10 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
+// Production route visibility guard — Platform Landing only (sync with js/core/router.js)
 const MARKETING_SECTION_IDS = new Set([
-    'home',
-    'home-economic-indicators',
-    'trust',
-    'methodology-teaser',
-    'sample-preview',
-    'home-auto-bridge',
-    'how-it-works',
-    'home-vertical-focus',
-    'pricing',
-    'partner-enterprise',
-    'landing-faq',
-    'home-guides-strip',
-    'home-final-cta'
+    'platform-landing',
+    'neden-istebul'
 ]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
@@ -5576,6 +5674,18 @@ function applyHomeMarketingVisibility() {
     });
     document.body.classList.remove('app-route-active', 'ib-premium-route-active');
 }
+
+/** bfcache / Back-Forward restore must never resurrect stale AI-home SPA state on `/`. */
+window.addEventListener('pageshow', (event) => {
+    const path = window.location.pathname === '/index.html'
+        ? '/'
+        : (window.location.pathname.replace(/\/$/, '') || '/');
+    if (path !== '/') return;
+    if (event.persisted || document.documentElement.dataset.ibPlatformLanding === '1') {
+        applyHomeMarketingVisibility();
+        window.app?.router?.handleRoute?.();
+    }
+});
 
 function hydrateBlogPostSurface() {
     import('./runtime/init-public-content.js')
@@ -5633,6 +5743,24 @@ function applyProductionRouteVisibility() {
     const { pathname: stripped } = stripLocalePrefix(rawPath === '/index.html' ? '/' : rawPath);
     const path = stripped.replace(/\/$/, '') || '/';
     const hashId = (window.location.hash || '').slice(1);
+
+    const fullPageTarget = resolveFullPageNavigation(path);
+    if (fullPageTarget) {
+        const dest = new URL(fullPageTarget, window.location.origin);
+        dest.search = window.location.search || '';
+        dest.hash = window.location.hash || '';
+        window.location.replace(`${dest.pathname}${dest.search}${dest.hash}`);
+        return;
+    }
+
+    if (path === '/' && hashId && isLegacyAiHomeHash(hashId)) {
+        const redirect = resolveLegacyAiHomeRedirect(hashId);
+        if (redirect) {
+            window.location.replace(redirect);
+            return;
+        }
+    }
+
     const marketingHash = MARKETING_SECTION_IDS.has(hashId);
 
     syncHtmlRouteSurface(resolveRouteSurface(path), path);
@@ -5655,6 +5783,8 @@ function applyProductionRouteVisibility() {
     const routeMap = {
         '/': 'home',
         '/secenekler': 'ilanlar',
+        '/ilanlar': 'ilanlar',
+        '/decision-options': 'ilanlar',
         '/karsilastir': 'compare',
         '/karar-asistani': 'page-karar-analizi',
         '/favoriler': 'favoriler',

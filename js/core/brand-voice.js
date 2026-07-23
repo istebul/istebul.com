@@ -11,13 +11,14 @@ export const BRAND_VOICE = Object.freeze({
     'Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin.',
 
   cta: {
-    primaryDecision: 'Karar analizini başlat',
+    primaryDecision: 'Kararını analiz et',
+    primaryDecisionFree: 'Ön değerlendirmeye başla',
     primaryAuto: 'Auto analizini dene',
-    primaryAutoLegacy: 'Ücretsiz analiz başlat',
-    primaryAutoLong: 'Ücretsiz analiz başlat',
+    primaryAutoLegacy: 'Tam analize başla',
+    primaryAutoLong: 'Tam analize başla',
     methodology: 'Metodolojiyi gör',
     plans: 'Planları incele',
-    analysisStart: 'Ücretsiz analiz başlat',
+    analysisStart: 'Ön değerlendirmeye başla',
     saveAnalysis: 'Analizini kaydet ve devam et',
     accountLogin: 'Giriş Yap',
     accountRegister: 'Analizini kaydet',
@@ -34,9 +35,9 @@ export const BRAND_VOICE = Object.freeze({
     railLine:
       'Skor metodolojisi açık · AI skoru tek başına değiştirmez · şeffaf TCO',
     stickyLine:
-      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme iyzico / PayTR',
+      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme aktivasyonu sonrası',
     pricingLine:
-      'Yanlış seçim maliyeti · 7 gün deneme · iptal tek tık',
+      'Yanlış seçim maliyeti · pilot erişim · destek kanalından iptal',
     compliance:
       'Finansal tavsiye değildir. Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü yoktur.',
     sampleNote:

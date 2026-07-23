@@ -1,6 +1,6 @@
-const CACHE_VERSION = 'v51';
+const CACHE_VERSION = 'v52';
 const STATIC_CACHE = `istebul-static-${CACHE_VERSION}`;
-const OFFLINE_PAGE = '/offline.html';
+const OFFLINE_PAGE = '/offline';
 
 const PRECACHE_ASSETS = [
   OFFLINE_PAGE,
@@ -46,7 +46,6 @@ const isImageRequest = (request) =>
 
 const shouldBypassCache = (pathname) =>
   pathname === '/env.js' ||
-  pathname.startsWith('/.netlify/functions/') ||
   pathname.startsWith('/api/') ||
   pathname.startsWith('/functions/');
 

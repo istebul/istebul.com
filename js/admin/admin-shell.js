@@ -1,49 +1,65 @@
 /**
  * Admin shell — sidebar collapse, nav groups, global search (no routing changes).
+ *
+ * Header/search labels for admin pages. Keep in sync with admin-panel.html nav labels
+ * and ADMIN_PAGE_IDS in admin-page-routing.js (Faz 4A-1a/4A-1b nav contract).
  */
 
 const NAV_LABELS = {
-  dashboard: 'Dashboard',
+  dashboard: 'Operasyon Özeti',
   users: 'Kullanıcılar',
   'auto-leads': 'Lead CRM',
+  'vertical-leads': 'Dikey leadler',
   'vacation-analytics': 'Tatil Analytics',
   'vacation-leads': 'Tatil Leadleri',
   'vacation-scenarios': 'Tatil Senaryoları',
   'vacation-settings': 'Tatil Ayarları',
-  'vacation-destinations': 'Tatil Destinasyonları',
-  'vacation-partners': 'Tatil Partnerleri',
-  'vacation-scoring': 'Tatil Skor/AI',
-  listings: 'İlan / Ürünler',
+  'vacation-destinations': 'Destinasyon Yönetimi',
+  'vacation-partners': 'Partner Yönetimi',
+  'vacation-scoring': 'AI Prompt / Scoring',
+  'housing-leads': 'Konut Leadleri',
+  'housing-locations': 'Lokasyon Yönetimi',
+  'housing-partners': 'Konut Partnerleri',
+  'housing-scoring': 'Konut Scoring Ayarları',
+  'finance-leads': 'Finans Leadleri',
+  'sigorta-leads': 'Sigorta Leadleri',
+  'kasko-leads': 'Kasko Leadleri',
+  'finance-partners': 'Finans Partnerleri',
+  'finance-scoring': 'Finans Scoring Ayarları',
+  listings: 'Karar Seçenekleri',
   settings: 'Ayarlar',
   content: 'Sayfa içerikleri',
   announcements: 'Duyurular',
   campaigns: 'Kampanyalar',
   faqs: 'SSS',
+  'home-news': 'Güncel haberler',
   blog: 'Blog',
+  'linkedin-ops-assistant': 'LinkedIn Operasyon Asistanı',
+  'unified-funnel': 'Birleşik Funnel',
   'auto-analytics': 'Auto analitik',
   'platform-analytics': 'Platform analitik',
-  'dashboard-ceo': 'CEO dashboard',
-  'dashboard-growth': 'Growth dashboard',
-  'dashboard-revenue': 'Revenue',
-  payments: 'Payments',
-  'dashboard-partner-ops': 'Partner ops',
-  'dashboard-support': 'Support dashboard',
-  'ops-ai-assistant': 'AI karar motoru',
-  'investor-metrics': 'Executive KPIs',
-  observability: 'Sistem logları',
-  'ops-command-center': 'Ops command',
-  'startup-operating-center': 'Startup operating',
-  'scale-architecture': 'Scale architecture',
-  'company-operating-system': 'Company OS',
-  'hiring-architecture': 'Hiring',
-  'international-expansion': 'Global expansion',
-  'category-dominance': 'AI skor & moat',
-  'competitor-attack': 'Defense',
-  'expansion-prioritization': 'Expansion roadmap',
-  'strategic-partnerships': 'Partnerships',
+  'dashboard-ceo': 'CEO Özeti',
+  'dashboard-growth': 'Büyüme Özeti',
+  'dashboard-revenue': 'Gelir Özeti',
+  payments: 'Ödemeler',
+  'dashboard-partner-ops': 'Partner Operasyon Özeti',
+  'dashboard-support': 'Destek Özeti',
+  'ops-ai-assistant': 'Ops asistan',
+  'investor-metrics': 'Yatırımcı KPI',
+  observability: 'Gözlemlenebilirlik',
+  'ops-command-center': 'Operasyon Komuta Merkezi',
+  'startup-operating-center': 'Startup operasyon',
+  'scale-architecture': 'Ölçek mimarisi',
+  'company-operating-system': 'Şirket işletim sistemi',
+  'hiring-architecture': 'İşe alım',
+  'international-expansion': 'Uluslararası genişleme',
+  'category-dominance': 'Kategori hakimiyeti',
+  'competitor-attack': 'Savunma',
+  'expansion-prioritization': 'Genişleme',
+  'strategic-partnerships': 'Stratejik ortaklıklar',
   'acquisition-exit': 'Exit / M&A',
   'partner-endpoints': 'Partner kanalları',
-  'partner-applications': 'Partner başvuruları',
+  'partner-applications': 'Başvurular',
   'partner-dispatch-logs': 'Teslimat logları'
 };
 
@@ -117,7 +133,7 @@ export function initAdminShell() {
 export function syncAdminHeaderTitle(pageId) {
   const title = document.getElementById('admin-mobile-title');
   const topTitle = document.getElementById('admin-topbar-title');
-  const label = NAV_LABELS[pageId] || pageId || 'Dashboard';
+  const label = NAV_LABELS[pageId] || pageId || 'Operasyon Özeti';
   if (title) title.textContent = label;
   if (topTitle) topTitle.textContent = label;
 }

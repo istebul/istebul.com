@@ -113,12 +113,13 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--analysis">
         <div class="container ib-premium-hero-grid">
           <div class="ib-premium-hero-copy">
-            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar merkezi</span>
+            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Ön değerlendirme</span>
             <h1>Hangi kategoride karar vermek istiyorsunuz?</h1>
-            <p class="ib-premium-lead">Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.</p>
+            <p class="ib-premium-lead">${escapeHtml(spaText('premiumKarar.heroLead', 'Kısa sorularla kategori ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.'))}</p>
+            <p class="ib-premium-role-note text-muted-sm">${escapeHtml(spaText('premiumKarar.roleNote', 'Karar Asistanı, hangi kategori analizine devam etmeniz gerektiğini belirler. Nihai skor ve detaylı analiz ilgili kategori akışında hesaplanır.'))}</p>
             <div class="ib-premium-hero-actions">
-              <a href="#premium-assistant" class="btn btn-primary btn-lg" data-analytics-cta="cta_decision_hub" data-analytics-placement="premium_hero" title="Kategori seçerek karar akışını başlatın">
-                <i data-lucide="layout-grid"></i> Kategori seçin
+              <a href="#premium-assistant" class="btn btn-primary btn-lg" data-analytics-cta="cta_decision_hub" data-analytics-placement="premium_hero" title="${BRAND_VOICE.cta.primaryDecisionFree}">
+                <i data-lucide="layout-grid"></i> ${BRAND_VOICE.cta.primaryDecisionFree}
               </a>
               <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
                 <i data-lucide="microscope"></i> ${BRAND_VOICE.cta.methodology}
@@ -139,7 +140,7 @@ export class PremiumPages {
                 <small>/ 100</small>
               </div>
               <p class="ib-premium-note">Gösterim amaçlıdır; canlı analizde skor girdilerinize göre hesaplanır — kesin sonuç değildir.</p>
-              <p>Hybrid SUV · aile kullanımı · örnek kredi senaryosu</p>
+              <p>Büyük karar · aile bütçesi · örnek uygunluk senaryosu</p>
               <div class="ib-score-bars">
                 <div><span>Maliyet</span><em style="width:72%"></em></div>
                 <div><span>Finansman</span><em style="width:64%"></em></div>
@@ -168,9 +169,34 @@ export class PremiumPages {
           <div class="ib-premium-block-head">
             <span class="section-kicker">${BRAND_VOICE.kickers.preview}</span>
             <h2>${escapeHtml(spaText('premiumKarar.previewTitle', 'Karar önizlemesi'))}</h2>
-            <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.'))}</p>
+            <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.'))}</p>
           </div>
           <div class="assistant-section ib-premium-assistant-shell">
+            <div class="assistant-intent-panel" id="assistant-intent-host">
+              <form id="assistant-intent-form" class="assistant-form assistant-intent-form" novalidate>
+                <div class="assistant-intent-copy">
+                  <h3>Hayalini anlat</h3>
+                  <p>Şu an araç ihtiyacı için çalışır. İhtiyacınızı yazın; Karar Asistanı soruları ön doldurur. Tam skor ve karar analizi ilgili kategori akışında hesaplanır.</p>
+                </div>
+                <label class="assistant-field" for="assistant-intent-text">
+                  <span class="assistant-field-label">İhtiyacınız</span>
+                  <textarea
+                    id="assistant-intent-text"
+                    name="intent_text"
+                    rows="4"
+                    placeholder="Örnek: 3 milyon TL bütçem var. SUV olsun. Az yaksın. 2 çocuk için geniş olsun. Bakımı pahalı olmasın."
+                    autocomplete="off"
+                  ></textarea>
+                </label>
+                <div class="assistant-intent-actions">
+                  <button type="submit" class="btn btn-primary" data-analytics-cta="assistant_intent_resolve">
+                    <i data-lucide="sparkles"></i> Kriterleri anla ve ön doldur
+                  </button>
+                </div>
+                <p id="assistant-intent-status" class="assistant-intent-status text-muted-sm" aria-live="polite"></p>
+              </form>
+              <div id="assistant-intent-summary" class="assistant-intent-summary" aria-live="polite"></div>
+            </div>
             <div class="assistant-shell">
               <aside class="assistant-category-rail" id="assistant-category-rail" aria-label="Karar kategorileri"></aside>
               <div class="assistant-workspace">
@@ -197,7 +223,7 @@ export class PremiumPages {
           <div class="ib-premium-block-head">
             <span class="section-kicker">Karşılaştırma</span>
             <h2>${escapeHtml(spaText('premiumKarar.compareTitle', 'İki seçeneği yan yana görün'))}</h2>
-            <p>${escapeHtml(spaText('premiumKarar.compareLead', 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.'))}</p>
+            <p>${escapeHtml(spaText('premiumKarar.compareLead', 'Pro ile 4 seçeneğe kadar detaylı karşılaştırma; ücretsiz planda 2 seçenek.'))}</p>
           </div>
           <div class="ib-compare-table-wrap">
             <p class="ib-sample-scenario-label ib-sample-scenario-label--block">Örnek senaryo — canlı analizde değerler girdilerinize göre hesaplanır</p>
@@ -205,14 +231,14 @@ export class PremiumPages {
               <thead>
                 <tr>
                   <th>Kriter</th>
-                  <th>Model A</th>
-                  <th>Model B</th>
+                  <th>Seçenek A</th>
+                  <th>Seçenek B</th>
                   <th>Fark</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>12 ay TCO</td><td>₺412.000</td><td>₺389.000</td><td class="ib-compare-win">−₺23.000</td></tr>
-                <tr><td>Aylık kredi yükü</td><td>₺18.400</td><td>₺17.100</td><td class="ib-compare-win">−₺1.300</td></tr>
+                <tr><td>12 ay toplam maliyet</td><td>₺412.000</td><td>₺389.000</td><td class="ib-compare-win">−₺23.000</td></tr>
+                <tr><td>Aylık ödeme yükü</td><td>₺18.400</td><td>₺17.100</td><td class="ib-compare-win">−₺1.300</td></tr>
                 <tr><td>Uyum skoru (örnek)</td><td>78</td><td>82</td><td class="ib-compare-win">+4</td></tr>
                 <tr><td>Veri güven bandı (örnek)</td><td>Orta–yüksek</td><td>Orta–yüksek</td><td>—</td></tr>
               </tbody>
@@ -238,11 +264,11 @@ export class PremiumPages {
       <section class="ib-premium-cta-band" aria-label="Sonraki adım">
         <div class="container ib-premium-cta-band-inner">
           <div>
-            <h2>Yanlış araç seçme riskini azaltın</h2>
-            <p>Önce ücretsiz TCO analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
+            <h2>Yanlış karar maliyetini azaltın</h2>
+            <p>Önce ücretsiz ön değerlendirme; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
           </div>
           <div class="ib-premium-hero-actions">
-            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryAutoLong}">${BRAND_VOICE.cta.primaryAuto}</a>
+            <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_premium_footer" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryDecisionFree}">${BRAND_VOICE.cta.primaryDecisionFree}</a>
             <a href="/planlar" class="btn btn-outline btn-lg" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="premium_footer">${BRAND_VOICE.cta.plans}</a>
           </div>
         </div>
@@ -364,7 +390,7 @@ export class PremiumPages {
               <div><span>AI yorum</span><small>Şeffaf özet katmanı</small></div>
             </div>
             <div class="ib-arch-arrow" aria-hidden="true">↓</div>
-            <div class="ib-arch-layer"><span>Veri &amp; ödeme</span><small>Supabase · iyzico · PayTR</small></div>
+            <div class="ib-arch-layer"><span>Veri &amp; ödeme</span><small>Supabase · ödeme altyapısı (aktivasyon sonrası)</small></div>
           </div>
         </div>
       </section>
@@ -377,7 +403,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">TCO analizini başlat</a>
+          <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_metodoloji" data-analytics-placement="metodoloji_trust">${BRAND_VOICE.cta.primaryDecisionFree}</a>
         </div>
       </section>
     </div>`;
@@ -405,9 +431,9 @@ export class PremiumPages {
       <section class="ib-premium-trust-panel ib-premium-trust-panel--pricing" aria-label="Ödeme güvencesi">
         <div class="container">
           <ul class="ib-pricing-trust-chips">
-            <li><i data-lucide="shield"></i><span><strong>iyzico · PayTR</strong> — kart bilgileri sunucularımızda tutulmaz</span></li>
-            <li><i data-lucide="rotate-ccw"></i><span><strong>İptal</strong> — panelden istediğiniz zaman</span></li>
-            <li><i data-lucide="gift"></i><span><strong>7 gün deneme</strong> — ilk Pro aboneliğinde</span></li>
+            <li><i data-lucide="shield"></i><span><strong>Ödeme aktivasyonu sonrası</strong> — kart bilgileri sunucularımızda tutulmaz</span></li>
+            <li><i data-lucide="rotate-ccw"></i><span><strong>İptal</strong> — destek kanalından</span></li>
+            <li><i data-lucide="gift"></i><span><strong>Pilot erişim</strong> — Pro özellikleri erken erişim sürecinde</span></li>
           </ul>
         </div>
       </section>
@@ -418,7 +444,7 @@ export class PremiumPages {
             <h2>Hâlâ kararsız mısınız?</h2>
             <p>Önce toplam maliyeti görün; Pro ile karşılaştırmayı derinleştirin.</p>
           </div>
-          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">TCO analizini başlat</a>
+          <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_planlar_footer" data-analytics-placement="planlar_footer">${BRAND_VOICE.cta.primaryDecisionFree}</a>
         </div>
       </section>
     </div>`;

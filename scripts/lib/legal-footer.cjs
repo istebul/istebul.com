@@ -22,7 +22,7 @@ const CORPORATE_FOOTER_NAV_LINKS_HTML = `
       <a href="/partner-olun.html">Partner olun</a>
       <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
       <a href="/rehber/tco-rehberi/">TCO rehberi</a>
-      <a href="/auto/">Karar analizi</a>`;
+      <a href="/karar-asistani/">Ön değerlendirme başlat</a>`;
 
 const CORPORATE_FOOTER_NAV_HTML = `<nav class="corporate-footer__nav" aria-label="Site bağlantıları">${CORPORATE_FOOTER_NAV_LINKS_HTML}
     </nav>`;

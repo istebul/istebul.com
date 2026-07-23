@@ -65,6 +65,17 @@ export function normalizeAiListingToOption(listing) {
       ? listing.latest_analysis
       : null;
 
+  const resolvedScore =
+    latestAnalysis?.ai_score ??
+    attributes.ai_score ??
+    listing.score ??
+    listing.decisionScore ??
+    listing.matchScore;
+
+  const numericScore = Number.isFinite(Number(resolvedScore))
+    ? Math.max(0, Math.min(100, Number(resolvedScore)))
+    : null;
+
   return {
     ...listing,
     category: uiCategory,
@@ -75,6 +86,7 @@ export function normalizeAiListingToOption(listing) {
     vehicleBrand: attributes.vehicleBrand ?? attributes.vehicle_brand ?? listing.vehicleBrand ?? '',
     propertyType: attributes.propertyType ?? attributes.property_type ?? listing.propertyType ?? '',
     vacationType: attributes.vacationType ?? attributes.vacation_type ?? listing.vacationType ?? '',
+    ...(numericScore !== null ? { score: numericScore, decisionScore: numericScore } : {}),
     metadata: {
       ...attributes,
       ai_score: latestAnalysis?.ai_score ?? attributes.ai_score ?? null,

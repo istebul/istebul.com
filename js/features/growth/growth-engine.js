@@ -102,7 +102,7 @@ export function trackGrowth(eventName, properties = {}, meta = {}) {
   });
 }
 
-export function buildReferralUrl(code, path = '/auto/') {
+export function buildReferralUrl(code, path = '/karar-asistani/') {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.istebul.com';
   const url = new URL(path, base);
   url.searchParams.set('ref', code);
@@ -116,7 +116,7 @@ export function buildReferralUrl(code, path = '/auto/') {
  * @param {string} channelId — key from channels.json
  * @param {string} [targetPath]
  */
-export function buildChannelCampaignUrl(channelId, targetPath = '/auto/') {
+export function buildChannelCampaignUrl(channelId, targetPath = '/karar-asistani/') {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.istebul.com';
   const url = new URL(targetPath, base);
   const defaults = {
@@ -135,7 +135,7 @@ export function buildChannelCampaignUrl(channelId, targetPath = '/auto/') {
 
 export function buildRecoveryUrl(campaign = 'abandon_lead') {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.istebul.com';
-  const url = new URL('/auto/', base);
+  const url = new URL('/karar-asistani/', base);
   url.searchParams.set('utm_source', 'recovery');
   url.searchParams.set('utm_medium', 'abandon');
   url.searchParams.set('growth_campaign', campaign);

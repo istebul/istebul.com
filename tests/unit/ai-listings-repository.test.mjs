@@ -332,10 +332,11 @@ test('buildRepositoryFilterChipsHtml marks active filters', () => {
   assert.match(html, /✓ Araç/);
 });
 
-test('buildRepositoryDashboardHtml builds full dashboard', () => {
+test('buildRepositoryDashboardHtml builds full dashboard without duplicate summary strip', () => {
   const { html, query } = buildRepositoryDashboardHtml([vehicleListing, housingListing]);
   assert.match(html, /Veri Havuzu/);
   assert.match(html, /ai-listings-admin__repo-grid/);
+  assert.doesNotMatch(html, /ai-listings-admin__repo-summary/);
   assert.ok(query.filtered.length >= 1);
 });
 

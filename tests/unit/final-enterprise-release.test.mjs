@@ -17,11 +17,13 @@ test('style.css imports enterprise release layers', () => {
   assert.match(style, /hero-v4\.css/);
 });
 
-test('hero V4 markup exposes required CTAs and categories', () => {
+test('Platform root mounts Platform Landing; AI Landing keeps hero V4 CTAs', () => {
   const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const ai = fs.readFileSync(path.join(root, 'ai/index.html'), 'utf8');
   const categories = fs.readFileSync(path.join(root, 'js/runtime/home-categories.js'), 'utf8');
-  assert.match(index, /ib-hero-v4/);
-  assert.match(index, /Kararımı Analiz Et/);
+  assert.match(index, /id="platform-landing"/);
+  assert.match(index, /Ön değerlendirmeye başla/);
+  assert.match(ai, /ib-hero-v4/);
+  assert.match(ai, /data-preview-title/);
   assert.match(categories, /ib-soon-badge/);
-  assert.match(index, /data-preview-title/);
 });

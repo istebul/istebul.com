@@ -363,7 +363,7 @@ export class AccountManager {
                 bio: form.bio.value.trim()
             };
 
-            const profile = await app.profil.updateProfile(app.currentUser.id, updates);
+            const profile = await API.updateProfile(app.currentUser.id, updates);
             app.currentUser.profile = profile;
             this.ui?.updateUserUI?.(profile);
             this.ui?.showSuccess?.(config.messages.success.profileUpdated);
@@ -417,7 +417,7 @@ export class AccountManager {
                     <ul class="account-trust-list">
                         <li><i data-lucide="lock"></i> Oturumlar şifreli bağlantı üzerinden korunur</li>
                         <li><i data-lucide="mail-check"></i> E-posta doğrulama ve şifre sıfırlama desteği</li>
-                        <li><i data-lucide="credit-card"></i> iyzico / PayTR ile güvenli ödeme</li>
+                        <li><i data-lucide="credit-card"></i> Pro erken erişim — ödeme aktivasyonu sonrası bilgilendirme</li>
                     </ul>
                     <div class="account-guest-actions">
                         <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Hesabına gir</button>
@@ -633,7 +633,7 @@ export class AccountManager {
             recommendations,
             notificationCount: recommendations.length,
             quickActions: [
-                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/auto/', icon: 'plus-circle' },
+                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/karar-asistani/', icon: 'plus-circle' },
                 { title: 'Karşılaştırma Oluştur', description: 'Seçenekleri karşılaştır', href: '/karsilastir', icon: 'scale' },
                 { title: 'Raporlarımı İndir', description: 'Tüm analiz raporlarını indir', href: '/gecmis', icon: 'download' },
                 { title: 'Favori Listemi Gör', description: 'Kaydettiğiniz tüm öğeleri görüntüleyin', href: '/favoriler', icon: 'heart' }

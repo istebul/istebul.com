@@ -100,17 +100,19 @@ for (const href of links) {
     if (!anchor) continue;
     let targetHtml = html;
     if (pathPart && pathPart !== '/' && !pathPart.startsWith('/#')) {
-      const pagePath = pathPart.replace(/^\//, '');
-      const distFile = path.join(dist, pagePath);
-      const sourceFile = path.join(root, pagePath);
-      if (fs.existsSync(distFile) && fs.statSync(distFile).isFile()) {
-        targetHtml = fs.readFileSync(distFile, 'utf8');
-      } else if (fs.existsSync(sourceFile) && fs.statSync(sourceFile).isFile()) {
-        targetHtml = fs.readFileSync(sourceFile, 'utf8');
-      } else {
+      const pagePath = pathPart.replace(/^\//, '').replace(/\/$/, '');
+      const candidates = [
+        path.join(dist, pagePath),
+        path.join(dist, pagePath, 'index.html'),
+        path.join(root, pagePath),
+        path.join(root, pagePath, 'index.html')
+      ];
+      const hit = candidates.find((f) => fs.existsSync(f) && fs.statSync(f).isFile());
+      if (!hit) {
         fail(`footer hash page missing: ${href}`);
         continue;
       }
+      targetHtml = fs.readFileSync(hit, 'utf8');
     }
     if (!targetHtml.includes(`id="${anchor}"`) && !targetHtml.includes(`id='${anchor}'`)) {
       fail(`footer hash target missing (${pathPart}): #${anchor}`);

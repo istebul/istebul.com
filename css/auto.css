@@ -2252,6 +2252,8 @@ h2{
 
   .auto-results-trust-banner .btn{
     width:100%;
+    white-space:normal;
+    text-align:center;
   }
 }
 
@@ -2494,7 +2496,6 @@ h2{
     flex-direction:column !important;
     gap:18px !important;
     padding:18px !important;
-    overflow:visible !important;
   }
 
   #auto-results .auto-market-media,
@@ -3597,6 +3598,8 @@ html body a.auto-floating-cta{
 
   .finance-bank-row .btn{
     width:100%;
+    white-space:normal;
+    text-align:center;
   }
 }
 

@@ -1,0 +1,7 @@
+{
+  "name": "@istebul/restaurant-knowledge",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.ts" },
+  "description": "P8-B Restaurant Knowledge Graph — shared restaurant facts for Concierge, CRM, Kitchen, WhatsApp AI. No LLM calls."
+}

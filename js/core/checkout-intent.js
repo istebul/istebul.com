@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from './storage-keys.js';
+import { PAYMENT_SECURE_SHORT_TR } from '../payments/payment-copy.js';
 
 /**
  * @typedef {{ billing?: 'monthly' | 'annual', useTrial?: boolean }} CheckoutIntent
@@ -99,7 +100,7 @@ export function mapCheckoutApiError(status, data = {}) {
 
 export const CHECKOUT_REASSURANCE_HTML = `
   <p class="revenue-risk-reversal checkout-reassurance" role="note">
-    <span>7 gün ücretsiz deneme</span>
-    <span>iyzico / PayTR ile güvenli ödeme</span>
-    <span>İstediğiniz zaman iptal</span>
+    <span>Pro pilot erişim</span>
+    <span>${PAYMENT_SECURE_SHORT_TR}</span>
+    <span>Destek kanalından iptal</span>
   </p>`;

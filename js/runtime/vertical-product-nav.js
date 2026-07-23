@@ -4,12 +4,12 @@
 
 const PRODUCT_LINKS = [
   { href: '/', i18n: 'nav.home', label: 'Ana sayfa' },
-  { href: '/auto/', i18n: 'nav.catAuto', label: 'Araç' },
-  { href: '/konut/', i18n: 'vertical.konut', label: 'Konut' },
-  { href: '/tatil/', i18n: 'vertical.tatil', label: 'Tatil' },
-  { href: '/finans/', i18n: 'vertical.finans', label: 'Finansman' },
-  { href: '/sigorta/', i18n: 'nav.catSigorta', label: 'Sigorta' },
-  { href: '/kasko/', i18n: 'nav.catKasko', label: 'Kasko' }
+  { href: '/auto/', i18n: 'nav.catAuto', label: 'Araba Kararı' },
+  { href: '/konut/', i18n: 'vertical.konut', label: 'Konut Kararı' },
+  { href: '/tatil/', i18n: 'vertical.tatil', label: 'Tatil Kararı' },
+  { href: '/finans/', i18n: 'vertical.finans', label: 'Finansman Kararı' },
+  { href: '/sigorta/', i18n: 'nav.catSigorta', label: 'Sigorta Kararı' },
+  { href: '/kasko/', i18n: 'nav.catKasko', label: 'Kasko Kararı' }
 ];
 
 function normalizePath(href) {
@@ -38,7 +38,7 @@ function ensureProductNavBlock(nav) {
     block = document.createElement('div');
     block.setAttribute('data-vertical-nav-products', '');
     block.setAttribute('role', 'group');
-    block.setAttribute('aria-label', 'Kategoriler');
+    block.setAttribute('aria-label', 'Karar kategorileri');
     nav.prepend(block);
   }
 

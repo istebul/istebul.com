@@ -110,7 +110,6 @@ function renderActiveCard(category, index) {
       class="ib-cat-mockup ib-cat-mockup--premium is-active ib-cat-mockup--${escapeHtml(category.id)}"
       data-category-id="${escapeHtml(category.id)}"
       data-native-route
-      role="listitem"
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — ${escapeHtml(analyzeAction)}"
     >
@@ -141,7 +140,6 @@ function renderComingSoonCard(category, index) {
     <article
       class="ib-cat-mockup ib-cat-mockup--premium is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
       data-category-id="${escapeHtml(category.id)}"
-      role="listitem"
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — ${escapeHtml(soonLabel)}"
     >
@@ -273,6 +271,37 @@ function openInterestModal(categoryId) {
   modal.setAttribute('aria-hidden', 'false');
 }
 
+function hasHomeCategoryPrerender(grid) {
+  return Boolean(grid.querySelector('[data-home-category-prerender="1"]'));
+}
+
+function shouldReuseHomeCategoryPrerender(grid, soonCount) {
+  if (soonCount > 0) return false;
+  if (resolveLocaleId() !== 'tr') return false;
+  if (!hasHomeCategoryPrerender(grid)) return false;
+  return grid.querySelectorAll('a[data-category-id].is-active').length === CATEGORY_DISPLAY_ORDER.length;
+}
+
+function bindCategoryCardHandlers(grid) {
+  if (grid.dataset.categoryHandlersBound === '1') return;
+
+  grid.querySelectorAll('[data-category-id]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      const categoryId = card.getAttribute('data-category-id');
+      if (!categoryId) return;
+      if (card.classList.contains('is-coming-soon')) {
+        event.preventDefault();
+        openInterestModal(categoryId);
+        trackCategoryCardClick(categoryId, { href: null, interest: true });
+        return;
+      }
+      trackCategoryCardClick(categoryId, { href: card.getAttribute('href') });
+    });
+  });
+
+  grid.dataset.categoryHandlersBound = '1';
+}
+
 async function fetchVisibilitySettings() {
   try {
     const supabaseUrl = window.__env?.SUPABASE_URL;
@@ -303,7 +332,8 @@ async function fetchVisibilitySettings() {
   }
 }
 
-export async function mountHomeCategoryGrid() {
+export async function mountHomeCategoryGrid(options = {}) {
+  const { forceRender = false } = options;
   const grid = document.getElementById('home-category-grid');
   if (!grid) return;
 
@@ -326,38 +356,34 @@ export async function mountHomeCategoryGrid() {
   const soonCategories = sortCategoriesForDisplay(
     categories.filter((category) => category.status === 'coming_soon')
   );
+
+  if (!forceRender && shouldReuseHomeCategoryPrerender(grid, soonCategories.length)) {
+    bindCategoryCardHandlers(grid);
+    document.dispatchEvent(new CustomEvent('ib:refresh-icons'));
+    return;
+  }
+
   const liveHtml = activeCategories.map((category, index) => renderActiveCard(category, index)).join('');
   const soonHtml = soonCategories
     .map((category, index) => renderComingSoonCard(category, activeCategories.length + index))
     .join('');
   const gridAria = translate('home.categoriesGridAria');
   const soonAria = translate('home.categoriesSoonAria');
+  delete grid.dataset.categoryHandlersBound;
   grid.innerHTML = `
     <div class="ib-cat-mockup-shell">
-      <div class="ib-cat-mockup-shell__live" role="list" aria-label="${escapeHtml(gridAria)}">
+      <div class="ib-cat-mockup-shell__live" role="group" aria-label="${escapeHtml(gridAria)}">
         ${liveHtml}
       </div>
       ${
         soonHtml
-          ? `<div class="ib-cat-mockup-shell__soon" role="list" aria-label="${escapeHtml(soonAria)}">${soonHtml}</div>`
+          ? `<div class="ib-cat-mockup-shell__soon" role="group" aria-label="${escapeHtml(soonAria)}">${soonHtml}</div>`
           : ''
       }
     </div>
   `;
 
-  grid.querySelectorAll('[data-category-id]').forEach((card) => {
-    card.addEventListener('click', (event) => {
-      const categoryId = card.getAttribute('data-category-id');
-      if (!categoryId) return;
-      if (card.classList.contains('is-coming-soon')) {
-        event.preventDefault();
-        openInterestModal(categoryId);
-        trackCategoryCardClick(categoryId, { href: null, interest: true });
-        return;
-      }
-      trackCategoryCardClick(categoryId, { href: card.getAttribute('href') });
-    });
-  });
+  bindCategoryCardHandlers(grid);
 
   document.dispatchEvent(new CustomEvent('ib:refresh-icons'));
 }
@@ -377,7 +403,7 @@ export function initHomeCategories() {
   });
   document.addEventListener('ib:locale-changed', () => {
     if (document.getElementById('home-category-grid')) {
-      mountHomeCategoryGrid();
+      mountHomeCategoryGrid({ forceRender: true });
     }
   });
 }

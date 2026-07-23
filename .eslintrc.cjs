@@ -25,6 +25,64 @@ module.exports = {
   },
   overrides: [
     {
+      files: [
+        'src/ai-core/**/*.ts',
+        'src/restaurant-knowledge/**/*.ts',
+        'src/ai-concierge/**/*.ts',
+        'src/ai-actions/**/*.ts',
+        'src/payment-gateway/**/*.ts',
+        'src/ai-decision/**/*.ts',
+        'src/business/**/*.ts',
+        'src/core/**/*.ts',
+        'src/platform-admin/**/*.ts',
+        'src/business-admin/**/*.ts',
+        'src/identity/**/*.ts',
+      ],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+      parserOptions: {
+        ecmaVersion: 2021,
+        sourceType: 'module',
+      },
+      extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+        'no-undef': 'off',
+      },
+    },
+    {
+      files: [
+        'apps/restaurant-admin-erp/**/*.{ts,tsx}',
+        'apps/restaurant-customer-cx/**/*.{ts,tsx}',
+      ],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint', 'react', 'react-hooks'],
+      parserOptions: {
+        ecmaVersion: 2021,
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      settings: {
+        react: {
+          version: 'detect',
+        },
+      },
+      extends: [
+        'eslint:recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:react/recommended',
+        'plugin:react-hooks/recommended',
+      ],
+      rules: {
+        'react/react-in-jsx-scope': 'off',
+        'react/prop-types': 'off',
+        '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+        'no-undef': 'off',
+      },
+    },
+    {
       files: ['scripts/**/*.js', 'tests/**/*.js'],
       rules: {
         'no-console': 'off',

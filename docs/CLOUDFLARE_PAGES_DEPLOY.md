@@ -26,9 +26,29 @@ Supabase otomatik deploy için ek olarak:
 
 ## Cloudflare Pages runtime env
 
-Dashboard → **Workers & Pages → istebul → Settings → Environment variables** (Production):
+Dashboard → **Workers & Pages → istebul-com → Settings → Environment variables** (Production ve Preview).
 
-`SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_*`, `GROQ_API_KEY`, `PARTNER_*`, `TURNSTILE_SECRET`, `SITE_URL`
+**Genel Functions secrets:** `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_*`, `PARTNER_*`, `TURNSTILE_SECRET`, `SITE_URL`
+
+### AI provider (`/ai-proxy` — Pages Functions)
+
+Canonical runbook: [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)
+
+| Variable | Zorunluluk | Not |
+|----------|------------|-----|
+| `AI_PROVIDER` | Opsiyonel | Unset veya `groq` → **Groq** (production default). `openai` yalnızca bilinçli aktivasyonda. |
+| `GROQ_API_KEY` | **Zorunlu** (default/`groq`) | `AI_PROVIDER` unset veya `groq` iken gerekli. |
+| `OPENAI_API_KEY` | `AI_PROVIDER=openai` iken **zorunlu** | OpenAI seçiliyken Groq key olsa bile yeterli değil. |
+| `OPENAI_MODEL` | Opsiyonel | Default runtime: `gpt-4o-mini`. |
+| `AI_PROXY_TOKEN` | Opsiyonel | Ek POST koruması (`x-ai-proxy-token`). |
+
+**Kurallar:**
+
+- Provider’lar arasında **otomatik fallback yoktur**.
+- Production OpenAI aktivasyonu: önce `OPENAI_API_KEY` (encrypted), opsiyonel `OPENAI_MODEL`, **en son** `AI_PROVIDER=openai`.
+- Rollback: `AI_PROVIDER` sil veya `groq` yap; `GROQ_API_KEY` production’da korunmalı.
+
+**Production OpenAI activation remains NO-GO** until deployment checklist, subprocessor/compliance docs, and Preview smoke are completed (see [`docs/DEPLOYMENT_CHECKLIST.md`](DEPLOYMENT_CHECKLIST.md)).
 
 ## Cloudflare Git entegrasyonu
 

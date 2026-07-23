@@ -1015,7 +1015,7 @@ html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard.section {
     left: 0;
     width: min(86vw, 320px);
     height: 100vh;
-    z-index: 110;
+    z-index: 1250;
     transform: translateX(-102%);
     transition: transform 0.2s ease;
   }
@@ -1028,7 +1028,7 @@ html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard.section {
     position: fixed;
     inset: 0;
     background: rgba(2, 6, 23, 0.6);
-    z-index: 100;
+    z-index: 1240;
   }
 
   .ud-content-grid,

@@ -99,13 +99,53 @@ export function renderDecisionResultSummaryHtml(summary, escapeHtml, aiRationale
         '</article>';
     }).join('');
 
-    return '<section class="decision-result-summary" data-decision-result-summary aria-label="Karar sonucu özeti">' +
+    return '<section class="decision-result-summary" data-decision-result-summary aria-label="Ön değerlendirme sonucu">' +
         '<div class="decision-result-summary-head">' +
-            '<span class="assistant-kicker">Karar sonucu özeti</span>' +
-            '<h3>Nihai karar sinyalleri tek bakışta</h3>' +
-            '<p>Uygunluk, risk, TCO ve profil özeti mevcut deterministik sonuçlardan okunur — nihai karar size aittir.</p>' +
+            '<span class="assistant-kicker">Ön değerlendirme sonucu</span>' +
+            '<h3>Ön değerlendirme sinyalleri tek bakışta</h3>' +
+            '<p>Uygunluk, risk, TCO ve profil özeti ön değerlendirmeden okunur; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.</p>' +
         '</div>' +
         '<div class="decision-result-summary-grid">' + cards + '</div>' +
         aiSlot +
+    '</section>';
+}
+
+export function renderDecisionHistoryResultSummaryHtml(summary, escapeHtml) {
+    if (!summary) return '';
+
+    const safeEscapeHtml = typeof escapeHtml === 'function'
+        ? escapeHtml
+        : (value) => String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+
+    const fields = ['fit', 'risk', 'tco', 'profile']
+        .map((key) => summary?.[key])
+        .filter(Boolean);
+
+    if (!fields.length) return '';
+
+    const cardsHtml = fields.map((field) => (
+        '<article class="decision-result-summary-card">' +
+            '<span class="decision-result-summary-label">' + safeEscapeHtml(field.label || '') + '</span>' +
+            '<strong class="decision-result-summary-value">' + safeEscapeHtml(field.value || '') + '</strong>' +
+            (field.detail
+                ? '<p class="decision-result-summary-detail">' + safeEscapeHtml(field.detail) + '</p>'
+                : '') +
+        '</article>'
+    )).join('');
+
+    return '<section class="decision-result-summary decision-history-result-summary" data-decision-history-result-summary aria-label="Kayıtlı karar sinyalleri">' +
+        '<div class="decision-result-summary-copy">' +
+            '<span class="eyebrow">Kayıtlı karar sinyalleri</span>' +
+            '<h4>Kayıtlı karar sinyalleri</h4>' +
+            '<p>Bu özet, karar anında kaydedilen sinyallerden oluşturuldu.</p>' +
+        '</div>' +
+        '<div class="decision-result-summary-grid">' +
+            cardsHtml +
+        '</div>' +
     '</section>';
 }

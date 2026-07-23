@@ -16,9 +16,10 @@ import { buildKaskoAiSummary } from '../features/kasko/kasko-ai-summary.js';
 import {
   trackKaskoPageView,
   trackKaskoAnalysisStarted,
-  trackKaskoStep
+  trackKaskoStep,
+  saveKaskoLead
 } from './kasko-intake.js';
-import { bootstrapKaskoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import { bootstrapKaskoFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
 
 export const KASKO_DOM_IDS = {
   stepProgress: 'kasko-step-progress',
@@ -41,13 +42,26 @@ export const KASKO_DOM_IDS = {
   leadEmail: 'kasko-lead-email'
 };
 
+function saveKaskoLeadFromTracker(payload = {}) {
+  return saveKaskoLead({
+    full_name: payload.full_name || '',
+    phone: payload.phone || '',
+    email: payload.email || '',
+    privacy_consent: payload.privacy_consent || 'accepted',
+    decision_score: payload.decision_score ?? null,
+    ai_summary: payload.ai_summary || payload.result_summary || '',
+    profile: payload.profile && typeof payload.profile === 'object' ? payload.profile : {},
+    selected_option: payload.selected_option || ''
+  });
+}
+
 const tracker = {
   trackStart: () => trackKaskoAnalysisStarted({ source: 'wizard' }),
   trackStep: (stepId, stepIndex) => trackKaskoStep(stepId, stepIndex),
   trackResults: (meta = {}) => trackKaskoAnalysisStarted({ phase: 'results', ...meta }),
   trackSelect: () => {},
   trackConfirm: () => {},
-  saveLead: () => Promise.resolve({ ok: false }),
+  saveLead: saveKaskoLeadFromTracker,
   events: {}
 };
 

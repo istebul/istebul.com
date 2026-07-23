@@ -14,6 +14,7 @@ import {
   normalizeVehicleSlug,
   resolveVehicleDisplayImage,
   resolveVehicleImageFallback,
+  resolveVehicleImageTrust,
   vehicleImageMatchesName
 } from '../../js/auto/vehicle-image-resolver.js';
 
@@ -187,4 +188,21 @@ test('buildVehicleImageFallbackChain — deduplicates identical URLs', () => {
   const chain = buildVehicleImageFallbackChain({ name: '2024 Peugeot 308 Allure' });
   const slugs = chain.map((entry) => imageSlugFromUrl(entry.url));
   assert.equal(new Set(slugs).size, slugs.length);
+});
+
+test('resolveVehicleImageTrust — verified external returns exact_match', () => {
+  const trust = resolveVehicleImageTrust({
+    name: '2023 Toyota Corolla Cross Hybrid',
+    image_url: 'https://cdn.example/toyota-corolla-cross-2023.jpg'
+  });
+  assert.equal(trust.matchLevel, 'exact_match');
+  assert.equal(trust.showRealImage, true);
+  assert.equal(trust.sourceTrust, 'verified_external');
+});
+
+test('resolveVehicleImageTrust — catalog SVG never sets showRealImage true', () => {
+  const trust = resolveVehicleImageTrust({ name: '2024 Peugeot 308 Allure' });
+  assert.equal(trust.showRealImage, false);
+  assert.equal(trust.matchLevel, 'partial_match');
+  assert.equal(trust.sourceTrust, 'catalog_svg');
 });

@@ -119,7 +119,7 @@ function postToSeoPage(post) {
     body && body.length > intro.length
       ? body
       : intro ||
-        'Bu yazı bilgilendirme amaçlıdır; yatırım veya kredi tavsiyesi değildir. Kişisel kararınız için /auto/ üzerinden ücretsiz analiz başlatabilirsiniz.';
+        'Bu yazı bilgilendirme amaçlıdır; yatırım veya kredi tavsiyesi değildir. Kişisel kararınız için /karar-asistani/ üzerinden ön değerlendirme başlatabilirsiniz.';
 
   const kicker =
     post.content_type === 'news' ? 'Güncel haber · Karar rehberi' : 'Blog · Karar rehberi';

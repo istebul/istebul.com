@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>isteBul | AI ile Büyük Satın Alma Kararları</title>
-    <meta name="description" id="meta-description" content="Araba, konut, tatil, finansman ve sigorta kararlarında toplam maliyet, risk ve uygunluk analizi. AI destekli karar zekası platformu — isteBul.">
+    <title>İSTEBUL | Yapay zekâ destekli dijital ürünler platformu</title>
+    <meta name="description" id="meta-description" content="İSTEBUL; İSTEBUL AI, GarsonAI ve İSTEBUL Business ile yapay zekâ destekli ürünleri tek çatıda sunar. Doğru ürünle ilerleyin.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <!-- google-site-verification: build injects from GOOGLE_SITE_VERIFICATION env -->
-    <meta name="keywords" content="AI karar platformu, araç kredisi hesaplama, toplam sahip olma maliyeti, araç karşılaştırma, ikinci el araç rehberi, isteBul">
+    <meta name="keywords" content="İSTEBUL, yapay zekâ platformu, İSTEBUL AI, GarsonAI, Business">
     <meta name="theme-color" content="#2563eb" id="theme-color-meta">
     <meta property="og:locale" content="tr_TR">
     <meta property="og:site_name" content="isteBul">
-    <meta property="og:title" id="meta-og-title" content="isteBul | AI Karar Zekası Platformu">
-    <meta property="og:description" id="meta-og-description" content="Büyük satın alma kararlarında toplam maliyet, risk ve finansman etkisini tek ekranda görün.">
+    <meta property="og:title" id="meta-og-title" content="İSTEBUL | Yapay zekâ destekli dijital platform">
+    <meta property="og:description" id="meta-og-description" content="Üç bağımsız ürün, tek platform: İSTEBUL AI, GarsonAI ve İSTEBUL Business.">
     <meta property="og:type" content="website">
     <meta property="og:url" id="meta-og-url" content="https://www.istebul.com/">
-    <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
+    <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" id="meta-twitter-title" content="isteBul — AI Karar Zekası">
-    <meta name="twitter:description" id="meta-twitter-description" content="Araba, ev, tatil ve finans kararlarında AI destekli analiz ve karşılaştırma.">
-    <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.svg">
+    <meta name="twitter:title" id="meta-twitter-title" content="İSTEBUL — Yapay zekâ destekli platform">
+    <meta name="twitter:description" id="meta-twitter-description" content="İSTEBUL AI, GarsonAI ve İSTEBUL Business — bağımsız ürünler, tek platform.">
+    <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.png">
     <link rel="canonical" id="meta-canonical" href="https://www.istebul.com/">
     <link rel="alternate" hreflang="tr" href="https://www.istebul.com/">
     <link rel="alternate" hreflang="en" href="https://www.istebul.com/en/">
@@ -47,7 +50,9 @@
     <!-- perf:preload-style -->
     <link rel="stylesheet" href="css/style.css?v=69">
     <!-- perf:preload-homepage-bundle -->
-    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=8">
+    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=9">
+    <!-- Platform Hero / ürün kartı / ızgara / shell / polish: via homepage.bundle (do not re-link) -->
+    <link rel="stylesheet" href="/css/platform-landing-preview.css">
 
 <style>
 .hidden{display:none!important;}
@@ -69,27 +74,13 @@ html.ib-route-pending [data-private-section]{display:none!important}
 /* Pre-bootstrap: hide until route script runs */
 html.ib-route-pending #main-content > section[id]{display:none!important}
 html.ib-route-pending .ib-prerender-seo{display:none!important}
-html[data-ib-route="home"] #home,
-html[data-ib-route="home"] #how-it-works,
-html[data-ib-route="home"] #home-economic-indicators,
-html[data-ib-route="home"] #home-vertical-focus,
-html[data-ib-route="home"] #home-features-strip,
-html[data-ib-route="home"] #pricing,
-html[data-ib-route="home"] #partner-enterprise,
-html[data-ib-route="home"] #landing-faq,
-html[data-ib-route="home"] #home-guides-strip{display:block!important}
+html[data-ib-route="home"] #platform-landing,
+html[data-ib-route="home"] #neden-istebul{display:block!important}
 html[data-ib-route="home"] #sample-preview,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #karar-rehberi{display:none!important}
-html[data-ib-route^="page-"] #home,
-html[data-ib-route^="page-"] #home-economic-indicators,
-html[data-ib-route^="page-"] #how-it-works,
-html[data-ib-route^="page-"] #home-vertical-focus,
-html[data-ib-route^="page-"] #home-features-strip,
-html[data-ib-route^="page-"] #pricing,
-html[data-ib-route^="page-"] #partner-enterprise,
-html[data-ib-route^="page-"] #landing-faq,
-html[data-ib-route^="page-"] #home-guides-strip{display:none!important}
+html[data-ib-route^="page-"] #platform-landing,
+html[data-ib-route^="page-"] #neden-istebul{display:none!important}
 html[data-ib-route="page-duyurular"] #page-duyurular,
 html[data-ib-route="page-kampanyalar"] #page-kampanyalar,
 html[data-ib-route="page-blog"] #page-blog,
@@ -131,11 +122,11 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     <!-- perf:importmap -->
     <script type="importmap" src="/importmap.json"></script>
     <!-- perf:modulepreload -->
-    <script type="application/ld+json" src="/data/schema/home-graph.json"></script>
+    <script type="application/ld+json" src="/data/schema/platform-graph.json"></script>
 </head>
-<body class="ib-enterprise">
+<body class="ib-enterprise ib-platform-landing-live-page" data-platform-cutover="1">
     <div class="top-bar" id="announcement-ticker">
-        <p data-cms="announcement"><strong>Karar desteği:</strong> Gizli maliyet riskini erken görün — <a href="/duyurular" data-native-route>tüm duyurular</a> ve kampanyalar.</p>
+        <p data-cms="announcement"><strong>İSTEBUL:</strong> Yapay zekâ destekli ürünler platformu — <a href="/ai/">İSTEBUL AI</a>, <a href="/garson/">GarsonAI</a>, <a href="/business/">Business</a>.</p>
     </div>
     <!-- Navigation -->
     <nav id="main-nav" class="navbar">
@@ -156,6 +147,26 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </a>
             <div class="nav-menu" id="nav-menu">
                 <div id="nav-links-anon" class="nav-links-group">
+                    <!-- PR-552: Platform ürün IA — GarsonAI kategori değil; Business görünür -->
+                    <div class="nav-dropdown" id="nav-platform-menu">
+                        <button
+                            type="button"
+                            id="nav-platform-btn"
+                            class="nav-link nav-dropdown-btn"
+                            aria-expanded="false"
+                            aria-controls="nav-platform-list"
+                            aria-haspopup="menu"
+                            data-i18n-aria="nav.productsMenu"
+                            data-i18n="nav.products"
+                        >
+                            Ürünler
+                        </button>
+                        <div id="nav-platform-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
+                            <a href="/ai/" class="nav-dropdown-link" role="menuitem" data-native-route data-i18n="nav.productAi">İSTEBUL AI</a>
+                            <a href="/garson/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.productGarson">GarsonAI</a>
+                            <a href="/business/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.productBusiness">İSTEBUL Business</a>
+                        </div>
+                    </div>
                     <div class="nav-dropdown" id="nav-product-menu">
                         <button
                             type="button"
@@ -164,19 +175,19 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             aria-expanded="false"
                             aria-controls="nav-product-list"
                             aria-haspopup="menu"
-                            data-i18n-aria="nav.productsMenu"
-                            data-i18n="nav.products"
+                            data-i18n-aria="nav.decisionCategoriesMenu"
+                            data-i18n="nav.decisionCategories"
                         >
-                            Ürünler
+                            Karar Kategorileri
                         </button>
                         <div id="nav-product-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
-                            <a href="/auto/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catAuto">Araba</a>
-                            <a href="/konut/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catKonut">Konut</a>
-                            <a href="/tatil/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catTatil">Tatil</a>
-                            <a href="/finans/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catFinans">Finansman</a>
-                            <a href="/sigorta/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catSigorta">Sigorta</a>
-                            <a href="/kasko/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catKasko">Kasko</a>
-                            <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem" data-i18n="nav.allCategories">Tüm kategoriler</a>
+                            <a href="/auto/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catAuto">Araba Kararı</a>
+                            <a href="/konut/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catKonut">Konut Kararı</a>
+                            <a href="/tatil/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catTatil">Tatil Kararı</a>
+                            <a href="/finans/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catFinans">Finansman Kararı</a>
+                            <a href="/sigorta/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catSigorta">Sigorta Kararı</a>
+                            <a href="/kasko/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.catKasko">Kasko Kararı</a>
+                            <a href="/ai/#home-vertical-focus" class="nav-dropdown-link" role="menuitem" data-i18n="nav.allCategories">Tüm kategoriler</a>
                         </div>
                     </div>
                     <a href="/metodoloji/" class="nav-link" data-native-route data-i18n="nav.methodology">Metodoloji</a>
@@ -195,29 +206,29 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             Kaynaklar
                         </button>
                         <div id="nav-more-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
-                            <a href="/#how-it-works" class="nav-dropdown-link" data-home-anchor="how-it-works" role="menuitem" data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
-                            <a href="/#pricing" class="nav-dropdown-link" data-home-anchor="pricing" role="menuitem" data-i18n="nav.pricing">Fiyatlandırma</a>
+                            <a href="/ai/#how-it-works" class="nav-dropdown-link"  role="menuitem" data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
+                            <a href="/ai/#pricing" class="nav-dropdown-link"  role="menuitem" data-i18n="nav.pricing">Fiyatlandırma</a>
                             <span class="nav-dropdown-divider" role="separator" aria-hidden="true"></span>
-                            <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem" data-i18n="nav.sampleAnalysis">Örnek analiz</a>
+                            <a href="/ai/#home-vertical-focus" class="nav-dropdown-link" role="menuitem" data-i18n="nav.sampleAnalysis">Örnek analiz</a>
                             <a href="/blog" class="nav-dropdown-link" data-native-route role="menuitem" data-i18n="nav.blog">Blog</a>
                             <a href="/duyurular" class="nav-dropdown-link" data-native-route role="menuitem" data-i18n="nav.announcements">Duyurular</a>
                             <a href="/kampanyalar" class="nav-dropdown-link" data-native-route role="menuitem" data-i18n="nav.campaigns">Kampanyalar</a>
                             <a href="/veri-kaynaklari/" class="nav-dropdown-link" role="menuitem" data-i18n="nav.dataSources">Veri Kaynakları</a>
                             <a href="/kvkk.html" class="nav-dropdown-link" data-native-route role="menuitem" data-i18n="nav.security">Güvenlik / KVKK</a>
-                            <a href="/#landing-faq" class="nav-dropdown-link" data-home-anchor="landing-faq" role="menuitem" data-i18n="nav.faq">SSS</a>
+                            <a href="/ai/#landing-faq" class="nav-dropdown-link" role="menuitem" data-i18n="nav.faq">SSS</a>
                         </div>
                     </div>
                     <div class="nav-more-mobile-links" aria-label="Ek kaynaklar">
                         <a href="/hakkimizda.html" class="nav-link" data-native-route data-i18n="nav.about">Hakkımızda</a>
                         <span class="nav-more-mobile-label" data-i18n="nav.resources">Kaynaklar</span>
-                        <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works" data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
-                        <a href="/#pricing" class="nav-link" data-home-anchor="pricing" data-i18n="nav.pricing">Fiyatlandırma</a>
+                        <a href="/ai/#how-it-works" class="nav-link"  data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
+                        <a href="/ai/#pricing" class="nav-link"  data-i18n="nav.pricing">Fiyatlandırma</a>
                         <a href="/blog" class="nav-link" data-native-route data-i18n="nav.blog">Blog</a>
                         <a href="/duyurular" class="nav-link" data-native-route data-i18n="nav.announcements">Duyurular</a>
                         <a href="/kampanyalar" class="nav-link" data-native-route data-i18n="nav.campaigns">Kampanyalar</a>
                         <a href="/veri-kaynaklari/" class="nav-link" data-i18n="nav.dataSources">Veri Kaynakları</a>
                         <a href="/kvkk.html" class="nav-link" data-native-route data-i18n="nav.security">Güvenlik / KVKK</a>
-                        <a href="/#landing-faq" class="nav-link" data-home-anchor="landing-faq" data-i18n="nav.faq">SSS</a>
+                        <a href="/ai/#landing-faq" class="nav-link" data-i18n="nav.faq">SSS</a>
                         <a href="/partner-basvuru.html" class="nav-link nav-partner-apply-mobile" data-i18n="nav.partnerApply">Partner başvurusu</a>
                     </div>
                 </div>
@@ -238,9 +249,11 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         data-analytics-cta="partner_nav_apply"
                         data-analytics-placement="nav"
                         data-i18n="nav.partnerApply"
+                        data-i18n-aria="nav.partnerApply"
+                        aria-label="Partner başvurusu"
                     >Partner başvurusu</a>
                     <button id="login-btn" class="btn btn-ghost btn-sm nav-login-btn" type="button" data-auth-open="login" aria-label="Giriş Yap" data-i18n="nav.login">Giriş Yap</button>
-                    <a href="/#home-vertical-focus" class="btn btn-primary btn-sm nav-cta-decision" data-home-anchor="home-vertical-focus" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" data-i18n="nav.getStarted">Hemen Başla</a>
+                    <a href="/karar-asistani/" class="btn btn-primary btn-sm nav-cta-decision" data-native-route data-analytics-cta="cta_decision_nav" data-analytics-placement="nav" data-i18n="home.ctaAnalyze">Ön değerlendirmeye başla</a>
                 </div>
             </div>
             <div class="nav-user hidden" id="nav-user">
@@ -268,407 +281,58 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     <main id="main-content">
         <noscript>
             <div class="container" style="padding:2rem 1rem">
-                <h1>isteBul — AI destekli karar platformu</h1>
-                <p>Tam deneyim için JavaScript gerekir. <a href="/karar-asistani/">Ücretsiz karar analizini başlatın</a> veya <a href="/planlar">planları görün</a>.</p>
+                <h2>İSTEBUL — Yapay zekâ destekli dijital platform</h2>
+                <p>Tam deneyim için JavaScript gerekir. Ürünler: <a href="/ai/">İSTEBUL AI</a>, <a href="/garson/">GarsonAI</a>, <a href="/business/">Business</a>.</p>
             </div>
         </noscript>
-        <!-- Home Section -->
-        <section id="home" class="hero-section ib-hero-venture ib-hero-premium-dark ib-hero-v4" aria-labelledby="hero-v4-title">
-            <div class="hero-container container ib-hero-v4-grid">
-                <div class="hero-content ib-hero-v4-copy">
-                    <p class="hero-eyebrow ib-hero-v4-tagline ib-hero-saas-badge" data-cms="hero-eyebrow" data-i18n="home.heroEyebrow">AI destekli karar platformu</p>
-                    <h1 id="hero-v4-title" data-cms="hero-title" data-i18n-html="home.heroTitle">Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz.</span></h1>
-                    <p class="hero-lead ib-hero-v4-sub" data-cms="hero-desc" data-i18n="home.heroDesc">Aracınızdan tatilinize, konuttan finansmanınıza kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.</p>
-                    <ul class="ib-hero-v4-trust ib-hero-saas-trust-compact" hidden aria-hidden="true">
-                        <li>KVKK uyumlu veri işleme</li>
-                        <li>iyzico / PayTR ile güvenli ödeme</li>
-                        <li>Kural tabanlı skor + AI açıklama</li>
-                        <li>Mobil-first deneyim</li>
-                    </ul>
-                    <div class="hero-actions ib-hero-cta-stack ib-hero-v4-actions ib-hero-saas-actions">
-                        <div class="ib-hero-cta-primary-row">
-                            <a href="/karar-asistani/" class="btn btn-primary btn-lg ib-hero-cta-arrow" data-native-route data-hero-cta-primary data-analytics-cta="cta_decision_hero" data-analytics-placement="hero"><span data-i18n="home.ctaAnalyze">Kararımı Analiz Et</span> <span class="ib-hero-arrow" aria-hidden="true">→</span></a>
-                        </div>
-                        <p class="ib-hero-cta-secondary-link"><a href="/#how-it-works" class="text-link" data-home-anchor="how-it-works" data-analytics-cta="cta_how_it_works" data-analytics-placement="hero"><span data-i18n="home.ctaHow">Nasıl çalışır?</span></a> · <a href="/#home-vertical-focus" class="text-link" data-home-anchor="home-vertical-focus">Tüm kategoriler</a></p>
-                        <span class="ib-hero-cta-hint" data-social-proof-disclaimer data-i18n="home.disclaimer">Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir</span>
-                    </div>
-                </div>
-                <div class="hero-image decision-preview ib-ai-dashboard ib-glass-dashboard" aria-label="Örnek AI analiz paneli önizlemesi">
-                    <div class="preview-toolbar" aria-hidden="true">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <p class="preview-category-label" data-preview-title data-i18n="home.dashTitle">AI Öneri Özeti</p>
-                    <p class="preview-sources" data-preview-sources hidden>Örnek veri kaynakları: TCO motoru, finansman simülasyonu</p>
-                    <div class="ib-dash-grid ib-dash-grid--platform">
-                        <div class="ib-dash-score-ring" aria-label="Genel uygunluk skoru 89 üzerinden 100, çok iyi">
-                            <div class="ib-dash-score-ring-inner">
-                                <strong>89</strong>
-                                <span>/100</span>
-                            </div>
-                            <div class="ib-dash-score-copy">
-                                <p class="ib-dash-score-label" data-i18n="home.dashScoreLabel">Genel uygunluk skoru</p>
-                                <p class="ib-dash-score-tier" data-i18n="home.dashTier">Çok İyi</p>
-                            </div>
-                        </div>
-                        <div class="ib-dash-kpi-row">
-                            <div class="ib-dash-stat ib-metric">
-                                <span data-i18n="home.totalCost">Toplam Maliyet</span>
-                                <strong>₺1.247.500</strong>
-                                <a href="/auto/" class="ib-dash-detail-link" data-native-route data-i18n="home.viewDetails">Detayları Gör</a>
-                            </div>
-                            <div class="ib-dash-stat ib-dash-stat--risk ib-metric">
-                                <span data-i18n="home.riskLevel">Risk Seviyesi</span>
-                                <strong>Düşük</strong>
-                                <a href="/auto/" class="ib-dash-detail-link" data-native-route data-i18n="home.viewDetails">Detayları Gör</a>
-                            </div>
-                            <div class="ib-dash-stat ib-metric">
-                                <span data-i18n="home.suitability">Uygunluk</span>
-                                <strong>92/100</strong>
-                                <a href="/auto/" class="ib-dash-detail-link" data-native-route data-i18n="home.viewDetails">Detayları Gör</a>
-                            </div>
-                            <div class="ib-dash-stat ib-metric">
-                                <span data-i18n="home.trustScore">Güven Skoru</span>
-                                <strong>85/100</strong>
-                                <a href="/auto/" class="ib-dash-detail-link" data-native-route data-i18n="home.viewDetails">Detayları Gör</a>
-                            </div>
-                        </div>
-                        <div class="ib-dash-charts" aria-hidden="true">
-                            <div class="ib-dash-chart ib-dash-chart--donut">
-                                <p class="ib-dash-chart-title" data-i18n="home.costDistribution">Maliyet dağılımı</p>
-                                <div class="ib-dash-donut" role="img" aria-label="Örnek maliyet dağılımı grafiği"></div>
-                                <ul class="ib-dash-donut-legend">
-                                    <li><span class="swatch swatch-a"></span>Finansman</li>
-                                    <li><span class="swatch swatch-b"></span>İşletme</li>
-                                    <li><span class="swatch swatch-c"></span>Sigorta</li>
-                                </ul>
-                            </div>
-                            <div class="ib-dash-chart ib-dash-chart--line">
-                                <p class="ib-dash-chart-title" data-i18n="home.costTrend">5 yıllık toplam maliyet projeksiyonu</p>
-                                <svg class="ib-dash-line-chart" viewBox="0 0 200 64" preserveAspectRatio="none" focusable="false">
-                                    <defs>
-                                        <linearGradient id="ib-dash-line-fill" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="rgba(59,130,246,0.35)"/>
-                                            <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M0 52 L40 44 L80 38 L120 28 L160 22 L200 14 L200 64 L0 64 Z" fill="url(#ib-dash-line-fill)"/>
-                                    <polyline points="0,52 40,44 80,38 120,28 160,22 200,14" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- PR-568: Platform Landing (canlı kök) — Preview deneyimi -->
+        <section
+            id="platform-landing"
+            class="ib-platform-landing-preview ib-platform-landing-live"
+            data-platform-landing
+            data-platform-cutover="1"
+            aria-label="İSTEBUL Platform Landing"
+        >
+            <div id="platform-landing-mount" class="ib-platform-landing-preview__mount"></div>
         </section>
 
-        <section id="home-economic-indicators" class="ib-home-economic ib-section-venture" aria-label="Kararlarınızı etkileyen güncel veriler">
-            <div class="container">
-                <div id="home-economic-indicators-mount" data-home-economic-mount aria-live="polite"></div>
-            </div>
+        <section
+            id="neden-istebul"
+            class="ib-platform-landing-preview__why"
+            aria-labelledby="neden-istebul-title"
+        >
+            <h2 id="neden-istebul-title" class="ib-platform-landing-preview__why-title">Neden İSTEBUL?</h2>
+            <p class="ib-platform-landing-preview__why-lead">
+                Çok ürünlü yapı; her ürünün kendi uzmanlığıyla ilerlemesini sağlar.
+            </p>
+            <ul class="ib-platform-landing-preview__why-list">
+                <li>
+                    <strong>Tek platform</strong>
+                    <span>Keşif ve yönlendirme tek çatı altında; ürünler bağımsız yaşar.</span>
+                </li>
+                <li>
+                    <strong>Yapay zekâ odaklı</strong>
+                    <span>Ürün deneyimleri yapay zekâ destekli karar ve operasyon amaçlı tasarlanır.</span>
+                </li>
+                <li>
+                    <strong>Uzman ürünler</strong>
+                    <span>İSTEBUL AI, GarsonAI ve İSTEBUL Business kendi kullanıcılarına hizmet eder.</span>
+                </li>
+                <li>
+                    <strong>Sürekli gelişen ekosistem</strong>
+                    <span>Yeni dikeyler ve işletme yüzeyleri kontrollü şekilde eklenir.</span>
+                </li>
+            </ul>
         </section>
 
-        <section id="how-it-works" class="how-section ib-section-venture" aria-labelledby="how-it-works-title">
-            <div class="container">
-                <header class="section-header ib-section-intro ib-section-intro--center">
-                    <span class="section-kicker" data-i18n="how.kicker">Nasıl çalışır</span>
-                    <h2 id="how-it-works-title" data-i18n="how.title">Nasıl çalışır?</h2>
-                </header>
-                <div class="how-grid ib-how-steps-premium">
-                    <div class="how-step">
-                        <span class="step-number" aria-hidden="true">1</span>
-                        <span class="ib-how-step-icon" aria-hidden="true"><i data-lucide="user-round"></i></span>
-                        <h3 data-i18n="how.step1Title">Soruları cevapla</h3>
-                        <p data-i18n="how.step1Desc">İhtiyacınızı ve tercihlerinizi birkaç adımda belirtin.</p>
-                    </div>
-                    <div class="how-step">
-                        <span class="step-number" aria-hidden="true">2</span>
-                        <span class="ib-how-step-icon" aria-hidden="true"><i data-lucide="cpu"></i></span>
-                        <h3 data-i18n="how.step2Title">Analiz yapılsın</h3>
-                        <p data-i18n="how.step2Desc">AI motoru toplam maliyet, risk ve uygunluk hesaplarını üretir.</p>
-                    </div>
-                    <div class="how-step">
-                        <span class="step-number" aria-hidden="true">3</span>
-                        <span class="ib-how-step-icon" aria-hidden="true"><i data-lucide="star"></i></span>
-                        <h3 data-i18n="how.step3Title">En doğru kararı gör</h3>
-                        <p data-i18n="how.step3Desc">Skor, maliyet, risk ve AI yorumu tek panelde sunulur.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="karar-rehberi" class="ib-section-venture section-bg" aria-labelledby="karar-rehberi-title" data-landing-excluded hidden>
-            <div class="container">
-                <header class="section-header ib-section-intro ib-section-intro--center">
-                    <span class="section-kicker">Karar Rehberi</span>
-                    <h2 id="karar-rehberi-title">Araç alımında karar rehberleri</h2>
-                    <p class="ib-section-lead-muted">Toplam maliyet, finansman ve segment seçimi — bilgilendirme amaçlı derinlemesine içerikler.</p>
-                </header>
-                <div class="ib-example-grid" aria-label="Öne çıkan rehberler">
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Segment</p>
-                        <h3><a href="/rehber/suv-mi-sedan-mi/">SUV mi Sedan mı?</a></h3>
-                        <p>Kullanım tipine göre gövde seçimi ve TCO farkları.</p>
-                    </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Elektrik</p>
-                        <h3><a href="/rehber/elektrikli-arac-rehberi/">Elektrikli araç rehberi</a></h3>
-                        <p>Şarj, menzil ve batarya garantisi rehberi.</p>
-                    </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Finansman</p>
-                        <h3><a href="/rehber/finansman-rehberi/">Finansman rehberi</a></h3>
-                        <p>Kredi, peşin ve leasing karşılaştırması.</p>
-                    </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">TCO</p>
-                        <h3><a href="/rehber/tco-rehberi/">TCO rehberi</a></h3>
-                        <p>5 yıllık gerçek maliyet projeksiyonu.</p>
-                    </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">İkinci el</p>
-                        <h3><a href="/rehber/ikinci-el-rehberi/">İkinci el rehberi</a></h3>
-                        <p>Ekspertiz, tramer ve fiyat doğrulama listesi.</p>
-                    </article>
-                </div>
-                <p class="ib-section-lead-muted" style="text-align:center;margin-top:1.25rem">
-                    <a href="/rehber/arac-alim-karar-asistani/">Tüm rehberler</a>
-                    · <a href="/metodoloji/">Metodoloji</a>
-                </p>
-            </div>
-        </section>
-
-        <section id="sample-preview" class="sample-preview-section ib-section-venture section-bg" aria-labelledby="sample-preview-title" data-landing-excluded hidden>
-            <div class="container">
-                <header class="section-header ib-section-intro ib-demo-header">
-                    <div>
-                        <span class="section-kicker">Analiz örnekleri</span>
-                        <h2 id="sample-preview-title">Gerçek analiz örnekleri</h2>
-                    </div>
-                    <span class="ib-demo-badge" role="status">Örnek analizdir</span>
-                </header>
-                <p class="text-muted-sm" style="margin:-8px 0 20px;max-width:52rem">Gerçek sonuç kullanıcı cevaplarına göre değişir; aşağıdaki AI satırları gösterim amaçlıdır.</p>
-                <div class="ib-example-grid" aria-label="Kategori sonuç örnekleri">
-                    <article class="ib-example-card ib-dash-sample">
-                        <header class="ib-dash-sample__head">
-                            <span class="ib-example-kicker">Araç</span>
-                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 86 üzerinden 100">86<span>/100</span></strong>
-                        </header>
-                        <dl class="ib-dash-sample__meta">
-                            <div><dt>Aylık maliyet</dt><dd>₺28.540</dd></div>
-                            <div><dt>Risk</dt><dd class="is-good">Orta-düşük</dd></div>
-                        </dl>
-                        <p class="ib-dash-sample__ai">Kredi yükü ve yıllık km ile işletme maliyeti dengeli; satın almadan önce vade ve sigortayı birlikte kıyaslayın. (Örnek analizdir; gerçek sonuç kullanıcı cevaplarına göre değişir.)</p>
-                        <a class="ib-dash-sample__cta" href="/auto/" data-native-route>Detayı gör →</a>
-                    </article>
-                    <article class="ib-example-card ib-dash-sample">
-                        <header class="ib-dash-sample__head">
-                            <span class="ib-example-kicker">Konut</span>
-                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 92 üzerinden 100">92<span>/100</span></strong>
-                        </header>
-                        <dl class="ib-dash-sample__meta">
-                            <div><dt>Aylık maliyet</dt><dd>₺22.850</dd></div>
-                            <div><dt>Risk</dt><dd class="is-good">Düşük</dd></div>
-                        </dl>
-                        <p class="ib-dash-sample__ai">İzmir/Karşıyaka bütçe ve aidat ile kredi dengesi güçlü; deprem raporunu teyit edin. (Örnek analizdir; gerçek sonuç kullanıcı cevaplarına göre değişir.)</p>
-                        <a class="ib-dash-sample__cta" href="/konut/" data-native-route>Detayı gör →</a>
-                    </article>
-                    <article class="ib-example-card ib-dash-sample">
-                        <header class="ib-dash-sample__head">
-                            <span class="ib-example-kicker">Tatil</span>
-                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 81 üzerinden 100">81<span>/100</span></strong>
-                        </header>
-                        <dl class="ib-dash-sample__meta">
-                            <div><dt>Toplam maliyet</dt><dd>₺68.450</dd></div>
-                            <div><dt>Risk</dt><dd class="is-warn">Orta</dd></div>
-                        </dl>
-                        <p class="ib-dash-sample__ai">4 kişilik çocuklu plan ve esnek sezon orta risk; iptal koşullarını okuyun. (Örnek analizdir; gerçek sonuç kullanıcı cevaplarına göre değişir.)</p>
-                        <a class="ib-dash-sample__cta" href="/tatil/" data-native-route>Detayı gör →</a>
-                    </article>
-                    <article class="ib-example-card ib-dash-sample">
-                        <header class="ib-dash-sample__head">
-                            <span class="ib-example-kicker">Finansman</span>
-                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 88 üzerinden 100">88<span>/100</span></strong>
-                        </header>
-                        <dl class="ib-dash-sample__meta">
-                            <div><dt>Aylık ödeme</dt><dd>₺16.750</dd></div>
-                            <div><dt>Risk</dt><dd class="is-good">Düşük</dd></div>
-                        </dl>
-                        <p class="ib-dash-sample__ai">Gelir ve %30 ödeme yükü yönetilebilir; iki kurumdan EYM karşılaştırın. (Örnek analizdir; gerçek sonuç kullanıcı cevaplarına göre değişir.)</p>
-                        <a class="ib-dash-sample__cta" href="/finans/" data-native-route>Detayı gör →</a>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section id="home-vertical-focus" class="ib-use-cases ib-section-venture ib-home-categories ib-home-categories-premium ib-product-cards-v6 ib-product-cards-enterprise ib-home-categories-mockup" aria-labelledby="home-use-cases-title">
-            <div class="container">
-                <div class="ib-category-showcase-grid" id="home-category-grid" aria-live="polite"></div>
-            </div>
-        </section>
-
-        <section id="home-features-strip" class="ib-features-strip ib-section-venture" aria-label="Platform özellikleri" data-i18n-aria="features.stripAria">
-            <div class="container">
-                <div class="ib-features-strip-grid">
-                    <article class="ib-features-strip-item ib-features-strip-item--cost">
-                        <span class="ib-features-strip-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        </span>
-                        <div>
-                            <h3 data-i18n="features.costTitle">Gerçek Toplam Maliyet</h3>
-                            <p data-i18n="features.costDesc">Gizli maliyetler dahil gerçekçi analiz</p>
-                        </div>
-                    </article>
-                    <article class="ib-features-strip-item ib-features-strip-item--ai">
-                        <span class="ib-features-strip-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 6 6 0 1 1-9-9Z"/><path d="M19 3v4M21 5h-4"/></svg>
-                        </span>
-                        <div>
-                            <h3 data-i18n="features.aiTitle">AI Destekli Analiz</h3>
-                            <p data-i18n="features.aiDesc">Gelişmiş yapay zeka algoritmaları ile kişiselleştirilmiş öneriler</p>
-                        </div>
-                    </article>
-                    <article class="ib-features-strip-item ib-features-strip-item--compare">
-                        <span class="ib-features-strip-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
-                        </span>
-                        <div>
-                            <h3 data-i18n="features.compareTitle">Tarafsız Karşılaştırma</h3>
-                            <p data-i18n="features.compareDesc">Bağımsız ve objektif değerlendirme</p>
-                        </div>
-                    </article>
-                    <article class="ib-features-strip-item ib-features-strip-item--secure">
-                        <span class="ib-features-strip-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
-                        </span>
-                        <div>
-                            <h3 data-i18n="features.secureTitle">Güvenli &amp; Şeffaf</h3>
-                            <p data-i18n="features.secureDesc">Verileriniz güvende, sonuçlar şeffaf</p>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section id="home-tco-lens" class="ib-home-tco-lens ib-section-venture hidden" data-landing-excluded hidden aria-labelledby="home-tco-lens-title">
-            <div class="container">
-                <header class="section-header ib-section-intro">
-                    <span class="section-kicker">Maliyet merceği</span>
-                    <h2 id="home-tco-lens-title">TCO · kredi · sigorta · bakım birlikte</h2>
-                    <p>Tek tabloda toplam sahip olma maliyeti; finansman simülasyonu bilgilendirme amaçlıdır.</p>
-                </header>
-                <div class="ib-tco-lens-grid">
-                    <div class="ib-tco-lens-card"><strong>Toplam maliyet</strong><span>12 ay TCO ve aylık bütçe etkisi</span></div>
-                    <div class="ib-tco-lens-card"><strong>Kredi</strong><span>Tutarı siz belirlersiniz; simülasyon</span></div>
-                    <div class="ib-tco-lens-card"><strong>Sigorta &amp; kasko</strong><span>Şeffaf kalem kırılımı</span></div>
-                    <div class="ib-tco-lens-card"><strong>Bakım &amp; yakıt</strong><span>Kullanım profiline göre</span></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="methodology-teaser" class="ib-methodology-teaser ib-section-venture hidden" aria-labelledby="methodology-teaser-title" hidden data-landing-excluded>
-            <div class="container">
-                <div class="ib-methodology-teaser-panel">
-                    <header>
-                        <span class="section-kicker">Metodoloji</span>
-                        <h2 id="methodology-teaser-title">Sayılar önce hesaplanır, AI yalnızca açıklar</h2>
-                        <p class="ib-methodology-lead">TCO ve uyum skoru kural tabanlıdır; yapay zeka gerekçe metnini üretir — skoru değiştirmez. Böylece güvenilir ve denetlenebilir kalırsınız.</p>
-                    </header>
-                    <div class="ib-methodology-teaser-actions">
-                        <a href="/#how-it-works" class="btn btn-outline" data-home-anchor="how-it-works">Üç adımlı süreç</a>
-                        <a href="/metodoloji/" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi incele</a>
-                        <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">Ücretsiz analiz başlat</span></a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="trust" class="trust-section ib-section-venture ib-trust-unified" aria-labelledby="trust-title" data-landing-excluded hidden>
-            <div class="container">
-                <header class="section-header ib-section-intro ib-section-intro--center">
-                    <span class="section-kicker">Platform güveni</span>
-                    <h2 id="trust-title" data-cro-trust-headline>Neden isteBul?</h2>
-                    <p class="ib-section-lead-muted">Toplam maliyet, risk ve uygunluk — tüm kategorilerde aynı premium metodoloji.</p>
-                </header>
-                <div class="ib-live-stats" data-social-proof aria-label="Canlı platform metrikleri">
-                    <article><span>Analiz</span><strong data-metric="analyses">—</strong></article>
-                    <article><span>Kullanıcı</span><strong data-metric="users">—</strong></article>
-                    <article><span>Kategori</span><strong data-metric="categories">6</strong></article>
-                    <article><span>Partner</span><strong data-metric="partners">—</strong></article>
-                </div>
-                <div class="ib-trust-diff-grid" aria-label="Karar merkezinin farkı">
-                    <article class="ib-trust-diff-card">
-                        <h3>Toplam maliyeti önce görürsünüz</h3>
-                        <p>Liste fiyatı yerine gerçek sahip olma maliyetiyle karar verirsiniz.</p>
-                    </article>
-                    <article class="ib-trust-diff-card">
-                        <h3>Riski ve uygunluğu birlikte ölçersiniz</h3>
-                        <p>Aylık yük, risk seviyesi ve karar skoru tek panelde birleşir.</p>
-                    </article>
-                    <article class="ib-trust-diff-card">
-                        <h3>Tüm kategoriler aynı dilde analiz edilir</h3>
-                        <p>Auto, konut, tatil ve finans kararları aynı metodolojiyle kıyaslanır.</p>
-                    </article>
-                </div>
-                <div id="home-trust-layer-mount" class="ib-trust-layer-mount" aria-live="polite"></div>
-                <p class="trust-compliance-note ib-trust-compliance-compact">
-                    Analizler bilgilendirme amaçlıdır; finansal tavsiye değildir.
-                    <a href="/metodoloji/" data-native-route>Metodoloji</a>
-                </p>
-            </div>
-        </section>
-
-        <section id="home-auto-bridge" class="ib-home-auto-bridge ib-section-venture hidden" aria-labelledby="home-auto-bridge-title" hidden data-landing-excluded>
-            <div class="container">
-                <div class="ib-home-auto-bridge-panel">
-                    <div class="ib-home-auto-bridge-copy">
-                        <span class="section-kicker">Sonraki adım</span>
-                        <h2 id="home-auto-bridge-title">Örnekten canlı analize geçin</h2>
-                        <p class="ib-home-auto-bridge-lead">Bütçe, kullanım ve finansman tercihinizi girin; uyum skoru, 12 ay TCO ve yapay zeka destekli gerekçe tek akışta oluşsun.</p>
-                        <ol class="ib-home-auto-bridge-steps" aria-label="Auto analiz adımları">
-                            <li><strong>1.</strong> İhtiyaç profili (~2 dk)</li>
-                            <li><strong>2.</strong> Kural tabanlı skor ve maliyet</li>
-                            <li><strong>3.</strong> Danışman sentezi ve alternatifler</li>
-                        </ol>
-                    </div>
-                    <div class="ib-home-auto-bridge-actions">
-                        <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="home_auto_bridge">
-                            <i data-lucide="sparkles" aria-hidden="true"></i><span class="growth-exp-label">Ücretsiz analiz başlat</span>
-                        </a>
-                        <a href="/auto/#auto-wizard" class="btn btn-outline">Sihirbazı aç</a>
-                        <p class="ib-home-auto-bridge-hint text-muted-sm">Bağlayıcı teklif yok · KVKK uyumlu · anonim önizleme mümkün</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="category-ownership" class="category-ownership-section section-bg ib-section-venture hidden" data-landing-excluded hidden>
-            <div class="container">
-                <span class="section-kicker">Kategori sahipliği</span>
-                <h2>isteBul = karar altyapısı</h2>
-                <p class="section-lead">İlan sitesi değil · Sohbet botu değil · Sadece karşılaştırma sitesi değil</p>
-                <ul class="ib-category-not" aria-label="isteBul ne değildir">
-                    <li><strong>İlan sitesi değil</strong><span>Envanter aramak yerine fit, TCO ve finansman yükü</span></li>
-                    <li><strong>Sohbet botu değil</strong><span>Skor ve güven bandı deterministik; AI anlatım katmanı</span></li>
-                    <li><strong>Sadece oran tablosu değil</strong><span>Bu araç + bu bütçe için aylık yük ve karar skoru</span></li>
-                </ul>
-                <div class="ib-category-alt-grid-home">
-                    <article><h3>İlan siteleri</h3><p class="text-muted-sm">Sahibinden, Arabam — arama ve envanter</p><p><strong>isteBul:</strong> Toplam sahip olma maliyetine göre sıralama</p></article>
-                    <article><h3>Generic AI</h3><p class="text-muted-sm">Serbest metin öneri</p><p><strong>isteBul:</strong> Sayıları motor verir; şeffaf metodoloji</p></article>
-                    <article><h3>Kredi karşılaştırma</h3><p class="text-muted-sm">Faiz ve ürün listesi</p><p><strong>isteBul:</strong> Varlık bağlamında finansman etkisi + TCO</p></article>
-                    <article><h3>Klasik lead gen</h3><p class="text-muted-sm">Form ve hacim</p><p><strong>isteBul:</strong> Skorlu lead ve outcome döngüsü (partner)</p></article>
-                </div>
-                <p class="category-ownership-foot"><a href="/karar-moat.html">Savunulabilir moat ve rekabet çerçevesi</a> · <a href="/metodoloji/">Metodoloji</a></p>
-            </div>
-        </section>
-
-        <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar asistanı" hidden>
+<section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar asistanı" hidden>
             <div class="ib-prerender-seo" data-prerender-for="page-karar-analizi">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker">Karar merkezi</p>
-                    <h1>Hangi kategoride karar vermek istiyorsunuz?</h1>
-                    <p class="ib-premium-lead">Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.</p>
-                    <ul class="ib-check-list"><li>6 kategori karar merkezi</li>
-                <li>Kural tabanlı skor ve TCO özeti</li>
+                    <h2>Hangi kategoride karar vermek istiyorsunuz?</h2>
+                    <p class="ib-premium-lead">Kısa sorularla kategori niyetinizi ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.</p>
+                    <ul class="ib-check-list"><li>6 kategori ön değerlendirme</li>
+                <li>Kategori wizard akışına yönlendirme</li>
                 <li>Karşılaştırma merkezi entegrasyonu</li>
                 <li>Bilgilendirme amaçlı — bağlayıcı teklif değil</li></ul>
                     <p class="ib-prerender-actions">
@@ -678,7 +342,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 </div>
             </div>
 
-            <noscript><div class="container ib-premium-noscript"><h1>Karar asistanı</h1><p>Skor, TCO, risk ve uygunluk — <a href="/karar-asistani">karar merkezi</a>.</p></div></noscript>
+            <noscript><div class="container ib-premium-noscript"><h2>Karar asistanı</h2><p>Skor, TCO, risk ve uygunluk — <a href="/karar-asistani">karar merkezi</a>.</p></div></noscript>
             <div id="premium-karar-analizi-root"></div>
         </section>
 
@@ -686,20 +350,20 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="ib-prerender-seo" data-prerender-for="page-metodoloji">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker">Metodoloji</p>
-                    <h1>Karar altyapısı metodolojisi</h1>
+                    <h2>Karar altyapısı metodolojisi</h2>
                     <p class="ib-premium-lead">isteBul ilan sitesi veya sohbet botu değil. TCO, finansman ve risk sinyalleri açık kurallarla birleşir; yapay zeka skoru değiştirmez, yalnızca gerekçeyi açıklar.</p>
                     <ul class="ib-check-list"><li>Kural tabanlı TCO ve uyum skoru</li>
                 <li>12 aylık maliyet ve kredi senaryoları</li>
                 <li>Tarafsız sıralama — tek satıcıya bağlı değil</li>
                 <li>Veri güven bandı ve şeffaf uyarılar</li></ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary">Ücretsiz analiz başlat</a>
+                        <a href="/karar-asistani/" class="btn btn-primary" data-native-route>Ön değerlendirmeye başla</a>
                         <a href="/metodoloji/" class="btn btn-outline">Metodolojiyi incele</a>
                     </p>
                 </div>
             </div>
 
-            <noscript><div class="container ib-premium-noscript"><h1>Metodoloji</h1><p>Şeffaf, denetlenebilir karar modeli — <a href="/metodoloji/">detaylar</a>.</p></div></noscript>
+            <noscript><div class="container ib-premium-noscript"><h2>Metodoloji</h2><p>Şeffaf, denetlenebilir karar modeli — <a href="/metodoloji/">detaylar</a>.</p></div></noscript>
             <div id="premium-metodoloji-root"></div>
         </section>
 
@@ -707,19 +371,19 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="ib-prerender-seo" data-prerender-for="page-duyurular">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker" data-i18n="spaPages.announcements.kicker">Duyurular</p>
-                    <h1 data-i18n="spaPages.announcements.title">isteBul duyuruları</h1>
+                    <h2 data-i18n="spaPages.announcements.title">isteBul duyuruları</h2>
                     <p class="ib-premium-lead" data-i18n="spaPages.announcements.lead">Ürün güncellemeleri ve operasyonel bilgilendirmeler.</p>
                 </div>
             </div>
-            <noscript><div class="container ib-premium-noscript"><h1>Duyurular</h1><p><a href="/">Ana sayfa</a></p></div></noscript>
+            <noscript><div class="container ib-premium-noscript"><h2>Duyurular</h2><p><a href="/">Ana sayfa</a></p></div></noscript>
             <div class="container ib-content-page">
                 <header class="ib-content-page-header">
                     <p class="section-kicker" data-i18n="spaPages.announcements.kicker">Duyurular</p>
-                    <h1 data-i18n="spaPages.announcements.title">isteBul duyuruları</h1>
+                    <h2 data-i18n="spaPages.announcements.title">isteBul duyuruları</h2>
                     <p class="ib-premium-lead" data-i18n="spaPages.announcements.lead">Ürün güncellemeleri, metodoloji notları ve operasyonel bilgilendirmeler — bağlayıcı teklif değildir.</p>
                 </header>
                 <div data-content-list="announcements"><p class="text-muted-sm" data-i18n="common.loading">Yükleniyor…</p></div>
-                <p class="ib-content-page-back"><a href="/" data-native-route data-i18n="spaPages.announcements.backHome">← Ana sayfa</a> · <a href="/auto/" data-i18n="spaPages.announcements.freeAnalysis">Ücretsiz analiz</a></p>
+                <p class="ib-content-page-back"><a href="/" data-native-route data-i18n="spaPages.announcements.backHome">← Ana sayfa</a> · <a href="/karar-asistani/" data-i18n="spaPages.announcements.freeAnalysis">Ön değerlendirme başlat</a></p>
             </div>
         </section>
 
@@ -727,15 +391,15 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="ib-prerender-seo" data-prerender-for="page-kampanyalar">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker" data-i18n="spaPages.campaigns.kicker">Kampanyalar</p>
-                    <h1 data-i18n="spaPages.campaigns.title">Aktif kampanyalar</h1>
+                    <h2 data-i18n="spaPages.campaigns.title">Aktif kampanyalar</h2>
                     <p class="ib-premium-lead" data-i18n="spaPages.campaigns.lead">Pro deneme, ücretsiz analiz ve pilot partner fırsatları.</p>
                 </div>
             </div>
-            <noscript><div class="container ib-premium-noscript"><h1>Kampanyalar</h1><p><a href="/auto/">Ücretsiz analiz</a></p></div></noscript>
+            <noscript><div class="container ib-premium-noscript"><h2>Kampanyalar</h2><p><a href="/karar-asistani/">Ön değerlendirme başlat</a></p></div></noscript>
             <div class="container ib-content-page">
                 <header class="ib-content-page-header">
                     <p class="section-kicker" data-i18n="spaPages.campaigns.kicker">Kampanyalar</p>
-                    <h1 data-i18n="spaPages.campaigns.title">Aktif kampanyalar</h1>
+                    <h2 data-i18n="spaPages.campaigns.title">Aktif kampanyalar</h2>
                     <p class="ib-premium-lead" data-i18n="spaPages.campaigns.lead">Pro deneme, ücretsiz Auto analizi ve pilot partner fırsatları. Koşullar değişebilir; finansal taahhüt içermez.</p>
                 </header>
                 <div data-content-list="campaigns"><p class="text-muted-sm" data-i18n="common.loading">Yükleniyor…</p></div>
@@ -747,15 +411,15 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="ib-prerender-seo" data-prerender-for="page-blog">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker" data-i18n="spaPages.blog.kicker">Blog</p>
-                    <h1 data-i18n="spaPages.blog.title">Karar rehberleri</h1>
+                    <h2 data-i18n="spaPages.blog.title">Karar rehberleri</h2>
                     <p class="ib-premium-lead" data-i18n="spaPages.blog.lead">TCO, finansman ve araç alım kararı üzerine yazılar.</p>
                 </div>
             </div>
-            <noscript><div class="container ib-premium-noscript"><h1>Blog</h1><p><a href="/auto/">Analiz başlat</a></p></div></noscript>
+            <noscript><div class="container ib-premium-noscript"><h2>Blog</h2><p><a href="/karar-asistani/">Ön değerlendirme başlat</a></p></div></noscript>
             <div class="container ib-content-page">
                 <header class="ib-content-page-header">
                     <p class="section-kicker" data-i18n="spaPages.blog.kicker">Blog</p>
-                    <h1 data-i18n="spaPages.blog.title">Karar rehberleri</h1>
+                    <h2 data-i18n="spaPages.blog.title">Karar rehberleri</h2>
                     <p class="ib-premium-lead" data-i18n="spaPages.blog.lead">TCO, finansman ve araç alım kararı — bilgilendirme amaçlı; yatırım veya kredi tavsiyesi değildir.</p>
                 </header>
                 <div data-blog-category-filter></div>
@@ -774,14 +438,14 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="ib-prerender-seo" data-prerender-for="page-planlar">
                 <div class="container ib-premium-noscript">
                     <p class="section-kicker" data-i18n="spaPages.planlar.kicker">Planlar</p>
-                    <h1 data-i18n="spaPages.planlar.title">Planlar ve fiyatlandırma</h1>
-                    <p class="ib-premium-lead" data-i18n="spaPages.planlar.lead">Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — iyzico / PayTR ile güvenli ödeme.</p>
+                    <h2 data-i18n="spaPages.planlar.title">Planlar ve fiyatlandırma</h2>
+                    <p class="ib-premium-lead" data-i18n="spaPages.planlar.lead">Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.</p>
                     <ul class="ib-check-list"><li data-i18n="spaPages.planlar.starterBullet">Başlangıç: sınırlı analiz ve 2 karşılaştırma</li>
                 <li data-i18n="spaPages.planlar.proBullet">Pro: derin TCO, AI karar notu, premium export</li>
                 <li data-i18n="spaPages.planlar.enterpriseBullet">Enterprise: API, webhook, SLA</li>
                 <li data-i18n="spaPages.planlar.cancelBullet">İstediğiniz zaman iptal</li></ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary" data-i18n="spaPages.planlar.ctaPrimary">Ücretsiz analiz başlat</a>
+                        <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-i18n="spaPages.planlar.ctaPrimary">Ön değerlendirmeye başla</a>
                         <a href="/metodoloji/" class="btn btn-outline" data-i18n="spaPages.planlar.ctaSecondary">Metodolojiyi incele</a>
                     </p>
                 </div>
@@ -789,9 +453,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
 
             <noscript>
                 <div class="container ib-premium-noscript">
-                    <h1>Planlar</h1>
-                    <p>Başlangıç ücretsiz · Pro ₺299/ay veya ₺2.870/yıl · 7 gün deneme.</p>
-                    <p><a href="/auto/">Ücretsiz analiz</a></p>
+                    <h2>Planlar</h2>
+                    <p>Başlangıç ücretsiz · Pro erken erişim · ödeme aktivasyonu sonrası bilgilendirme.</p>
+                    <p><a href="/karar-asistani/">Ön değerlendirme başlat</a></p>
                 </div>
             </noscript>
             <div id="premium-planlar-root"></div>
@@ -800,13 +464,14 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <section id="ilanlar" data-private-section class="listings-section hidden">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-kicker">Yapay Zeka Destekli Seçenekler</span>
-                    <h2 id="active-category-label">AI uyum skoruna göre öne çıkan seçenekler</h2>
+                    <span class="section-kicker">AI destekli karar seçenekleri</span>
+                    <h2 id="active-category-label">Skorlanmış ve karşılaştırılabilir karar seçenekleri</h2>
+                    <p class="section-lead ib-secenekler-positioning">Bu alan canlı ilan pazarı değil; QA'dan geçmiş, karar skoruna göre sıralanmış ve karşılaştırmaya eklenebilir seçenekler kataloğudur. AI yalnızca gerekçe üretir.</p>
                     <div class="section-actions">
-                        <button class="btn btn-outline" id="filter-btn">
+                        <button type="button" class="btn btn-outline" id="filter-btn">
                             <i data-lucide="filter"></i> Filtrele
                         </button>
-                        <button class="btn btn-primary" id="add-listing-btn">
+                        <button type="button" class="btn btn-primary" id="add-listing-btn">
                             <i data-lucide="plus"></i> Seçenek gönder
                         </button>
                     </div>
@@ -817,8 +482,10 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <div class="form-group">
                             <label for="filter-category">Kategori</label>
                             <select id="filter-category" name="category">
-                                <option value="">Araç — tümü</option>
+                                <option value="">Tüm kategoriler</option>
                                 <option value="arac">Araç</option>
+                                <option value="ev">Konut</option>
+                                <option value="tatil">Tatil</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -876,8 +543,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <div id="active-filter-summary" class="active-filter-summary" hidden></div>
                 <div id="marketplace-results-toolbar" class="marketplace-results-toolbar" aria-live="polite">
                     <div class="marketplace-result-copy">
-                        <span id="listing-result-count">Size uygun seçenekler hazırlanıyor</span>
-                        <small id="listing-result-context" class="listing-result-context">Karar skoruna göre listeleniyor</small>
+                        <span id="listing-result-count">Karar kriterlerinize göre seçenekler yükleniyor</span>
+                        <small id="listing-result-context" class="listing-result-context">Karar skoruna göre sıralanır — AI yalnızca gerekçe üretir</small>
                     </div>
                     <div class="marketplace-result-controls">
                         <label for="listing-sort">Sırala</label>
@@ -902,9 +569,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <section id="listing-detail" data-private-section class="listing-detail-section section-bg hidden">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-kicker">Detay</span>
+                    <span class="section-kicker">Karar seçeneği</span>
                     <h2>Seçenek detayı</h2>
-                    <p>Seçtiğiniz seçeneğin uyum skoru, maliyet kırılımı ve aksiyon önerileri.</p>
+                    <p>Seçtiğiniz karar seçeneğinin skoru, maliyet kırılımı, risk sinyalleri ve aksiyon önerileri.</p>
                 </div>
                 <div id="listing-detail-content" data-route-mount aria-live="polite"></div>
             </div>
@@ -1024,153 +691,11 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="pricing" class="pricing-section section-bg ib-section-venture">
-            <div class="container">
-                <header class="section-header ib-section-intro">
-                    <span class="section-kicker" data-i18n="pricing.kicker">Planlar</span>
-                    <h2 data-i18n="pricing.title">Yanlış seçim, doğru analizden pahalı</h2>
-                    <p data-i18n="pricing.lead">Yıllık bakım, yakıt, kredi ve değer kaybı bir arada düşünülmezse maliyet şişer. isteBul ile önce riski görün, sonra derinleşin.</p>
-                </header>
-                <noscript>
-                    <div class="pricing-noscript-fallback">
-                        <p><strong>Başlangıç (ücretsiz):</strong> Auto karar analizi özeti, 2 araç karşılaştırma.</p>
-                        <p><strong>isteBul Pro:</strong> ₺299/ay veya ₺1.990/yıl — iyzico / PayTR ile güvenli ödeme.</p>
-                        <p><a href="/auto/">Önce ücretsiz analizi başlatın</a> · JavaScript etkinleştirildiğinde planları burada görebilirsiniz.</p>
-                    </div>
-                </noscript>
-                <div id="pricing-plans-root" class="ib-premium-pricing-root">
-                    <div class="ib-pricing-home-teaser" data-pricing-static-fallback>
-                        <article class="revenue-plan-card ib-pricing-teaser-card">
-                            <div class="revenue-plan-card-head">
-                                <span class="revenue-plan-badge" data-i18n="pricing.starterBadge">Bireysel</span>
-                                <h3 class="revenue-plan-title" data-i18n="pricing.starterTitle">Başlangıç</h3>
-                                <p class="revenue-plan-price" data-i18n="pricing.starterPrice">Ücretsiz</p>
-                            </div>
-                            <p class="revenue-plan-desc" data-i18n="pricing.starterDesc">TCO özeti · 2 karşılaştırma</p>
-                            <div class="revenue-plan-card-foot">
-                                <a href="/auto/" class="btn btn-outline btn-block" data-i18n="pricing.starterCta">Ücretsiz analiz</a>
-                            </div>
-                        </article>
-                        <article class="revenue-plan-card revenue-plan-card--featured ib-pricing-teaser-card">
-                            <div class="revenue-plan-card-head">
-                                <span class="revenue-plan-badge revenue-plan-badge--popular" data-i18n="pricing.proBadge">En popüler</span>
-                                <h3 class="revenue-plan-title" data-i18n="pricing.proTitle">isteBul Pro</h3>
-                                <p class="revenue-plan-price"><span data-i18n="pricing.proPrice">₺299</span><small data-i18n="pricing.proPriceUnit">/ ay</small></p>
-                            </div>
-                            <p class="revenue-plan-desc" data-i18n="pricing.proDesc">Sınırsız karşılaştırma · AI rafine</p>
-                            <div class="revenue-plan-card-foot">
-                                <a href="/planlar" class="btn btn-primary btn-block" data-native-route data-i18n="pricing.proCta">Planları gör</a>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-                <p class="pricing-mid-cta">
-                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_mid" data-i18n="pricing.midCtaPrimary">Ücretsiz analiz başlat</a>
-                    <a href="/metodoloji/" class="btn btn-outline" data-native-route data-cro-cta-secondary data-i18n="pricing.midCtaSecondary">Metodolojiyi incele</a>
-                </p>
-                <p class="revenue-plan-hint" style="text-align:center;margin-top:1.25rem;" data-i18n-html="pricing.partnerHintHtml">Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.</p>
-                <p class="revenue-risk-reversal" role="note">
-                    <span data-i18n="pricing.trialBadge">7 gün ücretsiz deneme</span>
-                    <span data-i18n="pricing.paymentBadge">iyzico / PayTR ile güvenli ödeme</span>
-                    <span data-i18n="pricing.cancelBadge">İstediğiniz zaman iptal</span>
-                </p>
-                <p class="pricing-trust-note" role="note" data-i18n-html="pricing.trustNoteHtml">
-                    Ödeme iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır.
-                    <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirme</a>
-                </p>
-            </div>
-        </section>
-
-        <section id="partner-enterprise" class="partner-enterprise-section section-surface ib-section-venture" aria-labelledby="partner-enterprise-title">
-            <div class="container">
-                <header class="section-header ib-section-intro">
-                    <span class="section-kicker" data-i18n="partner.kicker">Kurumsal &amp; partner</span>
-                    <h2 id="partner-enterprise-title" data-i18n="partner.title">Galeri, finans ve kurumsal ekipler için B2B kanal</h2>
-                    <p data-i18n="partner.lead">Nitelikli lead, webhook/API entegrasyonu ve CRM uyumlu operasyon — pilot onboarding ve SLA ile ölçeklenebilir partner iş akışı.</p>
-                </header>
-                <ul class="partner-enterprise-features" data-i18n-aria="partner.featuresAria" aria-label="Partner yetenekleri">
-                    <li><strong data-i18n="partner.f1Title">Nitelikli lead</strong> <span data-i18n="partner.f1Desc">Skorlu ve bağlamlı müşteri talepleri — hacim değil kalite.</span></li>
-                    <li><strong data-i18n="partner.f2Title">Webhook / API</strong> <span data-i18n="partner.f2Desc">HTTPS endpoint, retry ve operasyonel log.</span></li>
-                    <li><strong data-i18n="partner.f3Title">CRM uyumu</strong> <span data-i18n="partner.f3Desc">Satış hunisi ve outcome geri bildirimi.</span></li>
-                    <li><strong data-i18n="partner.f4Title">Pilot onboarding</strong> <span data-i18n="partner.f4Desc">Kontrollü canlıya geçiş ve eğitim.</span></li>
-                    <li><strong data-i18n="partner.f5Title">SLA &amp; güven</strong> <span data-i18n="partner.f5Desc">Kurumsal destek hattı ve veri işleme çerçevesi.</span></li>
-                </ul>
-                <div class="partner-enterprise-grid">
-                    <article class="partner-enterprise-card">
-                        <h3 data-i18n="partner.card1Title">Galeri &amp; finans partneri</h3>
-                        <p data-i18n="partner.card1Desc">CPL ve gerçekleşen satış outcome modeli ile ölçülebilir ROI.</p>
-                        <a href="/partner-olun.html" class="btn btn-outline" data-i18n="partner.card1Cta">Partner başvurusu</a>
-                    </article>
-                    <article class="partner-enterprise-card">
-                        <h3 data-i18n="partner.card2Title">Enterprise</h3>
-                        <p data-i18n="partner.card2Desc">Çoklu kullanıcı, özel metodoloji ve raporlama — yüksek hacimli operasyonlar.</p>
-                        <a href="/iletisim.html?konu=enterprise" class="btn btn-outline" data-i18n="partner.card2Cta">Kurumsal teklif</a>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section id="landing-faq" class="landing-faq-section section-bg ib-section-venture" aria-labelledby="landing-faq-title">
-            <div class="container">
-                <header class="section-header ib-section-intro">
-                    <span class="section-kicker" data-i18n="faq.kicker">SSS</span>
-                    <h2 id="landing-faq-title" data-i18n="faq.title">Sık sorulan sorular</h2>
-                    <p data-i18n="faq.lead">Karar desteği, gizlilik ve ödeme hakkında net yanıtlar.</p>
-                </header>
-                <div class="ib-faq-list">
-                    <article class="ib-faq-item" data-faq-item>
-                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-0" data-i18n="faq.q0">isteBul bir ilan sitesi mi?</button>
-                        <div class="ib-faq-panel" id="faq-landing-0" hidden>
-                            <p data-i18n="faq.a0">Hayır. isteBul, araç alımında toplam sahip olma maliyetini ve karar uyumunu analiz eden bir karar destek platformudur — envanter listeleme odaklı değildir.</p>
-                        </div>
-                    </article>
-                    <article class="ib-faq-item" data-faq-item>
-                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-1" data-i18n="faq.q1">Skorlar garanti sonuç verir mi?</button>
-                        <div class="ib-faq-panel" id="faq-landing-1" hidden>
-                            <p data-i18n="faq.a1">Hayır. Skorlar ve raporlar bilgilendirme amaçlıdır; kesin getiri, fiyat veya onay taahhüdü değildir. Karar sizde kalır — biz maliyet ve uyumu görünür kılarız.</p>
-                        </div>
-                    </article>
-                    <article class="ib-faq-item" data-faq-item>
-                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-2" data-i18n="faq.q2">Ödeme güvenli mi?</button>
-                        <div class="ib-faq-panel" id="faq-landing-2" hidden>
-                            <p data-i18n="faq.a2">Pro abonelik ve premium rapor ödemeleri iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri isteBul sunucularında tutulmaz. İstediğiniz zaman iptal edebilirsiniz.</p>
-                        </div>
-                    </article>
-                    <article class="ib-faq-item" data-faq-item>
-                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-3" data-i18n="faq.q3">Ücretsiz planda neler var?</button>
-                        <div class="ib-faq-panel" id="faq-landing-3" hidden>
-                            <p data-i18n="faq.a3">TCO özeti, sınırlı karşılaştırma ve özet çıktılar. Daha derin rapor, sınırsız karşılaştırma ve partner eşleşmesi için Pro plana geçebilirsiniz.</p>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section
-            id="home-guides-strip"
-            class="ib-guides-hub ib-guides-hub--digest ib-guides-hub--strip"
-            aria-labelledby="home-guides-strip-title"
-            data-guides-default-category="auto"
-            data-guides-show-tabs="1"
-            data-guides-layout="strip"
-        >
-            <div class="container">
-                <div data-guides-inner>
-                    <p class="text-muted-sm">Güncel haberler yükleniyor…</p>
-                </div>
-            </div>
-            <noscript>
-                <div class="container">
-                    <p><a href="/blog">Güncel haberler ve karar rehberleri</a></p>
-                </div>
-            </noscript>
-        </section>
-
-        <!-- Categories Section (app shell — not on marketing home) -->
+                <!-- Categories Section (app shell — not on marketing home) -->
         <section id="categories" class="categories-section ib-section-venture hidden" data-landing-excluded hidden>
             <div class="container">
                 <header class="section-header ib-section-intro">
-                    <span class="section-kicker">Ürün</span>
+                    <span class="section-kicker">Karar Kategorileri</span>
                     <h2>Araç alımında karar altyapısı</h2>
                     <p>Bütçe, kredi ve toplam maliyeti birlikte değerlendiren rehberli analiz — Auto ile başlayın.</p>
                 </header>
@@ -1226,25 +751,32 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             loading="lazy">
                         <span class="brand-title" aria-hidden="true">isteBul</span>
                     </a>
-                    <p class="ib-footer-v7__desc" data-i18n="footerNav.brandDesc">Yapay zekâ destekli karar platformu. Toplam maliyet, risk ve uygunluk analizini şeffaf ve ölçülebilir sunar.</p>
+                    <p class="ib-footer-v7__desc" data-i18n="footerNav.brandDesc">Yapay zekâ destekli ürünler platformu. İSTEBUL AI, GarsonAI ve İSTEBUL Business bağımsız ürünler olarak yaşar.</p>
                     <div class="ib-site-social-block">
                       <p class="ib-site-social-label">Bizi takip edin</p>
                       <nav class="ib-site-social ib-site-social--home" data-site-social-links aria-label="Sosyal medya" hidden></nav>
                     </div>
                 </div>
-                <div class="footer-content ib-footer-v4 ib-footer-v7__cols">
-                <div class="footer-section">
+                <div class="footer-content ib-footer-v4 ib-footer-v7__cols" data-footer-ia="platform-v1">
+                <div class="footer-section" data-footer-col="products">
                     <h4 data-i18n="footerNav.products">Ürünler</h4>
                     <ul>
+                        <li><a href="/ai/" data-i18n="nav.productAi">İSTEBUL AI</a></li>
+                        <li><a href="/garson/" data-i18n="nav.productGarson">GarsonAI</a></li>
+                        <li><a href="/business/" data-i18n="nav.productBusiness">İSTEBUL Business</a></li>
+                        <li><a href="/planlar" data-native-route data-i18n="footerNav.plans">İSTEBUL AI Planları</a></li>
+                    </ul>
+                    <p class="ib-footer-v7__subhead" data-i18n="footerNav.categoriesSubhead">Karar kategorileri</p>
+                    <ul class="ib-footer-v7__sublist" data-i18n-aria="footerNav.categoriesAria" aria-label="Karar kategorileri">
                         <li><a href="/auto/" data-i18n="footerNav.auto">Araç</a></li>
                         <li><a href="/konut/" data-i18n="nav.catKonut">Konut</a></li>
                         <li><a href="/tatil/" data-i18n="nav.catTatil">Tatil</a></li>
                         <li><a href="/finans/" data-i18n="nav.catFinans">Finansman</a></li>
-                        <li><a href="/planlar" data-native-route data-i18n="footerNav.plans">Planlar</a></li>
-                        <li><a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a></li>
+                        <li><a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a></li>
+                        <li><a href="/kasko/" data-i18n="nav.catKasko">Kasko</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section" data-footer-col="company">
                     <h4 data-i18n="footerNav.company">Şirket</h4>
                     <ul>
                         <li><a href="/hakkimizda.html" data-i18n="nav.about">Hakkımızda</a></li>
@@ -1252,15 +784,14 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <li><a href="/partner-olun.html" data-i18n="footerNav.partner">Partner olun</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section" data-footer-col="resources">
                     <h4 data-i18n="footerNav.resources">Kaynaklar</h4>
                     <ul>
-                        <li><a href="/#home-guides-strip" data-home-anchor="home-guides-strip">Güncel haberler</a></li>
+                        <li><a href="/ai/#home-guides-strip">Güncel haberler</a></li>
                         <li><a href="/blog" data-native-route data-i18n="nav.blog">Blog</a></li>
                         <li><a href="/duyurular" data-native-route data-i18n="nav.announcements">Duyurular</a></li>
                         <li><a href="/kampanyalar" data-native-route data-i18n="nav.campaigns">Kampanyalar</a></li>
-                        <li><a href="/#landing-faq" data-home-anchor="landing-faq" data-i18n="nav.faq">SSS</a></li>
-                        <li><a href="/yardim.html">Yardım merkezi</a></li>
+                        <li><a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a></li>
                         <li><a href="/veri-kaynaklari/" data-i18n="footerNav.dataSources">Veri Kaynakları</a></li>
                         <li><a href="/rehber/" data-i18n="footerNav.allGuides">Tüm rehberler</a></li>
                     </ul>
@@ -1273,7 +804,14 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <li><a href="/rehber/ikinci-el-rehberi/">İkinci el rehberi</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-section" data-footer-col="support">
+                    <h4 data-i18n="footerNav.support">Destek</h4>
+                    <ul>
+                        <li><a href="/yardim.html" data-i18n="footerNav.helpCenter">Yardım merkezi</a></li>
+                        <li><a href="/ai/#landing-faq" data-i18n="nav.faq">SSS</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section" data-footer-col="legal">
                     <h4 data-i18n="footerNav.legal">Yasal</h4>
                     <ul>
                         <li><a href="/gizlilik.html" data-i18n="footerNav.privacy">Gizlilik</a></li>
@@ -1303,7 +841,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
             <div class="footer-cta-row">
                 <p class="text-muted-sm" data-i18n="footer.disclaimer">isteBul karar destek platformudur; nihai karar kullanıcıya aittir.</p>
-                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="footer" data-i18n="footer.freeAnalysis">Ücretsiz analiz başlat</a>
+                <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_footer" data-analytics-placement="footer" data-i18n="footer.freeAnalysis">Ön değerlendirmeye başla</a>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" data-i18n-aria="footerNav.cookieAria" aria-label="Çerez ve analiz tercihi">
                 <p data-i18n-html="footer.cookieHtml">Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a></p>
@@ -1323,10 +861,6 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </div>
     </footer>
-
-    <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/karar-asistani" class="btn btn-primary" data-cro-cta-sticky data-native-route data-analytics-cta="cta_decision_sticky" data-analytics-placement="sticky" data-i18n-title="footer.stickyCta" title="Karar analizini başlat" data-i18n="footer.stickyCta">Karar analizini başlat</a>
-    </div>
 
     <!-- Scripts (guides via app bundle; social after idle) -->
     <script type="module" src="js/app.bundle.js"></script>

@@ -14,7 +14,13 @@ import {
   formatTry
 } from './real-estate-calculator.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
+import { saveDecisionHistory } from '../core/app-bridge.js';
+import { buildDecisionHistoryEntry, mergeDecisionHistoryEntry } from '../ui/decision-history-entry.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
+import {
+  buildKonutDecisionHistoryPayload,
+  KONUT_DECISION_HISTORY_MAX
+} from './konut-decision-history-payload.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountKonutResultsV2, syncCanonicalDecisionScore } from '../features/konut/konut-results-v2.js';
 import {
@@ -31,6 +37,15 @@ import {
   validateKonutAllSteps,
   applyKonutFinancingDefaults
 } from '../konut/konut-flow.js';
+import { CASH_BUFFER_OPTIONS } from '../konut/konut-wizard-profile.js';
+import { adaptKonutCard } from '../features/decision-cards/adapters/konut-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
+import { bootstrapKonutFromAssistantQuery } from './konut-assistant-bootstrap.js';
 
 function stepLabelsForState() {
   return getKonutFlow(state.purchasePurpose).stepLabels;
@@ -72,6 +87,7 @@ const state = {
   purchasePurpose: '',
   totalBudget: '',
   downPayment: '',
+  cash_buffer_months: '',
   monthlyCapacity: '',
   useFinancing: '',
   termMonths: '120',
@@ -101,13 +117,15 @@ const state = {
   leadName: '',
   leadEmail: '',
   leadPhone: '',
-  wantPartnerOffer: false
+  wantPartnerOffer: false,
+  assistantPrefillHint: false
 };
 
 let lastResultPayload = null;
 let resultsRendered = false;
 let wizardCompleteFired = false;
 let leadOpenFired = false;
+let selectedHousingScenarioId = '';
 
 const HOUSING_ANALYSIS_START_KEY = 'ib_housing_analysis_start';
 
@@ -215,6 +233,12 @@ function cardButtons(options, field, selected) {
   `).join('')}</div>`;
 }
 
+function cardButtonsFromPairs(pairs, field, selected) {
+  return `<div class="housing-card-grid">${pairs.map(([value, label]) => `
+    <button type="button" class="housing-option-card ${selected === value ? 'is-selected' : ''}" data-field="${field}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>
+  `).join('')}</div>`;
+}
+
 function chipButtons(options, selectedList, action) {
   return `<div class="housing-chip-grid">${options.map((item) => {
     const val = Array.isArray(item) ? item[0] : item;
@@ -229,6 +253,10 @@ function budgetFields() {
     <div class="housing-form-grid housing-form-grid--budget">
       <label>Toplam bütçe<input data-input="totalBudget" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.totalBudget)}"></label>
       <label>Peşinat<input data-input="downPayment" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.downPayment)}"></label>
+      <div class="housing-form-span">
+        <p class="housing-field-hint">Peşinat sonrası kaç aylık güvenlik payınız kalıyor?</p>
+        ${cardButtonsFromPairs(CASH_BUFFER_OPTIONS, 'cash_buffer_months', state.cash_buffer_months)}
+      </div>
       <label>Aylık ödeyebileceğiniz maksimum tutar<input data-input="monthlyCapacity" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyCapacity)}"></label>
       <label>Aylık net gelir<input data-input="monthlyIncome" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyIncome)}"></label>
       <label>Mevcut borç ödemeleri<input data-input="currentDebt" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.currentDebt)}"></label>
@@ -495,6 +523,7 @@ function renderStep() {
 
   wizard.innerHTML = `
     <section class="housing-step-card">
+      ${state.assistantPrefillHint ? '<p class="housing-assistant-prefill-hint" data-housing-assistant-prefill>Karar Asistanı profilinizden bazı bilgiler önceden dolduruldu. Detaylı analiz için kalan adımları tamamlayın.</p>' : ''}
       <h2>${body.title}</h2>
       ${body.html}
       <p class="housing-validation" id="housing-validation" role="alert"></p>
@@ -637,39 +666,38 @@ async function getAuthUserId() {
   }
 }
 
+function persistKonutDecisionHistory(payload, userId) {
+  const historyOptions = { maxEntries: KONUT_DECISION_HISTORY_MAX };
+
+  if (saveDecisionHistory(payload, historyOptions)) {
+    return payload;
+  }
+
+  if (!userId) return payload;
+
+  const record = buildDecisionHistoryEntry(payload, { source: 'konut' });
+  if (!record) return payload;
+
+  const key = userScopedKey(STORAGE_KEYS.DECISION_HISTORY, userId);
+  const history = readStoredJson(key, []);
+  writeStoredJson(key, mergeDecisionHistoryEntry(history, record, KONUT_DECISION_HISTORY_MAX));
+  return payload;
+}
+
 function saveReportLocally(metrics, aiText) {
-  const record = {
-    id: `konut_${Date.now()}`,
-    categoryId: 'konut',
-    categoryName: 'Konut',
-    createdAt: new Date().toISOString(),
-    summary: aiText.slice(0, 220),
-    purchasePurpose: state.purchasePurpose,
-    city: state.city,
-    district: state.district,
-    topPick: {
-      name: `${formatLocationLabel()} · ${state.purchasePurpose}`,
-      score: metrics.score,
-      monthlyPayment: metrics.ownership.monthlyPayment,
-      yearlyCost: metrics.ownership.realTotal,
-      riskLevel: metrics.risk.label
-    }
-  };
+  const payload = buildKonutDecisionHistoryPayload(metrics, aiText, state);
   void getAuthUserId().then((userId) => {
     if (!userId) return;
-    const key = userScopedKey(STORAGE_KEYS.DECISION_HISTORY, userId);
-    const history = readStoredJson(key, []);
-    history.unshift(record);
-    writeStoredJson(key, history.slice(0, 80));
+    persistKonutDecisionHistory(payload, userId);
   });
   try {
     const guestKey = 'ib_housing_saved_reports';
     const guest = JSON.parse(localStorage.getItem(guestKey) || '[]');
-    guest.unshift(record);
+    guest.unshift(payload);
     localStorage.setItem(guestKey, JSON.stringify(guest.slice(0, 20)));
   } catch {}
   trackEvent('home_report_save', { score: metrics.score });
-  return record;
+  return payload;
 }
 
 async function submitLead(metrics, aiText) {
@@ -725,6 +753,83 @@ const HOUSING_RESULTS_EMPTY_HTML = `
     <h2>Sonuçlar</h2>
     <p>Analizi tamamladığınızda konut skoru, maliyet tahmini ve senaryolar burada listelenir.</p>
   </div>`;
+
+function shouldUseKonutDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('konut');
+}
+
+function buildKonutDecisionCategoryCardViewModels(scenarios, metrics) {
+  return scenarios.map((scenario) =>
+    adaptKonutCard({ scenario, state, metrics })
+  );
+}
+
+function renderKonutDecisionCategoryCardsHtml(scenarios, metrics, selectedId = '') {
+  if (!shouldUseKonutDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(false);
+    return '';
+  }
+
+  syncDecisionCardsFlagToDocument(true);
+  return renderDecisionCategoryCardsGridHtml(
+    buildKonutDecisionCategoryCardViewModels(scenarios, metrics),
+    {
+      selectedId,
+      ariaLabel: 'Konut senaryoları'
+    }
+  );
+}
+
+function highlightKonutDecisionCard(root, scenarioId) {
+  if (!root) return;
+  selectedHousingScenarioId = String(scenarioId || '');
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    const active = card.dataset.option === selectedHousingScenarioId;
+    card.classList.toggle('is-selected', active);
+    card.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function scrollKonutResultsInsight() {
+  const insightRoot = document.querySelector('#housing-results [data-konut-v2-insight-root]');
+  (insightRoot || document.querySelector('#housing-results .konut-v2-root'))?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function scrollKonutAlternativesSection() {
+  document
+    .querySelector('#housing-results .konut-v2-alts')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bindKonutDecisionCardEvents(root) {
+  if (!root || !shouldUseKonutDecisionCategoryCards()) return;
+
+  root.querySelectorAll('.ib-decision-card-select').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      highlightKonutDecisionCard(root, button.dataset.option);
+      scrollKonutResultsInsight();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      scrollKonutAlternativesSection();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      highlightKonutDecisionCard(root, card.dataset.option);
+      scrollKonutResultsInsight();
+    });
+  });
+}
 
 async function renderResults() {
   const results = $('#housing-results');
@@ -862,6 +967,17 @@ async function renderResults() {
       onPartnerCta: (feedbackEl) => handleHousingPartnerCta(metrics, ai.text, feedbackEl)
     });
 
+    if (shouldUseKonutDecisionCategoryCards()) {
+      const cardScenarios = scenarios.slice(0, 4);
+      results.insertAdjacentHTML(
+        'beforeend',
+        renderKonutDecisionCategoryCardsHtml(cardScenarios, metrics, selectedHousingScenarioId)
+      );
+      bindKonutDecisionCardEvents(results);
+    } else {
+      syncDecisionCardsFlagToDocument(false);
+    }
+
     requestAnimationFrame(() => {
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -894,6 +1010,8 @@ function handleHousingRestart() {
   lastResultPayload = null;
   wizardCompleteFired = false;
   leadOpenFired = false;
+  selectedHousingScenarioId = '';
+  syncDecisionCardsFlagToDocument(false);
   if (wizard) wizard.hidden = false;
   if (results) {
     results.hidden = false;
@@ -991,6 +1109,7 @@ function bindHeroCtas() {
 }
 
 async function init() {
+  bootstrapKonutFromAssistantQuery(state, new URLSearchParams(window.location.search));
   bindHeroCtas();
   renderStep();
   await intake('event', { event_type: 'housing_page_view', metadata: {} });

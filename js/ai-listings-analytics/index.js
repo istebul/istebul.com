@@ -49,7 +49,10 @@ export {
   buildTrendChartSvg,
   buildTopListHtml,
   hydrateLazyCharts,
-  lazyChartPlaceholder
+  lazyChartPlaceholder,
+  hasChartData,
+  buildChartFallbackHtml,
+  CHART_FALLBACK_MESSAGE
 } from './chart-builder.js';
 
 /**

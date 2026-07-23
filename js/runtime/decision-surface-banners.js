@@ -7,14 +7,14 @@ const SURFACE_COPY = Object.freeze({
     kicker: 'Karar destekli keşif',
     title: 'Skorlu seçenekler — klasik ilan listesi değil',
     body: 'Bu alan, TCO ve uyum skoruna göre sıralanmış referans seçenekleri gösterir. Canlı envanter yoğunluğu bölgeye göre değişebilir; ana karar akışı Auto analizidir.',
-    primary: { href: '/auto/', label: 'TCO analizini başlat' },
+    primary: { href: '/karar-asistani/', label: 'Kararını analiz et' },
     secondary: { href: '/metodoloji/', label: 'Metodoloji', native: false }
   },
   compare: {
     kicker: 'Karşılaştırma merkezi',
     title: 'Seçenekleri yan yana — Auto veya ilan kartlarından ekleyin',
     body: 'Karşılaştırma listesi hesabınızda ve bu oturumda saklanır. Henüz seçenek yoksa önce Auto sonucundan veya bir seçenek kartından ekleyin.',
-    primary: { href: '/auto/', label: 'Analizle başla' },
+    primary: { href: '/karar-asistani/', label: 'Kararını analiz et' },
     secondary: { href: '/secenekler/', label: 'Seçeneklere git', native: false }
   }
 });
@@ -66,6 +66,8 @@ export function initDecisionSurfaceBanners() {
   });
 
   const path = window.location.pathname.replace(/\/$/, '') || '/';
-  if (path === '/secenekler' || path === '/ilanlar') mountBanner('ilanlar');
+  if (path === '/secenekler' || path === '/ilanlar' || path === '/decision-options') {
+    mountBanner('ilanlar');
+  }
   if (path === '/karsilastir' || path === '/compare') mountBanner('compare');
 }

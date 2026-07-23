@@ -88,6 +88,36 @@ npm run deploy:cf
 
 ---
 
+## AI Provider / AI Proxy Checklist
+
+Canonical runbook: [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)  
+Production activation runbook: [`docs/AI_D5_PRODUCTION_ACTIVATION_RUNBOOK.md`](AI_D5_PRODUCTION_ACTIVATION_RUNBOOK.md)
+
+### Preview (tamamlanmış — AI-D5)
+
+- [x] Preview `/ai-proxy` curl smoke yapıldı
+- [x] Preview `/auto/` AI commentary kontrol edildi
+- [x] Preview `structured_commentary` JSON mode kontrol edildi
+- [x] Preview Groq rollback doğrulandı
+
+### Production OpenAI (henüz NO-GO)
+
+- [ ] `AI_PROVIDER` unset/`groq` ise `GROQ_API_KEY` Production’da mevcut (rollback için korunur)
+- [ ] `OPENAI_API_KEY` Production’a encrypted eklenecek (`AI_PROVIDER=openai` öncesi)
+- [ ] `OPENAI_MODEL` opsiyonel override doğrulandı
+- [ ] Provider fallback olmadığı biliniyor
+- [ ] **Legal/compliance sign-off:** SUBPROCESSORS, kvkk/gizlilik, SCC/TIA, formal DPA
+- [ ] Production’da `AI_PROVIDER=openai` yalnızca **en son adımda** set edilecek
+- [ ] Production live `/ai-proxy` curl smoke → HTTP `200` + `{"result":"..."}`
+- [ ] Production `structured_commentary` curl smoke → parse edilebilir JSON
+- [ ] Production `/auto/` browser → `POST /ai-proxy` 200, AI commentary görünür (sürekli fallback yok)
+- [ ] Production rollback doğrulandı: `AI_PROVIDER` unset/`groq` → Groq curl `200`
+- [ ] İlk 24–48 saat 5xx, 429, latency, OpenAI maliyet izlenecek
+
+**Gate:** Production OpenAI activation is **NO-GO** until every Production OpenAI checklist item above is complete **and** Legal sign-off is recorded in the D5 runbook §0/§13.
+
+---
+
 ## Post-deploy verification
 
 - [ ] https://www.istebul.com/ loads (browser)
@@ -120,6 +150,7 @@ npm run deploy:cf
 | Engineering | `npm test` + `production:audit` green | |
 | Ops | Secrets + webhook endpoints | |
 | Product | Smoke /auto funnel | |
+| Legal | OpenAI production activation (D5 runbook §0) — yalnızca OpenAI flip için | |
 
 **Status after 2026-05-25 audit:** ✅ **Approved for deploy via `main` push** (CI pipeline).
 

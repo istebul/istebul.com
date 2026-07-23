@@ -1,3 +1,5 @@
+import { shouldShowCityRatioField } from './auto-wizard-profile.js';
+
 /** Kullanım amacına göre araç sihirbazı seçenek filtreleri */
 
 const USAGE_FLOW = {
@@ -83,6 +85,9 @@ export function getAutoStepCopy(stepIndex, usage) {
 
 export function sanitizeWizardStateForUsage(wizardState, optionPools) {
   if (!wizardState?.usage) return;
+  if (!shouldShowCityRatioField(wizardState.usage)) {
+    delete wizardState.city_ratio;
+  }
   ['body', 'fuel', 'km', 'city_ratio'].forEach((key) => {
     const pool = optionPools[key];
     if (!pool?.length || !wizardState[key]) return;

@@ -1,0 +1,192 @@
+{
+  "id": "ornek-personel-2026-h1",
+  "metadata": {
+    "id": "ornek-personel-2026-h1",
+    "title": "Örnek Personel Performansı Dataset",
+    "description": "Personel, departman ve vardiya verisi için BusinessDataset örneği.",
+    "locale": "tr",
+    "createdAt": "2026-07-10T06:00:00.000Z",
+    "tags": ["personel", "İK", "performans"],
+    "relatedReportIds": ["personel-performansi"]
+  },
+  "version": {
+    "schemaVersion": "1.0.0",
+    "revision": "1",
+    "effectiveAt": "2026-07-10T06:00:00.000Z"
+  },
+  "source": {
+    "type": "csv",
+    "label": "personel-performans-2026-h1.csv",
+    "capturedAt": "2026-07-10T05:50:00.000Z"
+  },
+  "entities": [
+    {
+      "id": "ent-departmanlar",
+      "entityType": "departman",
+      "name": "Departmanlar",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "departman-kodu",
+          "name": "Departman Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "departman-adi",
+          "name": "Departman Adı",
+          "dataType": "metin",
+          "required": true,
+          "order": 2
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-dep-1",
+          "values": {
+            "departman-kodu": "SAT",
+            "departman-adi": "Satış"
+          }
+        },
+        {
+          "id": "row-dep-2",
+          "values": {
+            "departman-kodu": "OPR",
+            "departman-adi": "Operasyon"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ent-personel",
+      "entityType": "personel",
+      "name": "Personel",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "sicil-no",
+          "name": "Sicil No",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "ad-soyad",
+          "name": "Ad Soyad",
+          "dataType": "metin",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "departman-kodu",
+          "name": "Departman Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 3
+        },
+        {
+          "id": "verimlilik-skoru",
+          "name": "Verimlilik Skoru",
+          "dataType": "sayi",
+          "required": true,
+          "unit": "puan",
+          "order": 4
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-per-1",
+          "values": {
+            "sicil-no": "P-001",
+            "ad-soyad": "Ayşe Yılmaz",
+            "departman-kodu": "SAT",
+            "verimlilik-skoru": 87.5
+          }
+        },
+        {
+          "id": "row-per-2",
+          "values": {
+            "sicil-no": "P-002",
+            "ad-soyad": "Mehmet Demir",
+            "departman-kodu": "OPR",
+            "verimlilik-skoru": 92
+          }
+        }
+      ]
+    },
+    {
+      "id": "ent-vardiya",
+      "entityType": "vardiya",
+      "name": "Vardiya Özeti",
+      "layout": "tablo",
+      "columns": [
+        {
+          "id": "vardiya-kodu",
+          "name": "Vardiya Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "calisan-sayisi",
+          "name": "Çalışan Sayısı",
+          "dataType": "tamsayi",
+          "required": true,
+          "order": 2
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-var-1",
+          "values": {
+            "vardiya-kodu": "Gündüz",
+            "calisan-sayisi": 24
+          }
+        }
+      ]
+    },
+    {
+      "id": "ent-kpi-personel",
+      "entityType": "kpi",
+      "name": "Personel KPI",
+      "layout": "belge",
+      "columns": [
+        {
+          "id": "kpi-kodu",
+          "name": "KPI Kodu",
+          "dataType": "metin",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "deger",
+          "name": "Değer",
+          "dataType": "sayi",
+          "required": true,
+          "order": 2
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-kpi-1",
+          "values": {
+            "kpi-kodu": "personel-verimlilik-skoru",
+            "deger": 89.75
+          }
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel-personel-departman",
+      "fromEntityId": "ent-personel",
+      "toEntityId": "ent-departmanlar",
+      "kind": "bire-cok",
+      "name": "Personel → Departman",
+      "fromColumnId": "departman-kodu",
+      "toColumnId": "departman-kodu"
+    }
+  ]
+}

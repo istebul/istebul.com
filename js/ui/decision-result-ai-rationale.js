@@ -3,6 +3,7 @@
  * Explains deterministic Decision Result Summary only — never produces new scores/TCO/risk/fit.
  */
 
+import { postAiProxy } from '../core/ai-proxy-client.js';
 import { escapeHtml } from '../core/security.js';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { extractAiProxyText } from '../features/ai/ai-insight-engine.js';
@@ -89,9 +90,9 @@ export function buildDeterministicDecisionResultRationale(summary) {
         profile_explanation:
             `Karar profili "${profileValue}" olarak özetleniyor. ${profile.detail || 'Profil girdileri mevcut cevaplardan türetilir.'}`,
         synthesis:
-            `Karar sonucu özeti mevcut uygunluk (${fitValue}), risk (${riskValue}), TCO (${tcoValue}) ve profil sinyallerinden okunur.`,
+            `Ön değerlendirme özeti mevcut uygunluk (${fitValue}), risk (${riskValue}), TCO (${tcoValue}) ve profil sinyallerinden okunur.`,
         disclaimer:
-            'Bu gerekçe karar desteği amaçlıdır; bağlayıcı satın alma veya finansman taahhüdü değildir. Nihai karar kullanıcıya aittir.'
+            'Bu gerekçe ön değerlendirme ve karar desteği amaçlıdır; bağlayıcı satın alma veya finansman taahhüdü değildir. Tam analiz ilgili kategori akışında tamamlanır.'
     };
 }
 
@@ -126,7 +127,7 @@ export function buildDecisionResultRationalePrompt(summary) {
     };
 
     return [
-        'Görev: Karar sonucu özeti için YALNIZCA geçerli JSON üret (başka metin yok).',
+        'Görev: Ön değerlendirme özeti için YALNIZCA geçerli JSON üret (başka metin yok).',
         'Dil: Türkçe, profesyonel, açıklayıcı; pazarlama abartısı yok.',
         'YASAK: yeni skor, TCO, risk veya uygunluk üretmek; "seçmelisiniz", "en doğru karar", "kesinlikle bunu alın", "tek doğru seçenek", "sizin için en iyi karar" gibi emir kipi.',
         'İZİNLİ: verilen özet sinyallerini açıklamak, skor/risk/TCO/uygunluk farklarını yorumlamak.',
@@ -214,7 +215,7 @@ export function renderDecisionResultAiRationaleHtml(rationale, options = {}) {
         '<header class="decision-result-ai-rationale-head">' +
             '<div>' +
                 '<h4>AI destekli karar gerekçesi</h4>' +
-                '<p class="decision-result-ai-rationale-lead">Bu gerekçe mevcut skor, risk, TCO ve uygunluk sinyallerini açıklar; nihai karar kullanıcıya aittir.</p>' +
+                '<p class="decision-result-ai-rationale-lead">Bu gerekçe ön değerlendirmedeki skor, risk, TCO ve uygunluk sinyallerini açıklar; tam analiz ilgili kategori akışında tamamlanır.</p>' +
             '</div>' +
             '<span class="decision-result-ai-rationale-badge" data-decision-ai-badge>' + safe(sourceLabel) + '</span>' +
         '</header>' +
@@ -292,32 +293,23 @@ export async function fetchDecisionResultAiRationale(summary, options = {}) {
     }
 
     const prompt = buildDecisionResultRationalePrompt(summary);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), RATIONALE_TIMEOUT_MS);
 
     try {
-        const res = await fetch('/ai-proxy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prompt,
-                context: { category: 'decision-result-rationale-v1' }
-            }),
-            signal: controller.signal
+        const proxy = await postAiProxy({
+            prompt,
+            context: { category: 'decision-result-rationale-v1' },
+            timeoutMs: RATIONALE_TIMEOUT_MS
         });
 
-        if (!res.ok) {
+        if (!proxy.ok) {
             return { rationale: deterministic, source: 'rules' };
         }
 
-        const data = await res.json().catch(() => ({}));
-        const parsed = parseDecisionResultRationale(extractAiProxyText(data));
+        const parsed = parseDecisionResultRationale(extractAiProxyText(proxy.data));
         const { data: merged, source } = mergeDecisionResultRationale(parsed, deterministic);
         return { rationale: merged, source };
     } catch {
         return { rationale: deterministic, source: 'rules' };
-    } finally {
-        clearTimeout(timeoutId);
     }
 }
 

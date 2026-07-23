@@ -1,7 +1,7 @@
 {
   "baseUrl": "https://www.istebul.com",
   "siteName": "isteBul",
-  "defaultOgImage": "/assets/images/og-image.svg",
+  "defaultOgImage": "/assets/images/og-image.png",
   "locale": "tr_TR",
   "language": "tr-TR",
   "organization": {
@@ -11,6 +11,7 @@
   },
   "staticUrls": [
     { "loc": "/", "priority": "1.0", "changefreq": "weekly" },
+    { "loc": "/ai/", "priority": "0.95", "changefreq": "weekly" },
     { "loc": "/auto/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/metodoloji/", "priority": "0.9", "changefreq": "monthly" },
     { "loc": "/veri-kaynaklari/", "priority": "0.75", "changefreq": "monthly" },
@@ -37,6 +38,7 @@
     { "loc": "/yardim.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/karar-moat.html", "priority": "0.45", "changefreq": "monthly" },
     { "loc": "/sigorta/", "priority": "0.85", "changefreq": "weekly" },
-    { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" }
+    { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" },
+    { "loc": "/garson/", "priority": "0.75", "changefreq": "weekly" }
   ]
 }

@@ -25,12 +25,12 @@ export function renderHiringArchitectureCenter(snapshot, escapeHtml) {
         )
         .join('');
       const d90 = (role.first90Days || [])
-        .map((d) => `<li>Day ${d.day}: ${esc(d.goal)}</li>`)
+        .map((d) => `<li>Gün ${d.day}: ${esc(d.goal)}</li>`)
         .join('');
       return `
       <details style="margin-bottom:12px;border:1px solid var(--border);border-radius:8px;padding:8px 12px">
         <summary style="cursor:pointer;font-weight:600">
-          ${esc(role.title)} · urgency ${role.urgencyScore ?? 0} · reports to ${esc(role.reportsTo)}
+          ${esc(role.title)} · aciliyet ${role.urgencyScore ?? 0} · bağlı olduğu ${esc(role.reportsTo)}
         </summary>
         <p class="text-muted-sm" style="margin:8px 0 6px;font-size:12px"><strong>Neden:</strong> ${esc(role.why)}</p>
         <p class="text-muted-sm" style="margin:4px 0 6px;font-size:12px"><strong>Ne zaman:</strong> ${esc(role.when?.hireTrigger)}</p>
@@ -51,29 +51,29 @@ export function renderHiringArchitectureCenter(snapshot, escapeHtml) {
 
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P21 Hiring Architecture · <code>npm run metrics:hiring:architecture</code> ·
-      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Playbook</a>
+      P21 İşe alım mimarisi · <code>npm run metrics:hiring:architecture</code> ·
+      <a href="/${esc(snapshot.docPath)}" target="_blank" rel="noopener">Oyun planı</a>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid var(--primary)">
-      <strong>Next hire: ${esc(snapshot.nextRecommendedHire?.roleId || '—')}</strong>
+      <strong>Sıradaki işe alım: ${esc(snapshot.nextRecommendedHire?.roleId || '—')}</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${(snapshot.executiveSummary || []).map((line) => `<li>${esc(line)}</li>`).join('')}
       </ul>
     </div>
 
-    <h3 style="margin:0 0 12px">Hire sequence (metric-triggered)</h3>
+    <h3 style="margin:0 0 12px">İşe alım sırası (metrik tetiklemeli)</h3>
     <ol style="margin:0 0 18px;padding-left:18px;font-size:13px;line-height:1.55">${sequenceList}</ol>
 
-    <h3 style="margin:0 0 12px">Squads (scalable team design)</h3>
+    <h3 style="margin:0 0 12px">Ekipler (ölçeklenebilir ekip tasarımı)</h3>
     <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
       <table class="admin-table">
-        <thead><tr><th>Squad</th><th>Lead</th><th>Roles</th><th>North-star</th></tr></thead>
+        <thead><tr><th>Ekip</th><th>Lider</th><th>Roller</th><th>Kuzey yıldızı</th></tr></thead>
         <tbody>${squadRows}</tbody>
       </table>
     </div>
 
-    <h3 style="margin:0 0 12px">Roles (8)</h3>
+    <h3 style="margin:0 0 12px">Roller (8)</h3>
     ${roleBlocks}
   `;
 }
