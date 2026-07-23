@@ -1,13 +1,21 @@
 import type { BusinessDataProvider } from '../types/business-provider';
 import type {
   BusinessMetric,
-  BusinessMetricsResult,
-  MetricTrendDirection
+  BusinessMetricsResult
 } from '../intelligence/types/business-metrics';
-import type { BusinessDataPoint, RawBusinessData } from '../intelligence/types/raw-business-data';
+import type { RawBusinessData } from '../intelligence/types/raw-business-data';
+import type { BusinessAnalyticsSnapshot } from '../intelligence/models/analytics';
+import {
+  AnalyticsEngine,
+  createAnalyticsEngine
+} from '../intelligence/core/AnalyticsEngine';
 import { getDefaultBusinessDataProvider } from '../providers/ProviderFactory';
+import {
+  directionFromDelta,
+  formatPercentDelta
+} from '../intelligence/utils/analytics-score';
 
-/** Derived signals computed by MetricsEngine for downstream InsightEngine. */
+/** Derived signals computed for downstream InsightEngine (unchanged contract). */
 export interface BusinessMetricSignals {
   revenueDelta: number;
   costDelta: number;
@@ -26,70 +34,26 @@ export interface MetricsEngineResult {
   signals: BusinessMetricSignals;
 }
 
-function seriesChangePercent(series: readonly BusinessDataPoint[]): number {
-  if (series.length < 2) return 0;
-  const first = series[0]?.value ?? 0;
-  const last = series[series.length - 1]?.value ?? 0;
-  if (first === 0) return last === 0 ? 0 : 100;
-  return ((last - first) / Math.abs(first)) * 100;
-}
-
-function directionFromDelta(delta: number, flatThreshold = 0.5): MetricTrendDirection {
-  if (Math.abs(delta) < flatThreshold) return 'flat';
-  return delta > 0 ? 'up' : 'down';
-}
-
-function formatPercent(value: number, digits = 1): string {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(digits)}%`;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function buildMetricsAndSignals(raw: RawBusinessData): MetricsEngineResult {
-  const revenueDelta = seriesChangePercent(raw.revenueSeries);
-  const costDelta = seriesChangePercent(raw.costSeries);
-  const growth =
-    raw.previousCustomerCount === 0
-      ? 0
-      : ((raw.customerCount - raw.previousCustomerCount) / raw.previousCustomerCount) * 100;
-
-  const cashDelta = seriesChangePercent(raw.cashFlowSeries);
-  const cashFirst = raw.cashFlowSeries[0]?.value ?? 0;
-  const cashLast = raw.cashFlowSeries[raw.cashFlowSeries.length - 1]?.value ?? 0;
-  const cashDropPercent = cashFirst > 0 ? ((cashFirst - cashLast) / cashFirst) * 100 : 0;
-
-  const riskScore = clamp(
-    Math.round(
-      35 +
-        Math.max(0, costDelta) * 1.4 +
-        Math.max(0, -cashDelta) * 1.8 +
-        raw.churnRatePercent * 4 +
-        (raw.stockDaysRemaining < 14 ? (14 - raw.stockDaysRemaining) * 2 : 0) -
-        Math.max(0, revenueDelta) * 0.8
-    ),
-    0,
-    100
-  );
-
-  const customerHealth = clamp(
-    Math.round(100 - raw.churnRatePercent * 8 + Math.max(-10, Math.min(15, growth * 2))),
-    0,
-    100
-  );
-
-  const topMargin = [...raw.categoryMargins].sort(
-    (a, b) => b.marginPercent - a.marginPercent
-  )[0];
+function mapAnalyticsToMetrics(snapshot: BusinessAnalyticsSnapshot): MetricsEngineResult {
+  const {
+    revenueDelta,
+    costDelta,
+    growth,
+    riskScore,
+    customerHealth,
+    topMarginCategory,
+    topMarginPercent,
+    cashDropPercent,
+    stockDaysRemaining,
+    asOf
+  } = snapshot;
 
   const metricsList: BusinessMetric[] = [
     {
       id: 'revenue-trend',
       label: 'Revenue Trend',
-      value: formatPercent(revenueDelta),
-      numericValue: Number(revenueDelta.toFixed(2)),
+      value: formatPercentDelta(revenueDelta),
+      numericValue: revenueDelta,
       unit: 'percent',
       direction: directionFromDelta(revenueDelta),
       periodLabel: 'Son 7 gün',
@@ -98,8 +62,8 @@ function buildMetricsAndSignals(raw: RawBusinessData): MetricsEngineResult {
     {
       id: 'cost-trend',
       label: 'Cost Trend',
-      value: formatPercent(costDelta),
-      numericValue: Number(costDelta.toFixed(2)),
+      value: formatPercentDelta(costDelta),
+      numericValue: costDelta,
       unit: 'percent',
       direction: directionFromDelta(costDelta),
       periodLabel: 'Son 7 gün',
@@ -108,8 +72,8 @@ function buildMetricsAndSignals(raw: RawBusinessData): MetricsEngineResult {
     {
       id: 'growth',
       label: 'Growth',
-      value: formatPercent(growth),
-      numericValue: Number(growth.toFixed(2)),
+      value: formatPercentDelta(growth),
+      numericValue: growth,
       unit: 'percent',
       direction: directionFromDelta(growth),
       periodLabel: 'Müşteri tabanı',
@@ -139,51 +103,80 @@ function buildMetricsAndSignals(raw: RawBusinessData): MetricsEngineResult {
 
   const metrics: BusinessMetricsResult = Object.freeze({
     metrics: Object.freeze(metricsList.map((m) => Object.freeze({ ...m }))),
-    generatedAt: raw.asOf
+    generatedAt: asOf
   });
 
   const signals: BusinessMetricSignals = Object.freeze({
-    revenueDelta: Number(revenueDelta.toFixed(2)),
-    costDelta: Number(costDelta.toFixed(2)),
-    growth: Number(growth.toFixed(2)),
+    revenueDelta,
+    costDelta,
+    growth,
     riskScore,
     customerHealth,
-    topMarginCategory: topMargin?.category ?? null,
-    topMarginPercent: topMargin ? topMargin.marginPercent : null,
-    cashDropPercent: Number(cashDropPercent.toFixed(2)),
-    stockDaysRemaining: raw.stockDaysRemaining,
-    asOf: raw.asOf
+    topMarginCategory,
+    topMarginPercent,
+    cashDropPercent,
+    stockDaysRemaining,
+    asOf
   });
 
   return Object.freeze({ metrics, signals });
 }
 
+export interface MetricsEngineOptions {
+  provider?: BusinessDataProvider;
+  analyticsEngine?: AnalyticsEngine;
+}
+
 /**
- * Metrics Engine — consumes BusinessDataProvider only.
+ * Metrics Engine — consumes AnalyticsEngine output (not provider data directly).
  * Produces KPI metrics + derived signals for InsightEngine.
  */
 export class MetricsEngine {
-  private readonly provider: BusinessDataProvider;
+  private readonly analyticsEngine: AnalyticsEngine;
   private lastResult: MetricsEngineResult | null = null;
 
-  constructor(provider: BusinessDataProvider = getDefaultBusinessDataProvider()) {
-    this.provider = provider;
+  constructor(
+    providerOrOptions: BusinessDataProvider | MetricsEngineOptions = getDefaultBusinessDataProvider()
+  ) {
+    if (
+      providerOrOptions &&
+      typeof providerOrOptions === 'object' &&
+      'getSnapshot' in providerOrOptions
+    ) {
+      this.analyticsEngine = createAnalyticsEngine({ provider: providerOrOptions });
+    } else {
+      const options = providerOrOptions as MetricsEngineOptions;
+      this.analyticsEngine =
+        options.analyticsEngine ??
+        createAnalyticsEngine({
+          provider: options.provider ?? getDefaultBusinessDataProvider()
+        });
+    }
   }
 
   compute(): MetricsEngineResult {
-    const raw = this.provider.getSnapshot();
-    this.lastResult = buildMetricsAndSignals(raw);
+    const snapshot =
+      this.analyticsEngine.getLastSnapshot() ?? this.analyticsEngine.compute();
+    this.lastResult = mapAnalyticsToMetrics(snapshot);
     return this.lastResult;
   }
 
   getLastResult(): MetricsEngineResult | null {
     return this.lastResult;
   }
+
+  getAnalyticsEngine(): AnalyticsEngine {
+    return this.analyticsEngine;
+  }
 }
 
 /** Backward-compatible helper used by EPIC-510 call sites / tests. */
 export function computeBusinessMetrics(raw: RawBusinessData): BusinessMetricsResult {
-  return buildMetricsAndSignals(raw).metrics;
+  const provider: BusinessDataProvider = {
+    kind: 'mock',
+    getSnapshot: () => raw
+  };
+  return new MetricsEngine(provider).compute().metrics;
 }
 
 export default MetricsEngine;

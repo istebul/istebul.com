@@ -1,23 +1,25 @@
 /**
- * Business Intelligence Engine (EPIC-510 / EPIC-520)
+ * Business Intelligence (EPIC-510 → EPIC-530)
  *
  * ## Pipeline
  *
  * ```
- * ProviderFactory (mock default)
+ * Provider (mock default)
+ *   → AnalyticsEngine (+ Registry plug-ins)
  *   → MetricsEngine
  *   → InsightEngine
  *   → RecommendationEngine
  *   → Advisor UI
  * ```
  *
- * Canonical provider + service modules:
- * - `src/business/providers/`
- * - `src/business/services/`
- * - `src/business/types/business-provider.ts`
- *
- * This folder keeps mock data, result types, pipeline orchestration,
- * and compatibility shims for EPIC-510 import paths.
+ * | Area | Path |
+ * |------|------|
+ * | Analytics modules | `analytics/` |
+ * | Orchestration | `core/AnalyticsEngine.ts`, `core/AnalyticsRegistry.ts` |
+ * | Models | `models/analytics.ts` |
+ * | Score utils | `utils/analytics-score.ts` |
+ * | Providers | `src/business/providers/` |
+ * | Downstream engines | `src/business/services/` |
  *
  * No API, DB, auth, or tenant calls.
  */
