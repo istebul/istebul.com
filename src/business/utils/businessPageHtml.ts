@@ -12,7 +12,7 @@ export function businessPageHtml(options: {
   const robots = options.robots ?? 'index, follow, max-image-preview:large';
   const canonical = `https://www.istebul.com${options.canonicalPath}`;
   return `<!doctype html>
-<html lang="tr" class="ib-ds-v4 ib-premium-v7" data-business-theme="light">
+<html lang="tr" data-business-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -36,8 +36,6 @@ export function businessPageHtml(options: {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${options.title} | İSTEBUL Business">
   <meta name="twitter:description" content="${options.description}">
-  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
-  <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
   <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
   <link rel="stylesheet" href="/css/business-page.css">
   <script src="/env.js" defer></script>
