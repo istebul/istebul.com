@@ -1,11 +1,16 @@
 # providers
 
-Business Data Provider layer (EPIC-520).
+Business Data Provider layer (EPIC-520 → EPIC-560).
 
-| File | Role |
+| Path | Role |
 |------|------|
 | `BusinessDataProvider.ts` | Interface surface |
-| `MockBusinessProvider.ts` | Default mock implementation |
-| `ProviderFactory.ts` | Resolves providers (`mock` default) |
+| `MockBusinessProvider.ts` | Default mock implementation (ready) |
+| `ProviderFactory.ts` | Factory → ProviderResolver (`mock` default) |
+| `adapters/` | Supabase / ERP / Garson AI foundation stubs |
+| `core/` | `ProviderResolver`, capability catalog |
+| `models/` | Capabilities + status models |
+| `utils/` | Provider validation helpers |
 
-No API / DB / auth / tenant integration.
+Live adapters do **not** call APIs or databases. Unready kinds fall back to mock
+unless `strict: true` is passed. No auth / tenant integration.

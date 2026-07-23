@@ -1,10 +1,11 @@
 /**
- * Business Intelligence Engine (EPIC-510 → EPIC-550)
+ * Business Intelligence Engine (EPIC-510 → EPIC-560)
  *
- * Provider → Analytics → Scoring → Health → KPI → Event Intelligence →
+ * Provider (mock default; live adapters via ProviderResolver) →
+ * Analytics → Scoring → Health → KPI → Event Intelligence →
  * Metrics → Insight → Recommendation → Advisor
  *
- * Mock-only foundation. No API, DB, auth, or tenant integration.
+ * Live adapters are foundation stubs only. No API, DB, auth, or tenant calls.
  */
 
 export { MOCK_BUSINESS_RAW_DATA } from './data/mock-business-data';
@@ -18,8 +19,38 @@ export {
 } from '../providers/MockBusinessProvider';
 export {
   createBusinessDataProvider,
-  getDefaultBusinessDataProvider
+  getDefaultBusinessDataProvider,
+  resolveBusinessProvider,
+  createProviderResolver,
+  resolveBusinessDataProvider
 } from '../providers/ProviderFactory';
+export type {
+  ProviderFactoryOptions,
+  ProviderResolveOptions,
+  ProviderResolveResult
+} from '../providers/ProviderFactory';
+export {
+  SupabaseProvider,
+  createSupabaseProvider
+} from '../providers/adapters/SupabaseProvider';
+export { ERPProvider, createERPProvider } from '../providers/adapters/ERPProvider';
+export {
+  GarsonAIProvider,
+  createGarsonAIProvider
+} from '../providers/adapters/GarsonAIProvider';
+export { ProviderResolver } from '../providers/core/ProviderResolver';
+export {
+  getProviderCapabilities,
+  listProviderCapabilities,
+  PROVIDER_CAPABILITIES
+} from '../providers/core/ProviderCapabilities';
+export {
+  ProviderNotReadyError,
+  createProviderStatus,
+  validateProviderCapabilities,
+  isProviderReady
+} from '../providers/utils/provider-validator';
+export type { ProviderStatusCode } from '../providers/models/provider-status';
 export { computeBusinessMetrics, MetricsEngine } from '../services/MetricsEngine';
 export { computeBusinessInsights, InsightEngine } from '../services/InsightEngine';
 export {
@@ -126,7 +157,10 @@ export type {
 
 export type {
   BusinessDataProvider,
-  BusinessProviderKind
+  BusinessProviderAdapter,
+  BusinessProviderKind,
+  ProviderCapabilities,
+  ProviderStatus
 } from '../types/business-provider';
 export type {
   IBusinessDataProvider,

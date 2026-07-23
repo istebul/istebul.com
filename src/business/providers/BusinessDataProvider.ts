@@ -4,8 +4,11 @@
  */
 export type {
   BusinessDataProvider,
+  BusinessProviderAdapter,
   BusinessProviderKind,
   RawBusinessData,
   BusinessDataPoint,
-  BusinessCategoryMargin
+  BusinessCategoryMargin,
+  ProviderCapabilities,
+  ProviderStatus
 } from '../types/business-provider';
