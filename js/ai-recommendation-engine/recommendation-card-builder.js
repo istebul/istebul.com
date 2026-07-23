@@ -86,10 +86,9 @@ export function buildRecommendationCardHtml(item, options = {}) {
         <button type="button" class="ai-rec-card__cost-btn" data-rec-cost-id="${safe(item.id)}" aria-label="Sahip Olma Maliyeti">
           Sahip Olma Maliyeti
         </button>
-        ${shouldShowQualityButton(item) ? `
-        <button type="button" class="ai-rec-card__quality-btn" data-rec-quality-id="${safe(item.id)}" aria-label="Kalite ve Güven">
-          Kalite ve Güven
-        </button>` : ''}
+        <button type="button" class="ai-rec-card__neg-btn" data-rec-negotiation-id="${safe(item.id)}" aria-label="Pazarlık Zekâsı">
+          Pazarlık Zekâsı
+        </button>
       </footer>
     </article>`;
 }

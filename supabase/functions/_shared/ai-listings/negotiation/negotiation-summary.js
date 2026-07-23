@@ -1,97 +1,121 @@
 /**
- * Negotiation Intelligence — Turkish summary, warnings, safe language (Faz N-1).
+ * Negotiation Intelligence — safe Turkish summary (Sprint-22 v1).
  */
 
-import { safeNumber } from '../engine/score-utils.js';
+import { formatCostTry } from '../ownership-cost/cost-breakdown.js';
 
-/** @type {Readonly<string[]>} */
+/** @type {ReadonlyArray<string>} */
 export const NEGOTIATION_FORBIDDEN_PHRASES = Object.freeze([
-  'kesin',
+  'kesin bu fiyata alınır',
   'garanti',
-  'mutlaka al',
-  'risksiz',
-  'zararsız',
-  'en iyi fırsat',
-  'kesin alınır',
-  'garantili kazanç',
-  'kaçırılmaz fırsat'
+  'kazandırır',
+  'yatırım tavsiyesi',
+  'gerçek piyasa değeri',
+  'kesin değer',
+  'garantili',
+  'kesin fiyat'
 ]);
 
 /**
  * @param {string} text
  * @returns {string}
  */
-export function sanitizeNegotiationText(text) {
+export function sanitizeNegotiationSummary(text) {
   let safe = String(text ?? '').trim();
   for (const phrase of NEGOTIATION_FORBIDDEN_PHRASES) {
     const regex = new RegExp(phrase, 'gi');
-    safe = safe.replace(regex, 'değerlendirilebilir');
+    safe = safe.replace(regex, 'ön değerlendirme');
   }
   return safe;
 }
 
 /**
- * @param {'low'|'medium'|'high'} risk
- * @returns {string}
+ * @param {Record<string, unknown>} input
+ * @param {Record<string, unknown>} offerRange
+ * @param {'Düşük'|'Orta'|'Yüksek'|string} riskLevel
+ * @returns {string[]}
  */
-function riskLabelTr(risk) {
-  if (risk === 'low') return 'düşük';
-  if (risk === 'high') return 'yüksek';
-  return 'orta';
+export function buildNegotiationReasons(input, offerRange, riskLevel) {
+  /** @type {string[]} */
+  const reasons = [];
+  const priceIntel = /** @type {Record<string, unknown>} */ (input.price_intelligence ?? {});
+  const position = String(priceIntel.price_position ?? 'unknown');
+  const risk = Number(input.risk_score ?? 50);
+  const quality = Number(input.quality_score ?? 50);
+  const duplicate = String(input.duplicate_status ?? 'new');
+
+  if (position === 'overpriced') {
+    reasons.push('Fiyat konumu yüksek görünüyor; daha geniş pazarlık aralığı önerildi.');
+  } else if (position === 'slightly_overpriced') {
+    reasons.push('Fiyat konumu hafif yüksek; orta düzey pazarlık alanı değerlendirildi.');
+  } else if (position === 'fair') {
+    reasons.push('Fiyat konumu dengeli; sınırlı pazarlık payı önerildi.');
+  } else if (position === 'underpriced') {
+    reasons.push('Fiyat konumu düşük görünüyor; dikkatli teklif ve hızlı doğrulama önerilir.');
+  } else {
+    reasons.push('Fiyat konumu belirsiz; genel ön değerlendirme aralığı üretildi.');
+  }
+
+  if (risk >= 55) {
+    reasons.push('Risk skoru yüksek olduğu için teklif aralığı aşağı çekildi.');
+  }
+
+  if (quality < 55) {
+    reasons.push('Kalite skoru düşük olduğu için teklif aralığı aşağı çekildi.');
+  }
+
+  const ownership = /** @type {Record<string, unknown>} */ (input.ownership_cost ?? {});
+  if (Number(ownership.total_cost ?? 0) > Number(input.listing_price ?? 0) * 1.2) {
+    reasons.push('Sahip olma maliyeti yüksek; teklif aralığında maliyet baskısı yansıtıldı.');
+  }
+
+  if (duplicate === 'exact' || duplicate === 'similar') {
+    reasons.push('Mükerrer / benzer ilan uyarısı: karşılaştırma yapılmadan teklif verilmemesi önerilir.');
+  }
+
+  const market = /** @type {Record<string, unknown>} */ (input.market_intelligence ?? {});
+  const liquidity = String(market.liquidity_label ?? '');
+  if (liquidity && /düşük|yavaş/i.test(liquidity)) {
+    reasons.push('Piyasa likiditesi düşük; pazarlık süresi uzayabilir.');
+  }
+
+  if (riskLevel === 'Yüksek') {
+    reasons.push('Genel pazarlık riski yüksek; doğrulama adımları tamamlanmadan nihai teklif önerilmez.');
+  }
+
+  return reasons.slice(0, 6);
 }
 
 /**
+ * @param {Record<string, unknown>} offerRange
+ * @param {'Düşük'|'Orta'|'Yüksek'|string} riskLevel
  * @param {Record<string, unknown>} input
- * @param {ReturnType<typeof import('./offer-range-engine.js').buildOfferRange>} offerRange
- * @param {ReturnType<typeof import('./negotiation-risk-engine.js').assessNegotiationRisk>} riskResult
- * @param {Array<{ id: string, label: string, status: string }>} checklist
- * @returns {{ summary: string, warnings: string[] }}
+ * @returns {string}
  */
-export function buildNegotiationSummary(input, offerRange, riskResult, checklist) {
-  const warnings = [];
-  const qualitySignal = /** @type {Record<string, unknown>} */ (input.qualitySignal ?? {});
-  const verificationLevel = String(qualitySignal.verificationLevel ?? 'none').toLowerCase();
-  const inputConfidence = safeNumber(input.confidence) || 0.5;
+export function buildNegotiationSummaryText(offerRange, riskLevel, input = {}) {
+  const low = formatCostTry(Number(offerRange.suggested_offer_low ?? 0));
+  const high = formatCostTry(Number(offerRange.suggested_offer_high ?? 0));
+  const priceIntel = /** @type {Record<string, unknown>} */ (input.price_intelligence ?? {});
+  const position = String(priceIntel.price_position ?? 'unknown');
 
-  if (!offerRange.hasMarketReference) {
-    warnings.push('Piyasa referans verisi eksik; teklif bandı geniş tutuldu.');
-  }
+  let summary =
+    `Mevcut bilgiler ışığında bu ilan için makul teklif aralığı ${low} - ${high} olarak değerlendirilebilir. `;
 
-  if (inputConfidence < 0.55) {
-    warnings.push('Girdi güveni düşük; teklif önerisi muhafazakâr hesaplandı.');
-  }
-
-  if (verificationLevel === 'none') {
-    warnings.push('Doğrulama seviyesi yetersiz; ek belge kontrolü önerilir.');
-  }
-
-  const warnChecklistCount = checklist.filter((item) => item.status === 'warn').length;
-  if (warnChecklistCount >= 2) {
-    warnings.push('Kontrol listesinde birden fazla uyarı var; teklif öncesi doğrulama önerilir.');
-  }
-
-  const priceText = new Intl.NumberFormat('tr-TR').format(safeNumber(input.price));
-  const targetText = new Intl.NumberFormat('tr-TR').format(offerRange.targetOffer);
-  const minText = new Intl.NumberFormat('tr-TR').format(offerRange.minOffer);
-  const maxText = new Intl.NumberFormat('tr-TR').format(offerRange.maxOffer);
-
-  let summary = `İlan fiyatı ${priceText} TL için hedef teklif ${targetText} TL civarında değerlendirilebilir. `;
-  summary += `Önerilen bant ${minText}–${maxText} TL aralığında; pazarlık riski ${riskLabelTr(riskResult.negotiationRisk)}. `;
-
-  if (offerRange.hasMarketReference && offerRange.priceDeltaPct !== null) {
-    if (offerRange.priceDeltaPct > 8) {
-      summary += 'Fiyat piyasa referansının üzerinde görünüyor; indirim alanı daha geniş tutuldu.';
-    } else if (offerRange.priceDeltaPct < -5) {
-      summary += 'Fiyat piyasa referansının altında; teklif bandı dar tutuldu.';
-    } else {
-      summary += 'Fiyat piyasa referansına yakın; dengeli bir teklif bandı önerildi.';
-    }
+  if (position === 'underpriced') {
+    summary +=
+      'Fiyat avantajı olabileceği için hızlı doğrulama önerilir; agresif pazarlık yerine dikkatli teklif yaklaşımı uygun görünür. ';
   } else {
-    summary += 'Piyasa referansı sınırlı olduğu için teklif bandı temkinli hesaplandı.';
+    summary +=
+      'Fotoğraf, konum ve ekspertiz doğrulaması yapılmadan nihai teklif verilmemesi önerilir. ';
   }
 
-  return {
-    summary: sanitizeNegotiationText(summary),
-    warnings: warnings.map((warning) => sanitizeNegotiationText(warning))
-  };
+  if (riskLevel === 'Yüksek') {
+    summary += 'Pazarlık riski yüksek; nihai karar öncesi ek doğrulama adımları tamamlanmalıdır.';
+  } else if (riskLevel === 'Orta') {
+    summary += 'Ön değerlendirme tamamlanana kadar temkinli ilerlenmesi önerilir.';
+  } else {
+    summary += 'Ön değerlendirme sonrası doğrulama tamamlandığında teklif sürecine geçilebilir.';
+  }
+
+  return sanitizeNegotiationSummary(summary);
 }
