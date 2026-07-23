@@ -1,17 +1,25 @@
 /**
- * Negotiation Intelligence v1 — shared barrel (Faz N-1).
+ * Negotiation Intelligence v1 — shared exports (Sprint-22).
  */
 
 export {
+  clearNegotiationMemoCache,
+  buildNegotiationCacheKey,
   buildNegotiationInput,
-  runNegotiationIntelligenceEngine
+  computeNegotiationConfidence,
+  runNegotiationIntelligence,
+  buildNegotiationRiskLabel,
+  classifyNegotiationRiskLevel,
+  mapNegotiationRiskClass,
+  NEGOTIATION_RISK_LEVELS,
+  computeOfferRange,
+  roundOfferAmount,
+  POSITION_DISCOUNT_PROFILES,
+  buildNegotiationChecklist,
+  resolveNegotiationCategoryKey,
+  NEGOTIATION_CHECKLIST_BY_CATEGORY,
+  buildNegotiationSummaryText,
+  buildNegotiationReasons,
+  sanitizeNegotiationSummary,
+  NEGOTIATION_FORBIDDEN_PHRASES
 } from './negotiation-engine.js';
-
-export { buildOfferRange } from './offer-range-engine.js';
-export { assessNegotiationRisk } from './negotiation-risk-engine.js';
-export { buildNegotiationChecklist } from './negotiation-checklist.js';
-export {
-  NEGOTIATION_FORBIDDEN_PHRASES,
-  sanitizeNegotiationText,
-  buildNegotiationSummary
-} from './negotiation-summary.js';

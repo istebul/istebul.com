@@ -1,124 +1,70 @@
 /**
- * Negotiation Intelligence — risk assessment and evidence signals (Faz N-1).
+ * Negotiation Intelligence — risk level engine (Sprint-22 v1).
  */
 
-import { clampScore, safeNumber } from '../engine/score-utils.js';
+import { safeNumber } from '../engine/score-utils.js';
+
+/** @type {ReadonlyArray<string>} */
+export const NEGOTIATION_RISK_LEVELS = Object.freeze(['Düşük', 'Orta', 'Yüksek']);
 
 /**
- * @param {number} score
- * @returns {'low'|'medium'|'high'}
+ * @param {'Düşük'|'Orta'|'Yüksek'|string} level
+ * @returns {string}
  */
-function resolveNegotiationRiskLevel(score) {
-  if (score <= 35) return 'low';
-  if (score <= 60) return 'medium';
-  return 'high';
+export function buildNegotiationRiskLabel(level) {
+  if (level === 'Düşük') return 'Düşük pazarlık riski';
+  if (level === 'Yüksek') return 'Yüksek pazarlık riski';
+  return 'Orta pazarlık riski';
 }
 
 /**
- * @param {string} signal
- * @param {'positive'|'negative'|'neutral'} impact
- * @param {number} weight
- * @returns {{ signal: string, impact: 'positive'|'negative'|'neutral', weight: number }}
+ * @param {'Düşük'|'Orta'|'Yüksek'|string} level
+ * @returns {'low'|'mid'|'high'}
  */
-function buildEvidenceSignal(signal, impact, weight) {
-  return {
-    signal,
-    impact,
-    weight: Math.round(Math.max(0, Math.min(1, weight)) * 100) / 100
-  };
+export function mapNegotiationRiskClass(level) {
+  if (level === 'Düşük') return 'low';
+  if (level === 'Yüksek') return 'high';
+  return 'mid';
 }
 
 /**
  * @param {Record<string, unknown>} input
- * @param {ReturnType<typeof import('./offer-range-engine.js').buildOfferRange>} offerRange
- * @returns {{
- *   negotiationRisk: 'low'|'medium'|'high',
- *   evidenceSignals: Array<{ signal: string, impact: 'positive'|'negative'|'neutral', weight: number }>,
- *   confidenceAdjustment: number,
- *   riskScore: number
- * }}
+ * @param {Record<string, unknown>} offerRange
+ * @returns {'Düşük'|'Orta'|'Yüksek'}
  */
-export function assessNegotiationRisk(input, offerRange) {
-  const ownershipSignal = /** @type {Record<string, unknown>} */ (input.ownershipSignal ?? {});
-  const qualitySignal = /** @type {Record<string, unknown>} */ (input.qualitySignal ?? {});
-  const sellerType = String(ownershipSignal.sellerType ?? 'unknown').toLowerCase();
-  const verificationLevel = String(qualitySignal.verificationLevel ?? 'none').toLowerCase();
-  const qualityScore = safeNumber(qualitySignal.listingQualityScore);
-  const inputConfidence = safeNumber(input.confidence) || 0.5;
-  const priceDeltaPct = offerRange.priceDeltaPct;
+export function classifyNegotiationRiskLevel(input, offerRange = {}) {
+  const risk = safeNumber(input.risk_score) || 50;
+  const quality = safeNumber(input.quality_score) || 50;
+  const duplicate = String(input.duplicate_status ?? 'new');
+  const priceIntel = /** @type {Record<string, unknown>} */ (input.price_intelligence ?? {});
+  const position = String(priceIntel.price_position ?? 'unknown');
+  const confidence = safeNumber(input.confidence) || 50;
+  const roomPct = safeNumber(offerRange.negotiation_room_pct);
 
-  let riskScore = 48;
-  const evidenceSignals = [];
+  let score = 0;
 
-  if (offerRange.hasMarketReference && priceDeltaPct !== null) {
-    if (priceDeltaPct > 8) {
-      riskScore += 14;
-      evidenceSignals.push(buildEvidenceSignal('price_position', 'negative', 0.28));
-    } else if (priceDeltaPct > 3) {
-      riskScore += 6;
-      evidenceSignals.push(buildEvidenceSignal('price_position', 'negative', 0.16));
-    } else if (priceDeltaPct < -5) {
-      riskScore -= 10;
-      evidenceSignals.push(buildEvidenceSignal('price_position', 'positive', 0.22));
-    } else {
-      evidenceSignals.push(buildEvidenceSignal('price_position', 'neutral', 0.12));
-    }
-    evidenceSignals.push(buildEvidenceSignal('market_reference', 'positive', 0.2));
-  } else {
-    riskScore += 12;
-    evidenceSignals.push(buildEvidenceSignal('market_reference', 'negative', 0.24));
-  }
+  if (risk >= 70) score += 3;
+  else if (risk >= 55) score += 2;
+  else if (risk >= 40) score += 1;
 
-  if (sellerType === 'dealer') {
-    riskScore += 8;
-    evidenceSignals.push(buildEvidenceSignal('seller_type', 'negative', 0.14));
-  } else if (sellerType === 'owner') {
-    riskScore -= 5;
-    evidenceSignals.push(buildEvidenceSignal('seller_type', 'positive', 0.1));
-  } else {
-    evidenceSignals.push(buildEvidenceSignal('seller_type', 'neutral', 0.08));
-  }
+  if (quality < 45) score += 2;
+  else if (quality < 60) score += 1;
 
-  if (verificationLevel === 'none') {
-    riskScore += 12;
-    evidenceSignals.push(buildEvidenceSignal('verification', 'negative', 0.2));
-  } else if (verificationLevel === 'partial') {
-    riskScore += 5;
-    evidenceSignals.push(buildEvidenceSignal('verification', 'neutral', 0.12));
-  } else if (verificationLevel === 'full') {
-    riskScore -= 8;
-    evidenceSignals.push(buildEvidenceSignal('verification', 'positive', 0.18));
-  }
+  if (duplicate === 'exact') score += 3;
+  else if (duplicate === 'similar') score += 2;
 
-  if (qualityScore > 0) {
-    if (qualityScore < 50) {
-      riskScore += 10;
-      evidenceSignals.push(buildEvidenceSignal('quality', 'negative', 0.16));
-    } else if (qualityScore >= 75) {
-      riskScore -= 8;
-      evidenceSignals.push(buildEvidenceSignal('quality', 'positive', 0.14));
-    } else {
-      evidenceSignals.push(buildEvidenceSignal('quality', 'neutral', 0.1));
-    }
-  }
+  if (position === 'underpriced') score += 2;
+  else if (position === 'unknown') score += 1;
 
-  if (inputConfidence < 0.5) {
-    riskScore += 10;
-    evidenceSignals.push(buildEvidenceSignal('confidence', 'negative', 0.18));
-  } else if (inputConfidence >= 0.8) {
-    riskScore -= 4;
-    evidenceSignals.push(buildEvidenceSignal('confidence', 'positive', 0.1));
-  } else {
-    evidenceSignals.push(buildEvidenceSignal('confidence', 'neutral', 0.08));
-  }
+  if (confidence < 40) score += 2;
+  else if (confidence < 55) score += 1;
 
-  riskScore = clampScore(riskScore);
-  const confidenceAdjustment = -(offerRange.confidencePenalty ?? 0) - (inputConfidence < 0.5 ? 0.12 : 0);
+  if (roomPct >= 9) score += 1;
 
-  return {
-    negotiationRisk: resolveNegotiationRiskLevel(riskScore),
-    evidenceSignals,
-    confidenceAdjustment,
-    riskScore
-  };
+  const executive = String(input.executive_label ?? '');
+  if (/riskli|dikkatli|uygun görünmüyor/i.test(executive)) score += 2;
+
+  if (score >= 5) return 'Yüksek';
+  if (score <= 2) return 'Düşük';
+  return 'Orta';
 }
