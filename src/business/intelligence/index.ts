@@ -1,7 +1,7 @@
 /**
- * Business Intelligence Engine (EPIC-510)
+ * Business Intelligence Engine (EPIC-510 + EPIC-520 provider architecture)
  *
- * Data Provider → Metrics Engine → Insight Engine → Recommendation Engine → Advisor UI
+ * ProviderFactory → MetricsEngine → InsightEngine → RecommendationEngine → Advisor UI
  *
  * Mock-only foundation. No API, DB, auth, or tenant integration.
  */
@@ -11,14 +11,29 @@ export {
   MockBusinessDataProvider,
   createMockBusinessDataProvider
 } from './providers/MockDataProvider';
-export { computeBusinessMetrics } from './metrics/MetricsEngine';
-export { computeBusinessInsights } from './insights/InsightEngine';
-export { computeBusinessRecommendations } from './recommendations/RecommendationEngine';
+export {
+  MockBusinessProvider,
+  createMockBusinessProvider
+} from '../providers/MockBusinessProvider';
+export {
+  createBusinessDataProvider,
+  getDefaultBusinessDataProvider
+} from '../providers/ProviderFactory';
+export { computeBusinessMetrics, MetricsEngine } from '../services/MetricsEngine';
+export { computeBusinessInsights, InsightEngine } from '../services/InsightEngine';
+export {
+  computeBusinessRecommendations,
+  RecommendationEngine
+} from '../services/RecommendationEngine';
 export {
   runBusinessIntelligenceEngine
 } from './pipeline/BusinessIntelligenceEngine';
 export type { BusinessIntelligenceEngineOptions } from './pipeline/BusinessIntelligenceEngine';
 
+export type {
+  BusinessDataProvider,
+  BusinessProviderKind
+} from '../types/business-provider';
 export type {
   IBusinessDataProvider,
   RawBusinessData,
@@ -43,3 +58,8 @@ export type {
   RecommendationPriority
 } from './types/business-recommendation';
 export type { BusinessAdvisorResult } from './types/advisor-result';
+export type {
+  BusinessMetricSignals,
+  MetricsEngineResult
+} from '../services/MetricsEngine';
+export type { InsightEngineResult } from '../services/InsightEngine';

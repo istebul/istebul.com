@@ -1,4 +1,4 @@
-/** Raw snapshot fed by Data Provider — mock-only for EPIC-510. */
+/** Raw snapshot fed by Data Provider — mock-only for EPIC-510/520. */
 export interface BusinessDataPoint {
   label: string;
   value: number;
@@ -23,7 +23,12 @@ export interface RawBusinessData {
   cashFlowSeries: readonly BusinessDataPoint[];
 }
 
+/**
+ * @deprecated Prefer `BusinessDataProvider` from `src/business/types/business-provider.ts`.
+ * Kept for EPIC-510 compatibility; includes provider `kind`.
+ */
 export interface IBusinessDataProvider {
+  readonly kind: 'mock';
   /** Returns a frozen snapshot; never hits network/DB. */
   getSnapshot(): RawBusinessData;
 }

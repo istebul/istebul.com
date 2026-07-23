@@ -33,14 +33,23 @@ export {
   MOCK_BUSINESS_RAW_DATA,
   MockBusinessDataProvider,
   createMockBusinessDataProvider,
+  MockBusinessProvider,
+  createMockBusinessProvider,
+  createBusinessDataProvider,
+  getDefaultBusinessDataProvider,
   computeBusinessMetrics,
   computeBusinessInsights,
   computeBusinessRecommendations,
-  runBusinessIntelligenceEngine
+  runBusinessIntelligenceEngine,
+  MetricsEngine,
+  InsightEngine,
+  RecommendationEngine
 } from './intelligence';
 export type { BusinessIntelligenceEngineOptions } from './intelligence';
 export type {
   IBusinessDataProvider,
+  BusinessDataProvider,
+  BusinessProviderKind,
   RawBusinessData,
   BusinessDataPoint,
   BusinessCategoryMargin,
@@ -55,7 +64,10 @@ export type {
   BusinessRecommendation,
   BusinessRecommendationsResult,
   RecommendationPriority,
-  BusinessAdvisorResult
+  BusinessAdvisorResult,
+  BusinessMetricSignals,
+  MetricsEngineResult,
+  InsightEngineResult
 } from './intelligence';
 export type {
   BusinessModule,

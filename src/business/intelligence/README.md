@@ -1,19 +1,23 @@
-# Business Intelligence Engine (EPIC-510)
-
-AI Business Advisor foundation — mock-only.
-
-## Pipeline
-
-```
-Data Provider → Metrics Engine → Insight Engine → Recommendation Engine → Advisor UI
-```
-
-| Layer | Path | Output |
-|-------|------|--------|
-| Data Provider | `providers/MockDataProvider.ts` | `RawBusinessData` |
-| Metrics Engine | `metrics/MetricsEngine.ts` | Revenue/Cost/Growth/Risk/Customer Health |
-| Insight Engine | `insights/InsightEngine.ts` | Trend / positive / risk / anomaly |
-| Recommendation Engine | `recommendations/RecommendationEngine.ts` | AI-style suggestions |
-| Orchestrator | `pipeline/BusinessIntelligenceEngine.ts` | `BusinessAdvisorResult` |
-
-No API, DB, auth, or tenant calls.
+/**
+ * Business Intelligence Engine (EPIC-510 / EPIC-520)
+ *
+ * ## Pipeline
+ *
+ * ```
+ * ProviderFactory (mock default)
+ *   → MetricsEngine
+ *   → InsightEngine
+ *   → RecommendationEngine
+ *   → Advisor UI
+ * ```
+ *
+ * Canonical provider + service modules:
+ * - `src/business/providers/`
+ * - `src/business/services/`
+ * - `src/business/types/business-provider.ts`
+ *
+ * This folder keeps mock data, result types, pipeline orchestration,
+ * and compatibility shims for EPIC-510 import paths.
+ *
+ * No API, DB, auth, or tenant calls.
+ */
