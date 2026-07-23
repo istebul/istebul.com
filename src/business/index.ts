@@ -53,6 +53,17 @@ export {
   BusinessHealthEngine,
   createBusinessHealthEngine,
   buildExecutiveKpis,
+  KPIEngine,
+  createKPIEngine,
+  KPIRegistry,
+  createDefaultKPIRegistry,
+  EventBus,
+  createEventBus,
+  EventRegistry,
+  createDefaultEventRegistry,
+  EventProcessor,
+  createEventProcessor,
+  createBusinessEvent,
   RevenueAnalytics,
   GrowthAnalytics,
   CustomerAnalytics,
@@ -72,6 +83,8 @@ export type {
   BusinessIntelligenceEngineOptions,
   AnalyticsEngineOptions,
   BusinessHealthEngineOptions,
+  KPIEngineOptions,
+  EventProcessorOptions,
   BusinessAdvisorResultWithHealth
 } from './intelligence';
 export type {
@@ -106,7 +119,18 @@ export type {
   ExecutiveKpi,
   HealthBand,
   BusinessHealthResult,
-  ScoringEngineResult
+  ScoringEngineResult,
+  BusinessKpiId,
+  BusinessKpiDefinition,
+  BusinessKpiValue,
+  BusinessKpiTrend,
+  BusinessKpiSignals,
+  BusinessKpiSnapshot,
+  BusinessKpiPlugin,
+  BusinessEventType,
+  BusinessEvent,
+  EventProcessorResult,
+  EventIntelligenceResult
 } from './intelligence';
 export type {
   BusinessModule,

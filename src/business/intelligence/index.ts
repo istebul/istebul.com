@@ -1,7 +1,8 @@
 /**
- * Business Intelligence Engine (EPIC-510 → EPIC-540)
+ * Business Intelligence Engine (EPIC-510 → EPIC-550)
  *
- * Provider → Analytics → Scoring → Health → Metrics → Insight → Recommendation → Advisor
+ * Provider → Analytics → Scoring → Health → KPI → Event Intelligence →
+ * Metrics → Insight → Recommendation → Advisor
  *
  * Mock-only foundation. No API, DB, auth, or tenant integration.
  */
@@ -60,6 +61,26 @@ export {
   bandFromOverall
 } from './health/ExecutiveScore';
 
+export { KPIEngine, createKPIEngine } from './kpi/KPIEngine';
+export type { KPIEngineOptions } from './kpi/KPIEngine';
+export { KPIRegistry, createDefaultKPIRegistry } from './kpi/KPIRegistry';
+export {
+  createKpiSnapshot,
+  createKpiSnapshotFromRegistry,
+  computeKpiValues
+} from './kpi/KPISnapshot';
+export { buildKpiTrend, buildKpiTrends } from './kpi/KPITrend';
+
+export { createBusinessEvent, synthesizeEventsFromKpiSnapshot } from './events/BusinessEvent';
+export { EventBus, createEventBus } from './events/EventBus';
+export { EventRegistry, createDefaultEventRegistry } from './events/EventRegistry';
+export {
+  EventProcessor,
+  createEventProcessor,
+  applyEventPatchesToSnapshot
+} from './events/EventProcessor';
+export type { EventProcessorOptions } from './events/EventProcessor';
+
 export { RevenueAnalytics } from './analytics/RevenueAnalytics';
 export { GrowthAnalytics } from './analytics/GrowthAnalytics';
 export { CustomerAnalytics } from './analytics/CustomerAnalytics';
@@ -83,6 +104,25 @@ export type {
   BusinessHealthResult,
   ScoringEngineResult
 } from './models/business-health';
+export type {
+  BusinessKpiId,
+  BusinessKpiDefinition,
+  BusinessKpiValue,
+  BusinessKpiTrend,
+  BusinessKpiSignals,
+  BusinessKpiSnapshot,
+  BusinessKpiPlugin,
+  KpiComputeInput,
+  KpiUnit
+} from './models/business-kpi';
+export type {
+  BusinessEventType,
+  BusinessEvent,
+  BusinessEventHandler,
+  BusinessEventTypeDefinition,
+  EventProcessorResult,
+  EventIntelligenceResult
+} from './models/business-events';
 
 export type {
   BusinessDataProvider,

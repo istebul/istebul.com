@@ -16,7 +16,7 @@ Gerçek iş mantığı, API çağrıları ve kimlik doğrulama bu aşamada yoktu
 | `data/` | Dashboard mock verisi |
 | `providers/` | BusinessDataProvider + Mock + ProviderFactory (EPIC-520) |
 | `services/` | Metrics / Insight / Recommendation engines (EPIC-520) |
-| `intelligence/` | Analytics + Scoring + Health + Advisor pipeline (EPIC-510–540) |
+| `intelligence/` | Analytics + Scoring + Health + KPI + Events + Advisor pipeline (EPIC-510–550) |
 | `hooks/` | Gelecek hook katmanı (henüz boş) |
 | `types/` | Tip tanımları |
 | `constants/` | Nav + legacy modül kayıtları |

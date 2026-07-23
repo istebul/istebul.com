@@ -11,7 +11,7 @@ import { MetricsEngine } from './MetricsEngine';
 function buildRecommendationsFromInsightResult(
   insightResult: InsightEngineResult
 ): BusinessRecommendationsResult {
-  const { insights, signals, metrics } = insightResult;
+  const { insights, signals, metrics, trends } = insightResult;
   const revenue = signals.revenueDelta;
 
   const recommendations: BusinessRecommendation[] = [];
@@ -70,6 +70,21 @@ function buildRecommendationsFromInsightResult(
     });
   }
 
+  // Additive EPIC-550 trend-aware recommendation (does not alter prior messages).
+  const downTrends = trends.filter((t) => t.changeDetected && t.direction === 'down');
+  if (downTrends.length > 0 || insights.insights.some((i) => i.id === 'ins-kpi-trend-shift')) {
+    const focus = downTrends[0]?.label ?? 'KPI trend';
+    recommendations.push({
+      id: 'rec-trend-watch',
+      title: 'Trend izleme',
+      message: `${focus} için trend-aware aksiyon planı oluşturun.`,
+      priority: 'medium',
+      relatedInsightIds: Object.freeze(
+        insights.insights.filter((i) => i.id === 'ins-kpi-trend-shift').map((i) => i.id)
+      )
+    });
+  }
+
   return Object.freeze({
     recommendations: Object.freeze(recommendations.map((r) => Object.freeze({ ...r }))),
     generatedAt: metrics.generatedAt
@@ -79,6 +94,7 @@ function buildRecommendationsFromInsightResult(
 /**
  * Recommendation Engine — consumes InsightEngine only
  * (no direct MetricsEngine / provider / raw access).
+ * May use trend-aware insights from EPIC-550.
  */
 export class RecommendationEngine {
   private readonly insightEngine: InsightEngine;
