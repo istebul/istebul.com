@@ -4,6 +4,7 @@ import { createBusinessKpiCardElement } from '../components/BusinessKpiCard';
 import { createBusinessActivityListElement } from '../components/BusinessActivityList';
 import { createBusinessAiSuggestionsElement } from '../components/BusinessAiSuggestions';
 import { createBusinessQuickActionsElement } from '../components/BusinessQuickActions';
+<<<<<<< HEAD
 import { createBusinessAdvisorPanelElement } from '../components/BusinessAdvisorPanel';
 import { runBusinessIntelligenceEngine } from '../intelligence/pipeline/BusinessIntelligenceEngine';
 import type { BusinessDashboardMockData } from '../types/dashboard-mock';
@@ -13,13 +14,22 @@ export interface BusinessDashboardPageOptions {
   data?: BusinessDashboardMockData;
   /** Optional advisor result; defaults to mock Intelligence Engine run. */
   advisor?: BusinessAdvisorResult;
+=======
+import type { BusinessDashboardMockData } from '../types/dashboard-mock';
+
+export interface BusinessDashboardPageOptions {
+  data?: BusinessDashboardMockData;
+>>>>>>> origin/main
 }
 
 export function createBusinessDashboardPageElement(
   options: BusinessDashboardPageOptions = {}
 ): HTMLElement {
   const data = options.data ?? BUSINESS_DASHBOARD_MOCK;
+<<<<<<< HEAD
   const advisor = options.advisor ?? runBusinessIntelligenceEngine();
+=======
+>>>>>>> origin/main
   const root = document.createElement('div');
   root.className = 'ib-biz-dashboard';
   root.dataset.businessPage = 'dashboard';
@@ -34,8 +44,11 @@ export function createBusinessDashboardPageElement(
   }
   root.appendChild(kpiGrid);
 
+<<<<<<< HEAD
   root.appendChild(createBusinessAdvisorPanelElement({ advisor, compact: true }));
 
+=======
+>>>>>>> origin/main
   const columns = document.createElement('div');
   columns.className = 'ib-biz-dashboard__columns';
   columns.append(

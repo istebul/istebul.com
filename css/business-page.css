@@ -443,6 +443,7 @@ html[data-theme="dark"] .ib-business-app {
   transform: translateY(-1px);
 }
 
+<<<<<<< HEAD
 /* —— AI Business Advisor (EPIC-510) —— */
 .ib-biz-page__lead {
   margin: 0;
@@ -597,6 +598,8 @@ html[data-theme="dark"] .ib-business-app {
   border-color: color-mix(in srgb, var(--ib-business-accent) 40%, var(--ib-business-border));
 }
 
+=======
+>>>>>>> origin/main
 /* —— Empty state —— */
 .ib-biz-empty {
   padding: 2.25rem 1.5rem;
@@ -760,10 +763,13 @@ html[data-theme="dark"] .ib-business-app {
   .ib-biz-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+<<<<<<< HEAD
 
   .ib-biz-advisor__metrics {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+=======
+>>>>>>> origin/main
 }
 
 @media (max-width: 900px) {
@@ -807,10 +813,13 @@ html[data-theme="dark"] .ib-business-app {
     grid-template-columns: 1fr;
   }
 
+<<<<<<< HEAD
   .ib-biz-advisor__body {
     grid-template-columns: 1fr;
   }
 
+=======
+>>>>>>> origin/main
   .ib-biz-shell__content {
     padding: 1rem 1rem 1.75rem;
   }
@@ -825,10 +834,13 @@ html[data-theme="dark"] .ib-business-app {
     grid-template-columns: 1fr;
   }
 
+<<<<<<< HEAD
   .ib-biz-advisor__metrics {
     grid-template-columns: 1fr 1fr;
   }
 
+=======
+>>>>>>> origin/main
   .ib-business-hero {
     padding: 1.35rem 1.1rem;
   }

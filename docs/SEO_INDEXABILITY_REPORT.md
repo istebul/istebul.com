@@ -1,21 +1,21 @@
 # SEO Indexability Report
 
-**Generated:** 2026-07-15  
+**Generated:** 2026-07-22  
 **Build artifact:** `dist/` present
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| noindex pages (repo scan) | 119 |
+| noindex pages (repo scan) | 121 |
 | sitemap URL count | 180 |
 | canonical issues | 0 |
-| orphan HTML (vs sitemap) | 34 |
+| orphan HTML (vs sitemap) | 36 |
 | internal /rehber/ links (sample) | 358 |
 | FAQ schema pages (scan) | 24 |
 | Rehber BreadcrumbList pages | 14 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 65 |
+| Indexable public HTML (estimate) | 66 |
 
 ## noindex pages
 
@@ -113,6 +113,7 @@
 - `dist/garson/erp/inventory/index.html`
 - `dist/garson/erp/menu/index.html`
 - `dist/garson/erp/orders/index.html`
+- `dist/garson/erp/payment-gateways/index.html`
 - `dist/garson/erp/payments/index.html`
 - `dist/garson/erp/reservations/index.html`
 - `dist/garson/erp/tables/index.html`
@@ -135,6 +136,7 @@
 - `dist/partner-closing-kit.html`
 - `dist/partner-onboarding.html`
 - `dist/platform-preview/index.html`
+- `dist/r/demo-cafe/concierge/index.html`
 - `dist/r/demo-cafe/index.html`
 - `dist/r/index.html`
 - `dist/r/onay/index.html`

@@ -12,7 +12,10 @@ Business arayüzünde yeniden kullanılabilir bileşenler.
 | `BusinessActivityList` | Son aktiviteler |
 | `BusinessAiSuggestions` | AI önerileri (placeholder) |
 | `BusinessQuickActions` | Hızlı işlemler |
+<<<<<<< HEAD
 | `BusinessAdvisorPanel` | AI Business Advisor paneli (EPIC-510) |
+=======
+>>>>>>> origin/main
 | `BusinessModuleCard` | Legacy tanıtım kartı |
 
 Yeni UI framework eklenmez; mevcut İSTEBUL tasarım dili kullanılır.
