@@ -224,6 +224,9 @@ test('Business HTML shells and boot entry exist', () => {
     assert.match(html, /js\/business\/business-app\.js/);
     assert.match(html, /css\/business-page\.css/);
     assert.doesNotMatch(html, /Yakında/);
+    assert.doesNotMatch(html, /istebul-design-system-v4/);
+    assert.doesNotMatch(html, /istebul-premium-final-v7/);
+    assert.doesNotMatch(html, /ib-ds-v4|ib-premium-v7/);
   }
   assert.ok(fs.existsSync(path.join(root, 'js/business/business-app.js')));
   const build = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');

@@ -136,6 +136,20 @@ html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth--pro .btn-ghost:hover {
  * P2 — Hero: top/bottom space, vertical rhythm, less empty reserve
  * ============================================================ */
 
+/*
+ * Platform cutover: #platform-landing is the page hero but is NOT .hero-section.
+ * style.css `main > section:not(.hero-section)` therefore applies --section-y
+ * (~90px) padding on top of sticky nav + .ib-platform-hero padding → duplicated
+ * top spacing / “header overlapping hero” appearance. Zero the section shell;
+ * keep rhythm on the inner PlatformHero only.
+ */
+body.ib-platform-landing-live-page #platform-landing.ib-platform-landing-preview,
+body.ib-platform-landing-live-page main > #platform-landing {
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: 0;
+}
+
 body.ib-platform-landing-live-page .ib-platform-hero,
 .ib-platform-landing-preview .ib-platform-hero,
 .ib-platform-hero--landing {

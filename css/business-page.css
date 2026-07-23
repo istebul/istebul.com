@@ -2,6 +2,11 @@
  * İSTEBUL Business — MVP app shell + dashboard styles.
  * Design tokens align with İSTEBUL platform language.
  * Dark mode: data-business-theme="dark" or prefers-color-scheme.
+ *
+ * Isolation: load ONLY this sheet (+ brand logo) on /business/*.
+ * Do NOT load istebul-design-system-v4 / istebul-premium-final-v7 here —
+ * those style global .navbar / #home / .hero-* and conflict with app chrome.
+ * All rules use .ib-business-* / .ib-biz-* prefixes (no marketing chrome).
  */
 
 .ib-business-app,
@@ -52,6 +57,8 @@ html[data-theme="dark"] .ib-business-app {
   background: var(--ib-business-surface-2);
   color: var(--ib-business-ink);
   font-family: var(--ib-business-font);
+  /* Neutralize any accidental global body/section padding if a shared sheet loads */
+  padding: 0;
 }
 
 .ib-biz-noscript {
@@ -630,12 +637,13 @@ html[data-theme="dark"] .ib-business-app {
   text-decoration: none;
 }
 
-/* —— Legacy marketing surface (kept for optional reuse) —— */
+/* —— Legacy marketing surface (optional; scoped so it cannot hit global .hero) —— */
 .ib-business-page .seo-main {
   max-width: 960px;
 }
 
-.ib-business-hero {
+.ib-business-app .ib-business-hero,
+.ib-business-page .ib-business-hero {
   margin: 0 0 2rem;
   padding: 1.75rem 1.35rem 1.5rem;
   border: 1px solid var(--ib-business-border);
@@ -643,7 +651,8 @@ html[data-theme="dark"] .ib-business-app {
   background: var(--ib-business-hero-bg);
 }
 
-.ib-business-hero__badge {
+.ib-business-app .ib-business-hero__badge,
+.ib-business-page .ib-business-hero__badge {
   display: inline-block;
   margin: 0 0 0.75rem;
   padding: 0.3rem 0.7rem;
@@ -655,14 +664,16 @@ html[data-theme="dark"] .ib-business-app {
   letter-spacing: 0.02em;
 }
 
-.ib-business-hero h1 {
+.ib-business-app .ib-business-hero h1,
+.ib-business-page .ib-business-hero h1 {
   margin: 0 0 0.65rem;
   color: var(--ib-business-ink);
   font-size: clamp(1.85rem, 4vw, 2.4rem);
   line-height: 1.15;
 }
 
-.ib-business-hero__subtitle {
+.ib-business-app .ib-business-hero__subtitle,
+.ib-business-page .ib-business-hero__subtitle {
   margin: 0 0 0.85rem;
   color: var(--ib-business-ink);
   font-size: clamp(1.05rem, 2.4vw, 1.2rem);
@@ -670,7 +681,8 @@ html[data-theme="dark"] .ib-business-app {
   line-height: 1.45;
 }
 
-.ib-business-hero__intro {
+.ib-business-app .ib-business-hero__intro,
+.ib-business-page .ib-business-hero__intro {
   margin: 0;
   color: var(--ib-business-muted);
   font-size: 1rem;
@@ -678,30 +690,35 @@ html[data-theme="dark"] .ib-business-app {
   max-width: 44rem;
 }
 
-.ib-business-modules {
+.ib-business-app .ib-business-modules,
+.ib-business-page .ib-business-modules {
   margin: 0 0 2rem;
 }
 
-.ib-business-modules__title {
+.ib-business-app .ib-business-modules__title,
+.ib-business-page .ib-business-modules__title {
   margin: 0 0 0.4rem;
   font-size: 1.25rem;
   color: var(--ib-business-ink);
 }
 
-.ib-business-modules__lead {
+.ib-business-app .ib-business-modules__lead,
+.ib-business-page .ib-business-modules__lead {
   margin: 0 0 1.25rem;
   color: var(--ib-business-muted);
   font-size: 0.98rem;
   line-height: 1.55;
 }
 
-.ib-business-module-grid {
+.ib-business-app .ib-business-module-grid,
+.ib-business-page .ib-business-module-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
   gap: 1rem;
 }
 
-.ib-business-module-card {
+.ib-business-app .ib-business-module-card,
+.ib-business-page .ib-business-module-card {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -715,15 +732,19 @@ html[data-theme="dark"] .ib-business-app {
   box-shadow: var(--ib-business-shadow);
 }
 
-.ib-business-module-card h3,
-.ib-business-module-card__title {
+.ib-business-app .ib-business-module-card h3,
+.ib-business-app .ib-business-module-card__title,
+.ib-business-page .ib-business-module-card h3,
+.ib-business-page .ib-business-module-card__title {
   margin: 0;
   font-size: 1.05rem;
   color: var(--ib-business-ink);
 }
 
-.ib-business-module-card p,
-.ib-business-module-card__description {
+.ib-business-app .ib-business-module-card p,
+.ib-business-app .ib-business-module-card__description,
+.ib-business-page .ib-business-module-card p,
+.ib-business-page .ib-business-module-card__description {
   margin: 0;
   flex: 1;
   color: var(--ib-business-muted);
@@ -731,7 +752,8 @@ html[data-theme="dark"] .ib-business-app {
   line-height: 1.55;
 }
 
-.ib-business-module-card__status {
+.ib-business-app .ib-business-module-card__status,
+.ib-business-page .ib-business-module-card__status {
   display: inline-flex;
   align-self: flex-start;
   margin-top: 0.25rem;
@@ -744,7 +766,8 @@ html[data-theme="dark"] .ib-business-app {
   letter-spacing: 0.02em;
 }
 
-.ib-business-note {
+.ib-business-app .ib-business-note,
+.ib-business-page .ib-business-note {
   margin: 0;
   padding: 1rem 1.1rem;
   border-left: 4px solid var(--ib-business-accent);
@@ -829,11 +852,13 @@ html[data-theme="dark"] .ib-business-app {
     grid-template-columns: 1fr 1fr;
   }
 
-  .ib-business-hero {
+  .ib-business-app .ib-business-hero,
+  .ib-business-page .ib-business-hero {
     padding: 1.35rem 1.1rem;
   }
 
-  .ib-business-module-grid {
+  .ib-business-app .ib-business-module-grid,
+  .ib-business-page .ib-business-module-grid {
     grid-template-columns: 1fr;
   }
 }
