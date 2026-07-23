@@ -98,8 +98,6 @@ import { buildReportInput, runDecisionReport } from '../ai-decision-report/index
 import { buildDecisionReportPanelHtml } from '../ai-decision-report/report-card-builder.js';
 import { buildOwnershipCostInput, runOwnershipCostSimulator } from '../ai-ownership-cost/index.js';
 import { buildOwnershipCostPanelHtml } from '../ai-ownership-cost/cost-card-builder.js';
-import { buildNegotiationInput, runNegotiationIntelligence } from '../ai-negotiation-intelligence/index.js';
-import { buildNegotiationPanelHtml } from '../ai-negotiation-intelligence/negotiation-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 import {
@@ -147,7 +145,7 @@ import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/
 import { buildComparePanelHtml, buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 import {
   buildNegotiationInput,
-  runNegotiationIntelligenceEngine,
+  runNegotiationIntelligence,
   buildNegotiationPanelHtml,
   buildNegotiationShellHtml
 } from '../ai-negotiation-intelligence/index.js';
@@ -886,7 +884,7 @@ function closeOwnershipCostPanel(root) {
 }
 
 function closeNegotiationPanel(root) {
-  const host = root.querySelector('#ai-neg-panel-host');
+  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
   if (host) {
     host.hidden = true;
     host.innerHTML = '';
@@ -1091,37 +1089,46 @@ function openOwnershipCostPanel(root, recordId) {
   });
 }
 
-function openNegotiationPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+/**
+ * @param {HTMLElement} root
+ * @param {string} recordId
+ * @param {{ title?: string }} [options]
+ */
+function openNegotiationPanel(root, recordId, options = {}) {
+  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
+  if (!host) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
   closeOwnershipCostPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const negInput = buildNegotiationInput(selected, profile);
-  const negotiation = runNegotiationIntelligence(negInput);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const title = options.title ?? getDrawerTitleTr('negotiation');
 
-  const host = root.querySelector('#ai-neg-panel-host');
-  if (!host) return;
+  let selected =
+    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ?? null;
+  if (!selected?.id) {
+    selected = getRecommendationById(recordId);
+  }
+
+  let input = selected?.id ? buildNegotiationInput(selected, profile) : null;
+  if (!input) {
+    const listing = findListingById(recordId);
+    input = buildNegotiationInputFromListing(listing);
+  }
+
+  const negotiation = input
+    ? runNegotiationIntelligence(input)
+    : runNegotiationIntelligence(buildNegotiationInput({ id: '' }, profile));
 
   host.innerHTML = buildNegotiationPanelHtml(negotiation, {
-    title: String(selected.title ?? 'Pazarlık Zekâsı'),
-    recordId: String(recordId)
+    title: String(selected?.title ?? title),
+    recordId: String(recordId || '')
   });
   host.hidden = false;
   document.body.classList.add('ai-listings-admin--neg-open');
-
-  host.querySelector('[data-neg-action="close"]')?.addEventListener('click', () => {
-    closeNegotiationPanel(root);
-  });
-  host.querySelector('[data-neg-backdrop]')?.addEventListener('click', () => {
-    closeNegotiationPanel(root);
-  });
+  bindNegotiationPanelClose(host, root);
 }
 
 function bindRecommendationsDashboardEvents(root) {
@@ -1312,6 +1319,8 @@ function findListingById(listingId) {
 }
 
 /**
+ * Build Sprint-22 negotiation input from a listing (single `buildNegotiationInput` implementation).
+ *
  * @param {Record<string, unknown>|null|undefined} listing
  * @param {Record<string, unknown>|null} [latestAnalysis]
  * @returns {Record<string, unknown>|null}
@@ -1326,18 +1335,37 @@ function buildNegotiationInputFromListing(listing, latestAnalysis = null) {
       ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
       : null);
 
-  return buildNegotiationInput({
-    category: listing.category,
-    listingPrice: listing.price,
-    location: listing.location,
-    attributes: listing.attributes || {},
-    confidence: analysis?.confidence ?? 0.5,
-    marketReference: analysis?.market_reference ?? analysis?.marketReference ?? {},
-    qualitySignal: {
-      listingQualityScore: analysis?.quality_score,
-      verificationLevel: analysis?.verification_level ?? 'none'
+  const recommendation =
+    findRecommendationForListing(listing) ??
+    /** @type {Record<string, unknown>} */ ({
+      id: listing.id,
+      title: listing.title,
+      price: listing.price,
+      category: listing.category,
+      listing,
+      quality_score: analysis?.quality_score,
+      risk_score: analysis?.risk_score,
+      duplicate_status: listing.duplicate_status,
+      executive_label: listing.executive_label
+    });
+
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  return buildNegotiationInput(recommendation, profile);
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindNegotiationPanelClose(host, root) {
+  const close = () => {
+    closeNegotiationPanel(root);
+    if (isDrawerOpen(aiDrawerState) && aiDrawerState.activeDrawerType === 'negotiation') {
+      closeAiListingsDrawer(root);
     }
-  });
+  };
+  host.querySelector('[data-neg-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-neg-backdrop]')?.addEventListener('click', close);
 }
 
 function syncRecommendationCache() {
@@ -1543,60 +1571,6 @@ function closeScenarioPanel(root) {
   }
   root.querySelector('[data-ss-backdrop]')?.setAttribute('hidden', '');
   document.body.classList.remove('ai-listings-admin--ss-open');
-}
-
-function closeNegotiationPanel(root) {
-  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
-  if (host) {
-    host.hidden = true;
-    host.innerHTML = '';
-  }
-  root.querySelector('[data-neg-backdrop]')?.setAttribute('hidden', '');
-  document.body.classList.remove('ai-listings-admin--neg-open');
-}
-
-function openNegotiationPanel(root, listingId, options = {}) {
-  const host = root.querySelector('#ai-neg-panel-host') ?? document.querySelector('#ai-neg-panel-host');
-  if (!host) return;
-
-  const title = options.title ?? getDrawerTitleTr('negotiation');
-  const listing = findListingById(listingId);
-
-  if (!listing) {
-    host.innerHTML = buildNegotiationPanelHtml(null, { title });
-    host.hidden = false;
-    document.body.classList.add('ai-listings-admin--neg-open');
-    bindNegotiationPanelClose(host, root);
-    return;
-  }
-
-  const latest =
-    extractLatestAnalysis(listing) ??
-    (listing.latest_analysis && typeof listing.latest_analysis === 'object'
-      ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
-      : null);
-  const input = buildNegotiationInputFromListing(listing, latest);
-  const result = input ? runNegotiationIntelligenceEngine(input) : null;
-
-  host.innerHTML = buildNegotiationPanelHtml(result, { title });
-  host.hidden = false;
-  document.body.classList.add('ai-listings-admin--neg-open');
-  bindNegotiationPanelClose(host, root);
-}
-
-/**
- * @param {HTMLElement} host
- * @param {HTMLElement} root
- */
-function bindNegotiationPanelClose(host, root) {
-  const close = () => {
-    closeNegotiationPanel(root);
-    if (isDrawerOpen(aiDrawerState) && aiDrawerState.activeDrawerType === 'negotiation') {
-      closeAiListingsDrawer(root);
-    }
-  };
-  host.querySelector('[data-neg-action="close"]')?.addEventListener('click', close);
-  host.querySelector('[data-neg-backdrop]')?.addEventListener('click', close);
 }
 
 function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', options = {}) {
