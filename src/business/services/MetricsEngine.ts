@@ -5,10 +5,16 @@ import type {
 } from '../intelligence/types/business-metrics';
 import type { RawBusinessData } from '../intelligence/types/raw-business-data';
 import type { BusinessAnalyticsSnapshot } from '../intelligence/models/analytics';
+import type { BusinessHealthResult } from '../intelligence/models/business-health';
 import {
   AnalyticsEngine,
   createAnalyticsEngine
 } from '../intelligence/core/AnalyticsEngine';
+import {
+  BusinessHealthEngine,
+  createBusinessHealthEngine
+} from '../intelligence/health/BusinessHealthEngine';
+import { createScoringEngine, ScoringEngine } from '../intelligence/scoring/ScoringEngine';
 import { getDefaultBusinessDataProvider } from '../providers/ProviderFactory';
 import {
   directionFromDelta,
@@ -32,9 +38,14 @@ export interface BusinessMetricSignals {
 export interface MetricsEngineResult {
   metrics: BusinessMetricsResult;
   signals: BusinessMetricSignals;
+  /** EPIC-540 Business Health + executive KPIs (UI markup unchanged). */
+  health: BusinessHealthResult;
 }
 
-function mapAnalyticsToMetrics(snapshot: BusinessAnalyticsSnapshot): MetricsEngineResult {
+function mapAnalyticsToMetrics(
+  snapshot: BusinessAnalyticsSnapshot,
+  health: BusinessHealthResult
+): MetricsEngineResult {
   const {
     revenueDelta,
     costDelta,
@@ -119,20 +130,24 @@ function mapAnalyticsToMetrics(snapshot: BusinessAnalyticsSnapshot): MetricsEngi
     asOf
   });
 
-  return Object.freeze({ metrics, signals });
+  return Object.freeze({ metrics, signals, health });
 }
 
 export interface MetricsEngineOptions {
   provider?: BusinessDataProvider;
   analyticsEngine?: AnalyticsEngine;
+  scoringEngine?: ScoringEngine;
+  healthEngine?: BusinessHealthEngine;
 }
 
 /**
- * Metrics Engine — consumes AnalyticsEngine output (not provider data directly).
- * Produces KPI metrics + derived signals for InsightEngine.
+ * Metrics Engine — consumes Analytics → Scoring → Health, then maps to KPI metrics.
+ * Existing metric/signal values preserved for Dashboard / Advisor UI.
  */
 export class MetricsEngine {
   private readonly analyticsEngine: AnalyticsEngine;
+  private readonly scoringEngine: ScoringEngine;
+  private readonly healthEngine: BusinessHealthEngine;
   private lastResult: MetricsEngineResult | null = null;
 
   constructor(
@@ -144,6 +159,10 @@ export class MetricsEngine {
       'getSnapshot' in providerOrOptions
     ) {
       this.analyticsEngine = createAnalyticsEngine({ provider: providerOrOptions });
+      this.scoringEngine = createScoringEngine();
+      this.healthEngine = createBusinessHealthEngine({
+        scoringEngine: this.scoringEngine
+      });
     } else {
       const options = providerOrOptions as MetricsEngineOptions;
       this.analyticsEngine =
@@ -151,13 +170,19 @@ export class MetricsEngine {
         createAnalyticsEngine({
           provider: options.provider ?? getDefaultBusinessDataProvider()
         });
+      this.scoringEngine = options.scoringEngine ?? createScoringEngine();
+      this.healthEngine =
+        options.healthEngine ??
+        createBusinessHealthEngine({ scoringEngine: this.scoringEngine });
     }
   }
 
   compute(): MetricsEngineResult {
     const snapshot =
       this.analyticsEngine.getLastSnapshot() ?? this.analyticsEngine.compute();
-    this.lastResult = mapAnalyticsToMetrics(snapshot);
+    const scoring = this.scoringEngine.score(snapshot);
+    const health = this.healthEngine.evaluateFromScores(scoring);
+    this.lastResult = mapAnalyticsToMetrics(snapshot, health);
     return this.lastResult;
   }
 
@@ -167,6 +192,10 @@ export class MetricsEngine {
 
   getAnalyticsEngine(): AnalyticsEngine {
     return this.analyticsEngine;
+  }
+
+  getHealthEngine(): BusinessHealthEngine {
+    return this.healthEngine;
   }
 }
 
