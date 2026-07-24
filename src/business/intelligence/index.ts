@@ -17,10 +17,7 @@ export { computeBusinessRecommendations } from './recommendations/Recommendation
 export {
   runBusinessIntelligenceEngine
 } from './pipeline/BusinessIntelligenceEngine';
-export type {
-  BusinessIntelligenceEngineOptions,
-  BusinessAdvisorResultWithHealth
-} from './pipeline/BusinessIntelligenceEngine';
+export type { BusinessIntelligenceEngineOptions } from './pipeline/BusinessIntelligenceEngine';
 
 export type {
   IBusinessDataProvider,

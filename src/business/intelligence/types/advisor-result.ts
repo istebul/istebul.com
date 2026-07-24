@@ -1,9 +1,6 @@
 import type { BusinessInsightsResult } from './business-insight';
 import type { BusinessMetricsResult } from './business-metrics';
 import type { BusinessRecommendationsResult } from './business-recommendation';
-import type { BusinessHealthResult } from '../models/business-health';
-import type { BusinessKpiSnapshot } from '../models/business-kpi';
-import type { EventIntelligenceResult } from '../models/business-events';
 
 /**
  * Business Intelligence pipeline tarafından UI ve runtime katmanına
