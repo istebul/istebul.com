@@ -1,27 +1,18 @@
+import { MOCK_BUSINESS_RAW_DATA } from '../data/mock-business-data';
+import type { IBusinessDataProvider, RawBusinessData } from '../types/raw-business-data';
+
 /**
- * @deprecated Use `src/business/providers/MockBusinessProvider.ts` (EPIC-520).
- * Compatibility shim — preserves EPIC-510 import paths.
+ * Mock Data Provider — returns a frozen in-memory snapshot.
+ * No network, DB, auth, or tenant calls.
  */
-import {
-  MockBusinessProvider,
-  createMockBusinessProvider
-} from '../../providers/MockBusinessProvider';
-import type { BusinessDataProvider } from '../../types/business-provider';
-import type { RawBusinessData } from '../types/raw-business-data';
-
-/** @deprecated Prefer `BusinessDataProvider` from `types/business-provider`. */
-export type IBusinessDataProvider = BusinessDataProvider;
-
-/** @deprecated Prefer `MockBusinessProvider`. */
-export class MockBusinessDataProvider extends MockBusinessProvider {
-  override getSnapshot(): RawBusinessData {
-    return super.getSnapshot();
+export class MockBusinessDataProvider implements IBusinessDataProvider {
+  getSnapshot(): RawBusinessData {
+    return MOCK_BUSINESS_RAW_DATA;
   }
 }
 
-/** @deprecated Prefer `createMockBusinessProvider` / `createBusinessDataProvider`. */
-export function createMockBusinessDataProvider(): BusinessDataProvider {
-  return createMockBusinessProvider();
+export function createMockBusinessDataProvider(): IBusinessDataProvider {
+  return new MockBusinessDataProvider();
 }
 
 export default MockBusinessDataProvider;

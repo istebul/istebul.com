@@ -37,86 +37,17 @@ export {
   MOCK_BUSINESS_RAW_DATA,
   MockBusinessDataProvider,
   createMockBusinessDataProvider,
-  MockBusinessProvider,
-  createMockBusinessProvider,
-  createBusinessDataProvider,
-  getDefaultBusinessDataProvider,
-  resolveBusinessProvider,
-  createProviderResolver,
-  SupabaseProvider,
-  createSupabaseProvider,
-  ERPProvider,
-  createERPProvider,
-  GarsonAIProvider,
-  createGarsonAIProvider,
-  ProviderResolver,
-  getProviderCapabilities,
-  listProviderCapabilities,
-  ProviderNotReadyError,
   computeBusinessMetrics,
   computeBusinessInsights,
   computeBusinessRecommendations,
-  runBusinessIntelligenceEngine,
-  MetricsEngine,
-  InsightEngine,
-  RecommendationEngine,
-  AnalyticsEngine,
-  createAnalyticsEngine,
-  AnalyticsRegistry,
-  createDefaultAnalyticsRegistry,
-  ScoringEngine,
-  createScoringEngine,
-  BusinessHealthEngine,
-  createBusinessHealthEngine,
-  buildExecutiveKpis,
-  KPIEngine,
-  createKPIEngine,
-  KPIRegistry,
-  createDefaultKPIRegistry,
-  EventBus,
-  createEventBus,
-  EventRegistry,
-  createDefaultEventRegistry,
-  EventProcessor,
-  createEventProcessor,
-  createBusinessEvent,
-  RevenueAnalytics,
-  GrowthAnalytics,
-  CustomerAnalytics,
-  InventoryAnalytics,
-  CashFlowAnalytics,
-  RiskAnalytics,
-  OpportunityAnalytics,
-  RevenueScorer,
-  GrowthScorer,
-  CustomerScorer,
-  InventoryScorer,
-  CashFlowScorer,
-  RiskScorer,
-  OpportunityScorer
+  runBusinessIntelligenceEngine
 } from './intelligence';
-export type {
-  BusinessIntelligenceEngineOptions,
-  AnalyticsEngineOptions,
-  BusinessHealthEngineOptions,
-  KPIEngineOptions,
-  EventProcessorOptions,
-  BusinessAdvisorResultWithHealth,
-  ProviderFactoryOptions,
-  ProviderResolveOptions,
-  ProviderResolveResult
-} from './intelligence';
+export type { BusinessIntelligenceEngineOptions } from './intelligence';
 export type {
   IBusinessDataProvider,
-  BusinessDataProvider,
-  BusinessProviderAdapter,
-  BusinessProviderKind,
   RawBusinessData,
   BusinessDataPoint,
   BusinessCategoryMargin,
-  ProviderCapabilities,
-  ProviderStatus,
-  ProviderStatusCode,
   BusinessMetric,
   BusinessMetricId,
   BusinessMetricsResult,
@@ -128,32 +59,7 @@ export type {
   BusinessRecommendation,
   BusinessRecommendationsResult,
   RecommendationPriority,
-  BusinessAdvisorResult,
-  BusinessMetricSignals,
-  MetricsEngineResult,
-  InsightEngineResult,
-  BusinessAnalyticsModuleId,
-  BusinessAnalyticsModule,
-  BusinessAnalyticsModuleResult,
-  BusinessAnalyticsSnapshot,
-  BusinessScorerId,
-  BusinessScorer,
-  DomainScore,
-  ExecutiveKpi,
-  HealthBand,
-  BusinessHealthResult,
-  ScoringEngineResult,
-  BusinessKpiId,
-  BusinessKpiDefinition,
-  BusinessKpiValue,
-  BusinessKpiTrend,
-  BusinessKpiSignals,
-  BusinessKpiSnapshot,
-  BusinessKpiPlugin,
-  BusinessEventType,
-  BusinessEvent,
-  EventProcessorResult,
-  EventIntelligenceResult
+  BusinessAdvisorResult
 } from './intelligence';
 export type {
   BusinessModule,
@@ -177,41 +83,8 @@ export type {
 export type { BusinessLayoutOptions, BusinessLayoutResult } from './layouts/BusinessLayout';
 export type { MountBusinessAppOptions } from './app/mountBusinessApp';
 export type { BusinessAdvisorPanelProps } from './components/BusinessAdvisorPanel';
-export type {
-  BusinessPlatformNavLink,
-  BusinessPlatformNavOptions
-} from './components/BusinessPlatformNav';
 export type { BusinessAiAdvisorPageOptions } from './pages/BusinessAiAdvisorPage';
 export type { BusinessDashboardPageOptions } from './pages/BusinessDashboardPage';
-
-/** EPIC-570 — Business Runtime Integration */
-export {
-  BusinessRuntime,
-  createBusinessRuntime,
-  getDefaultBusinessRuntime,
-  createBusinessRuntimeContext,
-  buildRuntimeHealth,
-  createIdleRuntimeHealth,
-  InMemoryRuntimeCache,
-  createInMemoryRuntimeCache,
-  buildRuntimeCacheKey,
-  DEFAULT_RUNTIME_TIMEOUT_MS,
-  DEFAULT_RUNTIME_CACHE_TTL_MS
-} from './runtime';
-export type {
-  BusinessRuntimeContext,
-  BusinessRuntimeCacheOptions,
-  BusinessRuntimeDeps,
-  BusinessRuntimeFactoryOptions,
-  BusinessRuntimeResult,
-  BusinessRuntimeTelemetry,
-  RuntimeHealth,
-  RuntimeHealthStatus,
-  RuntimeProviderLifecycle,
-  BuildRuntimeHealthInput,
-  RuntimeCacheStore,
-  RuntimeCacheEntry
-} from './runtime';
 
 /** Knowledge Architecture — Report DNA, KPI, kategori, prompt, çıktı kayıtları */
 export {

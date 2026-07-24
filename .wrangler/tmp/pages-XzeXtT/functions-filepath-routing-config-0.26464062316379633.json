@@ -1,0 +1,325 @@
+{
+  "routes": [
+    {
+      "routePath": "/garson/api/ai/health",
+      "mountPath": "/garson/api/ai",
+      "method": "GET",
+      "module": [
+        "garson/api/ai/health.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/garson/api/ai/health",
+      "mountPath": "/garson/api/ai",
+      "method": "OPTIONS",
+      "module": [
+        "garson/api/ai/health.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/garson/api/whatsapp/health",
+      "mountPath": "/garson/api/whatsapp",
+      "method": "GET",
+      "module": [
+        "garson/api/whatsapp/health.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/garson/api/whatsapp/health",
+      "mountPath": "/garson/api/whatsapp",
+      "method": "OPTIONS",
+      "module": [
+        "garson/api/whatsapp/health.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/garson/api/whatsapp/webhook",
+      "mountPath": "/garson/api/whatsapp",
+      "method": "OPTIONS",
+      "module": [
+        "garson/api/whatsapp/webhook.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/garson/api/whatsapp/webhook",
+      "mountPath": "/garson/api/whatsapp",
+      "method": "",
+      "module": [
+        "garson/api/whatsapp/webhook.js:onRequest"
+      ]
+    },
+    {
+      "routePath": "/api/whatsapp/health",
+      "mountPath": "/api/whatsapp",
+      "method": "GET",
+      "module": [
+        "api/whatsapp/health.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/whatsapp/health",
+      "mountPath": "/api/whatsapp",
+      "method": "OPTIONS",
+      "module": [
+        "api/whatsapp/health.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/whatsapp/webhook",
+      "mountPath": "/api/whatsapp",
+      "method": "OPTIONS",
+      "module": [
+        "api/whatsapp/webhook.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/whatsapp/webhook",
+      "mountPath": "/api/whatsapp",
+      "method": "",
+      "module": [
+        "api/whatsapp/webhook.js:onRequest"
+      ]
+    },
+    {
+      "routePath": "/api/afad-earthquake-snapshot",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/afad-earthquake-snapshot.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/afad-earthquake-snapshot",
+      "mountPath": "/api",
+      "method": "HEAD",
+      "module": [
+        "api/afad-earthquake-snapshot.js:onRequestHead"
+      ]
+    },
+    {
+      "routePath": "/api/afad-earthquake-snapshot",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/afad-earthquake-snapshot.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/analytics-ingest",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/analytics-ingest.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/analytics-ingest",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/analytics-ingest.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/analytics-ingest",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/analytics-ingest.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/create-billing-portal",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/create-billing-portal.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/create-billing-portal",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/create-billing-portal.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/create-checkout",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/create-checkout.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/create-checkout",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/create-checkout.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/evds-snapshot",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/evds-snapshot.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/evds-snapshot",
+      "mountPath": "/api",
+      "method": "HEAD",
+      "module": [
+        "api/evds-snapshot.js:onRequestHead"
+      ]
+    },
+    {
+      "routePath": "/api/evds-snapshot",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/evds-snapshot.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/health",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/health.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/health",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/health.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/paid-conversion-ingest",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/paid-conversion-ingest.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/paid-conversion-ingest",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/paid-conversion-ingest.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/public-stats",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/public-stats.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/public-stats",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/public-stats.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/stripe-webhook",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/stripe-webhook.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/stripe-webhook",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/stripe-webhook.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/tuik-snapshot",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/tuik-snapshot.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/tuik-snapshot",
+      "mountPath": "/api",
+      "method": "HEAD",
+      "module": [
+        "api/tuik-snapshot.js:onRequestHead"
+      ]
+    },
+    {
+      "routePath": "/api/tuik-snapshot",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/tuik-snapshot.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/ai-proxy",
+      "mountPath": "/",
+      "method": "OPTIONS",
+      "module": [
+        "ai-proxy.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/ai-proxy",
+      "mountPath": "/",
+      "method": "POST",
+      "module": [
+        "ai-proxy.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/analytics-ingest",
+      "mountPath": "/",
+      "method": "GET",
+      "module": [
+        "analytics-ingest.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/analytics-ingest",
+      "mountPath": "/",
+      "method": "OPTIONS",
+      "module": [
+        "analytics-ingest.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/analytics-ingest",
+      "mountPath": "/",
+      "method": "POST",
+      "module": [
+        "analytics-ingest.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/env",
+      "mountPath": "/",
+      "method": "",
+      "module": [
+        "env.js:onRequest"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
