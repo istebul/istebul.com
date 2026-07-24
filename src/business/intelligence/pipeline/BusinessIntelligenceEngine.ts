@@ -1,44 +1,95 @@
-import { computeBusinessInsights } from '../insights/InsightEngine';
-import { computeBusinessMetrics } from '../metrics/MetricsEngine';
 import { createMockBusinessDataProvider } from '../providers/MockDataProvider';
-import { computeBusinessRecommendations } from '../recommendations/RecommendationEngine';
 import type { BusinessAdvisorResult } from '../types/advisor-result';
-import type { RuntimeHealth } from '../../runtime/RuntimeHealth';
-
-export type BusinessAdvisorResultWithHealth =
-  BusinessAdvisorResult & {
-    health?: RuntimeHealth;
-  };
 import type { IBusinessDataProvider } from '../types/raw-business-data';
+import type { BusinessDataProvider } from '../../types/business-provider';
+import { MetricsEngine } from '../../services/MetricsEngine';
+import { InsightEngine } from '../../services/InsightEngine';
+import { RecommendationEngine } from '../../services/RecommendationEngine';
+
+/**
+ * Önceki runtime dışa aktarımlarıyla geriye uyumluluk için korunur.
+ *
+ * Business health artık RuntimeHealth değil, BusinessAdvisorResult
+ * içerisindeki BusinessHealthResult alanıdır.
+ */
+export type BusinessAdvisorResultWithHealth = BusinessAdvisorResult;
 
 export interface BusinessIntelligenceEngineOptions {
   dataProvider?: IBusinessDataProvider;
 }
 
 /**
- * Business Intelligence Engine — orchestrates:
- * Data Provider → Metrics → Insights → Recommendations.
+ * Intelligence provider yüzeyini yeni servis mimarisinin beklediği
+ * BusinessDataProvider sözleşmesine dönüştürür.
+ */
+function toBusinessDataProvider(
+  provider: IBusinessDataProvider
+): BusinessDataProvider {
+  if (
+    typeof provider === 'object' &&
+    provider !== null &&
+    'kind' in provider
+  ) {
+    return provider as BusinessDataProvider;
+  }
+
+  return {
+    kind: 'mock',
+    getSnapshot: () => provider.getSnapshot()
+  };
+}
+
+/**
+ * Business Intelligence Engine
+ *
+ * Provider
+ * → Analytics
+ * → Scoring
+ * → Business Health
+ * → KPI
+ * → Event Intelligence
+ * → Metrics
+ * → Insights
+ * → Recommendations
  */
 export function runBusinessIntelligenceEngine(
   options: BusinessIntelligenceEngineOptions = {}
 ): BusinessAdvisorResultWithHealth {
-  const provider = options.dataProvider ?? createMockBusinessDataProvider();
-  const raw = provider.getSnapshot();
-  const metrics = computeBusinessMetrics(raw);
-  const insights = computeBusinessInsights(raw, metrics);
-  const recommendations = computeBusinessRecommendations(raw, metrics, insights);
+  const selectedProvider =
+    options.dataProvider ?? createMockBusinessDataProvider();
 
-  const revenue = metrics.metrics.find((m) => m.id === 'revenue-trend');
-  const risk = metrics.metrics.find((m) => m.id === 'risk-score');
+  const provider = toBusinessDataProvider(selectedProvider);
+
+  const metricsEngine = new MetricsEngine(provider);
+  const metricsResult = metricsEngine.compute();
+
+  const insightEngine = new InsightEngine(metricsEngine);
+  const insightResult = insightEngine.compute();
+
+  const recommendationEngine = new RecommendationEngine(insightEngine);
+  const recommendations = recommendationEngine.compute();
+
+  const revenue = metricsResult.metrics.metrics.find(
+    (metric) => metric.id === 'revenue-trend'
+  );
+
+  const risk = metricsResult.metrics.metrics.find(
+    (metric) => metric.id === 'risk-score'
+  );
 
   return Object.freeze({
     headline: 'AI Business Advisor',
-    summary: `Mock zekâ özeti: gelir ${revenue?.value ?? '—'}, risk skoru ${risk?.value ?? '—'}. Gerçek API bağlantısı yok.`,
-    metrics,
-    insights,
+    summary:
+      `Mock zekâ özeti: gelir ${revenue?.value ?? '—'}, ` +
+      `risk skoru ${risk?.value ?? '—'}. Gerçek API bağlantısı yok.`,
+    metrics: metricsResult.metrics,
+    health: metricsResult.health,
+    kpi: metricsResult.kpi,
+    events: metricsResult.events,
+    insights: insightResult.insights,
     recommendations,
     source: 'mock',
-    generatedAt: raw.asOf
+    generatedAt: metricsResult.metrics.generatedAt
   });
 }
 

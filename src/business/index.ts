@@ -1492,3 +1492,24 @@ export type {
   ExportPipelineExecutionSummary,
   ExportPipelineRunnerDependencies
 } from './export';
+
+/** Business Runtime — tenant-aware provider orchestration */
+export {
+  BusinessRuntime,
+  createBusinessRuntime,
+  getDefaultBusinessRuntime,
+  createBusinessRuntimeContext
+} from './runtime';
+
+export type {
+  BusinessRuntimeContext,
+  BusinessRuntimeCacheOptions,
+  BusinessRuntimeDeps,
+  BusinessRuntimeResult,
+  BusinessRuntimeTelemetry,
+  BusinessRuntimeFactoryOptions,
+  RuntimeHealth,
+  RuntimeHealthStatus,
+  RuntimeProviderLifecycle
+} from './runtime';
+
