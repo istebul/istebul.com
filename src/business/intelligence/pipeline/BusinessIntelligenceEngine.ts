@@ -3,6 +3,12 @@ import { computeBusinessMetrics } from '../metrics/MetricsEngine';
 import { createMockBusinessDataProvider } from '../providers/MockDataProvider';
 import { computeBusinessRecommendations } from '../recommendations/RecommendationEngine';
 import type { BusinessAdvisorResult } from '../types/advisor-result';
+import type { RuntimeHealth } from '../../runtime/RuntimeHealth';
+
+export type BusinessAdvisorResultWithHealth =
+  BusinessAdvisorResult & {
+    health?: RuntimeHealth;
+  };
 import type { IBusinessDataProvider } from '../types/raw-business-data';
 
 export interface BusinessIntelligenceEngineOptions {
@@ -15,7 +21,7 @@ export interface BusinessIntelligenceEngineOptions {
  */
 export function runBusinessIntelligenceEngine(
   options: BusinessIntelligenceEngineOptions = {}
-): BusinessAdvisorResult {
+): BusinessAdvisorResultWithHealth {
   const provider = options.dataProvider ?? createMockBusinessDataProvider();
   const raw = provider.getSnapshot();
   const metrics = computeBusinessMetrics(raw);
