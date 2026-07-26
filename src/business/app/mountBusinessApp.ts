@@ -90,13 +90,49 @@ export function mountBusinessApp(container: HTMLElement, options: MountBusinessA
   if (!runtime) return;
 
   void loadBusinessWorkspace(runtime).then((state) => {
-    if (!state.authenticated || !state.businessId || state.error) {
+    if (
+      !state.authenticated ||
+      !state.userId ||
+      !state.businessId ||
+      state.error
+    ) {
       return;
     }
 
-    content.appendChild(
-      createBusinessLiveProjectsElement(state.projects)
-    );
+    const renderProjects = (
+      projects: typeof state.projects
+    ): void => {
+      const current = content.querySelector(
+        '[aria-labelledby="business-live-projects-title"]'
+      );
+
+      const element = createBusinessLiveProjectsElement({
+        projects,
+        onCreateProject: async (title, type) => {
+          await runtime.studio.createProject({
+            businessId: state.businessId as string,
+            userId: state.userId as string,
+            title,
+            type
+          });
+
+          const refreshedProjects =
+            await runtime.studio.listProjects(
+              state.businessId as string
+            );
+
+          renderProjects(refreshedProjects);
+        }
+      });
+
+      if (current) {
+        current.replaceWith(element);
+      } else {
+        content.appendChild(element);
+      }
+    };
+
+    renderProjects(state.projects);
   });
 }
 
