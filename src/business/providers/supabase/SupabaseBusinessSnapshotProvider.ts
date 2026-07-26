@@ -3,9 +3,25 @@ import type {
   BusinessSnapshotProvider,
 } from "../BusinessSnapshotProvider";
 
+type SnapshotRow = {
+  revenue: number;
+  expenses: number;
+  profit: number;
+  customers: number;
+  orders: number;
+  updated_at: string;
+};
+
 export interface SupabaseLikeClient {
   from(table: string): {
-    select(query: string): any;
+    select(query: string): {
+      eq(column: string, value: string): {
+        single(): Promise<{
+          data: SnapshotRow | null;
+          error: Error | null;
+        }>;
+      };
+    };
   };
 }
 
@@ -23,13 +39,22 @@ export class SupabaseBusinessSnapshotProvider
 
     if (error) throw error;
 
+    const row: SnapshotRow = data ?? {
+      revenue: 0,
+      expenses: 0,
+      profit: 0,
+      customers: 0,
+      orders: 0,
+      updated_at: new Date().toISOString(),
+    };
+
     return {
-      revenue: data.revenue ?? 0,
-      expenses: data.expenses ?? 0,
-      profit: data.profit ?? 0,
-      customers: data.customers ?? 0,
-      orders: data.orders ?? 0,
-      updatedAt: data.updated_at,
+      revenue: row.revenue,
+      expenses: row.expenses,
+      profit: row.profit,
+      customers: row.customers,
+      orders: row.orders,
+      updatedAt: row.updated_at,
     };
   }
 }
