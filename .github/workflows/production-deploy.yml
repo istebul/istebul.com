@@ -62,7 +62,7 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         if: steps.gate.outputs.skip != 'true'
         with:
           version: 2.104.0
@@ -228,7 +228,7 @@ jobs:
             exit 1
           fi
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         id: setup_supabase_cli
         continue-on-error: true
         if: steps.gate.outputs.skip != 'true'
