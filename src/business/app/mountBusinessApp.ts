@@ -11,6 +11,9 @@ import { createBusinessReportsPageElement } from '../pages/BusinessReportsPage';
 import { createBusinessAiAdvisorPageElement } from '../pages/BusinessAiAdvisorPage';
 import { createBusinessNotificationsPageElement } from '../pages/BusinessNotificationsPage';
 import { createBusinessSettingsPageElement } from '../pages/BusinessSettingsPage';
+import { createBusinessRuntime } from './BusinessRuntime';
+import { loadBusinessWorkspace } from './loadBusinessWorkspace';
+import { createBusinessLiveProjectsElement } from '../components/BusinessLiveProjects';
 
 export interface MountBusinessAppOptions {
   /** Explicit page; defaults from pathname or data-business-page. */
@@ -80,6 +83,21 @@ export function mountBusinessApp(container: HTMLElement, options: MountBusinessA
   container.replaceChildren(root);
   container.dataset.businessAppReady = '1';
   container.dataset.businessActivePage = route.navId;
+
+  if (route.navId !== 'dashboard') return;
+
+  const runtime = createBusinessRuntime();
+  if (!runtime) return;
+
+  void loadBusinessWorkspace(runtime).then((state) => {
+    if (!state.authenticated || !state.businessId || state.error) {
+      return;
+    }
+
+    content.appendChild(
+      createBusinessLiveProjectsElement(state.projects)
+    );
+  });
 }
 
 export default mountBusinessApp;

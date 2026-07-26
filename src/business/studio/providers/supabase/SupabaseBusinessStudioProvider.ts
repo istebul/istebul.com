@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   BusinessStudioProject,
   BusinessStudioProjectStatus,
@@ -19,29 +20,6 @@ type ProjectRow = {
   updated_at: string;
 };
 
-type QueryResult<T> = {
-  data: T | null;
-  error: Error | null;
-};
-
-interface SupabaseQueryBuilder<T> {
-  select(columns: string): SupabaseQueryBuilder<T>;
-  eq(column: string, value: string): SupabaseQueryBuilder<T>;
-  order(
-    column: string,
-    options: { ascending: boolean },
-  ): Promise<QueryResult<T[]>>;
-  insert(values: Record<string, unknown>): {
-    select(columns: string): {
-      single(): Promise<QueryResult<T>>;
-    };
-  };
-}
-
-export interface SupabaseStudioClient {
-  from<T>(table: string): SupabaseQueryBuilder<T>;
-}
-
 function mapProject(row: ProjectRow): BusinessStudioProject {
   return {
     id: row.id,
@@ -59,13 +37,13 @@ function mapProject(row: ProjectRow): BusinessStudioProject {
 export class SupabaseBusinessStudioProvider
   implements BusinessStudioProvider
 {
-  constructor(private readonly client: SupabaseStudioClient) {}
+  constructor(private readonly client: SupabaseClient) {}
 
   async listProjects(
     businessId: string,
   ): Promise<BusinessStudioProject[]> {
     const { data, error } = await this.client
-      .from<ProjectRow>("business_projects")
+      .from("business_projects")
       .select("*")
       .eq("business_id", businessId)
       .order("updated_at", { ascending: false });
@@ -74,14 +52,14 @@ export class SupabaseBusinessStudioProvider
       throw error;
     }
 
-    return (data ?? []).map(mapProject);
+    return ((data ?? []) as ProjectRow[]).map(mapProject);
   }
 
   async createProject(
     input: CreateStudioProjectInput,
   ): Promise<BusinessStudioProject> {
     const { data, error } = await this.client
-      .from<ProjectRow>("business_projects")
+      .from("business_projects")
       .insert({
         business_id: input.businessId,
         created_by: input.userId,
@@ -101,6 +79,6 @@ export class SupabaseBusinessStudioProvider
       throw new Error("Business projesi oluşturulamadı.");
     }
 
-    return mapProject(data);
+    return mapProject(data as ProjectRow);
   }
 }
