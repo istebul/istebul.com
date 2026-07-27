@@ -14,6 +14,9 @@ import { createBusinessSettingsPageElement } from '../pages/BusinessSettingsPage
 import { createBusinessRuntime } from './BusinessRuntime';
 import { loadBusinessWorkspace } from './loadBusinessWorkspace';
 import { createBusinessLiveProjectsElement } from '../components/BusinessLiveProjects';
+import { resolveBusinessAccess } from '../auth/resolveBusinessAccess';
+import { createBusinessAuthPage } from '../auth/ui';
+import { createBusinessOnboardingPage } from '../onboarding/BusinessOnboardingPage';
 
 export interface MountBusinessAppOptions {
   /** Explicit page; defaults from pathname or data-business-page. */
@@ -71,7 +74,10 @@ function createPageElement(route: BusinessRouteDefinition): HTMLElement {
  * Business MVP uygulamasını hedef kapsayıcıya mount eder.
  * Auth / tenant / API çağrısı yapmaz.
  */
-export function mountBusinessApp(container: HTMLElement, options: MountBusinessAppOptions = {}): void {
+export function mountBusinessApp(
+  container: HTMLElement,
+  options: MountBusinessAppOptions = {}
+): void {
   const route = resolveRoute(options, container);
   const { root, content } = createBusinessLayoutShell({
     activeNavId: route.navId,
@@ -89,50 +95,69 @@ export function mountBusinessApp(container: HTMLElement, options: MountBusinessA
   const runtime = createBusinessRuntime();
   if (!runtime) return;
 
-  void loadBusinessWorkspace(runtime).then((state) => {
-    if (
-      !state.authenticated ||
-      !state.userId ||
-      !state.businessId ||
-      state.error
-    ) {
+  void resolveBusinessAccess(runtime).then((access) => {
+    if (access.state === 'unauthenticated') {
+      content.replaceChildren(
+        createBusinessAuthPage({
+          runtime,
+          onAuthenticated: () => {
+            window.location.reload();
+          }
+        })
+      );
       return;
     }
 
-    const renderProjects = (
-      projects: typeof state.projects
-    ): void => {
-      const current = content.querySelector(
-        '[aria-labelledby="business-live-projects-title"]'
-      );
+    if (access.state === 'needs-business') {
+      content.replaceChildren(createBusinessOnboardingPage());
+      return;
+    }
 
-      const element = createBusinessLiveProjectsElement({
-        projects,
-        onCreateProject: async (title, type) => {
-          await runtime.studio.createProject({
-            businessId: state.businessId as string,
-            userId: state.userId as string,
-            title,
-            type
-          });
-
-          const refreshedProjects =
-            await runtime.studio.listProjects(
-              state.businessId as string
-            );
-
-          renderProjects(refreshedProjects);
-        }
-      });
-
-      if (current) {
-        current.replaceWith(element);
-      } else {
-        content.appendChild(element);
+    void loadBusinessWorkspace(runtime).then((state) => {
+      if (
+        !state.authenticated ||
+        !state.userId ||
+        !state.businessId ||
+        state.error
+      ) {
+        return;
       }
-    };
 
-    renderProjects(state.projects);
+      const renderProjects = (
+        projects: typeof state.projects
+      ): void => {
+        const current = content.querySelector(
+          '[aria-labelledby="business-live-projects-title"]'
+        );
+
+        const element = createBusinessLiveProjectsElement({
+          projects,
+          onCreateProject: async (title, type) => {
+            await runtime.studio.createProject({
+              businessId: state.businessId as string,
+              userId: state.userId as string,
+              title,
+              type
+            });
+
+            const refreshedProjects =
+              await runtime.studio.listProjects(
+                state.businessId as string
+              );
+
+            renderProjects(refreshedProjects);
+          }
+        });
+
+        if (current) {
+          current.replaceWith(element);
+        } else {
+          content.appendChild(element);
+        }
+      };
+
+      renderProjects(state.projects);
+    });
   });
 }
 
