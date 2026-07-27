@@ -111,6 +111,21 @@ export function mountBusinessApp(
       return;
     }
 
+    if (
+      route.navId === 'analizler' &&
+      access.userId &&
+      access.businessId
+    ) {
+      content.replaceChildren(
+        createBusinessAnalysesPageElement({
+          runtime,
+          userId: access.userId,
+          businessId: access.businessId
+        })
+      );
+      return;
+    }
+
     void loadBusinessWorkspace(runtime).then((state) => {
       if (
         !state.authenticated ||
