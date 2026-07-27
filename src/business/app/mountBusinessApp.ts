@@ -90,8 +90,6 @@ export function mountBusinessApp(
   container.dataset.businessAppReady = '1';
   container.dataset.businessActivePage = route.navId;
 
-  if (route.navId !== 'dashboard') return;
-
   const runtime = createBusinessRuntime();
   if (!runtime) return;
 

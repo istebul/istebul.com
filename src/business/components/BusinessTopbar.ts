@@ -45,11 +45,11 @@ export function createBusinessTopbarElement(props: BusinessTopbarProps): HTMLEle
 
   const badge = document.createElement('span');
   badge.className = 'ib-biz-topbar__badge';
-  badge.textContent = 'MVP';
+  badge.textContent = 'Beta';
 
   const workspace = document.createElement('span');
   workspace.className = 'ib-biz-topbar__workspace';
-  workspace.textContent = 'Demo çalışma alanı';
+  workspace.textContent = 'Canlı çalışma alanı';
 
   right.append(badge, workspace);
   header.append(left, right);
