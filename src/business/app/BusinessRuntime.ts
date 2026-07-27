@@ -3,6 +3,9 @@ import {
   SupabaseBusinessStudioProvider,
   type BusinessStudioProvider
 } from '../studio';
+import {
+  SupabaseBusinessDocumentUploadProvider
+} from '../document-intelligence/providers/supabase';
 
 type PublicEnv = {
   SUPABASE_URL?: string;
@@ -19,6 +22,7 @@ declare global {
 export interface BusinessRuntime {
   client: SupabaseClient;
   studio: BusinessStudioProvider;
+  documents: SupabaseBusinessDocumentUploadProvider;
 }
 
 function readPublicEnv(): PublicEnv {
@@ -55,6 +59,7 @@ export function createBusinessRuntime(): BusinessRuntime | null {
 
   return {
     client,
-    studio: new SupabaseBusinessStudioProvider(client)
+    studio: new SupabaseBusinessStudioProvider(client),
+    documents: new SupabaseBusinessDocumentUploadProvider(client)
   };
 }

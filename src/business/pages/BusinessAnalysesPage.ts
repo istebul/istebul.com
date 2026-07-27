@@ -1,4 +1,14 @@
-export function createBusinessAnalysesPageElement(): HTMLElement {
+import type { BusinessRuntime } from '../app/BusinessRuntime';
+
+export interface BusinessAnalysesPageOptions {
+  runtime?: BusinessRuntime;
+  userId?: string;
+  businessId?: string;
+}
+
+export function createBusinessAnalysesPageElement(
+  options: BusinessAnalysesPageOptions = {}
+): HTMLElement {
   const root = document.createElement('div');
   root.className = 'ib-biz-page';
   root.dataset.businessPage = 'analizler';
@@ -11,7 +21,7 @@ export function createBusinessAnalysesPageElement(): HTMLElement {
 
   const description = document.createElement('p');
   description.textContent =
-    'Excel, CSV veya PDF dosyanızı yükleyin; satış, maliyet, stok, depo sayımı ve yönetim analizleri oluşturun.';
+    'Excel, CSV veya PDF dosyanızı güvenli çalışma alanınıza yükleyin.';
 
   const form = document.createElement('form');
   form.className = 'ib-biz-auth-form';
@@ -27,7 +37,7 @@ export function createBusinessAnalysesPageElement(): HTMLElement {
   fileInput.type = 'file';
   fileInput.name = 'document';
   fileInput.required = true;
-  fileInput.accept = '.xlsx,.xls,.csv,.pdf';
+  fileInput.accept = '.xlsx,.xls,.csv,.pdf,.docx,.pptx';
 
   fileLabel.append(fileLabelText, fileInput);
 
@@ -59,23 +69,118 @@ export function createBusinessAnalysesPageElement(): HTMLElement {
 
   const submit = document.createElement('button');
   submit.type = 'submit';
-  submit.className = 'ib-biz-button ib-biz-button-primary';
-  submit.textContent = 'Analizi başlat';
+  submit.className =
+    'ib-biz-button ib-biz-button-primary';
+  submit.textContent = 'Dosyayı yükle';
 
   const feedback = document.createElement('p');
   feedback.className = 'ib-biz-auth-feedback';
   feedback.setAttribute('role', 'status');
   feedback.setAttribute('aria-live', 'polite');
 
-  form.append(fileLabel, analysisLabel, submit, feedback);
-  section.append(title, description, form);
+  const result = document.createElement('div');
+  result.className = 'ib-biz-card';
+  result.hidden = true;
+
+  function setBusy(busy: boolean): void {
+    fileInput.disabled = busy;
+    analysisSelect.disabled = busy;
+    submit.disabled = busy;
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const runtime = options.runtime;
+    const userId = options.userId;
+    const businessId = options.businessId;
+    const file = fileInput.files?.[0];
+
+    if (!runtime || !userId || !businessId) {
+      feedback.textContent =
+        'Oturum veya işletme bilgisi hazırlanamadı. Sayfayı yenileyin.';
+      return;
+    }
+
+    if (!file) {
+      feedback.textContent = 'Yüklenecek dosyayı seçin.';
+      fileInput.focus();
+      return;
+    }
+
+    setBusy(true);
+    result.hidden = true;
+    feedback.textContent = 'Dosya güvenli alana yükleniyor…';
+
+    void runtime.documents
+      .uploadDocument({
+        businessId,
+        userId,
+        file
+      })
+      .then((uploadedDocument) => {
+        feedback.textContent =
+          'Dosya başarıyla yüklendi ve kayıt altına alındı.';
+
+        const resultTitle = document.createElement('h3');
+        resultTitle.textContent = 'Yükleme tamamlandı';
+
+        const resultDetails = document.createElement('p');
+        resultDetails.textContent =
+          `${uploadedDocument.fileName} · ${(
+            uploadedDocument.fileSizeBytes /
+            1024 /
+            1024
+          ).toLocaleString('tr-TR', {
+            maximumFractionDigits: 2
+          })} MB`;
+
+        const analysisDetails = document.createElement('p');
+        analysisDetails.textContent =
+          `Seçilen analiz: ${
+            analysisSelect.selectedOptions[0]?.textContent ??
+            'Yönetici özeti'
+          }`;
+
+        result.replaceChildren(
+          resultTitle,
+          resultDetails,
+          analysisDetails
+        );
+        result.hidden = false;
+        form.reset();
+      })
+      .catch((error: unknown) => {
+        feedback.textContent =
+          error instanceof Error
+            ? error.message
+            : 'Dosya yükleme işlemi tamamlanamadı.';
+      })
+      .finally(() => {
+        setBusy(false);
+      });
+  });
+
+  form.append(
+    fileLabel,
+    analysisLabel,
+    submit,
+    feedback
+  );
+
+  section.append(title, description, form, result);
   root.appendChild(section);
 
   return root;
 }
 
-export function mountBusinessAnalysesPage(container: HTMLElement): void {
-  container.replaceChildren(createBusinessAnalysesPageElement());
+export function mountBusinessAnalysesPage(
+  container: HTMLElement,
+  options: BusinessAnalysesPageOptions = {}
+): void {
+  container.replaceChildren(
+    createBusinessAnalysesPageElement(options)
+  );
 }
 
 export default mountBusinessAnalysesPage;
