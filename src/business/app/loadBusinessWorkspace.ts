@@ -3,6 +3,7 @@ import type { BusinessStudioProject } from '../studio';
 
 export interface BusinessWorkspaceState {
   authenticated: boolean;
+  userId: string | null;
   businessId: string | null;
   projects: BusinessStudioProject[];
   error: string | null;
@@ -19,6 +20,7 @@ export async function loadBusinessWorkspace(
   if (sessionError) {
     return {
       authenticated: false,
+      userId: null,
       businessId: null,
       projects: [],
       error: sessionError.message
@@ -30,6 +32,7 @@ export async function loadBusinessWorkspace(
   if (!user) {
     return {
       authenticated: false,
+      userId: null,
       businessId: null,
       projects: [],
       error: null
@@ -46,6 +49,7 @@ export async function loadBusinessWorkspace(
   if (membershipError) {
     return {
       authenticated: true,
+      userId: user.id,
       businessId: null,
       projects: [],
       error: membershipError.message
@@ -60,6 +64,7 @@ export async function loadBusinessWorkspace(
   if (!businessId) {
     return {
       authenticated: true,
+      userId: user.id,
       businessId: null,
       projects: [],
       error: null
@@ -71,6 +76,7 @@ export async function loadBusinessWorkspace(
 
     return {
       authenticated: true,
+      userId: user.id,
       businessId,
       projects,
       error: null
@@ -78,6 +84,7 @@ export async function loadBusinessWorkspace(
   } catch (error) {
     return {
       authenticated: true,
+      userId: user.id,
       businessId,
       projects: [],
       error:
