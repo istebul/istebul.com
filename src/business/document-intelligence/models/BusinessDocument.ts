@@ -1,5 +1,6 @@
 export type BusinessDocumentFormat =
   | 'xlsx'
+  | 'xls'
   | 'csv'
   | 'pdf'
   | 'docx'
