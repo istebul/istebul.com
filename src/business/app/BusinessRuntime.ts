@@ -4,6 +4,7 @@ import {
   type BusinessStudioProvider
 } from '../studio';
 import {
+  SupabaseBusinessDocumentAnalysisProvider,
   SupabaseBusinessDocumentUploadProvider
 } from '../document-intelligence/providers/supabase';
 
@@ -23,6 +24,7 @@ export interface BusinessRuntime {
   client: SupabaseClient;
   studio: BusinessStudioProvider;
   documents: SupabaseBusinessDocumentUploadProvider;
+  documentAnalyses: SupabaseBusinessDocumentAnalysisProvider;
 }
 
 function readPublicEnv(): PublicEnv {
@@ -60,6 +62,8 @@ export function createBusinessRuntime(): BusinessRuntime | null {
   return {
     client,
     studio: new SupabaseBusinessStudioProvider(client),
-    documents: new SupabaseBusinessDocumentUploadProvider(client)
+    documents: new SupabaseBusinessDocumentUploadProvider(client),
+    documentAnalyses:
+      new SupabaseBusinessDocumentAnalysisProvider(client)
   };
 }
