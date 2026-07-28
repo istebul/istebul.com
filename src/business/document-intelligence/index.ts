@@ -9,3 +9,7 @@ export * from './workflows/documentIntelligenceWorkflow';
 export * from './parsers/CsvDocumentParser';
 export * from './parsers/ExcelDocumentParser';
 export * from './parsers/PdfDocumentParser';
+export * from './models/NormalizedDocument';
+export * from './models/DocumentClassification';
+export * from './normalizers/DatasetNormalizer';
+export * from './classifiers/BusinessDocumentClassifier';
