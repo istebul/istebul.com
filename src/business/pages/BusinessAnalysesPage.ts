@@ -1,14 +1,7 @@
 import type { BusinessRuntime } from '../app/BusinessRuntime';
-import {
-  BusinessDocumentClassifier,
-  CsvDocumentParser,
-  DatasetNormalizer,
-  DeterministicBusinessAnalysisEngine,
-  DocumentIntelligenceService,
-  ExcelDocumentParser,
-  PdfDocumentParser,
-  type BusinessAnalysisResult,
-  type BusinessDocument
+import type {
+  BusinessAnalysisResult,
+  BusinessDocument
 } from '../document-intelligence';
 
 export interface BusinessAnalysesPageOptions {
@@ -288,6 +281,16 @@ export function createBusinessAnalysesPageElement(
 
         feedback.textContent =
           'Belge ayrıştırılıyor ve işletme analizi hazırlanıyor…';
+
+        const {
+          BusinessDocumentClassifier,
+          CsvDocumentParser,
+          DatasetNormalizer,
+          DeterministicBusinessAnalysisEngine,
+          DocumentIntelligenceService,
+          ExcelDocumentParser,
+          PdfDocumentParser
+        } = await import('../document-intelligence');
 
         const loader = {
           load: async (): Promise<ArrayBuffer> =>

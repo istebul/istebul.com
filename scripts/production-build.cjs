@@ -431,18 +431,30 @@ esbuild.buildSync({
   outfile: platformShellPreviewOut
 });
 
-/* EPIC-500 — İSTEBUL Business MVP app (standalone /business; no auth/API) */
-const businessAppOut = path.join(dist, 'js/business/business-app.js');
-ensureDir(businessAppOut);
+/* EPIC-500 — İSTEBUL Business standalone product surface */
+const businessAppDir = path.join(dist, 'js');
+fs.mkdirSync(path.join(businessAppDir, 'business'), {
+  recursive: true
+});
+fs.mkdirSync(path.join(businessAppDir, 'chunks/business'), {
+  recursive: true
+});
+
 esbuild.buildSync({
-  entryPoints: [path.join(root, 'js/business/business-app.js')],
+  entryPoints: {
+    'business/business-app':
+      path.join(root, 'js/business/business-app.js')
+  },
   bundle: true,
+  splitting: true,
   format: 'esm',
   platform: 'browser',
   target: 'es2020',
   minify: true,
   sourcemap: false,
-  outfile: businessAppOut
+  outdir: businessAppDir,
+  entryNames: '[dir]/[name]',
+  chunkNames: 'chunks/business/[name]-[hash]'
 });
 
 /* PR-565 — İSTEBUL AI Landing Foundation (standalone /ai/; no cutover) */
