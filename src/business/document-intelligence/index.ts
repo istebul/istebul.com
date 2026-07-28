@@ -6,3 +6,6 @@ export * from './parsers/DocumentParser';
 export * from './providers/DocumentStorageProvider';
 export * from './services/DocumentIntelligenceService';
 export * from './workflows/documentIntelligenceWorkflow';
+export * from './parsers/CsvDocumentParser';
+export * from './parsers/ExcelDocumentParser';
+export * from './parsers/PdfDocumentParser';
