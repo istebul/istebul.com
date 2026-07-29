@@ -3,6 +3,9 @@ import type {
   BusinessAnalysisResult,
   BusinessDocument
 } from '../document-intelligence';
+import type {
+  StoredBusinessDocumentAnalysis
+} from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentAnalysisProvider';
 
 export interface BusinessAnalysesPageOptions {
   runtime?: BusinessRuntime;
@@ -48,9 +51,15 @@ function createScoreCard(score: number): HTMLElement {
   return card;
 }
 
+interface BusinessAnalysisReportContext {
+  businessName: string;
+  analysis: StoredBusinessDocumentAnalysis;
+}
+
 function renderAnalysisResult(
   container: HTMLElement,
-  result: BusinessAnalysisResult
+  result: BusinessAnalysisResult,
+  reportContext?: BusinessAnalysisReportContext
 ): void {
   const heading = document.createElement('h2');
   heading.textContent = 'Analiz tamamlandı';
@@ -112,6 +121,70 @@ function renderAnalysisResult(
     recommendations.appendChild(item);
   }
 
+  const reportActions = document.createElement('div');
+  reportActions.className = 'ib-biz-report-actions';
+
+  if (reportContext) {
+    const printableButton = document.createElement('button');
+    printableButton.type = 'button';
+    printableButton.className =
+      'ib-biz-button ib-biz-button-primary';
+    printableButton.textContent = 'Yazdır / PDF Kaydet';
+
+    printableButton.addEventListener('click', () => {
+      void import('../reports')
+        .then(({ openPrintableBusinessReport }) => {
+          openPrintableBusinessReport(reportContext);
+        })
+        .catch((error: unknown) => {
+          window.alert(
+            error instanceof Error
+              ? error.message
+              : 'Yazdırılabilir rapor açılamadı.'
+          );
+        });
+    });
+
+    const excelButton = document.createElement('button');
+    excelButton.type = 'button';
+    excelButton.className =
+      'ib-biz-button ib-biz-button-secondary';
+    excelButton.textContent = 'Excel İndir';
+
+    excelButton.addEventListener('click', () => {
+      excelButton.disabled = true;
+      excelButton.textContent = 'Excel hazırlanıyor…';
+
+      void import('../reports')
+        .then(({ downloadBusinessExcelReport }) =>
+          downloadBusinessExcelReport(reportContext)
+        )
+        .catch((error: unknown) => {
+          window.alert(
+            error instanceof Error
+              ? error.message
+              : 'Excel raporu oluşturulamadı.'
+          );
+        })
+        .finally(() => {
+          excelButton.disabled = false;
+          excelButton.textContent = 'Excel İndir';
+        });
+    });
+
+    const reportsLink = document.createElement('a');
+    reportsLink.className =
+      'ib-biz-button ib-biz-button-secondary';
+    reportsLink.href = '/business/raporlar/';
+    reportsLink.textContent = 'Raporlarım';
+
+    reportActions.append(
+      printableButton,
+      excelButton,
+      reportsLink
+    );
+  }
+
   container.replaceChildren(
     heading,
     summary,
@@ -121,10 +194,31 @@ function renderAnalysisResult(
     insightsHeading,
     insights,
     recommendationsHeading,
-    recommendations
+    recommendations,
+    reportActions
   );
 
   container.hidden = false;
+}
+
+async function resolveBusinessName(
+  runtime: BusinessRuntime,
+  businessId: string
+): Promise<string> {
+  const { data, error } = await runtime.client
+    .from('business_accounts')
+    .select('name')
+    .eq('id', businessId)
+    .maybeSingle();
+
+  if (error) {
+    return 'İSTEBUL Business İşletmesi';
+  }
+
+  return typeof data?.name === 'string' &&
+    data.name.trim()
+    ? data.name.trim()
+    : 'İSTEBUL Business İşletmesi';
 }
 
 function toBusinessDocument(
@@ -323,13 +417,19 @@ export function createBusinessAnalysesPageElement(
             classification
           );
 
-        await runtime.documentAnalyses.saveAnalysis({
-          businessId,
-          documentId: uploadedDocument.id,
-          userId,
-          analysisType,
-          result: analysisResult
-        });
+        const storedAnalysis =
+          await runtime.documentAnalyses.saveAnalysis({
+            businessId,
+            documentId: uploadedDocument.id,
+            userId,
+            analysisType,
+            result: analysisResult
+          });
+
+        const businessName = await resolveBusinessName(
+          runtime,
+          businessId
+        );
 
         await runtime.documentAnalyses.updateDocumentStatus(
           uploadedDocument.id,
@@ -339,7 +439,14 @@ export function createBusinessAnalysesPageElement(
         feedback.textContent =
           'Analiz tamamlandı ve güvenli çalışma alanına kaydedildi.';
 
-        renderAnalysisResult(result, analysisResult);
+        renderAnalysisResult(
+          result,
+          analysisResult,
+          {
+            businessName,
+            analysis: storedAnalysis
+          }
+        );
         form.reset();
       })
       .catch(async (error: unknown) => {
