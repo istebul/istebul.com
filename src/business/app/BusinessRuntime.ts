@@ -15,6 +15,7 @@ type PublicEnv = {
 
 declare global {
   interface Window {
+    __env?: PublicEnv;
     __ENV__?: PublicEnv;
     ENV?: PublicEnv;
   }
@@ -32,9 +33,11 @@ function readPublicEnv(): PublicEnv {
 
   return {
     SUPABASE_URL:
+      window.__env?.SUPABASE_URL ??
       window.__ENV__?.SUPABASE_URL ??
       window.ENV?.SUPABASE_URL,
     SUPABASE_ANON_KEY:
+      window.__env?.SUPABASE_ANON_KEY ??
       window.__ENV__?.SUPABASE_ANON_KEY ??
       window.ENV?.SUPABASE_ANON_KEY
   };
