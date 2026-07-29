@@ -42,6 +42,11 @@ const BUDGET_EXCLUDE = [
    * Loaded only from ai/index.html — never by homepage app.bundle.
    */
   /^js\/ai\//,
+  /**
+   * İSTEBUL Business bağımsız ürün yüzeyi.
+   * Ana sayfa SPA bütçesine dahil edilmez.
+   */
+  /^js\/business\//,
   /** AI Landing stylesheets (linked from /ai/ only; not in style.*.css). */
   /^css\/ai\//,
   /^css\/bundles\//,
