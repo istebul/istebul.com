@@ -237,12 +237,23 @@ test('EPIC-570B — Business mounts shared platform nav (logo → /, no duplicat
   assert.equal(root.querySelectorAll('.ib-biz-sidebar__brand').length, 1);
 });
 
-test('Business non-dashboard routes mount empty states', () => {
+test('Business analyses route no longer mounts the legacy empty state', () => {
   const { collectText } = installDomStubs();
   const root = document.createElement('div');
+
   mountBusinessApp(root, { navId: 'analizler' });
-  assert.ok(root.querySelector('.ib-biz-empty'));
-  assert.match(collectText(root).join(' '), /Henüz analiz yok/);
+
+  assert.equal(
+    root.querySelector('.ib-biz-empty'),
+    null
+  );
+
+  const renderedText = collectText(root).join(' ');
+
+  assert.match(
+    renderedText,
+    /Analizler|Giriş|İşletme|belge/i
+  );
 });
 
 test('Business HTML shells and boot entry exist', () => {

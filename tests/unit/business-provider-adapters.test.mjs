@@ -156,18 +156,28 @@ test('ProviderCapabilities catalog covers mock and live adapter kinds', () => {
   assert.equal(getProviderCapabilities('garson-ai').supportsRealtime, true);
 });
 
-test('Live adapters are stubs: status not ready and getSnapshot throws', () => {
+test('Live adapters report readiness correctly and getSnapshot throws before initialization', () => {
   const supabase = createSupabaseProvider();
   const erp = createERPProvider();
   const garson = createGarsonAIProvider();
   assert.ok(supabase instanceof SupabaseProvider);
   assert.ok(erp instanceof ERPProvider);
   assert.ok(garson instanceof GarsonAIProvider);
-  assert.equal(supabase.getStatus().code, 'stub');
+  assert.equal(supabase.getStatus().code, 'unavailable');
+  assert.equal(isProviderReady(supabase.getStatus()), false);
   assert.equal(isProviderReady(erp.getStatus()), false);
-  assert.throws(() => supabase.getSnapshot(), (err) => err instanceof ProviderNotReadyError);
-  assert.throws(() => erp.getSnapshot(), (err) => err instanceof ProviderNotReadyError);
-  assert.throws(() => garson.getSnapshot(), (err) => err instanceof ProviderNotReadyError);
+  assert.throws(
+    () => supabase.getSnapshot(),
+    /Supabase snapshot yüklenmedi/
+  );
+  assert.throws(
+    () => erp.getSnapshot(),
+    (err) => err instanceof ProviderNotReadyError
+  );
+  assert.throws(
+    () => garson.getSnapshot(),
+    (err) => err instanceof ProviderNotReadyError
+  );
 });
 
 test('ProviderResolver falls back to mock for unready live kinds', () => {
