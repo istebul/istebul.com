@@ -1,5 +1,6 @@
 export type BusinessNavId =
   | 'dashboard'
+  | 'veri-merkezi'
   | 'analizler'
   | 'raporlar'
   | 'danisman'

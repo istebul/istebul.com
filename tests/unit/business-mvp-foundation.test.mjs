@@ -163,8 +163,8 @@ function installDomStubs() {
 }
 
 test('Business MVP registers six app routes and nav items', () => {
-  assert.equal(BUSINESS_ROUTES.length, 6);
-  assert.equal(BUSINESS_NAV_ITEMS.length, 6);
+  assert.equal(BUSINESS_ROUTES.length, 7);
+  assert.equal(BUSINESS_NAV_ITEMS.length, 7);
   assert.ok(getBusinessRouteByPath('/business'));
   assert.ok(getBusinessRouteByPath('/business/analizler'));
   assert.ok(getBusinessRouteByPath('/business/raporlar'));
@@ -199,7 +199,7 @@ test('Business app mount creates sidebar, topbar, and content', () => {
   assert.ok(root.querySelector('.ib-biz-shell'));
   assert.ok(root.querySelector('.ib-biz-sidebar'));
   assert.ok(root.querySelector('.ib-biz-topbar'));
-  assert.equal(root.querySelectorAll('.ib-biz-sidebar__link').length, 6);
+  assert.equal(root.querySelectorAll('.ib-biz-sidebar__link').length, 7);
 });
 
 test('Business topbar shows live production status', () => {
@@ -279,9 +279,40 @@ test('Business analyses route no longer mounts the legacy empty state', () => {
   );
 });
 
+test('Business Veri Merkezi route and navigation are registered', () => {
+  const nav = BUSINESS_NAV_ITEMS.find(
+    (item) => item.id === 'veri-merkezi'
+  );
+  const route = BUSINESS_ROUTES.find(
+    (item) => item.navId === 'veri-merkezi'
+  );
+
+  assert.ok(nav);
+  assert.equal(nav.href, '/business/veri-merkezi/');
+  assert.ok(route);
+  assert.equal(route.path, '/business/veri-merkezi');
+  assert.equal(route.page, 'BusinessImportCenterPage');
+});
+
+test('Business Veri Merkezi renders upload and analysis controls', () => {
+  const { collectText } = installDomStubs();
+  const root = document.createElement('div');
+
+  mountBusinessApp(root, { navId: 'veri-merkezi' });
+
+  const content = collectText(root).join(' ');
+
+  assert.match(content, /Veri Merkezi/);
+  assert.match(content, /Dosya yükle/i);
+  assert.match(content, /Son yüklemeler/i);
+  assert.match(content, /Analizi Başlat/i);
+  assert.match(content, /Henüz veri yüklenmedi/i);
+});
+
 test('Business HTML shells and boot entry exist', () => {
   const pages = [
     'business/index.html',
+    'business/veri-merkezi/index.html',
     'business/analizler/index.html',
     'business/raporlar/index.html',
     'business/danisman/index.html',

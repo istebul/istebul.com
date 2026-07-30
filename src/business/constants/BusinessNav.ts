@@ -8,6 +8,12 @@ export const BUSINESS_NAV_ITEMS: readonly BusinessNavItem[] = Object.freeze([
     description: 'Günlük özet ve KPI görünümü'
   },
   {
+    id: 'veri-merkezi',
+    label: 'Veri Merkezi',
+    href: '/business/veri-merkezi/',
+    description: 'Dosya yükleme ve veri hazırlama merkezi'
+  },
+  {
     id: 'analizler',
     label: 'Analizler',
     href: '/business/analizler/',
