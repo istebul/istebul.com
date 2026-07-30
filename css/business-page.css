@@ -317,8 +317,8 @@ html[data-theme="dark"] .ib-business-app {
   display: inline-flex;
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  background: var(--ib-business-soft);
-  color: var(--ib-business-accent);
+  background: #e8f8ef;
+  color: #08783e;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.02em;
