@@ -52,7 +52,7 @@ export interface PlatformHeroProps {
    * (tek keşfet CTA’sının yerine geçer).
    */
   products?: readonly PlatformHeroProductAction[];
-  /** Ürün CTA şeridinde durum rozeti (ör. Geliştirme Aşamasında). */
+  /** Ürün CTA şeridinde durum rozeti (ör. Canlı). */
   showProductStatus?: boolean;
   /** CTA açıklama notunu gizle. */
   hideCtaNote?: boolean;

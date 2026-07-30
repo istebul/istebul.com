@@ -10,7 +10,7 @@ export const PLATFORM_PRODUCT_STATUS_LABELS: Readonly<
   Record<PlatformProductStatus, string>
 > = Object.freeze({
   canli: 'Canlı',
-  gelistirme: 'Geliştirme Aşamasında',
+  gelistirme: 'Canlı',
   yakinda: 'Yakında',
   beta: 'Beta',
   bakim: 'Bakım',
