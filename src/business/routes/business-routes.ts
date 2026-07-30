@@ -1,5 +1,6 @@
 export type BusinessRouteName =
   | 'business-dashboard'
+  | 'business-veri-merkezi'
   | 'business-analizler'
   | 'business-raporlar'
   | 'business-danisman'
@@ -8,6 +9,7 @@ export type BusinessRouteName =
 
 export type BusinessPageId =
   | 'BusinessDashboardPage'
+  | 'BusinessImportCenterPage'
   | 'BusinessAnalysesPage'
   | 'BusinessReportsPage'
   | 'BusinessAiAdvisorPage'
@@ -31,6 +33,14 @@ export const BUSINESS_ROUTES: readonly BusinessRouteDefinition[] = Object.freeze
     navId: 'dashboard',
     title: 'Dashboard',
     description: 'Günlük özet, KPI kartları ve hızlı işlemler.'
+  },
+  {
+    path: '/business/veri-merkezi',
+    name: 'business-veri-merkezi',
+    page: 'BusinessImportCenterPage',
+    navId: 'veri-merkezi',
+    title: 'Veri Merkezi',
+    description: 'İşletme verilerinizi yükleyin ve analiz oluşturmaya başlayın.'
   },
   {
     path: '/business/analizler',

@@ -6,6 +6,7 @@ import {
   type BusinessRouteDefinition
 } from '../routes/business-routes';
 import { createBusinessDashboardPageElement } from '../pages/BusinessDashboardPage';
+import { createBusinessImportCenterPageElement } from '../pages/BusinessImportCenterPage';
 import { createBusinessAnalysesPageElement } from '../pages/BusinessAnalysesPage';
 import { createBusinessReportsPageElement } from '../pages/BusinessReportsPage';
 import { createBusinessAiAdvisorPageElement } from '../pages/BusinessAiAdvisorPage';
@@ -53,6 +54,8 @@ function createPageElement(route: BusinessRouteDefinition): HTMLElement {
   switch (route.page) {
     case 'BusinessDashboardPage':
       return createBusinessDashboardPageElement();
+    case 'BusinessImportCenterPage':
+      return createBusinessImportCenterPageElement();
     case 'BusinessAnalysesPage':
       return createBusinessAnalysesPageElement();
     case 'BusinessReportsPage':
