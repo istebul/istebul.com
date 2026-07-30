@@ -167,6 +167,7 @@ test('Business MVP registers six app routes and nav items', () => {
   assert.equal(BUSINESS_NAV_ITEMS.length, 7);
   assert.ok(getBusinessRouteByPath('/business'));
   assert.ok(getBusinessRouteByPath('/business/analizler'));
+  assert.ok(getBusinessRouteByPath('/business/veri-merkezi'));
   assert.ok(getBusinessRouteByPath('/business/raporlar'));
   assert.ok(getBusinessRouteByPath('/business/danisman'));
   assert.ok(getBusinessRouteByPath('/business/bildirimler'));
