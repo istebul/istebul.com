@@ -30,8 +30,8 @@ const LANDING_PRODUCT_COPY = Object.freeze({
   business: Object.freeze({
     slogan: 'İşletmeler',
     shortDescription: 'İş zekâsı platformu',
-    statusLabel: 'Geliştirme Aşamasında',
-    ctaLabel: 'Yol Haritasını İncele'
+    statusLabel: 'Canlı',
+    ctaLabel: 'İSTEBUL Business’a Git'
   })
 });
 

@@ -16,7 +16,7 @@ export type PlatformProductId = 'istebul-ai' | 'garsonai' | 'business';
  * | Teknik | Türkçe rozet |
  * |--------|----------------|
  * | canli | Canlı |
- * | gelistirme | Geliştirme Aşamasında |
+ * | gelistirme | Canlı |
  * | yakinda | Yakında |
  * | beta | Beta |
  * | bakim | Bakım |
