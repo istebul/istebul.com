@@ -5,7 +5,10 @@ import {
   getBusinessRouteByPath,
   type BusinessRouteDefinition
 } from '../routes/business-routes';
-import { createBusinessDashboardPageElement } from '../pages/BusinessDashboardPage';
+import {
+  createBusinessDashboardPageElement,
+  mountBusinessDashboardPage
+} from '../pages/BusinessDashboardPage';
 import { createBusinessImportCenterPageElement } from '../pages/BusinessImportCenterPage';
 import { createBusinessAnalysesPageElement } from '../pages/BusinessAnalysesPage';
 import { createBusinessReportsPageElement } from '../pages/BusinessReportsPage';
@@ -111,6 +114,17 @@ export function mountBusinessApp(
 
     if (access.state === 'needs-business') {
       content.replaceChildren(createBusinessOnboardingPage());
+      return;
+    }
+
+    if (
+      route.navId === 'dashboard' &&
+      access.businessId
+    ) {
+      void mountBusinessDashboardPage(content, {
+        runtime,
+        businessId: access.businessId
+      });
       return;
     }
 
