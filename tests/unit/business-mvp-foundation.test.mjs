@@ -202,6 +202,29 @@ test('Business app mount creates sidebar, topbar, and content', () => {
   assert.equal(root.querySelectorAll('.ib-biz-sidebar__link').length, 6);
 });
 
+test('Business topbar shows live production status', () => {
+  const { collectText } = installDomStubs();
+  const root = document.createElement('div');
+
+  mountBusinessApp(root, { navId: 'dashboard' });
+
+  const badge = root.querySelector('.ib-biz-topbar__badge');
+  const workspace = root.querySelector(
+    '.ib-biz-topbar__workspace'
+  );
+
+  assert.ok(badge);
+  assert.equal(badge.textContent, 'Canlı');
+
+  assert.ok(workspace);
+  assert.equal(workspace.textContent, 'Üretim ortamı');
+
+  assert.match(
+    collectText(root).join(' '),
+    /Canlı.*Üretim ortamı/
+  );
+});
+
 test('EPIC-570B — Business mounts shared platform nav (logo → /, no duplicate headers)', () => {
   installDomStubs();
   const root = document.createElement('div');
