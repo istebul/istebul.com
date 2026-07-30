@@ -306,7 +306,7 @@ test('Business Veri Merkezi renders upload and analysis controls', () => {
   assert.match(content, /Veri Merkezi/);
   assert.match(content, /Dosya yükle/i);
   assert.match(content, /Son yüklemeler/i);
-  assert.match(content, /Analizi Başlat/i);
+  assert.match(content, /Analizlere Git/i);
   assert.match(content, /Henüz veri yüklenmedi/i);
 });
 

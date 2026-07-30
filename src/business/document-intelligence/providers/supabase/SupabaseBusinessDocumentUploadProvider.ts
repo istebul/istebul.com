@@ -28,6 +28,19 @@ export interface UploadedBusinessDocument {
   createdAt: string;
 }
 
+interface BusinessDocumentRow {
+  id: string;
+  business_id: string;
+  project_id: string | null;
+  file_name: string;
+  mime_type: string;
+  file_size_bytes: number;
+  storage_path: string;
+  document_type: UploadableBusinessDocumentType;
+  status: string;
+  created_at: string;
+}
+
 const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 const STORAGE_BUCKET = 'business-documents';
 
@@ -206,5 +219,53 @@ export class SupabaseBusinessDocumentUploadProvider {
       status: 'uploaded',
       createdAt
     };
+  }
+
+  async listDocuments(
+    businessId: string,
+    limit = 20
+  ): Promise<readonly UploadedBusinessDocument[]> {
+    const safeLimit = Math.max(1, Math.min(limit, 100));
+
+    const { data, error } = await this.client
+      .from('business_documents')
+      .select(
+        [
+          'id',
+          'business_id',
+          'project_id',
+          'file_name',
+          'mime_type',
+          'file_size_bytes',
+          'storage_path',
+          'document_type',
+          'status',
+          'created_at'
+        ].join(',')
+      )
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+      .limit(safeLimit);
+
+    if (error) {
+      throw new Error(
+        `Yüklenen dosyalar alınamadı: ${error.message}`
+      );
+    }
+
+    return Object.freeze(
+      ((data ?? []) as unknown as BusinessDocumentRow[]).map((row) => ({
+        id: row.id,
+        businessId: row.business_id,
+        projectId: row.project_id,
+        fileName: row.file_name,
+        mimeType: row.mime_type,
+        fileSizeBytes: row.file_size_bytes,
+        storagePath: row.storage_path,
+        documentType: row.document_type,
+        status: row.status,
+        createdAt: row.created_at
+      }))
+    );
   }
 }

@@ -1188,3 +1188,29 @@ html[data-theme="dark"] .ib-business-app {
     width: 100%;
   }
 }
+
+.ib-biz-import__drop-zone[data-dragging="true"] {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.ib-biz-import__drop-zone[data-busy="true"] {
+  cursor: progress;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.ib-biz-import__badge[data-status="processing"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ib-biz-import__badge[data-status="failed"] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.ib-biz-import__badge[data-status="ready"] {
+  background: #dcfce7;
+  color: #166534;
+}

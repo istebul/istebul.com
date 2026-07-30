@@ -115,6 +115,21 @@ export function mountBusinessApp(
     }
 
     if (
+      route.navId === 'veri-merkezi' &&
+      access.userId &&
+      access.businessId
+    ) {
+      content.replaceChildren(
+        createBusinessImportCenterPageElement({
+          runtime,
+          userId: access.userId,
+          businessId: access.businessId
+        })
+      );
+      return;
+    }
+
+    if (
       route.navId === 'analizler' &&
       access.userId &&
       access.businessId

@@ -1,9 +1,13 @@
-export interface BusinessUploadDraft {
-  readonly id: string;
-  readonly fileName: string;
-  readonly fileType: string;
-  readonly fileSize: number;
-  readonly status: 'hazir';
+import type { BusinessRuntime } from '../app/BusinessRuntime';
+import type {
+  UploadedBusinessDocument,
+  UploadableBusinessDocumentType
+} from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentUploadProvider';
+
+export interface BusinessImportCenterPageOptions {
+  runtime?: BusinessRuntime;
+  userId?: string;
+  businessId?: string;
 }
 
 const ACCEPTED_EXTENSIONS = Object.freeze([
@@ -11,35 +15,68 @@ const ACCEPTED_EXTENSIONS = Object.freeze([
   '.xls',
   '.csv',
   '.pdf',
-  '.json',
-  '.xml'
+  '.docx',
+  '.pptx'
 ]);
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
+
   if (bytes < 1024 * 1024) {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
+
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return '—';
+
+  return new Intl.DateTimeFormat('tr-TR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(date);
 }
 
 function getFileExtension(fileName: string): string {
   const dotIndex = fileName.lastIndexOf('.');
+
   return dotIndex >= 0
     ? fileName.slice(dotIndex).toLocaleLowerCase('tr-TR')
     : '';
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'processing':
+      return 'İşleniyor';
+    case 'ready':
+      return 'Analize hazır';
+    case 'failed':
+      return 'Başarısız';
+    case 'uploaded':
+    default:
+      return 'Yüklendi';
+  }
 }
 
 function createUploadArea(): {
   element: HTMLElement;
   input: HTMLInputElement;
   status: HTMLElement;
+  dropZone: HTMLLabelElement;
 } {
   const area = document.createElement('section');
-  area.className = 'ib-biz-import__card ib-biz-import__upload-card';
-  area.setAttribute('aria-labelledby', 'business-import-upload-title');
+  area.className =
+    'ib-biz-import__card ib-biz-import__upload-card';
+  area.setAttribute(
+    'aria-labelledby',
+    'business-import-upload-title'
+  );
 
   const heading = document.createElement('div');
   heading.className = 'ib-biz-import__card-heading';
@@ -50,7 +87,7 @@ function createUploadArea(): {
 
   const description = document.createElement('p');
   description.textContent =
-    'Excel, CSV, PDF, JSON veya XML dosyanızı seçin.';
+    'Excel, CSV, PDF, Word veya PowerPoint dosyanızı güvenli alana yükleyin.';
 
   heading.append(title, description);
 
@@ -91,7 +128,7 @@ function createUploadArea(): {
   const meta = document.createElement('p');
   meta.className = 'ib-biz-import__meta';
   meta.textContent =
-    'Desteklenen formatlar: XLSX, XLS, CSV, PDF, JSON, XML · En fazla 100 MB';
+    'Desteklenen formatlar: XLSX, XLS, CSV, PDF, DOCX, PPTX · En fazla 50 MB';
 
   const status = document.createElement('p');
   status.className = 'ib-biz-import__status';
@@ -100,7 +137,12 @@ function createUploadArea(): {
 
   area.append(heading, dropZone, meta, status);
 
-  return { element: area, input, status };
+  return {
+    element: area,
+    input,
+    status,
+    dropZone
+  };
 }
 
 function createRecentUploadsCard(): {
@@ -109,7 +151,10 @@ function createRecentUploadsCard(): {
 } {
   const card = document.createElement('section');
   card.className = 'ib-biz-import__card';
-  card.setAttribute('aria-labelledby', 'business-import-recent-title');
+  card.setAttribute(
+    'aria-labelledby',
+    'business-import-recent-title'
+  );
 
   const heading = document.createElement('div');
   heading.className = 'ib-biz-import__card-heading';
@@ -120,7 +165,7 @@ function createRecentUploadsCard(): {
 
   const description = document.createElement('p');
   description.textContent =
-    'Analize hazırlanmış dosyalarınızı burada görüntüleyin.';
+    'İşletmenize ait son yüklenen dosyaları görüntüleyin.';
 
   heading.append(title, description);
 
@@ -154,10 +199,32 @@ function renderEmptyUploads(container: HTMLElement): void {
   container.append(empty);
 }
 
-function renderUpload(
+function renderLoadingUploads(container: HTMLElement): void {
+  container.replaceChildren();
+
+  const loading = document.createElement('div');
+  loading.className = 'ib-biz-import__empty';
+
+  const title = document.createElement('h3');
+  title.textContent = 'Yüklemeler alınıyor…';
+
+  const description = document.createElement('p');
+  description.textContent =
+    'İşletmenize ait dosya kayıtları hazırlanıyor.';
+
+  loading.append(title, description);
+  container.append(loading);
+}
+
+function renderUploads(
   container: HTMLElement,
-  upload: BusinessUploadDraft
+  uploads: readonly UploadedBusinessDocument[]
 ): void {
+  if (uploads.length === 0) {
+    renderEmptyUploads(container);
+    return;
+  }
+
   container.replaceChildren();
 
   const wrapper = document.createElement('div');
@@ -172,30 +239,48 @@ function renderUpload(
       <th>Dosya</th>
       <th>Tür</th>
       <th>Boyut</th>
+      <th>Yüklenme tarihi</th>
       <th>Durum</th>
     </tr>
   `;
 
   const body = document.createElement('tbody');
-  const row = document.createElement('tr');
 
-  const fileCell = document.createElement('td');
-  fileCell.textContent = upload.fileName;
+  for (const upload of uploads) {
+    const row = document.createElement('tr');
 
-  const typeCell = document.createElement('td');
-  typeCell.textContent = upload.fileType.replace('.', '').toUpperCase();
+    const fileCell = document.createElement('td');
+    fileCell.textContent = upload.fileName;
 
-  const sizeCell = document.createElement('td');
-  sizeCell.textContent = formatFileSize(upload.fileSize);
+    const typeCell = document.createElement('td');
+    typeCell.textContent =
+      upload.documentType.toLocaleUpperCase('tr-TR');
 
-  const statusCell = document.createElement('td');
-  const badge = document.createElement('span');
-  badge.className = 'ib-biz-import__badge';
-  badge.textContent = 'Analize hazır';
-  statusCell.append(badge);
+    const sizeCell = document.createElement('td');
+    sizeCell.textContent =
+      formatFileSize(upload.fileSizeBytes);
 
-  row.append(fileCell, typeCell, sizeCell, statusCell);
-  body.append(row);
+    const dateCell = document.createElement('td');
+    dateCell.textContent = formatDate(upload.createdAt);
+
+    const statusCell = document.createElement('td');
+    const badge = document.createElement('span');
+    badge.className = 'ib-biz-import__badge';
+    badge.dataset.status = upload.status;
+    badge.textContent = statusLabel(upload.status);
+    statusCell.append(badge);
+
+    row.append(
+      fileCell,
+      typeCell,
+      sizeCell,
+      dateCell,
+      statusCell
+    );
+
+    body.append(row);
+  }
+
   table.append(head, body);
   wrapper.append(table);
   container.append(wrapper);
@@ -208,7 +293,10 @@ function createAnalysisCard(): {
   const card = document.createElement('section');
   card.className =
     'ib-biz-import__card ib-biz-import__analysis-card';
-  card.setAttribute('aria-labelledby', 'business-import-analysis-title');
+  card.setAttribute(
+    'aria-labelledby',
+    'business-import-analysis-title'
+  );
 
   const content = document.createElement('div');
 
@@ -218,14 +306,14 @@ function createAnalysisCard(): {
 
   const description = document.createElement('p');
   description.textContent =
-    'Yüklenen dosyayı doğrulama ve normalizasyon aşamalarından geçirerek analize hazırlayın.';
+    'Yüklenen dosyayı Analizler ekranında işleyerek KPI ve yönetici raporu oluşturun.';
 
   content.append(title, description);
 
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'ib-biz-import__analysis-button';
-  button.textContent = 'Analizi Başlat';
+  button.textContent = 'Analizlere Git';
   button.disabled = true;
 
   card.append(content, button);
@@ -233,7 +321,27 @@ function createAnalysisCard(): {
   return { element: card, button };
 }
 
-export function createBusinessImportCenterPageElement(): HTMLElement {
+function validateFile(file: File): string | null {
+  const extension = getFileExtension(file.name);
+
+  if (!ACCEPTED_EXTENSIONS.includes(extension)) {
+    return 'Bu dosya türü desteklenmiyor.';
+  }
+
+  if (file.size <= 0) {
+    return 'Boş dosya yüklenemez.';
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return 'Dosya boyutu 50 MB sınırını aşıyor.';
+  }
+
+  return null;
+}
+
+export function createBusinessImportCenterPageElement(
+  options: BusinessImportCenterPageOptions = {}
+): HTMLElement {
   const root = document.createElement('div');
   root.className = 'ib-biz-page ib-biz-import';
   root.dataset.businessPage = 'veri-merkezi';
@@ -250,77 +358,135 @@ export function createBusinessImportCenterPageElement(): HTMLElement {
 
   intro.append(title, description);
 
-  const { element: uploadArea, input, status } =
-    createUploadArea();
-  const { element: recentCard, body: recentBody } =
-    createRecentUploadsCard();
-  const { element: analysisCard, button: analysisButton } =
-    createAnalysisCard();
+  const {
+    element: uploadArea,
+    input,
+    status,
+    dropZone
+  } = createUploadArea();
 
-  renderEmptyUploads(recentBody);
+  const {
+    element: recentCard,
+    body: recentBody
+  } = createRecentUploadsCard();
+
+  const {
+    element: analysisCard,
+    button: analysisButton
+  } = createAnalysisCard();
+
+  let uploads: readonly UploadedBusinessDocument[] = [];
+
+  const refreshUploads = async (): Promise<void> => {
+    if (!options.runtime || !options.businessId) {
+      renderEmptyUploads(recentBody);
+      return;
+    }
+
+    renderLoadingUploads(recentBody);
+
+    try {
+      uploads = await options.runtime.documents.listDocuments(
+        options.businessId
+      );
+
+      renderUploads(recentBody, uploads);
+      analysisButton.disabled = uploads.length === 0;
+    } catch (error) {
+      renderEmptyUploads(recentBody);
+      status.textContent =
+        error instanceof Error
+          ? error.message
+          : 'Yüklemeler alınamadı.';
+      status.dataset.state = 'error';
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<void> => {
+    const validationError = validateFile(file);
+
+    if (validationError) {
+      input.value = '';
+      status.textContent = validationError;
+      status.dataset.state = 'error';
+      return;
+    }
+
+    if (
+      !options.runtime ||
+      !options.userId ||
+      !options.businessId
+    ) {
+      input.value = '';
+      status.textContent =
+        'Oturum veya işletme bilgisi hazırlanamadı. Sayfayı yenileyin.';
+      status.dataset.state = 'error';
+      return;
+    }
+
+    input.disabled = true;
+    dropZone.dataset.busy = 'true';
+    status.textContent =
+      `${file.name} güvenli alana yükleniyor…`;
+    status.dataset.state = 'success';
+
+    try {
+      await options.runtime.documents.uploadDocument({
+        businessId: options.businessId,
+        userId: options.userId,
+        file
+      });
+
+      status.textContent =
+        `${file.name} başarıyla yüklendi.`;
+      status.dataset.state = 'success';
+
+      await refreshUploads();
+    } catch (error) {
+      status.textContent =
+        error instanceof Error
+          ? error.message
+          : 'Dosya yüklenemedi.';
+      status.dataset.state = 'error';
+    } finally {
+      input.disabled = false;
+      input.value = '';
+      delete dropZone.dataset.busy;
+    }
+  };
 
   input.addEventListener('change', () => {
     const file = input.files?.[0];
 
-    if (!file) {
-      renderEmptyUploads(recentBody);
-      analysisButton.disabled = true;
-      status.textContent = '';
-      return;
-    }
+    if (!file) return;
 
-    const extension = getFileExtension(file.name);
+    void uploadFile(file);
+  });
 
-    if (!ACCEPTED_EXTENSIONS.includes(extension)) {
-      input.value = '';
-      renderEmptyUploads(recentBody);
-      analysisButton.disabled = true;
-      status.textContent =
-        'Bu dosya türü desteklenmiyor.';
-      status.dataset.state = 'error';
-      return;
-    }
+  dropZone.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    dropZone.dataset.dragging = 'true';
+  });
 
-    if (file.size > MAX_FILE_SIZE) {
-      input.value = '';
-      renderEmptyUploads(recentBody);
-      analysisButton.disabled = true;
-      status.textContent =
-        'Dosya boyutu 100 MB sınırını aşıyor.';
-      status.dataset.state = 'error';
-      return;
-    }
+  dropZone.addEventListener('dragleave', () => {
+    delete dropZone.dataset.dragging;
+  });
 
-    const upload: BusinessUploadDraft = {
-      id: `upload-${Date.now()}`,
-      fileName: file.name,
-      fileType: extension,
-      fileSize: file.size,
-      status: 'hazir'
-    };
+  dropZone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    delete dropZone.dataset.dragging;
 
-    renderUpload(recentBody, upload);
-    analysisButton.disabled = false;
-    status.textContent =
-      `${file.name} doğrulandı ve analize hazırlandı.`;
-    status.dataset.state = 'success';
+    const file = event.dataTransfer?.files?.[0];
+
+    if (!file) return;
+
+    void uploadFile(file);
   });
 
   analysisButton.addEventListener('click', () => {
     if (analysisButton.disabled) return;
 
-    analysisButton.disabled = true;
-    analysisButton.textContent = 'Analiz hazırlanıyor…';
-    status.textContent =
-      'Doğrulama ve normalizasyon işlemi başlatıldı.';
-    status.dataset.state = 'success';
-
-    window.setTimeout(() => {
-      analysisButton.disabled = false;
-      analysisButton.textContent = 'Analizi Başlat';
-      status.textContent =
-        'Veri seti hazır. Analiz motoru sonraki sprintte bağlanacak.';
-    }, 700);
+    window.location.href = '/business/analizler/';
   });
 
   root.append(
@@ -330,15 +496,27 @@ export function createBusinessImportCenterPageElement(): HTMLElement {
     analysisCard
   );
 
+  if (options.runtime && options.businessId) {
+    void refreshUploads();
+  } else {
+    renderEmptyUploads(recentBody);
+  }
+
   return root;
 }
 
 export function mountBusinessImportCenterPage(
-  container: HTMLElement
+  container: HTMLElement,
+  options: BusinessImportCenterPageOptions = {}
 ): void {
   container.replaceChildren(
-    createBusinessImportCenterPageElement()
+    createBusinessImportCenterPageElement(options)
   );
 }
+
+export type {
+  UploadedBusinessDocument,
+  UploadableBusinessDocumentType
+};
 
 export default mountBusinessImportCenterPage;
