@@ -179,7 +179,76 @@ const input = {
     disclosure:
       'Tahminler garanti niteliğinde değildir.',
     hasForecastData: true
-  }
+  },
+  alerts: {
+    alerts: [
+      {
+        id: 'business-cost-pressure',
+        category: 'cost',
+        severity: 'warning',
+        title: 'Maliyet baskısı yükseliyor',
+        description:
+          'Toplam maliyet önceki döneme göre arttı.',
+        recommendation:
+          'Maliyet kalemlerini ayrıştırın.',
+        score: 80,
+        source: 'period-comparison'
+      }
+    ],
+    summary: {
+      criticalCount: 0,
+      warningCount: 1,
+      infoCount: 0,
+      successCount: 0,
+      highestSeverity: 'warning'
+    },
+    executiveSummary:
+      '1 uyarı seviyesinde konu bulundu.',
+    hasAlerts: true
+  },
+  scenarios: [
+    {
+      id: 'growth',
+      title: 'Büyüme Senaryosu',
+      description:
+        'Fiyat %5 ve satış hacmi %10 artarsa.',
+      result: {
+        baseline: {
+          revenue: 120000,
+          totalCost: 70000,
+          grossProfit: 50000,
+          profitMargin: 41.67,
+          quantity: 1000
+        },
+        projected: {
+          revenue: 138600,
+          totalCost: 74550,
+          grossProfit: 64050,
+          profitMargin: 46.21,
+          quantity: 1100
+        },
+        delta: {
+          revenue: 18600,
+          totalCost: 4550,
+          grossProfit: 14050,
+          profitMargin: 4.54,
+          quantity: 100
+        },
+        risks: [
+          {
+            severity: 'info',
+            title: 'Kritik senaryo riski bulunmadı',
+            description:
+              'Temel finansal yapı korunuyor.'
+          }
+        ],
+        summary:
+          'Senaryo sonucunda tahmini ciro artıyor.',
+        disclosure:
+          'Bu simülasyon finansal garanti değildir.'
+      }
+    }
+  ]
 };
 
 test(
@@ -208,6 +277,14 @@ test(
       html,
       /garanti niteliğinde değildir/i
     );
+    assert.match(html, /CEO Alarm Özeti/);
+    assert.match(html, /Maliyet baskısı yükseliyor/);
+    assert.match(html, /Senaryo Simülasyonları/);
+    assert.match(html, /Büyüme Senaryosu/);
+    assert.match(
+      html,
+      /finansal garanti değildir/i
+    );
     assert.match(html, /30 Günlük Plan/);
     assert.match(html, /CEO Karar Özeti/);
     assert.match(html, /@page/);
@@ -233,6 +310,8 @@ test(
         'Yönetici Değerlendirmesi',
         'Benchmark',
         'Tahminler',
+        'CEO Alarmları',
+        'Senaryolar',
         'Analiz Verisi'
       ]
     );

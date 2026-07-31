@@ -275,6 +275,127 @@ function createForecastRows(
     .join('');
 }
 
+function alertSeverityLabel(
+  value: string
+): string {
+  if (value === 'critical') return 'Kritik';
+  if (value === 'warning') return 'Uyarı';
+  if (value === 'success') return 'Olumlu';
+  return 'Bilgi';
+}
+
+function scenarioRiskSeverityLabel(
+  value: string
+): string {
+  if (value === 'critical') return 'Kritik';
+  if (value === 'warning') return 'Uyarı';
+  return 'Bilgi';
+}
+
+function createAlertRows(
+  input: BusinessReportInput
+): string {
+  const alerts = input.alerts?.alerts ?? [];
+
+  if (alerts.length === 0) {
+    return `
+      <tr>
+        <td colspan="6">
+          Yönetici alarmı bulunamadı.
+        </td>
+      </tr>
+    `;
+  }
+
+  return alerts
+    .map(
+      (alert) => `
+        <tr>
+          <td>${escapeHtml(
+            alertSeverityLabel(alert.severity)
+          )}</td>
+          <td>${escapeHtml(alert.category)}</td>
+          <td>${escapeHtml(alert.title)}</td>
+          <td>${escapeHtml(alert.description)}</td>
+          <td>${escapeHtml(alert.recommendation)}</td>
+          <td>${alert.score}</td>
+        </tr>
+      `
+    )
+    .join('');
+}
+
+function createScenarioRows(
+  input: BusinessReportInput
+): string {
+  const scenarios = input.scenarios ?? [];
+
+  if (scenarios.length === 0) {
+    return `
+      <tr>
+        <td colspan="9">
+          Senaryo simülasyonu bulunamadı.
+        </td>
+      </tr>
+    `;
+  }
+
+  return scenarios
+    .map((scenario) => {
+      const risk = scenario.result.risks[0];
+
+      return `
+        <tr>
+          <td>${escapeHtml(scenario.title)}</td>
+          <td>${escapeHtml(scenario.description)}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              scenario.result.baseline.revenue,
+              'TRY'
+            )
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              scenario.result.projected.revenue,
+              'TRY'
+            )
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              scenario.result.projected.totalCost,
+              'TRY'
+            )
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              scenario.result.projected.grossProfit,
+              'TRY'
+            )
+          )}</td>
+          <td>%${scenario.result.projected.profitMargin.toLocaleString(
+            'tr-TR',
+            {
+              maximumFractionDigits: 2
+            }
+          )}</td>
+          <td>${escapeHtml(
+            risk
+              ? scenarioRiskSeverityLabel(
+                  risk.severity
+                )
+              : 'Bilgi'
+          )}</td>
+          <td>${escapeHtml(
+            risk
+              ? `${risk.title}: ${risk.description}`
+              : 'Kritik risk bulunmadı.'
+          )}</td>
+        </tr>
+      `;
+    })
+    .join('');
+}
+
 function createActionPlanRows(
   input: BusinessReportInput
 ): string {
@@ -849,6 +970,109 @@ export function createPrintableBusinessReportHtml(
               <p class="report-note">
                 ${escapeHtml(
                   input.forecast.disclosure
+                )}
+              </p>
+            `
+            : ''
+        }
+      </section>
+
+      <section class="report-section">
+        <div class="section-heading">
+          <span>AL</span>
+          <h2>CEO Alarm Özeti</h2>
+        </div>
+
+        <p>
+          ${escapeHtml(
+            input.alerts?.executiveSummary ??
+              'Kritik yönetici alarmı bulunmadı.'
+          )}
+        </p>
+
+        <div class="executive-summary-grid">
+          <article>
+            <strong>
+              ${input.alerts?.summary.criticalCount ?? 0}
+            </strong>
+            <span>Kritik</span>
+          </article>
+
+          <article>
+            <strong>
+              ${input.alerts?.summary.warningCount ?? 0}
+            </strong>
+            <span>Uyarı</span>
+          </article>
+
+          <article>
+            <strong>
+              ${input.alerts?.summary.infoCount ?? 0}
+            </strong>
+            <span>Bilgi</span>
+          </article>
+
+          <article>
+            <strong>
+              ${input.alerts?.summary.successCount ?? 0}
+            </strong>
+            <span>Olumlu</span>
+          </article>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Seviye</th>
+              <th>Kategori</th>
+              <th>Alarm</th>
+              <th>Açıklama</th>
+              <th>Önerilen Aksiyon</th>
+              <th>Öncelik</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${createAlertRows(input)}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="report-section">
+        <div class="section-heading">
+          <span>SC</span>
+          <h2>Senaryo Simülasyonları</h2>
+        </div>
+
+        <p>
+          Fiyat, satış hacmi ve maliyet varsayımlarının
+          finansal sonuçlara tahmini etkileri.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Senaryo</th>
+              <th>Varsayım</th>
+              <th>Baz Ciro</th>
+              <th>Tahmini Ciro</th>
+              <th>Tahmini Maliyet</th>
+              <th>Tahmini Brüt Kâr</th>
+              <th>Tahmini Marj</th>
+              <th>Risk</th>
+              <th>Risk Açıklaması</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${createScenarioRows(input)}
+          </tbody>
+        </table>
+
+        ${
+          input.scenarios?.[0]?.result.disclosure
+            ? `
+              <p class="report-note">
+                ${escapeHtml(
+                  input.scenarios[0].result.disclosure
                 )}
               </p>
             `

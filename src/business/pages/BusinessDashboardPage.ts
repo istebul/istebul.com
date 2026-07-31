@@ -8,19 +8,24 @@ import { createBusinessAdvisorPanelElement } from '../components/BusinessAdvisor
 import { createBusinessExecutiveHealthPanelElement } from '../components/BusinessExecutiveHealthPanel';
 import { createBusinessExecutiveHighlightsElement } from '../components/BusinessExecutiveHighlights';
 import { createBusinessBenchmarkForecastPanelElement } from '../components/BusinessBenchmarkForecastPanel';
+import { createBusinessAlertScenarioPanelElement } from '../components/BusinessAlertScenarioPanel';
 import { runBusinessIntelligenceEngine } from '../intelligence/pipeline/BusinessIntelligenceEngine';
 import type { BusinessRuntime } from '../app/BusinessRuntime';
 import type {
   StoredBusinessDocumentAnalysis
 } from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentAnalysisProvider';
 import {
+  BusinessAlertEngine,
   BusinessBenchmarkEngine,
   BusinessForecastEngine,
   BusinessPeriodComparisonEngine,
+  BusinessScenarioSimulator,
+  type BusinessAlertResult,
   type BusinessBenchmarkResult,
   type BusinessForecastResult,
   type BusinessKpi,
-  type BusinessPeriodComparisonResult
+  type BusinessPeriodComparisonResult,
+  type BusinessScenarioResult
 } from '../document-intelligence';
 import type {
   BusinessDashboardMockData,
@@ -156,7 +161,14 @@ function renderDashboard(
   score?: number,
   comparison?: BusinessPeriodComparisonResult,
   benchmark?: BusinessBenchmarkResult,
-  forecast?: BusinessForecastResult
+  forecast?: BusinessForecastResult,
+  alerts?: BusinessAlertResult,
+  scenarios?: readonly {
+    id: string;
+    title: string;
+    description: string;
+    result: BusinessScenarioResult;
+  }[]
 ): HTMLElement {
   const root = document.createElement('div');
   root.className = 'ib-biz-dashboard';
@@ -186,6 +198,13 @@ function renderDashboard(
       createBusinessBenchmarkForecastPanelElement({
         benchmark,
         forecast
+      })
+    );
+
+    root.appendChild(
+      createBusinessAlertScenarioPanelElement({
+        alerts,
+        scenarios
       })
     );
   }
@@ -326,6 +345,62 @@ export function createBusinessDashboardPageElement(
         )
       : undefined;
 
+  const alerts = options.analysis
+    ? new BusinessAlertEngine().evaluate({
+        analysis: options.analysis,
+        comparison,
+        benchmark,
+        forecast
+      })
+    : undefined;
+
+  const scenarios = options.analysis
+    ? Object.freeze([
+        {
+          id: 'growth',
+          title: 'Büyüme Senaryosu',
+          description:
+            'Fiyat %5 ve satış hacmi %10 artarsa.',
+          result:
+            new BusinessScenarioSimulator().simulate(
+              options.analysis,
+              {
+                priceChangePercent: 5,
+                salesVolumeChangePercent: 10
+              }
+            )
+        },
+        {
+          id: 'cost-optimization',
+          title: 'Maliyet Optimizasyonu',
+          description:
+            'Birim maliyet %8 ve sabit maliyet %5 azalırsa.',
+          result:
+            new BusinessScenarioSimulator().simulate(
+              options.analysis,
+              {
+                unitCostChangePercent: -8,
+                fixedCostChangePercent: -5
+              }
+            )
+        },
+        {
+          id: 'stress',
+          title: 'Stres Testi',
+          description:
+            'Satış hacmi %20 düşer ve maliyet %10 artarsa.',
+          result:
+            new BusinessScenarioSimulator().simulate(
+              options.analysis,
+              {
+                salesVolumeChangePercent: -20,
+                unitCostChangePercent: 10
+              }
+            )
+        }
+      ])
+    : undefined;
+
   const data = options.analysis
     ? mapAnalysisToDashboard(
         options.analysis,
@@ -343,7 +418,9 @@ export function createBusinessDashboardPageElement(
     options.analysis?.score,
     comparison,
     benchmark,
-    forecast
+    forecast,
+    alerts,
+    scenarios
   );
 }
 

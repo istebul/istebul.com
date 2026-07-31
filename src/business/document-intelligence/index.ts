@@ -24,3 +24,5 @@ export * from './scoring/BusinessHealthScorer';
 export * from './comparison';
 export * from './benchmark';
 export * from './forecast';
+export * from './alerts';
+export * from './scenarios';
