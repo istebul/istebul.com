@@ -1,5 +1,6 @@
 import type { BusinessAnalysisResult } from '../../document-intelligence/models/BusinessAnalysisResult';
 import type { BusinessInsight } from '../../document-intelligence/models/BusinessInsight';
+import { ExecutiveDecisionAdapter } from '../adapters/ExecutiveDecisionAdapter';
 import type { ExecutiveReport } from '../models/ExecutiveReport';
 import type { ExecutiveReportSection } from '../models/ExecutiveReportSection';
 
@@ -108,7 +109,8 @@ function createCeoDecisionSummary(
 }
 
 function createSections(
-  analysis: BusinessAnalysisResult
+  analysis: BusinessAnalysisResult,
+  decision: ReturnType<ExecutiveDecisionAdapter['build']>
 ): ExecutiveReportSection[] {
   const profitability = selectInsights(
     analysis.insights,
@@ -143,6 +145,45 @@ function createSections(
   const actionPlan = createActionPlan(
     analysis.recommendations
   );
+
+  const priorityMatrix = Object.entries(
+    decision.actionPlanResult.summary.priorityCounts
+  ).map(
+    ([priority, count]) =>
+      `${priority.toLocaleUpperCase('tr-TR')}: ${count}`
+  );
+
+  const executiveActionPlans =
+    decision.actionPlanResult.actionPlans.map(
+      (plan) =>
+        `${plan.title} · Öncelik: ${plan.priority} · ` +
+        `Etki: ${plan.estimatedImpact}/100 · ` +
+        `Efor: ${plan.estimatedEffort}/100`
+    );
+
+  const firstSevenDays =
+    decision.actionPlanResult.actionPlans
+      .flatMap((plan) => plan.steps.slice(0, 1))
+      .map(
+        (step) =>
+          `${step.title}: ${step.description}`
+      );
+
+  const runtimeThirtyDays =
+    decision.actionPlanResult.actionPlans
+      .flatMap((plan) => plan.steps.slice(1, 2))
+      .map(
+        (step) =>
+          `${step.title}: ${step.description}`
+      );
+
+  const runtimeNinetyDays =
+    decision.actionPlanResult.actionPlans
+      .flatMap((plan) => plan.steps.slice(2, 3))
+      .map(
+        (step) =>
+          `${step.title}: ${step.description}`
+      );
 
   return [
     {
@@ -192,12 +233,32 @@ function createSections(
           : ['Operasyonel sağlık için ek veri gerekiyor.']
     },
     {
-      title: 'Öncelikli Aksiyonlar',
-      content: analysis.recommendations
+      title: 'Öncelik Matrisi',
+      content:
+        priorityMatrix.length > 0
+          ? priorityMatrix
+          : ['Öncelik dağılımı üretilemedi.']
+    },
+    {
+      title: 'Yönetici Aksiyon Planı',
+      content:
+        executiveActionPlans.length > 0
+          ? executiveActionPlans
+          : analysis.recommendations
+    },
+    {
+      title: 'İlk 7 Gün',
+      content:
+        firstSevenDays.length > 0
+          ? firstSevenDays
+          : actionPlan.thirtyDays
     },
     {
       title: '30 Günlük Plan',
-      content: actionPlan.thirtyDays
+      content:
+        runtimeThirtyDays.length > 0
+          ? runtimeThirtyDays
+          : actionPlan.thirtyDays
     },
     {
       title: '60 Günlük Plan',
@@ -205,7 +266,10 @@ function createSections(
     },
     {
       title: '90 Günlük Plan',
-      content: actionPlan.ninetyDays
+      content:
+        runtimeNinetyDays.length > 0
+          ? runtimeNinetyDays
+          : actionPlan.ninetyDays
     },
     {
       title: 'CEO Karar Özeti',
@@ -220,6 +284,9 @@ export class ExecutiveReportBuilder {
     businessName: string,
     documentName: string
   ): ExecutiveReport {
+    const decision =
+      new ExecutiveDecisionAdapter().build(analysis);
+
     return {
       title: 'İSTEBUL Business Yönetici Raporu',
       businessName,
@@ -233,7 +300,15 @@ export class ExecutiveReportBuilder {
       insights: analysis.insights,
       recommendations: analysis.recommendations,
 
-      sections: createSections(analysis)
+      decisionRecommendations:
+        decision.recommendationResult,
+      actionPlan:
+        decision.actionPlanResult,
+
+      sections: createSections(
+        analysis,
+        decision
+      )
     };
   }
 }
