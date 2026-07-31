@@ -79,6 +79,25 @@ function createReportHtml(
     )
     .join('');
 
+  const executiveSectionHtml =
+    input.executiveReport?.sections
+      .map(
+        (section) => `
+          <section>
+            <h2>${escapeHtml(section.title)}</h2>
+            <ul>
+              ${section.content
+                .map(
+                  (item) =>
+                    `<li>${escapeHtml(item)}</li>`
+                )
+                .join('')}
+            </ul>
+          </section>
+        `
+      )
+      .join('') ?? '';
+
   return `<!doctype html>
 <html lang="tr">
 <head>
@@ -308,6 +327,8 @@ function createReportHtml(
       <h2>Önerilen aksiyonlar</h2>
       <ol>${recommendationItems}</ol>
     </section>
+
+    ${executiveSectionHtml}
 
     <footer>
       Bu rapor İSTEBUL Business tarafından mevcut belge
