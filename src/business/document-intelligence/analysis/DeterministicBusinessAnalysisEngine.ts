@@ -9,6 +9,7 @@ import type { NormalizedDocument } from '../models/NormalizedDocument';
 import { BusinessKpiExtractor } from '../kpi/BusinessKpiExtractor';
 import { BusinessRecommendationEngine } from '../recommendations/BusinessRecommendationEngine';
 import { BusinessHealthScorer } from '../scoring/BusinessHealthScorer';
+import { ExecutiveInsightEngine } from './ExecutiveInsightEngine';
 
 const CATEGORY_LABELS: Readonly<
   Record<BusinessDocumentCategory, string>
@@ -129,7 +130,9 @@ export class DeterministicBusinessAnalysisEngine
     private readonly kpiExtractor = new BusinessKpiExtractor(),
     private readonly scorer = new BusinessHealthScorer(),
     private readonly recommendationEngine =
-      new BusinessRecommendationEngine()
+      new BusinessRecommendationEngine(),
+    private readonly executiveInsightEngine =
+      new ExecutiveInsightEngine()
   ) {}
 
   async analyze(
@@ -141,10 +144,21 @@ export class DeterministicBusinessAnalysisEngine
       document,
       classification
     );
-    const insights = createInsights(
+    const technicalInsights = createInsights(
       document,
       classification
     );
+
+    const executiveInsights =
+      this.executiveInsightEngine.generate(
+        document,
+        kpis
+      );
+
+    const insights = [
+      ...executiveInsights,
+      ...technicalInsights
+    ];
     const recommendations =
       this.recommendationEngine.generate(
         document,
