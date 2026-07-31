@@ -5,6 +5,8 @@ import { createBusinessActivityListElement } from '../components/BusinessActivit
 import { createBusinessAiSuggestionsElement } from '../components/BusinessAiSuggestions';
 import { createBusinessQuickActionsElement } from '../components/BusinessQuickActions';
 import { createBusinessAdvisorPanelElement } from '../components/BusinessAdvisorPanel';
+import { createBusinessExecutiveHealthPanelElement } from '../components/BusinessExecutiveHealthPanel';
+import { createBusinessExecutiveHighlightsElement } from '../components/BusinessExecutiveHighlights';
 import { runBusinessIntelligenceEngine } from '../intelligence/pipeline/BusinessIntelligenceEngine';
 import type { BusinessRuntime } from '../app/BusinessRuntime';
 import type {
@@ -144,7 +146,9 @@ function mapAnalysisToDashboard(
 
 function renderDashboard(
   data: BusinessDashboardMockData,
-  advisor: BusinessAdvisorResult
+  advisor: BusinessAdvisorResult,
+  score?: number,
+  comparison?: BusinessPeriodComparisonResult
 ): HTMLElement {
   const root = document.createElement('div');
   root.className = 'ib-biz-dashboard';
@@ -155,6 +159,21 @@ function renderDashboard(
       summary: data.summary
     })
   );
+
+  if (typeof score === 'number') {
+    root.appendChild(
+      createBusinessExecutiveHealthPanelElement({
+        score,
+        comparison
+      })
+    );
+
+    root.appendChild(
+      createBusinessExecutiveHighlightsElement({
+        comparison
+      })
+    );
+  }
 
   const kpiGrid = document.createElement('section');
   kpiGrid.className = 'ib-biz-kpi-grid';
@@ -259,6 +278,14 @@ function createErrorElement(message: string): HTMLElement {
 export function createBusinessDashboardPageElement(
   options: BusinessDashboardPageOptions = {}
 ): HTMLElement {
+  const comparison =
+    options.analysis && options.previousAnalysis
+      ? new BusinessPeriodComparisonEngine().compare(
+          options.analysis,
+          options.previousAnalysis
+        )
+      : undefined;
+
   const data = options.analysis
     ? mapAnalysisToDashboard(
         options.analysis,
@@ -270,7 +297,12 @@ export function createBusinessDashboardPageElement(
     options.advisor ??
     runBusinessIntelligenceEngine();
 
-  return renderDashboard(data, advisor);
+  return renderDashboard(
+    data,
+    advisor,
+    options.analysis?.score,
+    comparison
+  );
 }
 
 export async function mountBusinessDashboardPage(

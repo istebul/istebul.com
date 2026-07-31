@@ -1214,3 +1214,150 @@ html[data-theme="dark"] .ib-business-app {
   background: #dcfce7;
   color: #166534;
 }
+
+.ib-biz-health-panel,
+.ib-biz-highlights {
+  padding: 24px;
+  border: 1px solid #dfe7f2;
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(244, 248, 255, 0.96)
+    );
+  box-shadow: 0 14px 34px rgba(18, 42, 74, 0.08);
+}
+
+.ib-biz-health-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.ib-biz-health-panel__eyebrow {
+  margin: 0 0 6px;
+  color: #135df5;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ib-biz-health-panel__title,
+.ib-biz-highlights__title {
+  margin: 0;
+  font-size: 22px;
+  color: #162033;
+}
+
+.ib-biz-health-panel__status {
+  display: inline-flex;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #eef2f7;
+  color: #475569;
+}
+
+.ib-biz-health-panel__status[data-status="up"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ib-biz-health-panel__status[data-status="down"] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.ib-biz-health-panel__metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.ib-biz-health-panel__metric {
+  padding: 18px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5ebf4;
+}
+
+.ib-biz-health-panel__label {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ib-biz-health-panel__value {
+  font-size: 24px;
+  color: #162033;
+}
+
+.ib-biz-health-panel__summary {
+  margin: 20px 0 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.ib-biz-highlights__grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.ib-biz-highlight-card {
+  padding: 18px;
+  border: 1px solid #e3e9f2;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.ib-biz-highlight-card__title {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ib-biz-highlight-card__metric {
+  display: block;
+  color: #162033;
+  font-size: 18px;
+}
+
+.ib-biz-highlight-card__change {
+  display: inline-flex;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.ib-biz-highlight-card__change[data-impact="positive"] {
+  color: #166534;
+}
+
+.ib-biz-highlight-card__change[data-impact="negative"] {
+  color: #991b1b;
+}
+
+@media (max-width: 720px) {
+  .ib-biz-health-panel__header {
+    flex-direction: column;
+  }
+
+  .ib-biz-health-panel,
+  .ib-biz-highlights {
+    padding: 18px;
+  }
+}
