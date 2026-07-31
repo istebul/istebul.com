@@ -1,6 +1,8 @@
 import type {
+  BusinessAlertResult,
   BusinessBenchmarkResult,
-  BusinessForecastResult
+  BusinessForecastResult,
+  BusinessScenarioResult
 } from '../../document-intelligence';
 import type {
   StoredBusinessDocumentAnalysis
@@ -15,4 +17,11 @@ export interface BusinessReportInput {
   executiveReport?: ExecutiveReport;
   benchmark?: BusinessBenchmarkResult;
   forecast?: BusinessForecastResult;
+  alerts?: BusinessAlertResult;
+  scenarios?: readonly {
+    id: string;
+    title: string;
+    description: string;
+    result: BusinessScenarioResult;
+  }[];
 }

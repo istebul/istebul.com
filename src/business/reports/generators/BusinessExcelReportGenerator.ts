@@ -207,6 +207,57 @@ export async function buildBusinessExcelWorkbook(
         )
     ) ?? [];
 
+  const alertRows =
+    input.alerts?.alerts.map((alert) => ({
+      Alarm_Kodu: alert.id,
+      Seviye: alert.severity,
+      Kategori: alert.category,
+      Başlık: alert.title,
+      Açıklama: alert.description,
+      Önerilen_Aksiyon: alert.recommendation,
+      Öncelik_Skoru: alert.score,
+      Kaynak: alert.source
+    })) ?? [];
+
+  const scenarioRows =
+    input.scenarios?.flatMap((scenario) =>
+      scenario.result.risks.map(
+        (risk, index) => ({
+          Senaryo_Kodu: scenario.id,
+          Senaryo: scenario.title,
+          Varsayım: scenario.description,
+          Baz_Ciro:
+            scenario.result.baseline.revenue,
+          Baz_Maliyet:
+            scenario.result.baseline.totalCost,
+          Baz_Brüt_Kâr:
+            scenario.result.baseline.grossProfit,
+          Baz_Kâr_Marjı:
+            scenario.result.baseline.profitMargin,
+          Tahmini_Ciro:
+            scenario.result.projected.revenue,
+          Tahmini_Maliyet:
+            scenario.result.projected.totalCost,
+          Tahmini_Brüt_Kâr:
+            scenario.result.projected.grossProfit,
+          Tahmini_Kâr_Marjı:
+            scenario.result.projected.profitMargin,
+          Ciro_Farkı:
+            scenario.result.delta.revenue,
+          Maliyet_Farkı:
+            scenario.result.delta.totalCost,
+          Brüt_Kâr_Farkı:
+            scenario.result.delta.grossProfit,
+          Marj_Farkı:
+            scenario.result.delta.profitMargin,
+          Risk_Sırası: index + 1,
+          Risk_Seviyesi: risk.severity,
+          Risk_Başlığı: risk.title,
+          Risk_Açıklaması: risk.description
+        })
+      )
+    ) ?? [];
+
   const rawAnalysisRows = [
     {
       Alan: 'documentId',
@@ -261,6 +312,12 @@ export async function buildBusinessExcelWorkbook(
   const forecastSheet =
     XLSX.utils.json_to_sheet(forecastRows);
 
+  const alertSheet =
+    XLSX.utils.json_to_sheet(alertRows);
+
+  const scenarioSheet =
+    XLSX.utils.json_to_sheet(scenarioRows);
+
   const rawAnalysisSheet =
     XLSX.utils.json_to_sheet(rawAnalysisRows);
 
@@ -282,6 +339,20 @@ export async function buildBusinessExcelWorkbook(
   setColumns(
     forecastSheet,
     [30, 38, 14, 18, 14, 18, 18, 18, 14, 14, 16, 16]
+  );
+
+  setColumns(
+    alertSheet,
+    [30, 14, 18, 36, 60, 60, 16, 22]
+  );
+
+  setColumns(
+    scenarioSheet,
+    [
+      26, 28, 46, 18, 18, 18, 18, 18,
+      18, 18, 18, 18, 18, 18, 18, 14,
+      16, 32, 60
+    ]
   );
 
   setColumns(rawAnalysisSheet, [30, 110]);
@@ -338,6 +409,18 @@ export async function buildBusinessExcelWorkbook(
     workbook,
     forecastSheet,
     'Tahminler'
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    alertSheet,
+    'CEO Alarmları'
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    scenarioSheet,
+    'Senaryolar'
   );
 
   XLSX.utils.book_append_sheet(

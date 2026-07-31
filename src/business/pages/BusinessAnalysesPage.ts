@@ -7,8 +7,11 @@ import type {
   StoredBusinessDocumentAnalysis
 } from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentAnalysisProvider';
 import {
+  BusinessAlertEngine,
   BusinessBenchmarkEngine,
-  BusinessForecastEngine
+  BusinessForecastEngine,
+  BusinessPeriodComparisonEngine,
+  BusinessScenarioSimulator
 } from '../document-intelligence';
 
 export interface BusinessAnalysesPageOptions {
@@ -177,12 +180,80 @@ function renderAnalysisResult(
               reportContext.analyses
             );
 
+          const previousAnalysis =
+            reportContext.analyses.find(
+              (item) =>
+                item.id !== reportContext.analysis.id
+            );
+
+          const comparison = previousAnalysis
+            ? new BusinessPeriodComparisonEngine().compare(
+                reportContext.analysis,
+                previousAnalysis
+              )
+            : undefined;
+
+          const alerts =
+            new BusinessAlertEngine().evaluate({
+              analysis: reportContext.analysis,
+              comparison,
+              benchmark,
+              forecast
+            });
+
+          const scenarios = Object.freeze([
+            {
+              id: 'growth',
+              title: 'Büyüme Senaryosu',
+              description:
+                'Fiyat %5 ve satış hacmi %10 artarsa.',
+              result:
+                new BusinessScenarioSimulator().simulate(
+                  reportContext.analysis,
+                  {
+                    priceChangePercent: 5,
+                    salesVolumeChangePercent: 10
+                  }
+                )
+            },
+            {
+              id: 'cost-optimization',
+              title: 'Maliyet Optimizasyonu',
+              description:
+                'Birim maliyet %8 ve sabit maliyet %5 azalırsa.',
+              result:
+                new BusinessScenarioSimulator().simulate(
+                  reportContext.analysis,
+                  {
+                    unitCostChangePercent: -8,
+                    fixedCostChangePercent: -5
+                  }
+                )
+            },
+            {
+              id: 'stress',
+              title: 'Stres Testi',
+              description:
+                'Satış hacmi %20 düşer ve maliyet %10 artarsa.',
+              result:
+                new BusinessScenarioSimulator().simulate(
+                  reportContext.analysis,
+                  {
+                    salesVolumeChangePercent: -20,
+                    unitCostChangePercent: 10
+                  }
+                )
+            }
+          ]);
+
           openPrintableBusinessReport({
             businessName: reportContext.businessName,
             analysis: reportContext.analysis,
             executiveReport,
             benchmark,
-            forecast
+            forecast,
+            alerts,
+            scenarios
           });
         })
         .catch((error: unknown) => {
@@ -223,6 +294,72 @@ function renderAnalysisResult(
                 reportContext.analyses
               );
 
+            const previousAnalysis =
+              reportContext.analyses.find(
+                (item) =>
+                  item.id !== reportContext.analysis.id
+              );
+
+            const comparison = previousAnalysis
+              ? new BusinessPeriodComparisonEngine().compare(
+                  reportContext.analysis,
+                  previousAnalysis
+                )
+              : undefined;
+
+            const alerts =
+              new BusinessAlertEngine().evaluate({
+                analysis: reportContext.analysis,
+                comparison,
+                benchmark,
+                forecast
+              });
+
+            const scenarios = Object.freeze([
+              {
+                id: 'growth',
+                title: 'Büyüme Senaryosu',
+                description:
+                  'Fiyat %5 ve satış hacmi %10 artarsa.',
+                result:
+                  new BusinessScenarioSimulator().simulate(
+                    reportContext.analysis,
+                    {
+                      priceChangePercent: 5,
+                      salesVolumeChangePercent: 10
+                    }
+                  )
+              },
+              {
+                id: 'cost-optimization',
+                title: 'Maliyet Optimizasyonu',
+                description:
+                  'Birim maliyet %8 ve sabit maliyet %5 azalırsa.',
+                result:
+                  new BusinessScenarioSimulator().simulate(
+                    reportContext.analysis,
+                    {
+                      unitCostChangePercent: -8,
+                      fixedCostChangePercent: -5
+                    }
+                  )
+              },
+              {
+                id: 'stress',
+                title: 'Stres Testi',
+                description:
+                  'Satış hacmi %20 düşer ve maliyet %10 artarsa.',
+                result:
+                  new BusinessScenarioSimulator().simulate(
+                    reportContext.analysis,
+                    {
+                      salesVolumeChangePercent: -20,
+                      unitCostChangePercent: 10
+                    }
+                  )
+              }
+            ]);
+
             const executiveReport =
               new BusinessReportService()
                 .buildExecutiveReport(
@@ -255,7 +392,9 @@ function renderAnalysisResult(
                 reportContext.analysis,
               executiveReport,
               benchmark,
-              forecast
+              forecast,
+              alerts,
+              scenarios
             });
           }
         )
