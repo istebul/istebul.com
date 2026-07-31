@@ -6,6 +6,10 @@ import type {
 import type {
   StoredBusinessDocumentAnalysis
 } from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentAnalysisProvider';
+import {
+  BusinessBenchmarkEngine,
+  BusinessForecastEngine
+} from '../document-intelligence';
 
 export interface BusinessAnalysesPageOptions {
   runtime?: BusinessRuntime;
@@ -54,6 +58,7 @@ function createScoreCard(score: number): HTMLElement {
 interface BusinessAnalysisReportContext {
   businessName: string;
   analysis: StoredBusinessDocumentAnalysis;
+  analyses: readonly StoredBusinessDocumentAnalysis[];
 }
 
 function renderAnalysisResult(
@@ -162,9 +167,22 @@ function renderAnalysisResult(
                 reportContext.analysis.documentId
               );
 
+          const benchmark =
+            new BusinessBenchmarkEngine().evaluate(
+              reportContext.analysis
+            );
+
+          const forecast =
+            new BusinessForecastEngine().forecast(
+              reportContext.analyses
+            );
+
           openPrintableBusinessReport({
-            ...reportContext,
-            executiveReport
+            businessName: reportContext.businessName,
+            analysis: reportContext.analysis,
+            executiveReport,
+            benchmark,
+            forecast
           });
         })
         .catch((error: unknown) => {
@@ -186,9 +204,60 @@ function renderAnalysisResult(
       excelButton.disabled = true;
       excelButton.textContent = 'Excel hazırlanıyor…';
 
-      void import('../reports')
-        .then(({ downloadBusinessExcelReport }) =>
-          downloadBusinessExcelReport(reportContext)
+      void Promise.all([
+        import('../reports'),
+        import('../reporting')
+      ])
+        .then(
+          ([
+            { downloadBusinessExcelReport },
+            { BusinessReportService }
+          ]) => {
+            const benchmark =
+              new BusinessBenchmarkEngine().evaluate(
+                reportContext.analysis
+              );
+
+            const forecast =
+              new BusinessForecastEngine().forecast(
+                reportContext.analyses
+              );
+
+            const executiveReport =
+              new BusinessReportService()
+                .buildExecutiveReport(
+                  {
+                    documentId:
+                      reportContext.analysis.documentId,
+                    category:
+                      reportContext.analysis.category,
+                    score:
+                      reportContext.analysis.score,
+                    summary:
+                      reportContext.analysis.summary,
+                    kpis:
+                      reportContext.analysis.kpis,
+                    insights:
+                      reportContext.analysis.insights,
+                    recommendations:
+                      reportContext.analysis.recommendations,
+                    analyzedAt:
+                      reportContext.analysis.createdAt
+                  },
+                  reportContext.businessName,
+                  reportContext.analysis.documentId
+                );
+
+            return downloadBusinessExcelReport({
+              businessName:
+                reportContext.businessName,
+              analysis:
+                reportContext.analysis,
+              executiveReport,
+              benchmark,
+              forecast
+            });
+          }
         )
         .catch((error: unknown) => {
           window.alert(
@@ -462,6 +531,11 @@ export function createBusinessAnalysesPageElement(
           businessId
         );
 
+        const analysisHistory =
+          await runtime.documentAnalyses.listByBusiness(
+            businessId
+          );
+
         await runtime.documentAnalyses.updateDocumentStatus(
           uploadedDocument.id,
           'ready'
@@ -475,7 +549,8 @@ export function createBusinessAnalysesPageElement(
           analysisResult,
           {
             businessName,
-            analysis: storedAnalysis
+            analysis: storedAnalysis,
+            analyses: analysisHistory
           }
         );
         form.reset();

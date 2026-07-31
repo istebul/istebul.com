@@ -164,6 +164,49 @@ export async function buildBusinessExcelWorkbook(
         }))
     ) ?? [];
 
+  const benchmarkRows =
+    input.benchmark?.kpis.map((item) => ({
+      KPI_Kodu: item.id,
+      Gösterge: item.label,
+      Birim: item.unit ?? '',
+      Güncel_Değer: item.value,
+      Referans_Medyan: item.referenceMedian,
+      Mutlak_Fark: item.absoluteGap,
+      Yüzdesel_Fark:
+        item.percentageGap ?? '',
+      Persentil: item.percentile,
+      Seviye: item.level,
+      Etki: item.impact,
+      Durum: item.statusLabel
+    })) ?? [];
+
+  const forecastRows =
+    input.forecast?.forecasts.flatMap(
+      (forecast) =>
+        forecast.projections.map(
+          (projection) => ({
+            KPI_Kodu: forecast.id,
+            Gösterge: forecast.label,
+            Birim: forecast.unit ?? '',
+            Güncel_Değer:
+              forecast.currentValue,
+            Tahmin_Günü:
+              projection.horizonDays,
+            Tahmini_Değer:
+              projection.projectedValue,
+            Mutlak_Değişim:
+              projection.absoluteChange,
+            Yüzdesel_Değişim:
+              projection.percentageChange ?? '',
+            Yön: forecast.direction,
+            Güven: forecast.confidence,
+            Veri_Noktası:
+              forecast.dataPointCount,
+            Uyum_Skoru: forecast.fitScore
+          })
+        )
+    ) ?? [];
+
   const rawAnalysisRows = [
     {
       Alan: 'documentId',
@@ -212,6 +255,12 @@ export async function buildBusinessExcelWorkbook(
   const executiveSheet =
     XLSX.utils.json_to_sheet(executiveRows);
 
+  const benchmarkSheet =
+    XLSX.utils.json_to_sheet(benchmarkRows);
+
+  const forecastSheet =
+    XLSX.utils.json_to_sheet(forecastRows);
+
   const rawAnalysisSheet =
     XLSX.utils.json_to_sheet(rawAnalysisRows);
 
@@ -225,6 +274,16 @@ export async function buildBusinessExcelWorkbook(
   );
   setColumns(roadmapSheet, [24, 10, 100]);
   setColumns(executiveSheet, [34, 10, 110]);
+  setColumns(
+    benchmarkSheet,
+    [30, 38, 14, 18, 20, 18, 18, 14, 16, 16, 38]
+  );
+
+  setColumns(
+    forecastSheet,
+    [30, 38, 14, 18, 14, 18, 18, 18, 14, 14, 16, 16]
+  );
+
   setColumns(rawAnalysisSheet, [30, 110]);
 
   XLSX.utils.book_append_sheet(
@@ -267,6 +326,18 @@ export async function buildBusinessExcelWorkbook(
     workbook,
     executiveSheet,
     'Yönetici Değerlendirmesi'
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    benchmarkSheet,
+    'Benchmark'
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    forecastSheet,
+    'Tahminler'
   );
 
   XLSX.utils.book_append_sheet(

@@ -94,7 +94,92 @@ const input = {
     recommendations: analysis.recommendations,
     createdAt: analysis.analyzedAt
   },
-  executiveReport
+  executiveReport,
+  benchmark: {
+    profileId: 'structured-sme-reference-v1',
+    profileLabel:
+      'Yapılandırılmış KOBİ referans profili',
+    disclosure:
+      'Bu karşılaştırma gerçek sektör ortalaması değildir.',
+    score: {
+      id: 'business_health_score',
+      label: 'İşletme sağlık skoru',
+      value: 84,
+      referenceMedian: 65,
+      absoluteGap: 19,
+      percentageGap: 29.23,
+      percentile: 88,
+      level: 'strong',
+      impact: 'positive',
+      statusLabel: 'Referans profilinin üzerinde'
+    },
+    kpis: [
+      {
+        id: 'semantic_total_revenue',
+        label: 'Toplam Ciro',
+        unit: 'TRY',
+        value: 120000,
+        referenceMedian: 100000,
+        absoluteGap: 20000,
+        percentageGap: 20,
+        percentile: 72,
+        level: 'strong',
+        impact: 'positive',
+        statusLabel: 'Referans profilinin üzerinde'
+      }
+    ],
+    strongest: undefined,
+    weakest: undefined,
+    summary: 'Benchmark değerlendirmesi hazır.',
+    hasBenchmarkData: true
+  },
+  forecast: {
+    generatedAt:
+      '2026-07-31T12:00:00.000Z',
+    sourceAnalysisIds: [
+      'analysis-001',
+      'analysis-002',
+      'analysis-003'
+    ],
+    sourcePointCount: 3,
+    forecasts: [
+      {
+        id: 'semantic_total_revenue',
+        label: 'Toplam Ciro',
+        unit: 'TRY',
+        currentValue: 120000,
+        slopePerDay: 1000,
+        direction: 'up',
+        confidence: 'medium',
+        dataPointCount: 3,
+        fitScore: 0.8,
+        projections: [
+          {
+            horizonDays: 30,
+            projectedValue: 150000,
+            absoluteChange: 30000,
+            percentageChange: 25
+          },
+          {
+            horizonDays: 90,
+            projectedValue: 210000,
+            absoluteChange: 90000,
+            percentageChange: 75
+          },
+          {
+            horizonDays: 365,
+            projectedValue: 485000,
+            absoluteChange: 365000,
+            percentageChange: 304.17
+          }
+        ]
+      }
+    ],
+    summary: 'Tahmin değerlendirmesi hazır.',
+    disclosure:
+      'Tahminler garanti niteliğinde değildir.',
+    hasForecastData: true
+  }
 };
 
 test(
@@ -107,6 +192,22 @@ test(
     assert.match(html, /Yönetim Kurulu Özeti/);
     assert.match(html, /İçindekiler/);
     assert.match(html, /Aksiyon Planı Özeti/);
+    assert.match(
+      html,
+      /Benchmark Değerlendirmesi/
+    );
+    assert.match(
+      html,
+      /30 \/ 90 \/ 365 Günlük Projeksiyon/
+    );
+    assert.match(
+      html,
+      /gerçek sektör ortalaması değildir/i
+    );
+    assert.match(
+      html,
+      /garanti niteliğinde değildir/i
+    );
     assert.match(html, /30 Günlük Plan/);
     assert.match(html, /CEO Karar Özeti/);
     assert.match(html, /@page/);
@@ -130,6 +231,8 @@ test(
         'Aksiyon Planı',
         '30-60-90 Gün',
         'Yönetici Değerlendirmesi',
+        'Benchmark',
+        'Tahminler',
         'Analiz Verisi'
       ]
     );
