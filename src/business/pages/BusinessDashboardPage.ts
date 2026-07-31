@@ -7,13 +7,18 @@ import { createBusinessQuickActionsElement } from '../components/BusinessQuickAc
 import { createBusinessAdvisorPanelElement } from '../components/BusinessAdvisorPanel';
 import { createBusinessExecutiveHealthPanelElement } from '../components/BusinessExecutiveHealthPanel';
 import { createBusinessExecutiveHighlightsElement } from '../components/BusinessExecutiveHighlights';
+import { createBusinessBenchmarkForecastPanelElement } from '../components/BusinessBenchmarkForecastPanel';
 import { runBusinessIntelligenceEngine } from '../intelligence/pipeline/BusinessIntelligenceEngine';
 import type { BusinessRuntime } from '../app/BusinessRuntime';
 import type {
   StoredBusinessDocumentAnalysis
 } from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentAnalysisProvider';
 import {
+  BusinessBenchmarkEngine,
+  BusinessForecastEngine,
   BusinessPeriodComparisonEngine,
+  type BusinessBenchmarkResult,
+  type BusinessForecastResult,
   type BusinessKpi,
   type BusinessPeriodComparisonResult
 } from '../document-intelligence';
@@ -28,6 +33,7 @@ export interface BusinessDashboardPageOptions {
   advisor?: BusinessAdvisorResult;
   analysis?: StoredBusinessDocumentAnalysis;
   previousAnalysis?: StoredBusinessDocumentAnalysis;
+  analyses?: readonly StoredBusinessDocumentAnalysis[];
 }
 
 export interface MountBusinessDashboardPageOptions {
@@ -148,7 +154,9 @@ function renderDashboard(
   data: BusinessDashboardMockData,
   advisor: BusinessAdvisorResult,
   score?: number,
-  comparison?: BusinessPeriodComparisonResult
+  comparison?: BusinessPeriodComparisonResult,
+  benchmark?: BusinessBenchmarkResult,
+  forecast?: BusinessForecastResult
 ): HTMLElement {
   const root = document.createElement('div');
   root.className = 'ib-biz-dashboard';
@@ -171,6 +179,13 @@ function renderDashboard(
     root.appendChild(
       createBusinessExecutiveHighlightsElement({
         comparison
+      })
+    );
+
+    root.appendChild(
+      createBusinessBenchmarkForecastPanelElement({
+        benchmark,
+        forecast
       })
     );
   }
@@ -278,6 +293,31 @@ function createErrorElement(message: string): HTMLElement {
 export function createBusinessDashboardPageElement(
   options: BusinessDashboardPageOptions = {}
 ): HTMLElement {
+  const history =
+    options.analyses ??
+    [
+      options.analysis,
+      options.previousAnalysis
+    ].filter(
+      (
+        item
+      ): item is StoredBusinessDocumentAnalysis =>
+        Boolean(item)
+    );
+
+  const benchmark = options.analysis
+    ? new BusinessBenchmarkEngine().evaluate(
+        options.analysis
+      )
+    : undefined;
+
+  const forecast =
+    history.length > 0
+      ? new BusinessForecastEngine().forecast(
+          history
+        )
+      : undefined;
+
   const comparison =
     options.analysis && options.previousAnalysis
       ? new BusinessPeriodComparisonEngine().compare(
@@ -301,7 +341,9 @@ export function createBusinessDashboardPageElement(
     data,
     advisor,
     options.analysis?.score,
-    comparison
+    comparison,
+    benchmark,
+    forecast
   );
 }
 
@@ -351,7 +393,8 @@ export async function mountBusinessDashboardPage(
     container.replaceChildren(
       createBusinessDashboardPageElement({
         analysis: latestAnalysis,
-        previousAnalysis
+        previousAnalysis,
+        analyses
       })
     );
   } catch (error) {

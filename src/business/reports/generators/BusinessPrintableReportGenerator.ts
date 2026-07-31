@@ -132,6 +132,149 @@ function createContentsHtml(
     .join('');
 }
 
+function benchmarkLevelLabel(
+  value: string
+): string {
+  if (value === 'strong') return 'Güçlü';
+  if (value === 'weak') return 'Geliştirme alanı';
+  if (value === 'average') return 'Referansa yakın';
+  return 'Veri yok';
+}
+
+function forecastDirectionLabel(
+  value: string
+): string {
+  if (value === 'up') return 'Yükseliş';
+  if (value === 'down') return 'Düşüş';
+  return 'Stabil';
+}
+
+function forecastConfidenceLabel(
+  value: string
+): string {
+  if (value === 'high') return 'Yüksek';
+  if (value === 'medium') return 'Orta';
+  return 'Düşük';
+}
+
+function createBenchmarkRows(
+  input: BusinessReportInput
+): string {
+  const items = input.benchmark?.kpis ?? [];
+
+  if (items.length === 0) {
+    return `
+      <tr>
+        <td colspan="6">
+          Benchmark değerlendirmesi için
+          karşılaştırılabilir KPI bulunamadı.
+        </td>
+      </tr>
+    `;
+  }
+
+  return items
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapeHtml(item.label)}</td>
+          <td>${escapeHtml(
+            formatKpiValue(item.value, item.unit)
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              item.referenceMedian,
+              item.unit
+            )
+          )}</td>
+          <td>${item.percentile}. persentil</td>
+          <td>${escapeHtml(
+            benchmarkLevelLabel(item.level)
+          )}</td>
+          <td>${escapeHtml(item.statusLabel)}</td>
+        </tr>
+      `
+    )
+    .join('');
+}
+
+function createForecastRows(
+  input: BusinessReportInput
+): string {
+  const forecasts =
+    input.forecast?.forecasts ?? [];
+
+  if (forecasts.length === 0) {
+    return `
+      <tr>
+        <td colspan="7">
+          Tahmin üretmek için aynı KPI kimliğine sahip
+          en az üç dönem analizi gerekir.
+        </td>
+      </tr>
+    `;
+  }
+
+  return forecasts
+    .map((forecast) => {
+      const projection30 =
+        forecast.projections.find(
+          (item) => item.horizonDays === 30
+        );
+
+      const projection90 =
+        forecast.projections.find(
+          (item) => item.horizonDays === 90
+        );
+
+      const projection365 =
+        forecast.projections.find(
+          (item) => item.horizonDays === 365
+        );
+
+      return `
+        <tr>
+          <td>${escapeHtml(forecast.label)}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              forecast.currentValue,
+              forecast.unit
+            )
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              projection30?.projectedValue ?? 0,
+              forecast.unit
+            )
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              projection90?.projectedValue ?? 0,
+              forecast.unit
+            )
+          )}</td>
+          <td>${escapeHtml(
+            formatKpiValue(
+              projection365?.projectedValue ?? 0,
+              forecast.unit
+            )
+          )}</td>
+          <td>${escapeHtml(
+            forecastDirectionLabel(
+              forecast.direction
+            )
+          )}</td>
+          <td>${escapeHtml(
+            forecastConfidenceLabel(
+              forecast.confidence
+            )
+          )}</td>
+        </tr>
+      `;
+    })
+    .join('');
+}
+
 function createActionPlanRows(
   input: BusinessReportInput
 ): string {
@@ -418,6 +561,17 @@ export function createPrintableBusinessReportHtml(
       text-transform: uppercase;
     }
 
+    .report-note {
+      margin-top: 16px;
+      padding: 13px 15px;
+      border: 1px solid #dce7f7;
+      border-radius: 12px;
+      background: #eef4ff;
+      color: #536176;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
     .executive-list {
       margin: 20px 0 0;
       padding-left: 22px;
@@ -615,6 +769,91 @@ export function createPrintableBusinessReportHtml(
           </thead>
           <tbody>${kpiRows}</tbody>
         </table>
+      </section>
+
+      <section class="report-section">
+        <div class="section-heading">
+          <span>BM</span>
+          <h2>Benchmark Değerlendirmesi</h2>
+        </div>
+
+        <p>
+          ${escapeHtml(
+            input.benchmark?.summary ??
+              'Benchmark değerlendirmesi bulunamadı.'
+          )}
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Gösterge</th>
+              <th>Güncel</th>
+              <th>Referans Medyan</th>
+              <th>Persentil</th>
+              <th>Seviye</th>
+              <th>Değerlendirme</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${createBenchmarkRows(input)}
+          </tbody>
+        </table>
+
+        ${
+          input.benchmark?.disclosure
+            ? `
+              <p class="report-note">
+                ${escapeHtml(
+                  input.benchmark.disclosure
+                )}
+              </p>
+            `
+            : ''
+        }
+      </section>
+
+      <section class="report-section">
+        <div class="section-heading">
+          <span>FC</span>
+          <h2>30 / 90 / 365 Günlük Projeksiyon</h2>
+        </div>
+
+        <p>
+          ${escapeHtml(
+            input.forecast?.summary ??
+              'Tahmin sonucu bulunamadı.'
+          )}
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>KPI</th>
+              <th>Güncel</th>
+              <th>30 Gün</th>
+              <th>90 Gün</th>
+              <th>365 Gün</th>
+              <th>Yön</th>
+              <th>Güven</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${createForecastRows(input)}
+          </tbody>
+        </table>
+
+        ${
+          input.forecast?.disclosure
+            ? `
+              <p class="report-note">
+                ${escapeHtml(
+                  input.forecast.disclosure
+                )}
+              </p>
+            `
+            : ''
+        }
       </section>
 
       <section class="report-section">
