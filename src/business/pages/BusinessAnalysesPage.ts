@@ -133,8 +133,39 @@ function renderAnalysisResult(
 
     printableButton.addEventListener('click', () => {
       void import('../reports')
-        .then(({ openPrintableBusinessReport }) => {
-          openPrintableBusinessReport(reportContext);
+        .then(async ({ openPrintableBusinessReport }) => {
+          const { BusinessReportService } =
+            await import('../reporting');
+
+          const executiveReport =
+            new BusinessReportService()
+              .buildExecutiveReport(
+                {
+                  documentId:
+                    reportContext.analysis.documentId,
+                  category:
+                    reportContext.analysis.category,
+                  score:
+                    reportContext.analysis.score,
+                  summary:
+                    reportContext.analysis.summary,
+                  kpis:
+                    reportContext.analysis.kpis,
+                  insights:
+                    reportContext.analysis.insights,
+                  recommendations:
+                    reportContext.analysis.recommendations,
+                  analyzedAt:
+                    reportContext.analysis.createdAt
+                },
+                reportContext.businessName,
+                reportContext.analysis.documentId
+              );
+
+          openPrintableBusinessReport({
+            ...reportContext,
+            executiveReport
+          });
         })
         .catch((error: unknown) => {
           window.alert(

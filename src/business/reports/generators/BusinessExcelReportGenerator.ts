@@ -57,6 +57,20 @@ export async function downloadBusinessExcelReport(
       })
     );
 
+  const executiveSectionRows =
+    input.executiveReport?.sections.flatMap(
+      (section) => [
+        {
+          Bölüm: section.title,
+          İçerik: ''
+        },
+        ...section.content.map((item) => ({
+          Bölüm: section.title,
+          İçerik: item
+        }))
+      ]
+    ) ?? [];
+
   const summarySheet =
     XLSX.utils.aoa_to_sheet(summaryRows);
 
@@ -68,6 +82,9 @@ export async function downloadBusinessExcelReport(
 
   const recommendationSheet =
     XLSX.utils.json_to_sheet(recommendationRows);
+
+  const executiveSheet =
+    XLSX.utils.json_to_sheet(executiveSectionRows);
 
   summarySheet['!cols'] = [
     { wch: 26 },
@@ -90,6 +107,11 @@ export async function downloadBusinessExcelReport(
   recommendationSheet['!cols'] = [
     { wch: 12 },
     { wch: 100 }
+  ];
+
+  executiveSheet['!cols'] = [
+    { wch: 32 },
+    { wch: 110 }
   ];
 
   XLSX.utils.book_append_sheet(
@@ -115,6 +137,14 @@ export async function downloadBusinessExcelReport(
     recommendationSheet,
     'Aksiyon Planı'
   );
+
+  if (executiveSectionRows.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      executiveSheet,
+      'Yönetici Değerlendirmesi'
+    );
+  }
 
   const date = new Date()
     .toISOString()
