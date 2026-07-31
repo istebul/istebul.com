@@ -346,18 +346,6 @@ export function createBusinessImportCenterPageElement(
   root.className = 'ib-biz-page ib-biz-import';
   root.dataset.businessPage = 'veri-merkezi';
 
-  const intro = document.createElement('section');
-  intro.className = 'ib-biz-import__intro';
-
-  const title = document.createElement('h1');
-  title.textContent = 'Veri Merkezi';
-
-  const description = document.createElement('p');
-  description.textContent =
-    'İşletme verilerinizi yükleyin ve analiz oluşturmaya başlayın.';
-
-  intro.append(title, description);
-
   const {
     element: uploadArea,
     input,
@@ -490,7 +478,6 @@ export function createBusinessImportCenterPageElement(
   });
 
   root.append(
-    intro,
     uploadArea,
     recentCard,
     analysisCard
