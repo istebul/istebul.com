@@ -10,17 +10,22 @@ import type { BusinessRuntime } from '../app/BusinessRuntime';
 import type {
   StoredBusinessDocumentAnalysis
 } from '../document-intelligence/providers/supabase/SupabaseBusinessDocumentAnalysisProvider';
+import {
+  BusinessPeriodComparisonEngine,
+  type BusinessKpi,
+  type BusinessPeriodComparisonResult
+} from '../document-intelligence';
 import type {
   BusinessDashboardMockData,
   BusinessKpiMock
 } from '../types/dashboard-mock';
 import type { BusinessAdvisorResult } from '../intelligence/types/advisor-result';
-import type { BusinessKpi } from '../document-intelligence';
 
 export interface BusinessDashboardPageOptions {
   data?: BusinessDashboardMockData;
   advisor?: BusinessAdvisorResult;
   analysis?: StoredBusinessDocumentAnalysis;
+  previousAnalysis?: StoredBusinessDocumentAnalysis;
 }
 
 export interface MountBusinessDashboardPageOptions {
@@ -41,7 +46,8 @@ function formatKpiValue(kpi: BusinessKpi): string {
 }
 
 function mapAnalysisKpis(
-  analysis: StoredBusinessDocumentAnalysis
+  analysis: StoredBusinessDocumentAnalysis,
+  comparison?: BusinessPeriodComparisonResult
 ): readonly BusinessKpiMock[] {
   const semantic = analysis.kpis.filter((kpi) =>
     kpi.id.startsWith('semantic_')
@@ -53,23 +59,42 @@ function mapAnalysisKpis(
       : analysis.kpis.slice(0, 8);
 
   return Object.freeze(
-    selected.map((kpi) =>
-      Object.freeze({
+    selected.map((kpi) => {
+      const compared = comparison?.kpis.find(
+        (item) => item.id === kpi.id
+      );
+
+      return Object.freeze({
         id: kpi.id,
         label: kpi.label,
         value: formatKpiValue(kpi),
-        delta: 'Canlı',
-        trend: 'flat' as const,
-        hint: 'Son analiz'
-      })
-    )
+        delta: compared?.changeLabel ?? 'Canlı',
+        trend:
+          compared?.direction === 'up'
+            ? 'up' as const
+            : compared?.direction === 'down'
+              ? 'down' as const
+              : 'flat' as const,
+        hint: compared
+          ? 'Önceki analize göre'
+          : 'Son analiz'
+      });
+    })
   );
 }
 
 function mapAnalysisToDashboard(
-  analysis: StoredBusinessDocumentAnalysis
+  analysis: StoredBusinessDocumentAnalysis,
+  previousAnalysis?: StoredBusinessDocumentAnalysis
 ): BusinessDashboardMockData {
   const createdAt = new Date(analysis.createdAt);
+
+  const comparison = previousAnalysis
+    ? new BusinessPeriodComparisonEngine().compare(
+        analysis,
+        previousAnalysis
+      )
+    : undefined;
 
   const dateLabel = Number.isNaN(createdAt.getTime())
     ? 'Son analiz'
@@ -102,10 +127,15 @@ function mapAnalysisToDashboard(
     summary: Object.freeze({
       greeting: 'Yönetici özeti',
       headline: `İşletme sağlık skoru: ${analysis.score}/100`,
-      body: analysis.summary,
+      body: comparison?.hasComparableData
+        ? `${analysis.summary} ${comparison.summary}`
+        : analysis.summary,
       dateLabel
     }),
-    kpis: mapAnalysisKpis(analysis),
+    kpis: mapAnalysisKpis(
+      analysis,
+      comparison
+    ),
     activities: Object.freeze(activities),
     aiSuggestions: Object.freeze(aiSuggestions),
     quickActions: BUSINESS_DASHBOARD_MOCK.quickActions
@@ -230,7 +260,10 @@ export function createBusinessDashboardPageElement(
   options: BusinessDashboardPageOptions = {}
 ): HTMLElement {
   const data = options.analysis
-    ? mapAnalysisToDashboard(options.analysis)
+    ? mapAnalysisToDashboard(
+        options.analysis,
+        options.previousAnalysis
+      )
     : options.data ?? BUSINESS_DASHBOARD_MOCK;
 
   const advisor =
@@ -274,6 +307,7 @@ export async function mountBusinessDashboardPage(
       );
 
     const latestAnalysis = analyses[0];
+    const previousAnalysis = analyses[1];
 
     if (!latestAnalysis) {
       container.replaceChildren(
@@ -284,7 +318,8 @@ export async function mountBusinessDashboardPage(
 
     container.replaceChildren(
       createBusinessDashboardPageElement({
-        analysis: latestAnalysis
+        analysis: latestAnalysis,
+        previousAnalysis
       })
     );
   } catch (error) {

@@ -21,3 +21,4 @@ export * from './analysis/DeterministicBusinessAnalysisEngine';
 export * from './kpi/BusinessKpiExtractor';
 export * from './recommendations/BusinessRecommendationEngine';
 export * from './scoring/BusinessHealthScorer';
+export * from './comparison';
