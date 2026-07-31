@@ -1,5 +1,7 @@
 import type { BusinessInsight } from '../../document-intelligence/models/BusinessInsight';
 import type { BusinessKpi } from '../../document-intelligence/models/BusinessKpi';
+import type { ActionPlanResult } from '../../decision';
+import type { RecommendationResult } from '../../decision';
 import type { ExecutiveReportSection } from './ExecutiveReportSection';
 
 export interface ExecutiveReport {
@@ -14,6 +16,9 @@ export interface ExecutiveReport {
   kpis: BusinessKpi[];
   insights: BusinessInsight[];
   recommendations: string[];
+
+  decisionRecommendations: RecommendationResult;
+  actionPlan: ActionPlanResult;
 
   sections: ExecutiveReportSection[];
 }
