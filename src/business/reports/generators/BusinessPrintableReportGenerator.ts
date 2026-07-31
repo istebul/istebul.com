@@ -11,11 +11,11 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#039;');
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string | Date): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return value;
+    return String(value);
   }
 
   return date.toLocaleString('tr-TR', {
@@ -39,10 +39,134 @@ function formatKpiValue(
   return formatted;
 }
 
-function createReportHtml(
+function createSectionId(title: string): string {
+  return title
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function createBoardSummary(
+  input: BusinessReportInput
+): string[] {
+  const { analysis, executiveReport } = input;
+
+  const criticalCount = analysis.insights.filter(
+    (item) => item.severity === 'critical'
+  ).length;
+
+  const warningCount = analysis.insights.filter(
+    (item) => item.severity === 'warning'
+  ).length;
+
+  const actionPlanCount =
+    executiveReport?.actionPlan.summary.actionPlanCount ?? 0;
+
+  const stepCount =
+    executiveReport?.actionPlan.summary.stepCount ?? 0;
+
+  return [
+    `İşletme sağlık skoru ${analysis.score}/100 seviyesindedir.`,
+    `${analysis.kpis.length} temel performans göstergesi incelenmiştir.`,
+    `${criticalCount} kritik ve ${warningCount} uyarı seviyesinde konu belirlenmiştir.`,
+    `${actionPlanCount} yönetici aksiyon planında toplam ${stepCount} uygulanabilir adım oluşturulmuştur.`
+  ];
+}
+
+function createExecutiveSectionsHtml(
   input: BusinessReportInput
 ): string {
-  const { analysis } = input;
+  return (
+    input.executiveReport?.sections
+      .map((section, index) => {
+        const id = createSectionId(section.title);
+
+        return `
+          <section
+            id="${escapeHtml(id)}"
+            class="report-section ${
+              index > 0 ? 'report-section--breakable' : ''
+            }"
+          >
+            <div class="section-heading">
+              <span>${String(index + 1).padStart(2, '0')}</span>
+              <h2>${escapeHtml(section.title)}</h2>
+            </div>
+
+            <ul class="executive-list">
+              ${section.content
+                .map(
+                  (item) =>
+                    `<li>${escapeHtml(item)}</li>`
+                )
+                .join('')}
+            </ul>
+          </section>
+        `;
+      })
+      .join('') ?? ''
+  );
+}
+
+function createContentsHtml(
+  input: BusinessReportInput
+): string {
+  const sections =
+    input.executiveReport?.sections ?? [];
+
+  return sections
+    .map(
+      (section, index) => `
+        <li>
+          <a href="#${escapeHtml(
+            createSectionId(section.title)
+          )}">
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            ${escapeHtml(section.title)}
+          </a>
+        </li>
+      `
+    )
+    .join('');
+}
+
+function createActionPlanRows(
+  input: BusinessReportInput
+): string {
+  const plans =
+    input.executiveReport?.actionPlan.actionPlans ?? [];
+
+  if (plans.length === 0) {
+    return `
+      <tr>
+        <td colspan="5">
+          Yapılandırılmış aksiyon planı bulunamadı.
+        </td>
+      </tr>
+    `;
+  }
+
+  return plans
+    .map(
+      (plan) => `
+        <tr>
+          <td>${escapeHtml(plan.title)}</td>
+          <td>${escapeHtml(plan.priority)}</td>
+          <td>${plan.estimatedImpact}/100</td>
+          <td>${plan.estimatedEffort}/100</td>
+          <td>${plan.steps.length}</td>
+        </tr>
+      `
+    )
+    .join('');
+}
+
+export function createPrintableBusinessReportHtml(
+  input: BusinessReportInput
+): string {
+  const { analysis, executiveReport } = input;
 
   const kpiRows = analysis.kpis
     .map(
@@ -52,51 +176,19 @@ function createReportHtml(
           <td>${escapeHtml(
             formatKpiValue(kpi.value, kpi.unit)
           )}</td>
+          <td>${escapeHtml(kpi.unit ?? '—')}</td>
         </tr>
       `
     )
     .join('');
 
-  const insightItems = analysis.insights
-    .map(
-      (insight) => `
-        <li>
-          <strong>${escapeHtml(insight.title)}</strong>
-          <p>${escapeHtml(insight.description)}</p>
-        </li>
-      `
-    )
+  const boardSummaryItems = createBoardSummary(input)
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join('');
 
-  const recommendationItems = analysis.recommendations
-    .map(
-      (recommendation, index) => `
-        <li>
-          <strong>${index + 1}.</strong>
-          ${escapeHtml(recommendation)}
-        </li>
-      `
-    )
-    .join('');
-
+  const contentsItems = createContentsHtml(input);
   const executiveSectionHtml =
-    input.executiveReport?.sections
-      .map(
-        (section) => `
-          <section>
-            <h2>${escapeHtml(section.title)}</h2>
-            <ul>
-              ${section.content
-                .map(
-                  (item) =>
-                    `<li>${escapeHtml(item)}</li>`
-                )
-                .join('')}
-            </ul>
-          </section>
-        `
-      )
-      .join('') ?? '';
+    createExecutiveSectionsHtml(input);
 
   return `<!doctype html>
 <html lang="tr">
@@ -106,7 +198,10 @@ function createReportHtml(
     name="viewport"
     content="width=device-width, initial-scale=1"
   >
-  <title>İSTEBUL Business Yönetici Raporu</title>
+  <title>${escapeHtml(
+    input.businessName
+  )} — İSTEBUL Business Yönetici Raporu</title>
+
   <style>
     :root {
       font-family:
@@ -126,87 +221,187 @@ function createReportHtml(
     }
 
     .report {
-      width: min(960px, calc(100% - 32px));
+      width: min(1040px, calc(100% - 32px));
       margin: 24px auto;
-      padding: 48px;
       background: #ffffff;
-      border-radius: 22px;
       box-shadow: 0 18px 55px rgba(22, 32, 51, 0.12);
     }
 
-    .brand {
+    .cover {
+      min-height: 760px;
+      padding: 58px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: space-between;
+      color: #ffffff;
+      background:
+        radial-gradient(
+          circle at 88% 12%,
+          rgba(76, 139, 255, 0.42),
+          transparent 32%
+        ),
+        linear-gradient(145deg, #0d1b35, #123f86);
+    }
+
+    .cover__brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       gap: 24px;
-      padding-bottom: 28px;
-      border-bottom: 2px solid #e8edf5;
     }
 
-    .brand strong {
-      font-size: 24px;
-      color: #135df5;
+    .cover__brand strong {
+      font-size: 26px;
     }
 
-    .badge {
-      display: inline-flex;
-      padding: 7px 12px;
+    .cover__badge {
+      padding: 8px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
       border-radius: 999px;
-      color: #135df5;
-      background: #eaf1ff;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    h1 {
-      margin: 42px 0 8px;
-      font-size: 34px;
+    .cover__content {
+      max-width: 720px;
     }
 
-    h2 {
-      margin-top: 40px;
-      font-size: 23px;
+    .cover__eyebrow {
+      margin: 0 0 18px;
+      color: #aecdff;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
     }
 
-    p {
-      line-height: 1.65;
+    .cover h1 {
+      margin: 0;
+      font-size: 54px;
+      line-height: 1.08;
     }
 
-    .meta-grid,
-    .score-grid {
+    .cover__subtitle {
+      margin: 22px 0 0;
+      font-size: 21px;
+      line-height: 1.6;
+      color: #dce8ff;
+    }
+
+    .cover__meta {
       display: grid;
       grid-template-columns:
         repeat(auto-fit, minmax(180px, 1fr));
       gap: 14px;
-      margin-top: 24px;
     }
 
-    .card {
-      padding: 20px;
-      border: 1px solid #e3e9f2;
+    .cover__meta article {
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
       border-radius: 16px;
-      background: #f9fbfe;
+      background: rgba(255, 255, 255, 0.08);
     }
 
-    .card span {
+    .cover__meta span {
       display: block;
       margin-bottom: 8px;
-      color: #637083;
-      font-size: 12px;
-      font-weight: 700;
+      color: #aecdff;
+      font-size: 11px;
+      font-weight: 800;
       text-transform: uppercase;
     }
 
-    .score {
-      font-size: 32px;
-      font-weight: 800;
+    .report-body {
+      padding: 48px;
+    }
+
+    .report-section {
+      margin-top: 46px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #e8edf5;
+    }
+
+    .section-heading span {
       color: #135df5;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    .board-summary {
+      padding: 26px;
+      border-radius: 20px;
+      background: #f2f6fc;
+      border: 1px solid #dfe7f3;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .score-card {
+      padding: 20px;
+      border: 1px solid #e3e9f2;
+      border-radius: 16px;
+      background: #ffffff;
+    }
+
+    .score-card span {
+      display: block;
+      margin-bottom: 8px;
+      color: #637083;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .score-card strong {
+      color: #135df5;
+      font-size: 30px;
+    }
+
+    .contents {
+      list-style: none;
+      margin: 20px 0 0;
+      padding: 0;
+    }
+
+    .contents li {
+      border-bottom: 1px solid #e3e9f2;
+    }
+
+    .contents a {
+      display: flex;
+      gap: 16px;
+      padding: 13px 0;
+      color: #162033;
+      text-decoration: none;
+    }
+
+    .contents a span {
+      color: #135df5;
+      font-weight: 900;
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
       margin-top: 18px;
+      border-collapse: collapse;
     }
 
     th,
@@ -214,27 +409,37 @@ function createReportHtml(
       padding: 13px 14px;
       border-bottom: 1px solid #e3e9f2;
       text-align: left;
+      vertical-align: top;
     }
 
     th {
       background: #f2f6fc;
+      font-size: 12px;
+      text-transform: uppercase;
     }
 
-    li {
+    .executive-list {
+      margin: 20px 0 0;
+      padding-left: 22px;
+    }
+
+    .executive-list li {
       margin-bottom: 14px;
-      line-height: 1.55;
-    }
-
-    li p {
-      margin: 5px 0 0;
+      line-height: 1.65;
     }
 
     footer {
-      margin-top: 52px;
-      padding-top: 20px;
+      margin-top: 56px;
+      padding: 22px 0 4px;
       border-top: 1px solid #e3e9f2;
       color: #637083;
-      font-size: 12px;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    @page {
+      size: A4;
+      margin: 15mm;
     }
 
     @media print {
@@ -245,97 +450,203 @@ function createReportHtml(
       .report {
         width: 100%;
         margin: 0;
-        padding: 20mm 16mm;
-        border-radius: 0;
         box-shadow: none;
       }
 
-      h2,
-      table,
-      ul {
+      .cover {
+        min-height: 267mm;
+        break-after: page;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .report-body {
+        padding: 0;
+      }
+
+      .contents-section {
+        break-after: page;
+      }
+
+      .report-section {
         break-inside: avoid;
+      }
+
+      .report-section--breakable {
+        break-before: auto;
+      }
+
+      table,
+      .board-summary,
+      .score-grid {
+        break-inside: avoid;
+      }
+
+      a {
+        color: inherit;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .cover,
+      .report-body {
+        padding: 28px;
+      }
+
+      .cover h1 {
+        font-size: 38px;
       }
     }
   </style>
 </head>
+
 <body>
   <main class="report">
-    <header class="brand">
-      <strong>İSTEBUL Business</strong>
-      <span class="badge">Yönetici Raporu</span>
-    </header>
+    <section class="cover">
+      <header class="cover__brand">
+        <strong>İSTEBUL Business</strong>
+        <span class="cover__badge">
+          Kurumsal Yönetici Raporu
+        </span>
+      </header>
 
-    <h1>${escapeHtml(input.businessName)}</h1>
+      <div class="cover__content">
+        <p class="cover__eyebrow">
+          Yönetim Kurulu ve Üst Yönetim
+        </p>
 
-    <p>${escapeHtml(analysis.summary)}</p>
+        <h1>${escapeHtml(input.businessName)}</h1>
 
-    <section class="meta-grid">
-      <article class="card">
-        <span>Analiz türü</span>
-        <strong>${escapeHtml(analysis.analysisType)}</strong>
-      </article>
+        <p class="cover__subtitle">
+          ${escapeHtml(
+            executiveReport?.title ??
+              'İşletme Performans ve Karar Destek Raporu'
+          )}
+        </p>
+      </div>
 
-      <article class="card">
-        <span>Kategori</span>
-        <strong>${escapeHtml(analysis.category)}</strong>
-      </article>
+      <div class="cover__meta">
+        <article>
+          <span>Analiz türü</span>
+          <strong>${escapeHtml(
+            analysis.analysisType
+          )}</strong>
+        </article>
 
-      <article class="card">
-        <span>Rapor tarihi</span>
-        <strong>${escapeHtml(
-          formatDate(analysis.createdAt)
-        )}</strong>
-      </article>
+        <article>
+          <span>Kategori</span>
+          <strong>${escapeHtml(analysis.category)}</strong>
+        </article>
+
+        <article>
+          <span>Rapor tarihi</span>
+          <strong>${escapeHtml(
+            formatDate(
+              executiveReport?.generatedAt ??
+                analysis.createdAt
+            )
+          )}</strong>
+        </article>
+      </div>
     </section>
 
-    <section class="score-grid">
-      <article class="card">
-        <span>Belge sağlık skoru</span>
-        <div class="score">${analysis.score}/100</div>
-      </article>
+    <div class="report-body">
+      <section class="report-section">
+        <div class="section-heading">
+          <span>00</span>
+          <h2>Yönetim Kurulu Özeti</h2>
+        </div>
 
-      <article class="card">
-        <span>KPI sayısı</span>
-        <div class="score">${analysis.kpis.length}</div>
-      </article>
+        <div class="board-summary">
+          <p>${escapeHtml(analysis.summary)}</p>
+          <ul>${boardSummaryItems}</ul>
+        </div>
 
-      <article class="card">
-        <span>İçgörü sayısı</span>
-        <div class="score">${analysis.insights.length}</div>
-      </article>
-    </section>
+        <div class="score-grid">
+          <article class="score-card">
+            <span>Sağlık skoru</span>
+            <strong>${analysis.score}/100</strong>
+          </article>
 
-    <section>
-      <h2>Temel performans göstergeleri</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Gösterge</th>
-            <th>Değer</th>
-          </tr>
-        </thead>
-        <tbody>${kpiRows}</tbody>
-      </table>
-    </section>
+          <article class="score-card">
+            <span>KPI</span>
+            <strong>${analysis.kpis.length}</strong>
+          </article>
 
-    <section>
-      <h2>İçgörüler</h2>
-      <ul>${insightItems}</ul>
-    </section>
+          <article class="score-card">
+            <span>İçgörü</span>
+            <strong>${analysis.insights.length}</strong>
+          </article>
 
-    <section>
-      <h2>Önerilen aksiyonlar</h2>
-      <ol>${recommendationItems}</ol>
-    </section>
+          <article class="score-card">
+            <span>Aksiyon planı</span>
+            <strong>${
+              executiveReport?.actionPlan.summary
+                .actionPlanCount ?? 0
+            }</strong>
+          </article>
+        </div>
+      </section>
 
-    ${executiveSectionHtml}
+      <section class="report-section contents-section">
+        <div class="section-heading">
+          <span>İÇ</span>
+          <h2>İçindekiler</h2>
+        </div>
 
-    <footer>
-      Bu rapor İSTEBUL Business tarafından mevcut belge
-      verileri üzerinden hazırlanmıştır. Karar destek
-      amaçlıdır; mali, hukuki veya bağımsız denetim raporu
-      niteliğinde değildir.
-    </footer>
+        <ol class="contents">
+          ${contentsItems}
+        </ol>
+      </section>
+
+      <section class="report-section">
+        <div class="section-heading">
+          <span>KPI</span>
+          <h2>Temel Performans Göstergeleri</h2>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Gösterge</th>
+              <th>Değer</th>
+              <th>Birim</th>
+            </tr>
+          </thead>
+          <tbody>${kpiRows}</tbody>
+        </table>
+      </section>
+
+      <section class="report-section">
+        <div class="section-heading">
+          <span>AP</span>
+          <h2>Aksiyon Planı Özeti</h2>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Aksiyon planı</th>
+              <th>Öncelik</th>
+              <th>Etki</th>
+              <th>Efor</th>
+              <th>Adım</th>
+            </tr>
+          </thead>
+          <tbody>${createActionPlanRows(input)}</tbody>
+        </table>
+      </section>
+
+      ${executiveSectionHtml}
+
+      <footer>
+        Bu rapor İSTEBUL Business tarafından mevcut işletme
+        verileri üzerinden otomatik olarak hazırlanmıştır.
+        Karar destek amaçlıdır; mali müşavirlik, hukuk,
+        bağımsız denetim veya yatırım danışmanlığı raporu
+        niteliğinde değildir.
+      </footer>
+    </div>
   </main>
 </body>
 </html>`;
@@ -344,7 +655,9 @@ function createReportHtml(
 export function openPrintableBusinessReport(
   input: BusinessReportInput
 ): void {
-  const html = createReportHtml(input);
+  const html =
+    createPrintableBusinessReportHtml(input);
+
   const blob = new Blob([html], {
     type: 'text/html;charset=utf-8'
   });
@@ -354,6 +667,7 @@ export function openPrintableBusinessReport(
 
   if (!reportWindow) {
     URL.revokeObjectURL(url);
+
     throw new Error(
       'Rapor penceresi açılamadı. Açılır pencere izni verin.'
     );
