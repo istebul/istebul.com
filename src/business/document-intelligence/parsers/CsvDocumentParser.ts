@@ -122,7 +122,11 @@ function buildTable(text: string): ParsedDocumentTable {
 }
 
 export class CsvDocumentParser implements DocumentParser {
-  constructor(private readonly loader: CsvDocumentLoader) {}
+  private readonly loader: CsvDocumentLoader;
+
+  constructor(loader: CsvDocumentLoader) {
+    this.loader = loader;
+  }
 
   supports(businessDocument: BusinessDocument): boolean {
     return businessDocument.format === 'csv';

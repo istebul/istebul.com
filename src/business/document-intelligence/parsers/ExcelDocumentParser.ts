@@ -83,7 +83,11 @@ function worksheetToTable(
 }
 
 export class ExcelDocumentParser implements DocumentParser {
-  constructor(private readonly loader: ExcelDocumentLoader) {}
+  private readonly loader: ExcelDocumentLoader;
+
+  constructor(loader: ExcelDocumentLoader) {
+    this.loader = loader;
+  }
 
   supports(businessDocument: BusinessDocument): boolean {
     return (

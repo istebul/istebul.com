@@ -32,6 +32,12 @@ export { createBusinessActivityListElement } from './components/BusinessActivity
 export { createBusinessAiSuggestionsElement } from './components/BusinessAiSuggestions';
 export { createBusinessQuickActionsElement } from './components/BusinessQuickActions';
 export { createBusinessAdvisorPanelElement } from './components/BusinessAdvisorPanel';
+export {
+  createBusinessExecutiveCopilotPanelElement
+} from './components/BusinessExecutiveCopilotPanel';
+export type {
+  BusinessExecutiveCopilotPanelProps
+} from './components/BusinessExecutiveCopilotPanel';
 export { createBusinessLayoutShell } from './layouts/BusinessLayout';
 export {
   MOCK_BUSINESS_RAW_DATA,
@@ -1513,3 +1519,22 @@ export type {
   RuntimeProviderLifecycle
 } from './runtime';
 
+/** EPIC-800A — Executive Copilot */
+export {
+  ExecutiveCopilotBuilder,
+  buildExecutiveCopilotResult
+} from './executive-copilot';
+
+export type {
+  ExecutiveCopilotBuilderInput,
+  ExecutiveCopilotAction,
+  ExecutiveCopilotActionSource,
+  ExecutiveCopilotConfidence,
+  ExecutiveCopilotConfidenceLevel,
+  ExecutiveCopilotHealth,
+  ExecutiveCopilotHealthStatus,
+  ExecutiveCopilotPriority,
+  ExecutiveCopilotResult,
+  ExecutiveCopilotSignal,
+  ExecutiveCopilotTrend
+} from './executive-copilot';

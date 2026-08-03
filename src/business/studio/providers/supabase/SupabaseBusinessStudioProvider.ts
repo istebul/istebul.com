@@ -37,7 +37,11 @@ function mapProject(row: ProjectRow): BusinessStudioProject {
 export class SupabaseBusinessStudioProvider
   implements BusinessStudioProvider
 {
-  constructor(private readonly client: SupabaseClient) {}
+  private readonly client: SupabaseClient;
+
+  constructor(client: SupabaseClient) {
+    this.client = client;
+  }
 
   async listProjects(
     businessId: string,
