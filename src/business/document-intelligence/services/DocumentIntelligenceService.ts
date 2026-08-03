@@ -3,7 +3,11 @@ import type { ParsedDocument } from '../models/ParsedDocument';
 import type { DocumentParser } from '../parsers/DocumentParser';
 
 export class DocumentIntelligenceService {
-  constructor(private readonly parsers: DocumentParser[]) {}
+  private readonly parsers: DocumentParser[];
+
+  constructor(parsers: DocumentParser[]) {
+    this.parsers = parsers;
+  }
 
   async parse(document: BusinessDocument): Promise<ParsedDocument> {
     const parser = this.parsers.find((candidate) =>

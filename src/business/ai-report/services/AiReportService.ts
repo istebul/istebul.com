@@ -68,7 +68,11 @@ function parseReport(
 }
 
 export class AiReportService {
-  constructor(private readonly provider: AiTextProvider) {}
+  private readonly provider: AiTextProvider;
+
+  constructor(provider: AiTextProvider) {
+    this.provider = provider;
+  }
 
   async generate(
     input: GenerateAiReportInput

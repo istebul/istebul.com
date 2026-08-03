@@ -28,7 +28,11 @@ export interface SupabaseLikeClient {
 export class SupabaseBusinessSnapshotProvider
   implements BusinessSnapshotProvider
 {
-  constructor(private readonly client: SupabaseLikeClient) {}
+  private readonly client: SupabaseLikeClient;
+
+  constructor(client: SupabaseLikeClient) {
+    this.client = client;
+  }
 
   async getSnapshot(businessId: string): Promise<BusinessSnapshot> {
     const { data, error } = await this.client

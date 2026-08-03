@@ -138,7 +138,11 @@ function resolveMimeType(
 }
 
 export class SupabaseBusinessDocumentUploadProvider {
-  constructor(private readonly client: SupabaseClient) {}
+  private readonly client: SupabaseClient;
+
+  constructor(client: SupabaseClient) {
+    this.client = client;
+  }
 
   async uploadDocument(
     input: UploadBusinessDocumentInput

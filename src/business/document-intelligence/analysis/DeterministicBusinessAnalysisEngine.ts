@@ -126,14 +126,22 @@ function buildSummary(
 export class DeterministicBusinessAnalysisEngine
   implements BusinessAnalysisEngine
 {
+  private readonly kpiExtractor: BusinessKpiExtractor;
+  private readonly scorer: BusinessHealthScorer;
+  private readonly recommendationEngine: BusinessRecommendationEngine;
+  private readonly executiveInsightEngine: ExecutiveInsightEngine;
+
   constructor(
-    private readonly kpiExtractor = new BusinessKpiExtractor(),
-    private readonly scorer = new BusinessHealthScorer(),
-    private readonly recommendationEngine =
-      new BusinessRecommendationEngine(),
-    private readonly executiveInsightEngine =
-      new ExecutiveInsightEngine()
-  ) {}
+    kpiExtractor = new BusinessKpiExtractor(),
+    scorer = new BusinessHealthScorer(),
+    recommendationEngine = new BusinessRecommendationEngine(),
+    executiveInsightEngine = new ExecutiveInsightEngine()
+  ) {
+    this.kpiExtractor = kpiExtractor;
+    this.scorer = scorer;
+    this.recommendationEngine = recommendationEngine;
+    this.executiveInsightEngine = executiveInsightEngine;
+  }
 
   async analyze(
     document: NormalizedDocument,

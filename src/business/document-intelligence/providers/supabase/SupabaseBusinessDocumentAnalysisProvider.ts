@@ -57,7 +57,11 @@ function mapAnalysisRow(
 }
 
 export class SupabaseBusinessDocumentAnalysisProvider {
-  constructor(private readonly client: SupabaseClient) {}
+  private readonly client: SupabaseClient;
+
+  constructor(client: SupabaseClient) {
+    this.client = client;
+  }
 
   async updateDocumentStatus(
     documentId: string,
