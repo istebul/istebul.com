@@ -32,6 +32,12 @@ export { createBusinessActivityListElement } from './components/BusinessActivity
 export { createBusinessAiSuggestionsElement } from './components/BusinessAiSuggestions';
 export { createBusinessQuickActionsElement } from './components/BusinessQuickActions';
 export { createBusinessAdvisorPanelElement } from './components/BusinessAdvisorPanel';
+export {
+  createBusinessExecutiveCopilotPanelElement
+} from './components/BusinessExecutiveCopilotPanel';
+export type {
+  BusinessExecutiveCopilotPanelProps
+} from './components/BusinessExecutiveCopilotPanel';
 export { createBusinessLayoutShell } from './layouts/BusinessLayout';
 export {
   MOCK_BUSINESS_RAW_DATA,

@@ -9,6 +9,11 @@ import { createBusinessExecutiveHealthPanelElement } from '../components/Busines
 import { createBusinessExecutiveHighlightsElement } from '../components/BusinessExecutiveHighlights';
 import { createBusinessBenchmarkForecastPanelElement } from '../components/BusinessBenchmarkForecastPanel';
 import { createBusinessAlertScenarioPanelElement } from '../components/BusinessAlertScenarioPanel';
+import { createBusinessExecutiveCopilotPanelElement } from '../components/BusinessExecutiveCopilotPanel';
+import {
+  buildExecutiveCopilotResult,
+  type ExecutiveCopilotResult
+} from '../executive-copilot';
 import { runBusinessIntelligenceEngine } from '../intelligence/pipeline/BusinessIntelligenceEngine';
 import type { BusinessRuntime } from '../app/BusinessRuntime';
 import type {
@@ -158,6 +163,7 @@ function mapAnalysisToDashboard(
 function renderDashboard(
   data: BusinessDashboardMockData,
   advisor: BusinessAdvisorResult,
+  copilot?: ExecutiveCopilotResult,
   score?: number,
   comparison?: BusinessPeriodComparisonResult,
   benchmark?: BusinessBenchmarkResult,
@@ -179,6 +185,14 @@ function renderDashboard(
       summary: data.summary
     })
   );
+
+  if (copilot) {
+    root.appendChild(
+      createBusinessExecutiveCopilotPanelElement({
+        copilot
+      })
+    );
+  }
 
   if (typeof score === 'number') {
     root.appendChild(
@@ -401,6 +415,15 @@ export function createBusinessDashboardPageElement(
       ])
     : undefined;
 
+  const copilot = options.analysis
+    ? buildExecutiveCopilotResult({
+        analysis: options.analysis,
+        comparison,
+        alerts,
+        forecast
+      })
+    : undefined;
+
   const data = options.analysis
     ? mapAnalysisToDashboard(
         options.analysis,
@@ -415,6 +438,7 @@ export function createBusinessDashboardPageElement(
   return renderDashboard(
     data,
     advisor,
+    copilot,
     options.analysis?.score,
     comparison,
     benchmark,
