@@ -1513,3 +1513,22 @@ export type {
   RuntimeProviderLifecycle
 } from './runtime';
 
+/** EPIC-800A — Executive Copilot */
+export {
+  ExecutiveCopilotBuilder,
+  buildExecutiveCopilotResult
+} from './executive-copilot';
+
+export type {
+  ExecutiveCopilotBuilderInput,
+  ExecutiveCopilotAction,
+  ExecutiveCopilotActionSource,
+  ExecutiveCopilotConfidence,
+  ExecutiveCopilotConfidenceLevel,
+  ExecutiveCopilotHealth,
+  ExecutiveCopilotHealthStatus,
+  ExecutiveCopilotPriority,
+  ExecutiveCopilotResult,
+  ExecutiveCopilotSignal,
+  ExecutiveCopilotTrend
+} from './executive-copilot';
