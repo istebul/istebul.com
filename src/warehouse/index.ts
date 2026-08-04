@@ -211,3 +211,16 @@ export * from "./services/ReservationRepository";
 export * from "./services/InMemoryReservationRepository";
 export * from "./services/ReservationValidator";
 export * from "./services/ReservationService";
+
+export * from "./types/ReceivingStatus";
+export * from "./types/ReceivingSource";
+export * from "./types/ReceivingException";
+export * from "./types/ReceivingItem";
+export * from "./types/Receiving";
+export * from "./types/ReceivingDocument";
+export * from "./types/ReceivingTask";
+
+export * from "./services/ReceivingRepository";
+export * from "./services/InMemoryReceivingRepository";
+export * from "./services/ReceivingValidator";
+export * from "./services/ReceivingService";
