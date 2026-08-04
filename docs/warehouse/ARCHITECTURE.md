@@ -80,3 +80,24 @@ Stok özetleri performans amacıyla tutulabilir ancak ana kayıt olarak kabul ed
 - İşlem ve değişiklik geçmişi
 - Kritik operasyonlarda doğrulama
 - Hassas işlemlerde çift kontrol desteği
+
+## Dil ve Terminoloji Standardı
+
+WarehouseIQ kullanıcı arayüzü tamamen Türkçe olacaktır.
+
+- Tüm menüler Türkçe
+- Tüm butonlar Türkçe
+- Tüm yönergeler Türkçe
+- Tüm bildirimler Türkçe
+- Tüm hata mesajları Türkçe
+- Tüm rapor başlıkları Türkçe
+- Türkçe karakterler eksiksiz kullanılacaktır
+
+Kod, API ve veritabanı alan adları teknik sürdürülebilirlik için İngilizce olabilir.
+
+Örnek:
+
+- Teknik değer: `temporarily_closed`
+- Kullanıcıya gösterilen değer: `Geçici Olarak Kapalı`
+
+Ham teknik değerler kullanıcı arayüzünde doğrudan gösterilmeyecektir.
