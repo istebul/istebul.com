@@ -188,3 +188,26 @@ export {
   resolveInventoryDirection,
   validateCreateInventoryMovementInput,
 } from "./utils/inventoryValidation";
+
+export * from "./services/InventoryRepository";
+export * from "./services/InMemoryInventoryRepository";
+export * from "./services/InventoryCalculator";
+export * from "./services/InventoryLedger";
+export * from "./services/InventoryService";
+
+export type {
+  InventoryAvailability,
+  InventoryAvailabilityFilter,
+} from "./types/InventoryAvailability";
+
+export type {
+  CreateReservationAllocationInput,
+  ReservationAllocation,
+  ReservationAllocationResult,
+} from "./types/ReservationAllocation";
+
+export * from "./services/AvailabilityCalculator";
+export * from "./services/ReservationRepository";
+export * from "./services/InMemoryReservationRepository";
+export * from "./services/ReservationValidator";
+export * from "./services/ReservationService";
