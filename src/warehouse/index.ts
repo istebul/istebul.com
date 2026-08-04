@@ -121,3 +121,70 @@ export {
   normalizeProductCode,
   normalizeSkuCode,
 } from "./utils/productValidation";
+
+export type {
+  CreateInventoryMovementInput,
+  InventoryMovement,
+  InventoryReference,
+  InventoryTracking,
+} from "./types/InventoryMovement";
+
+export type {
+  InventoryBalance,
+  InventoryBalanceFilter,
+  InventoryBalanceKey,
+} from "./types/InventoryBalance";
+
+export type {
+  InventoryReservation,
+  InventoryReservationStatus,
+} from "./types/InventoryReservation";
+
+export {
+  INVENTORY_RESERVATION_STATUSES,
+  INVENTORY_RESERVATION_STATUS_LABELS,
+  isInventoryReservationStatus,
+} from "./types/InventoryReservation";
+
+export {
+  INVENTORY_MOVEMENT_TYPES,
+  INVENTORY_MOVEMENT_TYPE_LABELS,
+  isInventoryMovementType,
+} from "./types/InventoryMovementType";
+
+export type {
+  InventoryMovementType,
+} from "./types/InventoryMovementType";
+
+export {
+  INVENTORY_DIRECTIONS,
+  INVENTORY_DIRECTION_LABELS,
+  isInventoryDirection,
+} from "./types/InventoryDirection";
+
+export type {
+  InventoryDirection,
+} from "./types/InventoryDirection";
+
+export {
+  INVENTORY_STOCK_STATUSES,
+  INVENTORY_STOCK_STATUS_LABELS,
+  isInventoryStockStatus,
+} from "./types/InventoryStockStatus";
+
+export type {
+  InventoryStockStatus,
+} from "./types/InventoryStockStatus";
+
+export {
+  InventoryInsufficientStockError,
+  InventoryMovementConflictError,
+  InventoryMovementNotFoundError,
+  InventoryReservationNotFoundError,
+  InventoryValidationError,
+} from "./types/InventoryErrors";
+
+export {
+  resolveInventoryDirection,
+  validateCreateInventoryMovementInput,
+} from "./utils/inventoryValidation";
