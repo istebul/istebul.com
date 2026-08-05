@@ -224,3 +224,19 @@ export * from "./services/ReceivingRepository";
 export * from "./services/InMemoryReceivingRepository";
 export * from "./services/ReceivingValidator";
 export * from "./services/ReceivingService";
+
+export * from "./types/QualityInspectionStatus";
+export * from "./types/QualityDecision";
+export * from "./types/QualityControlType";
+export * from "./types/QualityRule";
+export * from "./types/QualitySample";
+export * from "./types/QualityException";
+export * from "./types/QualityInspectionItem";
+export * from "./types/QualityInspection";
+export * from "./types/QualityDocument";
+export * from "./types/QualityTask";
+
+export * from "./services/QualityInspectionRepository";
+export * from "./services/InMemoryQualityInspectionRepository";
+export * from "./services/QualityInspectionValidator";
+export * from "./services/QualityInspectionService";
