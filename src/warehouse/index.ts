@@ -240,3 +240,19 @@ export * from "./services/QualityInspectionRepository";
 export * from "./services/InMemoryQualityInspectionRepository";
 export * from "./services/QualityInspectionValidator";
 export * from "./services/QualityInspectionService";
+
+export * from "./types/PutawayStatus";
+export * from "./types/PutawayStrategy";
+export * from "./types/PutawayException";
+export * from "./types/PutawayRule";
+export * from "./types/PutawaySuggestion";
+export * from "./types/PutawayTask";
+export * from "./types/PutawayItem";
+export * from "./types/Putaway";
+
+export * from "./services/PutawayRepository";
+export * from "./services/InMemoryPutawayRepository";
+export * from "./services/PutawayValidator";
+export * from "./services/PutawayLocationEvaluator";
+export * from "./services/PutawaySuggestionService";
+export * from "./services/PutawayService";
