@@ -256,3 +256,21 @@ export * from "./services/PutawayValidator";
 export * from "./services/PutawayLocationEvaluator";
 export * from "./services/PutawaySuggestionService";
 export * from "./services/PutawayService";
+
+export * from "./types/PickingStatus";
+export * from "./types/PickingStrategy";
+export * from "./types/PickingException";
+export * from "./types/PickingTask";
+export * from "./types/PickingRoute";
+export * from "./types/PickingSuggestion";
+export * from "./types/PickingItem";
+export * from "./types/Picking";
+export * from "./types/PickingWave";
+export * from "./types/PickingBatch";
+
+export * from "./services/PickingRepository";
+export * from "./services/InMemoryPickingRepository";
+export * from "./services/PickingValidator";
+export * from "./services/PickingSuggestionService";
+export * from "./services/PickingRouteOptimizer";
+export * from "./services/PickingService";
