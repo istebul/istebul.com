@@ -10,6 +10,9 @@ concurrency:
   group: production-deploy-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   CF_PAGES_PROJECT: istebul-com
   SUPABASE_PROJECT_REF: hjfrcdstbyonmgatgwcc
