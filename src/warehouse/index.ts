@@ -370,3 +370,30 @@ export * from "./services/ReplenishmentOptimizer";
 export * from "./services/ReplenishmentAllocationService";
 export * from "./services/ReplenishmentPerformanceService";
 export * from "./services/ReplenishmentService";
+
+
+// Wave Planning Engine
+export * from "./types/WaveStatus";
+export * from "./types/WaveStrategy";
+export * from "./types/WaveException";
+export * from "./types/WaveOrder";
+export * from "./types/WaveItem";
+export * from "./types/WaveAllocation";
+export * from "./types/WaveTask";
+export * from "./types/WaveCapacity";
+export * from "./types/WaveRelease";
+export * from "./types/WaveRule";
+export * from "./types/WaveSchedule";
+export * from "./types/WavePerformance";
+export * from "./types/Wave";
+
+export * from "./services/WaveRepository";
+export * from "./services/InMemoryWaveRepository";
+export * from "./services/WaveValidator";
+export * from "./services/WaveCapacityService";
+export * from "./services/WaveOptimizer";
+export * from "./services/WaveAllocationService";
+export * from "./services/WavePlanningService";
+export * from "./services/WaveReleaseService";
+export * from "./services/WavePerformanceService";
+export * from "./services/WaveService";
