@@ -346,3 +346,27 @@ export * from "./services/CycleCountAccuracyService";
 export * from "./services/CycleCountAdjustmentService";
 export * from "./services/CycleCountPlanningService";
 export * from "./services/CycleCountService";
+
+
+export * from "./types/ReplenishmentStatus";
+export * from "./types/ReplenishmentStrategy";
+export * from "./types/ReplenishmentSource";
+export * from "./types/ReplenishmentException";
+export * from "./types/ReplenishmentDemand";
+export * from "./types/ReplenishmentAllocation";
+export * from "./types/ReplenishmentItem";
+export * from "./types/ReplenishmentTask";
+export * from "./types/ReplenishmentSuggestion";
+export * from "./types/ReplenishmentPerformance";
+export * from "./types/ReplenishmentRule";
+export * from "./types/Replenishment";
+
+export * from "./services/ReplenishmentRepository";
+export * from "./services/InMemoryReplenishmentRepository";
+export * from "./services/ReplenishmentValidator";
+export * from "./services/ReplenishmentDemandService";
+export * from "./services/ReplenishmentSuggestionService";
+export * from "./services/ReplenishmentOptimizer";
+export * from "./services/ReplenishmentAllocationService";
+export * from "./services/ReplenishmentPerformanceService";
+export * from "./services/ReplenishmentService";
