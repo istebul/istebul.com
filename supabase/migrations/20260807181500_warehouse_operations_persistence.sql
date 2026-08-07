@@ -133,7 +133,7 @@ create table if not exists public.warehouse_operations_process_volumes (
   constraint warehouse_operations_process_volumes_count_check
     check (operation_count >= 0),
   constraint warehouse_operations_process_volumes_unique
-    unique (account_id, warehouse_id, period_start, period_end, process)
+    unique nulls not distinct (account_id, warehouse_id, period_start, period_end, process)
 );
 
 create index if not exists warehouse_operations_dashboard_latest_idx
