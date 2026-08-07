@@ -408,3 +408,10 @@ export * from "./services/OperationsDashboardService";
 // Operations Reporting
 export * from "./types/OperationsReport";
 export * from "./services/OperationsReportingService";
+
+// Operations Exception Analytics
+export * from "./types/OperationsExceptionAnalytics";
+
+export * from "./services/OperationsExceptionRepository";
+export * from "./services/InMemoryOperationsExceptionRepository";
+export * from "./services/OperationsExceptionAnalyticsService";
