@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="WarehouseIQ depo operasyon merkezi">
+  <title>WarehouseIQ · Operasyon Merkezi</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/warehouse/operations-center.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="/warehouse/"><b>W</b><span><strong>WarehouseIQ</strong><small>Akıllı Depo Yönetimi</small></span></a>
+    <nav>
+      <p>OPERASYON</p>
+      <a class="active" href="#genel">⌂ Genel Bakış</a>
+      <a href="#stok">▦ Stok Yönetimi</a>
+      <a href="#surecler">⇥ Mal Kabul</a>
+      <a href="#surecler">⌑ Yerleştirme</a>
+      <a href="#surecler">✓ Toplama</a>
+      <a href="#surecler">□ Paketleme</a>
+      <a href="#surecler">→ Sevkiyat</a>
+      <a href="#uyarilar">! Uyarılar</a>
+      <p>YÖNETİM</p>
+      <a href="#raporlar">▥ Raporlar</a>
+      <a href="#aksiyonlar">↗ Yönetici Aksiyonları</a>
+    </nav>
+    <div class="ready"><i></i><span><strong>Sistem hazır</strong><small>Operasyon görünümü</small></span></div>
+  </aside>
+
+  <main>
+    <header class="top">
+      <div>
+        <em>İSTEBUL · WAREHOUSEIQ</em>
+        <h1>Operasyon Merkezi</h1>
+        <p>Depo performansını, riskleri ve öncelikli aksiyonları tek ekranda izleyin.</p>
+      </div>
+      <div class="top-actions">
+        <span class="demo">Gösterim verisi</span>
+        <select id="depo" aria-label="Depo seçimi">
+          <option>İzmir Merkez Depo</option>
+          <option>Kemalpaşa Operasyon Deposu</option>
+          <option>Torbalı Dağıtım Deposu</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="note">
+      <span><strong>İlk görsel sürüm.</strong> Bu ekrandaki değerler arayüz doğrulaması için gösterim verisidir. Gerçek WarehouseIQ servis bağlantısı sonraki aşamada yapılacaktır.</span>
+      <span id="zaman">Son güncelleme: —</span>
+    </div>
+
+    <section id="genel">
+      <div class="heading">
+        <div><em>BUGÜN</em><h2>Operasyon sağlığı</h2></div>
+        <div class="tabs">
+          <button class="active" data-period="today">Bugün</button>
+          <button data-period="7d">7 Gün</button>
+          <button data-period="30d">30 Gün</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <article><span>Operasyon Sağlık Skoru</span><strong data-kpi="health">92</strong><small class="good">▲ 4,2 puan</small></article>
+        <article><span>Zamanında Sevkiyat</span><strong data-kpi="dispatch">96,4%</strong><small class="good">Hedef %95</small></article>
+        <article><span>Stok Doğruluğu</span><strong data-kpi="inventory">99,2%</strong><small class="good">Hedef %99</small></article>
+        <article><span>Kapasite Kullanımı</span><strong data-kpi="capacity">84,7%</strong><small>Dengeli</small></article>
+        <article><span>Görev Tamamlama</span><strong data-kpi="tasks">94,8%</strong><small>1.284 görev</small></article>
+        <article><span>Personel Verimliliği</span><strong data-kpi="labor">88,6%</strong><small>42 aktif çalışan</small></article>
+      </div>
+    </section>
+
+    <div class="grid">
+      <article class="panel wide" id="surecler">
+        <div class="heading"><div><em>SÜREÇ PERFORMANSI</em><h2>Operasyon akışı</h2></div><small>Bugünkü gerçekleşme</small></div>
+        <div class="process">
+          <div><b>Mal Kabul</b><span><i style="width:95.5%"></i></span><strong>%95,5</strong></div>
+          <div><b>Yerleştirme</b><span><i style="width:94.4%"></i></span><strong>%94,4</strong></div>
+          <div><b>Toplama</b><span><i style="width:97.5%"></i></span><strong>%97,5</strong></div>
+          <div><b>Paketleme</b><span><i style="width:95.5%"></i></span><strong>%95,5</strong></div>
+          <div><b>Sevkiyat</b><span><i style="width:96.4%"></i></span><strong>%96,4</strong></div>
+        </div>
+      </article>
+
+      <article class="panel" id="stok">
+        <div class="heading"><div><em>KAPASİTE</em><h2>Depo doluluk</h2></div></div>
+        <div class="capacity">
+          <div class="ring"><span><b>84,7%</b><small>kullanım</small></span></div>
+          <dl>
+            <div><dt>Toplam kapasite</dt><dd>24.800 palet</dd></div>
+            <div><dt>Kullanılan</dt><dd>21.006 palet</dd></div>
+            <div><dt>Kullanılabilir</dt><dd>3.794 palet</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="panel" id="uyarilar">
+        <div class="heading"><div><em>RİSKLER</em><h2>Kritik uyarılar</h2></div><span class="count">4 açık</span></div>
+        <div class="alerts">
+          <div class="critical"><i></i><span><b>Toplama darboğazı</b><small>A-12 koridorunda iş yükü planın %18 üzerinde.</small></span></div>
+          <div class="warning"><i></i><span><b>Kapasite yaklaşımı</b><small>Soğuk alan kapasitesi %91 seviyesine ulaştı.</small></span></div>
+          <div class="warning"><i></i><span><b>Sayım farkı</b><small>3 SKU doğruluk toleransı dışında.</small></span></div>
+          <div><i></i><span><b>Taşıyıcı gecikmesi</b><small>İki sevkiyat 22 dakika gecikebilir.</small></span></div>
+        </div>
+      </article>
+
+      <article class="panel wide" id="raporlar">
+        <div class="heading"><div><em>7 GÜNLÜK TREND</em><h2>Operasyon sağlık skoru</h2></div><small class="good">+6,8 puan</small></div>
+        <div class="chart" id="chart" aria-label="Operasyon sağlık skoru grafiği"></div>
+      </article>
+
+      <article class="panel">
+        <div class="heading"><div><em>DEPOLAR</em><h2>Performans sıralaması</h2></div></div>
+        <div class="ranking">
+          <div><b>1</b><span><strong>İzmir Merkez</strong><small>Sağlıklı</small></span><em>92</em></div>
+          <div><b>2</b><span><strong>Kemalpaşa</strong><small>Sağlıklı</small></span><em>89</em></div>
+          <div><b>3</b><span><strong>Torbalı</strong><small>Dikkat</small></span><em class="watch">78</em></div>
+        </div>
+      </article>
+
+      <article class="panel full" id="aksiyonlar">
+        <div class="heading"><div><em>YÖNETİCİ ÖNCELİKLERİ</em><h2>Bugünün aksiyon planı</h2></div></div>
+        <div class="actions">
+          <div class="now"><small>HEMEN</small><b>A-12 toplama darboğazını azaltın</b><p>İki personeli A-12 bölgesine kaydırın ve görev dağılımını yeniden dengeleyin.</p><span>Beklenen etki: 35 dk kazanım</span></div>
+          <div><small>YÜKSEK</small><b>Soğuk alan kapasitesini dengeleyin</b><p>Uygun stokları alternatif sıcaklık kontrollü lokasyonlara taşıyın.</p><span>Beklenen etki: -%6 doluluk</span></div>
+          <div><small>ORTA</small><b>Sayım farklarının kök nedenini kapatın</b><p>Üç SKU için son hareketleri ve rezervasyon risklerini kontrol edin.</p><span>Beklenen etki: %99,5 doğruluk</span></div>
+        </div>
+      </article>
+    </div>
+  </main>
+</div>
+<script src="/js/warehouse/operations-center.js" defer></script>
+</body>
+</html>
