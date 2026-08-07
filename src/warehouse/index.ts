@@ -397,3 +397,14 @@ export * from "./services/WavePlanningService";
 export * from "./services/WaveReleaseService";
 export * from "./services/WavePerformanceService";
 export * from "./services/WaveService";
+
+// Operations Dashboard
+export * from "./types/OperationsDashboard";
+
+export * from "./services/OperationsDashboardRepository";
+export * from "./services/InMemoryOperationsDashboardRepository";
+export * from "./services/OperationsDashboardService";
+
+// Operations Reporting
+export * from "./types/OperationsReport";
+export * from "./services/OperationsReportingService";
