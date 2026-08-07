@@ -418,3 +418,7 @@ export * from "./services/OperationsExceptionAnalyticsService";
 
 export * from "./services/SupabaseOperationsDashboardRepository";
 export * from "./services/SupabaseOperationsExceptionRepository";
+
+export * from "./services/OperationsProcessVolumeRepository";
+export * from "./services/SupabaseOperationsProcessVolumeRepository";
+export * from "./services/OperationsExceptionAnalyticsQueryService";
