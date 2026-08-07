@@ -313,10 +313,10 @@ export class OperationsReportingService {
         );
 
     const firstValue =
-      points[0].value;
+      points[0]!.value;
 
     const lastValue =
-      points[points.length - 1].value;
+      points[points.length - 1]!.value;
 
     return {
       tenantId:

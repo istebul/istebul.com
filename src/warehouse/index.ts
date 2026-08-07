@@ -415,3 +415,6 @@ export * from "./types/OperationsExceptionAnalytics";
 export * from "./services/OperationsExceptionRepository";
 export * from "./services/InMemoryOperationsExceptionRepository";
 export * from "./services/OperationsExceptionAnalyticsService";
+
+export * from "./services/SupabaseOperationsDashboardRepository";
+export * from "./services/SupabaseOperationsExceptionRepository";
