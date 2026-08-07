@@ -233,9 +233,8 @@ export class SupabaseOperationsDashboardRepository
     const { data, error } =
       await this.client
         .from(TABLE)
-        .upsert(
+        .insert(
           toDashboardRow(snapshot),
-          { onConflict: "id" },
         )
         .select(SELECT)
         .single();
