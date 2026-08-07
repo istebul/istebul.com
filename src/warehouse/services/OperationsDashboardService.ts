@@ -144,8 +144,12 @@ export class OperationsDashboardService {
       this.buildAlerts({
         idPrefix: snapshotId,
         tenantId: normalized.tenantId,
-        warehouseId:
-          normalized.warehouseId,
+        ...(normalized.warehouseId !== undefined
+          ? {
+              warehouseId:
+                normalized.warehouseId,
+            }
+          : {}),
         calculatedAt,
         onTimeDispatchRate,
         taskExceptionRate,
