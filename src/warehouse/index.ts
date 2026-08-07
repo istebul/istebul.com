@@ -404,3 +404,7 @@ export * from "./types/OperationsDashboard";
 export * from "./services/OperationsDashboardRepository";
 export * from "./services/InMemoryOperationsDashboardRepository";
 export * from "./services/OperationsDashboardService";
+
+// Operations Reporting
+export * from "./types/OperationsReport";
+export * from "./services/OperationsReportingService";
