@@ -29,6 +29,10 @@ class FakeQuery {
     return this.record("select", ...args);
   }
 
+  insert(...args) {
+    return this.record("insert", ...args);
+  }
+
   upsert(...args) {
     return this.record("upsert", ...args);
   }
@@ -242,19 +246,28 @@ test(
     );
     assert.equal(saved.healthScore, 93);
 
-    const upsert =
+    const insert =
       client.calls.find(
         (call) =>
-          call.method === "upsert",
+          call.method === "insert",
       );
 
+    assert.ok(insert);
     assert.equal(
-      upsert.args[0].account_id,
+      insert.args[0].account_id,
       "tenant-1",
     );
     assert.equal(
-      upsert.args[0].warehouse_id,
+      insert.args[0].warehouse_id,
       "warehouse-1",
+    );
+
+    assert.equal(
+      client.calls.some(
+        (call) =>
+          call.method === "upsert",
+      ),
+      false,
     );
   },
 );
