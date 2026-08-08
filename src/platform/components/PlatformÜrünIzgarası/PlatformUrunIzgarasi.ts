@@ -9,7 +9,7 @@ import type { PlatformProduct } from '../../types/platform-product.ts';
 import { createPlatformUrunKartiElement } from '../PlatformÜrünKartı/PlatformUrunKarti.ts';
 
 /** Desteklenen maksimum sütun sayısı (responsive üst sınır). */
-export type PlatformUrunIzgarasiColumns = 1 | 2 | 3;
+export type PlatformUrunIzgarasiColumns = 1 | 2 | 3 | 4;
 
 export type PlatformUrunIzgarasiViewState = 'ready' | 'loading' | 'empty';
 

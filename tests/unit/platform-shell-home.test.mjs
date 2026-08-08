@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 const root = process.cwd();
 
@@ -252,4 +253,15 @@ test('initPlatformLanding mounts experience without global İncele override', as
 
   const h1s = stub.findAll(mount, (n) => n.tagName === 'H1');
   assert.equal(h1s.length, 1, 'Platform Landing owns H1');
+});
+
+test('PlatformÜrünIzgarası dört ürün için 4 sütunu tip olarak destekler', async () => {
+  const gridSource = await readFile(
+    new URL('../../src/platform/components/PlatformÜrünIzgarası/PlatformUrunIzgarasi.ts', import.meta.url),
+    'utf8'
+  );
+  assert.match(
+    gridSource,
+    /PlatformUrunIzgarasiColumns = 1 \| 2 \| 3 \| 4/
+  );
 });
