@@ -54,6 +54,7 @@ const baseMarketingCopy = {
       productAi: 'İSTEBUL AI',
       productGarson: 'GarsonAI',
       productBusiness: 'İSTEBUL Business',
+      productWarehouse: 'WarehouseIQ',
       resourcesMenu: 'Kaynaklar menüsü',
       dashboard: 'Dashboard',
       myAccount: 'Hesabım',

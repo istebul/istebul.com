@@ -142,11 +142,17 @@ test('preview product CTA overrides match PR-564 copy', async () => {
   assert.equal(byId.garsonai.shortDescription, 'AI Restoran İşletim Sistemi');
   assert.equal(byId.garsonai.url, '/garson/');
 
-  assert.equal(byId.business.ctaLabel, 'Yol Haritasını İncele');
-  assert.equal(byId.business.statusLabel, 'Geliştirme Aşamasında');
+  assert.equal(byId.business.ctaLabel, 'İSTEBUL Business’a Git');
+  assert.equal(byId.business.statusLabel, 'Canlı');
   assert.equal(byId.business.slogan, 'İşletmeler');
   assert.equal(byId.business.shortDescription, 'İş zekâsı platformu');
   assert.equal(byId.business.url, '/business/');
+
+  assert.equal(byId.warehouseiq.ctaLabel, 'Operasyon Merkezini Aç');
+  assert.equal(byId.warehouseiq.statusLabel, 'Pilot');
+  assert.equal(byId.warehouseiq.slogan, 'Depo ve lojistik ekipleri');
+  assert.equal(byId.warehouseiq.shortDescription, 'Akıllı Depo Yönetimi');
+  assert.equal(byId.warehouseiq.url, '/warehouse/');
 });
 
 test('initPlatformLandingPreview mounts H1 hero and preview CTAs', async () => {
@@ -162,9 +168,10 @@ test('initPlatformLandingPreview mounts H1 hero and preview CTAs', async () => {
   const texts = stub.collectText(mount);
   assert.ok(texts.includes('Karşılaştırmaya Başla'));
   assert.ok(texts.includes('Restoranımı Dijitalleştir'));
-  assert.ok(texts.includes('Yol Haritasını İncele'));
+  assert.ok(texts.includes('İSTEBUL Business’a Git'));
+  assert.ok(texts.includes('Operasyon Merkezini Aç'));
   assert.ok(texts.includes('Bireysel kullanıcılar'));
-  assert.ok(texts.includes('Üç bağımsız ürün, tek platform'));
+  assert.ok(texts.includes('Dört bağımsız ürün, tek platform'));
 
   const h1s = stub.findAll(mount, (n) => n.tagName === 'H1');
   assert.equal(h1s.length, 1, 'preview page owns a single H1');

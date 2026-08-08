@@ -120,11 +120,24 @@ test('platform-shell-landing runtime module and catalog wire flag', async () => 
   );
   assert.equal(PLATFORM_CATALOG.wiredToRuntime, true);
   assert.equal(PLATFORM_CATALOG.cutoverActive, true);
-  assert.ok(PLATFORM_CATALOG.products.length >= 3);
+  assert.ok(PLATFORM_CATALOG.products.length >= 4);
   assert.equal(
     PLATFORM_CATALOG.products.find((p) => p.id === 'istebul-ai')?.url,
     '/ai/'
   );
+});
+
+test('WarehouseIQ live landing product contract', async () => {
+  const { getPlatformLandingProducts } = await import('../../js/runtime/platform-shell-landing.js');
+  const products = getPlatformLandingProducts();
+  const byId = Object.fromEntries(products.map((product) => [product.id, product]));
+
+  assert.equal(products.length, 4);
+  assert.equal(byId.warehouseiq.url, '/warehouse/');
+  assert.equal(byId.warehouseiq.statusLabel, 'Pilot');
+  assert.equal(byId.warehouseiq.slogan, 'Depo ve lojistik ekipleri');
+  assert.equal(byId.warehouseiq.shortDescription, 'Akıllı Depo Yönetimi');
+  assert.equal(byId.warehouseiq.ctaLabel, 'Operasyon Merkezini Aç');
 });
 
 test('PlatformHero headingLevel 1 owns Platform Landing H1', async () => {
@@ -148,8 +161,8 @@ test('PLATFORM_CATALOG products expose required PR-553 CTA labels', async () => 
   assert.equal(byId['istebul-ai'].ctaLabel, 'Karşılaştırmaya Başla');
   assert.equal(byId.garsonai.ctaLabel, 'Restoranını Yönet');
   assert.equal(byId.business.ctaLabel, 'Gelişmeleri İncele');
-  assert.equal(byId.business.status, 'gelistirme');
-  assert.match(byId.business.statusLabel, /Geliştirme/i);
+  assert.equal(byId.business.status, 'beta');
+  assert.match(byId.business.statusLabel, /Beta/i);
 });
 
 test('PlatformHero experience renders per-product CTAs and Business status', async () => {
@@ -178,13 +191,13 @@ test('PlatformHero experience renders per-product CTAs and Business status', asy
   assert.ok(texts.includes('Karşılaştırmaya Başla'));
   assert.ok(texts.includes('Restoranını Yönet'));
   assert.ok(texts.includes('Gelişmeleri İncele'));
-  assert.ok(texts.some((t) => /Geliştirme/i.test(t)));
+  assert.ok(texts.some((t) => /Beta/i.test(t)));
 
   const headings = stub.findAll(el, (n) => n.tagName === 'H1');
   assert.equal(headings.length, 0, 'shell-style hero may use H2');
 });
 
-test('PlatformÜrünKartı uses catalog ctaLabel and shows gelistirme badge', async () => {
+test('PlatformÜrünKartı uses catalog ctaLabel and shows beta badge', async () => {
   const stub = installDomStubs();
   const { createPlatformUrunKartiElement } = await import(
     '../../src/platform/components/PlatformÜrünKartı/PlatformUrunKarti.ts'
@@ -200,8 +213,8 @@ test('PlatformÜrünKartı uses catalog ctaLabel and shows gelistirme badge', as
   });
   const texts = stub.collectText(card);
   assert.ok(texts.includes('Gelişmeleri İncele'));
-  assert.ok(texts.some((t) => /Geliştirme/i.test(t)));
-  assert.equal(card.attrs['data-platform-product-status'], 'gelistirme');
+  assert.ok(texts.some((t) => /Beta/i.test(t)));
+  assert.equal(card.attrs['data-platform-product-status'], 'beta');
 
   const ai = getPlatformProductById('istebul-ai');
   const aiCard = createPlatformUrunKartiElement({
@@ -227,7 +240,7 @@ test('initPlatformLanding mounts experience without global İncele override', as
   const texts = stub.collectText(mount);
   assert.ok(texts.includes('Karşılaştırmaya Başla'));
   assert.ok(texts.includes('Restoranımı Dijitalleştir'));
-  assert.ok(texts.includes('Yol Haritasını İncele'));
+  assert.ok(texts.includes('İSTEBUL Business’a Git'));
   assert.ok(
     texts.includes('Karşılaştırmaya Başla') && texts.includes('Restoranımı Dijitalleştir'),
     'landing overlay CTAs present'

@@ -68,6 +68,24 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
     defaultColor: '#0f172a',
     platformLabel: 'İş Zekâsı',
     ctaLabel: 'Gelişmeleri İncele'
+  }),
+  Object.freeze({
+    id: 'warehouseiq',
+    name: 'WarehouseIQ',
+    shortName: 'WarehouseIQ',
+    description:
+      'Yapay zekâ destekli akıllı depo yönetimi ve operasyon platformu. Stok, mal kabul, yerleştirme, toplama, paketleme, sevkiyat, sayım ve operasyon görünürlüğünü tek merkezde yönetir.',
+    shortDescription: 'Akıllı Depo Yönetimi.',
+    slogan: 'Depo operasyonunuzu akıllıca yönetin.',
+    url: getPlatformProductUrl('warehouseiq'),
+    logoKey: 'istebul-icon',
+    status: 'beta',
+    statusLabel: 'Pilot',
+    order: 4,
+    visibility: 'gorunur',
+    defaultColor: '#14b8a6',
+    platformLabel: 'Akıllı Depo Yönetimi',
+    ctaLabel: 'Operasyon Merkezine Git'
   })
 ]);
 

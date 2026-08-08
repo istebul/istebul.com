@@ -34,6 +34,11 @@ export const PLATFORM_PRODUCT_URLS: Readonly<
     current: '/business/',
     target: '/business/',
     note: 'Ürün girişi aynı kalır.'
+  }),
+  warehouseiq: Object.freeze({
+    current: '/warehouse/',
+    target: '/warehouse/',
+    note: 'WarehouseIQ operasyon merkezi ürün girişi.'
   })
 });
 

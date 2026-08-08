@@ -41,7 +41,7 @@ export const marketingSections = {
     },
     footerNav: {
       brandDesc:
-        'Yapay zekâ destekli ürünler platformu. İSTEBUL AI, GarsonAI ve İSTEBUL Business bağımsız ürünler olarak yaşar.',
+        'Yapay zekâ destekli ürünler platformu. İSTEBUL AI, GarsonAI, İSTEBUL Business ve WarehouseIQ bağımsız ürünler olarak yaşar.',
       products: 'Ürünler',
       helpCenter: 'Yardım merkezi',
       categoriesAria: 'Karar kategorileri',
