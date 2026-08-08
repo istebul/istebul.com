@@ -115,7 +115,10 @@ export async function onRequestPost({ request, env }) {
 
     const body = await request.json().catch(() => ({}));
     const prompt = body.prompt || body.message || body.input;
-    const structured = body.format === 'structured_commentary';
+    const structuredCommentary = body.format === 'structured_commentary';
+    const warehouseCopilotNarration =
+      body.format === 'warehouse_copilot_narration';
+    const structured = structuredCommentary || warehouseCopilotNarration;
 
     if (!prompt) {
       return json({ error: 'Prompt required' }, 400, origin);
@@ -145,9 +148,11 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Too many requests' }, 429, origin);
     }
 
-    const systemContent = structured
-      ? 'Sen isteBul.com otomotiv karar analistisin. Yalnızca geçerli JSON döndür. Skor üretmezsin; fiyat, faiz, banka, sigorta teklifi veya kampanya uydurmazsın. Türkçe, profesyonel, temkinli dil.'
-      : 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.';
+    const systemContent = warehouseCopilotNarration
+      ? 'Sen WarehouseIQ depo operasyon karar anlatım asistanısın. Yalnızca geçerli JSON döndür. Kaynak veride olmayan sayı, KPI, risk, fırsat, aksiyon, neden veya sonuç uydurmazsın. Mevcut aksiyon kimliklerini değiştirmezsin. Türkçe, profesyonel, kısa ve temkinli dil kullanırsın.'
+      : structuredCommentary
+        ? 'Sen isteBul.com otomotiv karar analistisin. Yalnızca geçerli JSON döndür. Skor üretmezsin; fiyat, faiz, banka, sigorta teklifi veya kampanya uydurmazsın. Türkçe, profesyonel, temkinli dil.'
+        : 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.';
 
     const model =
       provider.name === 'openai'
