@@ -216,6 +216,10 @@ test('PlatformÜrünKartı uses catalog ctaLabel and shows beta badge', async ()
   assert.ok(texts.some((t) => /Beta/i.test(t)));
   assert.equal(card.attrs['data-platform-product-status'], 'beta');
 
+  const navigationLinks = stub.findAll(card, (n) => n.tagName === 'A');
+  assert.equal(navigationLinks.length, 1);
+  assert.equal(navigationLinks[0].attrs['data-native-route'], '');
+
   const ai = getPlatformProductById('istebul-ai');
   const aiCard = createPlatformUrunKartiElement({
     product: ai,
