@@ -17,21 +17,25 @@ function sectionBetween(startMarker, endMarker) {
   return html.slice(start, end);
 }
 
-test('platform products menu lists AI, GarsonAI, Business with existing URLs', () => {
+test('platform products menu lists AI, GarsonAI, Business and WarehouseIQ with existing URLs', () => {
   const platform = sectionBetween('id="nav-platform-list"', 'id="nav-product-menu"');
   assert.match(platform, /href="\/ai\/"/);
   assert.match(platform, /href="\/garson\/"/);
   assert.match(platform, /href="\/business\/"/);
+  assert.match(platform, /href="\/warehouse\/"/);
   assert.match(platform, /İSTEBUL AI|ISTEBUL AI/);
   assert.match(platform, /GarsonAI/);
   assert.match(platform, /İSTEBUL Business|ISTEBUL Business/);
+  assert.match(platform, /WarehouseIQ/);
 });
 
-test('decision categories menu excludes GarsonAI and Business', () => {
+test('decision categories menu excludes non-decision platform products', () => {
   const categories = sectionBetween('id="nav-product-list"', 'id="nav-more-menu"');
   assert.doesNotMatch(categories, /GarsonAI/);
   assert.doesNotMatch(categories, /\/garson\//);
   assert.doesNotMatch(categories, /\/business\//);
+  assert.doesNotMatch(categories, /WarehouseIQ/);
+  assert.doesNotMatch(categories, /\/warehouse\//);
   assert.match(categories, /href="\/auto\/"/);
   assert.match(categories, /href="\/konut\/"/);
 });

@@ -16,7 +16,7 @@ export const PLATFORM_IDENTITY: Readonly<PlatformIdentity> = Object.freeze({
   name: 'İSTEBUL',
   shortName: 'İSTEBUL',
   description:
-    'İSTEBUL; yapay zekâ destekli dijital ürünler geliştiren bir teknoloji platformudur. İSTEBUL AI, GarsonAI ve İSTEBUL Business bağımsız ürünler olarak yaşar.',
+    'İSTEBUL; yapay zekâ destekli dijital ürünler geliştiren bir teknoloji platformudur. İSTEBUL AI, GarsonAI, İSTEBUL Business ve WarehouseIQ bağımsız ürünler olarak yaşar.',
   shortDescription: 'Yapay zekâ destekli dijital ürünler platformu.',
   slogan: 'Doğru ürünle ilerleyin.',
   url: getPlatformSurfaceUrl('platform-root'),
@@ -31,7 +31,7 @@ export const PLATFORM_CATALOG = Object.freeze({
   identity: PLATFORM_IDENTITY,
   products: PLATFORM_PRODUCTS,
   /** Katalog sürümü — PR-568 cutover (active phase = target) */
-  version: 3 as const,
+  version: 4 as const,
   /**
    * PR-568: `/` Platform Landing; ürün kartları TARGET URL (AI → /ai/).
    */

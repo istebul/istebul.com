@@ -32,6 +32,12 @@ const PREVIEW_PRODUCT_COPY = Object.freeze({
     shortDescription: 'İş zekâsı platformu',
     statusLabel: 'Canlı',
     ctaLabel: 'İSTEBUL Business’a Git'
+  }),
+  warehouseiq: Object.freeze({
+    slogan: 'Depo ve lojistik ekipleri',
+    shortDescription: 'Akıllı Depo Yönetimi',
+    statusLabel: 'Pilot',
+    ctaLabel: 'Operasyon Merkezini Aç'
   })
 });
 
@@ -80,7 +86,7 @@ export function initPlatformLandingPreview() {
   const leadTitle = document.createElement('h2');
   leadTitle.id = 'platform-preview-lead-title';
   leadTitle.className = 'ib-platform-landing-preview__lead-title';
-  leadTitle.textContent = 'Üç bağımsız ürün, tek platform';
+  leadTitle.textContent = 'Dört bağımsız ürün, tek platform';
 
   const leadText = document.createElement('p');
   leadText.className = 'ib-platform-landing-preview__lead-text';
@@ -100,7 +106,7 @@ export function initPlatformLandingPreview() {
 
   const grid = createPlatformUrunIzgarasiElement({
     products,
-    columns: 3,
+    columns: 4,
     enableNavigation: true,
     labelledBy: 'platform-products-title',
     ariaLabel: 'Platform ürünleri'
