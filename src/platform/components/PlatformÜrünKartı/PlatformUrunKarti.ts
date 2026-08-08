@@ -154,7 +154,11 @@ export function createPlatformUrunKartiElement(
     cta.textContent = ctaLabel;
     cta.setAttribute('data-platform-cta', 'product-inspect');
     cta.setAttribute('data-platform-product-url', product.url);
-    /* Tam sayfa ürün girişleri için native gezinme (SPA yakalaması için data-native-route yok). */
+    /*
+     * Tam sayfa ürün girişleri ana SPA router tarafından yakalanmamalıdır.
+     * data-native-route, router'ın ürün URL'sini gerçek sayfa geçişi olarak işlemesini sağlar.
+     */
+    cta.setAttribute('data-native-route', '');
     footer.append(cta);
   } else {
     const cta = document.createElement('button');
