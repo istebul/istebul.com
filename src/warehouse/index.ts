@@ -422,3 +422,6 @@ export * from "./services/SupabaseOperationsExceptionRepository";
 export * from "./services/OperationsProcessVolumeRepository";
 export * from "./services/SupabaseOperationsProcessVolumeRepository";
 export * from "./services/OperationsExceptionAnalyticsQueryService";
+
+export * from "./types/OperationsCopilot";
+export * from "./services/OperationsCopilotService";
