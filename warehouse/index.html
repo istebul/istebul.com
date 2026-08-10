@@ -25,6 +25,7 @@
       <a href="#uyarilar">! Uyarılar</a>
       <p>YÖNETİM</p>
       <a href="#raporlar">▥ Raporlar</a>
+      <a href="#copilot">✦ AI Copilot</a>
       <a href="#aksiyonlar">↗ Yönetici Aksiyonları</a>
     </nav>
     <div class="ready"><i></i><span><strong id="sistem-durumu">Bağlantı bekleniyor</strong><small>Yetkili operasyon görünümü</small></span></div>
@@ -109,6 +110,38 @@
         <div class="ranking" id="depo-listesi">
           <p class="empty-state">Depo listesi yükleniyor.</p>
         </div>
+      </article>
+
+      <article class="panel full copilot-panel" id="copilot">
+        <div class="heading">
+          <div><em>WAREHOUSEIQ COPILOT</em><h2>Günlük yönetici özeti</h2></div>
+          <div class="copilot-controls">
+            <span class="copilot-state" id="copilot-durumu" data-state="waiting">Veri bekleniyor</span>
+            <button id="copilot-ai-btn" class="copilot-ai-btn" type="button" disabled>AI anlatımını oluştur</button>
+          </div>
+        </div>
+        <div class="copilot-summary" id="copilot-ozet">
+          <p class="empty-state">Copilot için operasyon snapshot verisi bekleniyor.</p>
+        </div>
+        <div class="copilot-signals">
+          <section>
+            <small>ÖNCELİKLİ RİSK</small>
+            <div id="copilot-risk"><p class="empty-state">Risk verisi bekleniyor.</p></div>
+          </section>
+          <section>
+            <small>FIRSAT</small>
+            <div id="copilot-firsat"><p class="empty-state">Karşılaştırma verisi bekleniyor.</p></div>
+          </section>
+        </div>
+        <div class="copilot-actions-block">
+          <small>ÖNERİLEN AKSİYONLAR</small>
+          <div class="copilot-actions" id="copilot-aksiyonlari">
+            <p class="empty-state">Copilot aksiyonları bekleniyor.</p>
+          </div>
+        </div>
+        <p class="copilot-disclosure" id="copilot-aciklama">
+          AI anlatımı yalnız kullanıcı isteğiyle çalıştırılır; deterministik operasyon özeti varsayılan görünüm olarak korunur.
+        </p>
       </article>
 
       <article class="panel full" id="aksiyonlar">

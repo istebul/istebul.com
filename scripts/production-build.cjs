@@ -21,7 +21,7 @@ const copyDataSubdir = (subdir) => {
 };
 const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
-const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'warehouse/index.html', 'css/warehouse/operations-center.css', 'js/warehouse/operations-center.js', 'auto/index.html', 'business/index.html',
+const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'warehouse/index.html', 'css/warehouse/operations-center.css', 'js/warehouse/operations-center.js', 'js/warehouse/operations-copilot-narration.js', 'auto/index.html', 'business/index.html',
   'business/analizler/index.html',
   'business/veri-merkezi/index.html',
   'business/raporlar/index.html',
