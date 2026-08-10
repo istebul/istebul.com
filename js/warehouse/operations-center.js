@@ -1,4 +1,5 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm";
+import { fetchWarehouseCopilotNarration } from "./operations-copilot-narration.js";
 
 const API_URL = "/api/warehouse/operations-center";
 const AUTH_STORAGE_KEY = "istebul-auth-public-v1";
@@ -18,6 +19,7 @@ const PROCESS_LABELS = {
 
 const HEALTH_LABELS = {
   healthy: "Sağlıklı",
+  attention: "Dikkat",
   warning: "Dikkat",
   critical: "Kritik"
 };
@@ -31,10 +33,12 @@ const SEVERITY_LABELS = {
 const state = {
   accountId: null,
   warehouseId: null,
-  warehouses: []
+  warehouses: [],
+  copilot: null
 };
 
 let supabase = null;
+let copilotRenderVersion = 0;
 
 function byId(id) {
   return document.getElementById(id);
@@ -185,6 +189,183 @@ function setKpi(name, value, meta) {
   }
 }
 
+function setCopilotState(type, text) {
+  const element = byId("copilot-durumu");
+  if (!element) return;
+  element.dataset.state = type;
+  element.textContent = text;
+}
+
+function renderCopilotText(container, title, description) {
+  container.replaceChildren();
+
+  if (!title && !description) {
+    renderEmpty(container, "Bu dönem için kayıt bulunmuyor.");
+    return;
+  }
+
+  const heading = document.createElement("strong");
+  const body = document.createElement("p");
+
+  heading.textContent = title || "Operasyon değerlendirmesi";
+  body.textContent = description || "";
+  container.append(heading, body);
+}
+
+function renderCopilotActions(copilot, narration = null) {
+  const container = byId("copilot-aksiyonlari");
+  container.replaceChildren();
+
+  const actions = copilot?.actions ?? [];
+  if (!actions.length) {
+    renderEmpty(container, "Bu dönem için öncelikli Copilot aksiyonu bulunmuyor.");
+    return;
+  }
+
+  const narrativeById = new Map(
+    (narration?.actionNarratives ?? []).map((item) => [
+      item.actionId,
+      item.text
+    ])
+  );
+
+  actions.forEach((action) => {
+    const row = document.createElement("div");
+    const content = document.createElement("span");
+    const title = document.createElement("strong");
+    const description = document.createElement("small");
+    const due = document.createElement("em");
+
+    row.className = `copilot-action priority-${action.priority || "medium"}`;
+    title.textContent = action.title || "Operasyon aksiyonu";
+    description.textContent =
+      narrativeById.get(action.id) ||
+      action.description ||
+      "Operasyon kaydı inceleme gerektiriyor.";
+    due.textContent = action.dueLabel || "İnceleyin";
+
+    content.append(title, description);
+    row.append(content, due);
+    container.append(row);
+  });
+}
+
+function clearCopilot(message = "Copilot verisi bulunmuyor.") {
+  copilotRenderVersion += 1;
+  state.copilot = null;
+
+  const button = byId("copilot-ai-btn");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "AI anlatımını oluştur";
+  }
+
+  setCopilotState("empty", "Veri bekleniyor");
+  renderEmpty(byId("copilot-ozet"), message);
+  renderEmpty(byId("copilot-risk"), "Bu dönem için risk verisi bulunmuyor.");
+  renderEmpty(byId("copilot-firsat"), "Fırsat için yeterli dönem karşılaştırması bulunmuyor.");
+  renderEmpty(byId("copilot-aksiyonlari"), "Bu dönem için öncelikli Copilot aksiyonu bulunmuyor.");
+
+  byId("copilot-aciklama").textContent =
+    "AI anlatımı yalnız kullanıcı isteğiyle çalıştırılır; deterministik operasyon özeti varsayılan görünüm olarak korunur.";
+}
+
+function renderCopilot(copilot) {
+  copilotRenderVersion += 1;
+  state.copilot = copilot || null;
+
+  if (!copilot) {
+    clearCopilot("Bu dönem için Copilot üretecek operasyon snapshot kaydı bulunmuyor.");
+    return;
+  }
+
+  const button = byId("copilot-ai-btn");
+  button.disabled = false;
+  button.textContent = "AI anlatımını oluştur";
+  setCopilotState("deterministic", "Doğrulanmış özet");
+
+  renderCopilotText(
+    byId("copilot-ozet"),
+    "Operasyon değerlendirmesi",
+    copilot.dailySummary
+  );
+
+  if (copilot.topRisk) {
+    renderCopilotText(
+      byId("copilot-risk"),
+      copilot.topRisk.title,
+      copilot.topRisk.description
+    );
+  } else {
+    renderEmpty(byId("copilot-risk"), "Bu dönem için öncelikli açık risk bulunmuyor.");
+  }
+
+  if (copilot.topOpportunity) {
+    renderCopilotText(
+      byId("copilot-firsat"),
+      copilot.topOpportunity.title,
+      copilot.topOpportunity.description
+    );
+  } else {
+    renderEmpty(byId("copilot-firsat"), "Fırsat için yeterli iyileşme karşılaştırması bulunmuyor.");
+  }
+
+  renderCopilotActions(copilot);
+  byId("copilot-aciklama").textContent = copilot.disclosure;
+}
+
+async function enhanceCopilotWithAi() {
+  const copilot = state.copilot;
+  const button = byId("copilot-ai-btn");
+
+  if (!copilot || !button || button.disabled) return;
+
+  const version = copilotRenderVersion;
+  button.disabled = true;
+  button.textContent = "AI anlatımı hazırlanıyor…";
+  setCopilotState("loading", "AI anlatımı hazırlanıyor");
+
+  const narration = await fetchWarehouseCopilotNarration(copilot);
+
+  if (version !== copilotRenderVersion || state.copilot !== copilot) return;
+
+  renderCopilotText(
+    byId("copilot-ozet"),
+    "Operasyon değerlendirmesi",
+    narration.executiveSummary || copilot.dailySummary
+  );
+
+  if (copilot.topRisk) {
+    renderCopilotText(
+      byId("copilot-risk"),
+      copilot.topRisk.title,
+      narration.riskNarrative || copilot.topRisk.description
+    );
+  }
+
+  if (copilot.topOpportunity) {
+    renderCopilotText(
+      byId("copilot-firsat"),
+      copilot.topOpportunity.title,
+      narration.opportunityNarrative || copilot.topOpportunity.description
+    );
+  }
+
+  renderCopilotActions(copilot, narration);
+
+  const aiUsed = narration.source === "ai";
+  setCopilotState(
+    aiUsed ? "ai" : "deterministic",
+    aiUsed ? "AI anlatımı" : "Doğrulanmış özet"
+  );
+
+  byId("copilot-aciklama").textContent = narration.disclosure;
+  button.disabled = false;
+  button.textContent = aiUsed
+    ? "AI anlatımını yenile"
+    : "AI anlatımını tekrar dene";
+}
+
 function clearMetrics(message = "Veri bulunmuyor") {
   for (const key of [
     "health",
@@ -209,6 +390,7 @@ function clearMetrics(message = "Veri bulunmuyor") {
   renderEmpty(byId("chart"), "Trend verisi bulunmuyor.");
   byId("trend-ozeti").textContent = "Yeterli veri yok";
   renderEmpty(byId("aksiyon-listesi"), "Aktif yönetici inceleme kaydı bulunmuyor.");
+  clearCopilot(message);
 }
 
 function renderEmpty(container, text) {
@@ -653,6 +835,7 @@ function renderData(data) {
   renderExceptions(data.exceptions);
   renderActions(data.exceptions);
   renderTrend(data.trend);
+  renderCopilot(data.copilot);
   setTimestamp(data.generatedAt || data.snapshot?.calculated_at);
 
   const accountName = data.account?.name || "WarehouseIQ firması";
@@ -715,4 +898,8 @@ function bindEvents() {
 document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
   await load();
+});
+
+byId("copilot-ai-btn")?.addEventListener("click", () => {
+  void enhanceCopilotWithAi();
 });

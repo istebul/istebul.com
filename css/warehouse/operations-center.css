@@ -42,3 +42,30 @@
 #depo-listesi em {
   font-style: normal;
 }
+
+/* EPIC-009C · WarehouseIQ Copilot */
+.copilot-panel{position:relative;overflow:hidden}
+.copilot-panel::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#4f7cff,#7c5cff,#25b8a6)}
+.copilot-controls{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.copilot-state{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid rgba(127,140,170,.28);border-radius:999px;font-size:12px;font-weight:700}
+.copilot-state[data-state="ai"]{border-color:rgba(79,124,255,.5)}
+.copilot-ai-btn{min-height:36px;padding:8px 14px;border:1px solid rgba(79,124,255,.48);border-radius:10px;background:rgba(79,124,255,.1);color:inherit;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.copilot-ai-btn:hover:not(:disabled){background:rgba(79,124,255,.18)}
+.copilot-ai-btn:disabled{cursor:default;opacity:.55}
+.copilot-summary{margin-top:16px;padding:18px;border:1px solid rgba(127,140,170,.22);border-radius:14px;background:rgba(127,140,170,.055)}
+.copilot-summary strong,.copilot-signals strong{display:block;margin-bottom:7px}
+.copilot-summary p,.copilot-signals p{margin:0;line-height:1.65}
+.copilot-signals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.copilot-signals>section{min-width:0;padding:16px;border:1px solid rgba(127,140,170,.22);border-radius:14px}
+.copilot-signals>section>small,.copilot-actions-block>small{display:block;margin-bottom:10px;font-size:11px;font-weight:800;letter-spacing:.08em;opacity:.72}
+.copilot-actions-block{margin-top:16px}
+.copilot-actions{display:grid;gap:9px}
+.copilot-action{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:13px 14px;border:1px solid rgba(127,140,170,.2);border-radius:12px}
+.copilot-action span{min-width:0}
+.copilot-action strong,.copilot-action small{display:block}
+.copilot-action small{margin-top:4px;line-height:1.5}
+.copilot-action em{flex:0 0 auto;font-size:12px;font-style:normal;font-weight:800}
+.copilot-action.priority-immediate{border-left:3px solid #d94c4c}
+.copilot-action.priority-high{border-left:3px solid #d88a32}
+.copilot-disclosure{margin:14px 0 0;font-size:12px;line-height:1.55;opacity:.7}
+@media(max-width:760px){.copilot-controls{width:100%;justify-content:flex-start}.copilot-signals{grid-template-columns:1fr}.copilot-action{flex-direction:column;gap:8px}}

@@ -1,6 +1,7 @@
 import { isAllowedOrigin } from "../../_shared/cors-origins.js";
 import { API_ERROR_CODES, logApiEvent } from "../../_shared/api-response.js";
 import { buildCorsJsonHeaders, corsJson, corsJsonError } from "../../_shared/cors-json.js";
+import { buildWarehouseOperationsCopilotRuntime } from "../../_shared/warehouse-copilot-runtime.js";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -144,7 +145,7 @@ export async function loadOperationsCenter({
       limit: "1"
     }, fetchImpl),
     rows(env, token, "warehouse_operations_dashboard_snapshots", {
-      select: "health_score,health_status,period_start,period_end,calculated_at",
+      select: "*",
       account_id: `eq.${accountId}`,
       warehouse_id,
       order: "calculated_at.desc",
@@ -158,7 +159,7 @@ export async function loadOperationsCenter({
 
   if (snapshot) {
     const exceptionParams = {
-      select: "id,account_id,warehouse_id,process,category,code,severity,root_cause,description,occurred_at,resolved_at,resolution_note,delay_minutes,impacted_orders,impacted_tasks,impacted_items",
+      select: "id,account_id,warehouse_id,process,category,code,severity,root_cause,description,occurred_at,resolved_at,resolution_note,delay_minutes,impacted_orders,impacted_tasks,impacted_items,created_at",
       account_id: `eq.${accountId}`,
       occurred_at: `gte.${snapshot.period_start}`,
       and: `(occurred_at.lte.${snapshot.period_end})`,
@@ -181,6 +182,36 @@ export async function loadOperationsCenter({
     ]);
   }
 
+  const normalizedTrend = [...trend].reverse();
+  const generatedAt = new Date().toISOString();
+  let copilot = null;
+
+  if (snapshot) {
+    try {
+      copilot =
+        await buildWarehouseOperationsCopilotRuntime({
+          accountId,
+          warehouseId,
+          snapshot,
+          trend: normalizedTrend,
+          exceptions,
+          processVolumes,
+          generatedAt
+        });
+    } catch (error) {
+      logApiEvent(
+        "warn",
+        "warehouse_operations_copilot_failed",
+        {
+          message:
+            error instanceof Error
+              ? error.message
+              : String(error)
+        }
+      );
+    }
+  }
+
   return {
     ok: true,
     data: {
@@ -188,11 +219,12 @@ export async function loadOperationsCenter({
       warehouses,
       selection: { accountId, warehouseId },
       snapshot,
-      trend: [...trend].reverse(),
+      trend: normalizedTrend,
       exceptions,
       processVolumes,
+      copilot,
       liveData: true,
-      generatedAt: new Date().toISOString()
+      generatedAt
     }
   };
 }
