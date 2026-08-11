@@ -1,0 +1,49 @@
+{
+  "id": "/warehouse/",
+  "name": "WarehouseIQ · Akıllı Depo Yönetimi",
+  "short_name": "WarehouseIQ",
+  "description": "Depo operasyonlarını, riskleri ve yönetici aksiyonlarını mobil cihazdan izlemek için WarehouseIQ operasyon uygulaması.",
+  "lang": "tr-TR",
+  "start_url": "/warehouse/",
+  "scope": "/warehouse/",
+  "display": "standalone",
+  "background_color": "#071018",
+  "theme_color": "#071018",
+  "icons": [
+    {
+      "src": "/assets/icons/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Genel Bakış",
+      "short_name": "Genel",
+      "url": "/warehouse/#genel"
+    },
+    {
+      "name": "Kritik Uyarılar",
+      "short_name": "Uyarılar",
+      "url": "/warehouse/#uyarilar"
+    },
+    {
+      "name": "AI Copilot",
+      "short_name": "Copilot",
+      "url": "/warehouse/#copilot"
+    }
+  ]
+}
