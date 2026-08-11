@@ -115,6 +115,7 @@ export type { BarcodeType } from "./types/BarcodeType";
 export type { ProductRepository } from "./services/ProductRepository";
 
 export { InMemoryProductRepository } from "./services/InMemoryProductRepository";
+export { SupabaseProductRepository } from "./services/SupabaseProductRepository";
 export { ProductService } from "./services/ProductService";
 
 export {
@@ -191,6 +192,7 @@ export {
 
 export * from "./services/InventoryRepository";
 export * from "./services/InMemoryInventoryRepository";
+export { SupabaseInventoryRepository } from "./services/SupabaseInventoryRepository";
 export * from "./services/InventoryCalculator";
 export * from "./services/InventoryLedger";
 export * from "./services/InventoryService";
@@ -222,6 +224,7 @@ export * from "./types/ReceivingTask";
 
 export * from "./services/ReceivingRepository";
 export * from "./services/InMemoryReceivingRepository";
+export { SupabaseReceivingRepository } from "./services/SupabaseReceivingRepository";
 export * from "./services/ReceivingValidator";
 export * from "./services/ReceivingService";
 
