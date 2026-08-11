@@ -21,7 +21,7 @@ const copyDataSubdir = (subdir) => {
 };
 const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
-const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'warehouse/index.html', 'warehouse/offline.html', 'warehouse/manifest.webmanifest', 'warehouse/sw.js', 'css/warehouse/operations-center.css', 'js/warehouse/pwa.js', 'js/warehouse/mobile-navigation.js', 'js/warehouse/operations-center.js', 'js/warehouse/operations-copilot-narration.js', 'auto/index.html', 'business/index.html',
+const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'warehouse/index.html', 'warehouse/offline.html', 'warehouse/manifest.webmanifest', 'warehouse/sw.js', 'css/warehouse/operations-center.css', 'css/warehouse/barcode-scanner.css', 'js/warehouse/pwa.js', 'js/warehouse/mobile-navigation.js', 'js/warehouse/barcode-scanner.js', 'js/warehouse/operations-center.js', 'js/warehouse/operations-copilot-narration.js', 'auto/index.html', 'business/index.html',
   'business/analizler/index.html',
   'business/veri-merkezi/index.html',
   'business/raporlar/index.html',
