@@ -69,3 +69,127 @@
 .copilot-action.priority-high{border-left:3px solid #d88a32}
 .copilot-disclosure{margin:14px 0 0;font-size:12px;line-height:1.55;opacity:.7}
 @media(max-width:760px){.copilot-controls{width:100%;justify-content:flex-start}.copilot-signals{grid-template-columns:1fr}.copilot-action{flex-direction:column;gap:8px}}
+
+/* EPIC-010A — WarehouseIQ Mobile PWA Foundation */
+.pwa-action{
+  min-height:44px;
+  border:1px solid #48d9c866;
+  border-radius:9px;
+  padding:9px 12px;
+  background:#48d9c814;
+  color:var(--cyan);
+  font:inherit;
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer
+}
+.pwa-action:hover,
+.pwa-action:focus-visible{
+  background:#48d9c824;
+  outline:2px solid #48d9c866;
+  outline-offset:2px
+}
+.pwa-action:disabled{
+  cursor:wait;
+  opacity:.72
+}
+.pwa-action[hidden]{
+  display:none
+}
+.warehouse-offline-page{
+  min-height:100dvh
+}
+.warehouse-offline-shell{
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:
+    max(24px,env(safe-area-inset-top))
+    max(18px,env(safe-area-inset-right))
+    max(24px,env(safe-area-inset-bottom))
+    max(18px,env(safe-area-inset-left))
+}
+.warehouse-offline-card{
+  width:min(560px,100%);
+  min-height:0;
+  margin:0;
+  text-align:center
+}
+.warehouse-offline-mark{
+  display:grid;
+  place-items:center;
+  width:64px;
+  height:64px;
+  margin:0 auto 22px;
+  border:1px solid #48d9c866;
+  border-radius:18px;
+  background:#48d9c814;
+  color:var(--cyan);
+  font-size:28px;
+  font-weight:800
+}
+.warehouse-offline-card em{
+  color:var(--cyan);
+  font-style:normal;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.16em
+}
+.warehouse-offline-card h1{
+  margin:10px 0 12px;
+  font-size:clamp(26px,7vw,40px)
+}
+.warehouse-offline-card p{
+  max-width:46ch;
+  margin:0 auto;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.7
+}
+.warehouse-offline-retry{
+  display:inline-grid;
+  place-items:center;
+  min-height:46px;
+  margin:24px 0 14px;
+  padding:0 20px;
+  border:1px solid #48d9c866;
+  border-radius:11px;
+  background:#48d9c818;
+  color:var(--cyan);
+  font-size:12px;
+  font-weight:800
+}
+.warehouse-offline-card>small{
+  display:block;
+  color:var(--muted);
+  font-size:10px
+}
+@media(max-width:800px){
+  body{
+    padding-bottom:env(safe-area-inset-bottom)
+  }
+  .brand{
+    padding-left:max(18px,env(safe-area-inset-left));
+    padding-right:max(18px,env(safe-area-inset-right))
+  }
+  main{
+    padding-left:max(14px,env(safe-area-inset-left));
+    padding-right:max(14px,env(safe-area-inset-right))
+  }
+  .top-actions{
+    width:100%;
+    flex-wrap:wrap
+  }
+  .top-actions select,
+  .pwa-action{
+    min-height:44px
+  }
+}
+@media(display-mode:standalone){
+  .side{
+    padding-top:env(safe-area-inset-top)
+  }
+  main{
+    padding-top:max(24px,env(safe-area-inset-top))
+  }
+}
