@@ -19,8 +19,22 @@
 <body>
 <div class="shell">
   <aside class="side">
-    <a class="brand" href="/warehouse/"><b>W</b><span><strong>WarehouseIQ</strong><small>Akıllı Depo Yönetimi</small></span></a>
-    <nav>
+    <div class="warehouse-mobile-header">
+      <a class="brand" href="/warehouse/"><b>W</b><span><strong>WarehouseIQ</strong><small>Akıllı Depo Yönetimi</small></span></a>
+      <button
+        id="warehouse-menu-toggle"
+        class="warehouse-menu-toggle"
+        type="button"
+        aria-controls="warehouse-nav"
+        aria-expanded="false"
+        aria-label="Operasyon menüsünü aç"
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+    <nav id="warehouse-nav" aria-label="WarehouseIQ ana menüsü">
       <p>OPERASYON</p>
       <a class="active" href="#genel">⌂ Genel Bakış</a>
       <a href="#stok">▦ Stok Yönetimi</a>
@@ -37,6 +51,14 @@
     </nav>
     <div class="ready"><i></i><span><strong id="sistem-durumu">Bağlantı bekleniyor</strong><small>Yetkili operasyon görünümü</small></span></div>
   </aside>
+
+  <button
+    id="warehouse-nav-backdrop"
+    class="warehouse-nav-backdrop"
+    type="button"
+    aria-label="Operasyon menüsünü kapat"
+    hidden
+  ></button>
 
   <main>
     <header class="top">
@@ -162,8 +184,17 @@
   </main>
 </div>
 
+<nav class="warehouse-mobile-bottom-nav" aria-label="Hızlı operasyon erişimi">
+  <a href="#genel" data-mobile-nav="genel"><span aria-hidden="true">⌂</span><small>Genel</small></a>
+  <a href="#surecler" data-mobile-nav="surecler"><span aria-hidden="true">⇥</span><small>Süreçler</small></a>
+  <a href="#uyarilar" data-mobile-nav="uyarilar"><span aria-hidden="true">!</span><small>Uyarılar</small></a>
+  <a href="#copilot" data-mobile-nav="copilot"><span aria-hidden="true">✦</span><small>Copilot</small></a>
+  <a href="#aksiyonlar" data-mobile-nav="aksiyonlar"><span aria-hidden="true">↗</span><small>Aksiyonlar</small></a>
+</nav>
+
 <script src="/env.js"></script>
 <script type="module" src="/js/warehouse/pwa.js"></script>
+<script type="module" src="/js/warehouse/mobile-navigation.js"></script>
 <script type="module" src="/js/warehouse/operations-center.js"></script>
 </body>
 </html>
