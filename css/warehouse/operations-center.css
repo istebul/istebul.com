@@ -193,3 +193,264 @@
     padding-top:max(24px,env(safe-area-inset-top))
   }
 }
+
+/* EPIC-010B — Mobil navigasyon ve operasyon UX */
+.warehouse-mobile-header{
+  display:contents
+}
+.warehouse-menu-toggle,
+.warehouse-mobile-bottom-nav,
+.warehouse-nav-backdrop{
+  display:none
+}
+html,
+body,
+.shell,
+main,
+.grid,
+.panel,
+.kpis,
+.process,
+.capacity,
+.actions,
+.copilot-signals{
+  min-width:0
+}
+main,
+.grid,
+.panel{
+  max-width:100%
+}
+section[id],
+article[id]{
+  scroll-margin-top:24px
+}
+@media(max-width:800px){
+  body{
+    overflow-x:hidden;
+    padding-bottom:calc(76px + env(safe-area-inset-bottom))
+  }
+  body.warehouse-nav-open{
+    overflow:hidden
+  }
+  .side{
+    position:sticky;
+    inset:auto;
+    top:0;
+    z-index:1003;
+    width:100%;
+    border-right:0;
+    border-bottom:1px solid var(--line);
+    background:#06111af2;
+    backdrop-filter:blur(16px)
+  }
+  .warehouse-mobile-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    min-height:68px;
+    padding-left:max(14px,env(safe-area-inset-left));
+    padding-right:max(14px,env(safe-area-inset-right))
+  }
+  .brand{
+    min-width:0;
+    height:68px;
+    padding:10px 4px
+  }
+  .warehouse-menu-toggle{
+    display:grid;
+    place-content:center;
+    gap:4px;
+    flex:0 0 44px;
+    width:44px;
+    min-height:44px;
+    border:1px solid #48d9c866;
+    border-radius:11px;
+    background:#48d9c814;
+    color:var(--cyan);
+    cursor:pointer
+  }
+  .warehouse-menu-toggle span{
+    display:block;
+    width:18px;
+    height:2px;
+    border-radius:99px;
+    background:currentColor;
+    transition:transform .18s ease,opacity .18s ease
+  }
+  .warehouse-menu-toggle[aria-expanded="true"] span:nth-child(1){
+    transform:translateY(6px) rotate(45deg)
+  }
+  .warehouse-menu-toggle[aria-expanded="true"] span:nth-child(2){
+    opacity:0
+  }
+  .warehouse-menu-toggle[aria-expanded="true"] span:nth-child(3){
+    transform:translateY(-6px) rotate(-45deg)
+  }
+  .side #warehouse-nav{
+    display:block;
+    position:fixed;
+    z-index:1002;
+    top:calc(68px + env(safe-area-inset-top));
+    bottom:0;
+    left:0;
+    width:min(86vw,320px);
+    margin:0;
+    padding:12px 12px calc(90px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    border-right:1px solid var(--line);
+    background:#06111afc;
+    transform:translateX(-105%);
+    visibility:hidden;
+    pointer-events:none;
+    transition:transform .2s ease,visibility .2s step-end;
+    box-shadow:18px 0 48px #0008
+  }
+  body.warehouse-nav-open .side #warehouse-nav{
+    transform:translateX(0);
+    visibility:visible;
+    pointer-events:auto;
+    transition:transform .2s ease,visibility 0s
+  }
+  .side #warehouse-nav a{
+    display:flex;
+    align-items:center;
+    min-height:44px;
+    padding:10px 12px;
+    font-size:13px
+  }
+  .side #warehouse-nav p{
+    margin-top:20px
+  }
+  .warehouse-nav-backdrop{
+    position:fixed;
+    z-index:1001;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:0;
+    background:#0009;
+    cursor:pointer
+  }
+  .warehouse-nav-backdrop:not([hidden]){
+    display:block
+  }
+  .ready{
+    display:none
+  }
+  main{
+    margin:0;
+    padding:20px max(14px,env(safe-area-inset-right)) 24px max(14px,env(safe-area-inset-left))
+  }
+  .top h1{
+    font-size:clamp(28px,9vw,38px)
+  }
+  .top-actions{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    width:100%
+  }
+  .top-actions .demo{
+    grid-column:1/-1;
+    min-width:0;
+    overflow-wrap:anywhere
+  }
+  .top-actions select,
+  .pwa-action{
+    width:100%;
+    min-width:0
+  }
+  .tabs{
+    max-width:100%;
+    overflow-x:auto
+  }
+  .tabs button{
+    min-height:44px;
+    white-space:nowrap
+  }
+  section[id],
+  article[id]{
+    scroll-margin-top:86px
+  }
+  .warehouse-mobile-bottom-nav{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    position:fixed;
+    z-index:1000;
+    right:max(8px,env(safe-area-inset-right));
+    bottom:max(8px,env(safe-area-inset-bottom));
+    left:max(8px,env(safe-area-inset-left));
+    min-height:58px;
+    padding:5px;
+    border:1px solid #223746dd;
+    border-radius:16px;
+    background:#071018ee;
+    box-shadow:0 16px 48px #0009;
+    backdrop-filter:blur(18px)
+  }
+  .warehouse-mobile-bottom-nav a{
+    display:grid;
+    place-items:center;
+    align-content:center;
+    gap:3px;
+    min-width:0;
+    min-height:48px;
+    margin:0;
+    padding:4px 2px;
+    border-radius:11px;
+    color:var(--muted);
+    text-align:center
+  }
+  .warehouse-mobile-bottom-nav a>span{
+    font-size:15px;
+    line-height:1
+  }
+  .warehouse-mobile-bottom-nav a>small{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px
+  }
+  .warehouse-mobile-bottom-nav a.active,
+  .warehouse-mobile-bottom-nav a[aria-current="location"]{
+    background:#48d9c814;
+    color:var(--cyan)
+  }
+}
+@media(max-width:520px){
+  .heading{
+    width:100%;
+    min-width:0
+  }
+  .tabs{
+    width:100%
+  }
+  .tabs button{
+    flex:1
+  }
+  .process>div{
+    grid-template-columns:minmax(76px,104px) minmax(0,1fr) auto;
+    gap:9px
+  }
+  .process>div>strong,
+  .process>div>span,
+  .process>div>small{
+    min-width:0
+  }
+  .warehouse-mobile-bottom-nav{
+    right:max(5px,env(safe-area-inset-right));
+    bottom:max(5px,env(safe-area-inset-bottom));
+    left:max(5px,env(safe-area-inset-left))
+  }
+  .warehouse-mobile-bottom-nav a>small{
+    font-size:8px
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .side #warehouse-nav,
+  .warehouse-menu-toggle span{
+    transition:none
+  }
+}
