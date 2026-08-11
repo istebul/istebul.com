@@ -15,6 +15,7 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/assets/icons/favicon-192.png">
   <link rel="stylesheet" href="/css/warehouse/operations-center.css">
+  <link rel="stylesheet" href="/css/warehouse/barcode-scanner.css">
 </head>
 <body>
 <div class="shell">
@@ -69,6 +70,13 @@
       </div>
       <div class="top-actions">
         <span class="demo" id="veri-durumu" data-state="loading">Canlı veri yükleniyor</span>
+        <button
+          id="barkod-tarayici-ac"
+          class="barcode-scan-action"
+          type="button"
+          aria-controls="barkod-tarayici"
+          aria-expanded="false"
+        >Barkod Tara</button>
         <button id="pwa-eylem" class="pwa-action" type="button" hidden>Uygulamayı yükle</button>
         <select id="depo" aria-label="Depo seçimi" disabled>
           <option value="">Firma geneli</option>
@@ -80,6 +88,66 @@
       <span id="durum-mesaji"><strong>Güvenli bağlantı.</strong> WarehouseIQ operasyon verileri yetkili kullanıcı oturumu ile yükleniyor.</span>
       <span id="zaman">Son güncelleme: —</span>
     </div>
+
+    <section
+      id="barkod-tarayici"
+      class="barcode-scanner"
+      aria-labelledby="barkod-tarayici-baslik"
+      hidden
+    >
+      <div class="barcode-scanner-head">
+        <div>
+          <em>MOBİL SAHA</em>
+          <h2 id="barkod-tarayici-baslik">Barkod Tarayıcı</h2>
+          <p>Kamera ile tek bir barkod okutun veya kodu elle girin.</p>
+        </div>
+        <button id="barkod-tarayici-kapat" class="barcode-secondary-action" type="button">Kapat</button>
+      </div>
+
+      <div class="barcode-scanner-grid">
+        <div class="barcode-camera-shell">
+          <video id="barkod-video" playsinline muted aria-label="Barkod tarama kamerası"></video>
+          <div class="barcode-reticle" aria-hidden="true"></div>
+          <span id="barkod-kamera-durumu" class="barcode-camera-state">Kamera kapalı</span>
+        </div>
+
+        <div class="barcode-scanner-controls">
+          <p id="barkod-durum" class="barcode-status" role="status" aria-live="polite">
+            Kamerayı yalnız siz başlattığınızda açarız. Kamera kullanılamıyorsa barkodu elle girebilirsiniz.
+          </p>
+
+          <button id="barkod-kamera-baslat" class="barcode-primary-action" type="button">Kamerayı Aç</button>
+
+          <form id="barkod-manuel-form" class="barcode-manual-form">
+            <label for="barkod-manuel-deger">Manuel barkod girişi</label>
+            <div>
+              <input
+                id="barkod-manuel-deger"
+                name="barcode"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                maxlength="256"
+                placeholder="Barkod değerini girin"
+              >
+              <button class="barcode-secondary-action" type="submit">Kodu Kullan</button>
+            </div>
+          </form>
+
+          <div id="barkod-sonuc" class="barcode-result" hidden>
+            <small>Son okuma</small>
+            <strong id="barkod-sonuc-deger"></strong>
+            <span id="barkod-sonuc-meta"></span>
+          </div>
+        </div>
+      </div>
+
+      <p class="barcode-safety-note">
+        Bu temel sürüm tarama sonucunu yalnızca tarayıcı içinde üretir. Barkod sonucu herhangi bir depo işlemine veya veri tabanına otomatik olarak yazılmaz.
+      </p>
+    </section>
 
     <section id="genel">
       <div class="heading">
@@ -195,6 +263,7 @@
 <script src="/env.js"></script>
 <script type="module" src="/js/warehouse/pwa.js"></script>
 <script type="module" src="/js/warehouse/mobile-navigation.js"></script>
+<script type="module" src="/js/warehouse/barcode-scanner.js"></script>
 <script type="module" src="/js/warehouse/operations-center.js"></script>
 </body>
 </html>
