@@ -14,6 +14,7 @@ const WRITE_ACTIONS = Object.freeze([
   "add_item",
   "start",
   "receive_quantity",
+  "complete",
 ]);
 
 const UUID_PATTERN =
@@ -65,6 +66,26 @@ export function normalizeWriteRequest(body, requestId) {
     !Array.isArray(body.payload)
       ? body.payload
       : {};
+
+  if (action === "complete") {
+    const receivingId = normalizeUuid(payload.receivingId);
+
+    if (!receivingId) {
+      return { ok: false, reason: "receiving_id_invalid" };
+    }
+
+    return {
+      ok: true,
+      value: {
+        accountId,
+        action,
+        requestId: normalizedRequestId,
+        payload: {
+          receivingId,
+        },
+      },
+    };
+  }
 
   return {
     ok: true,
@@ -145,11 +166,27 @@ async function invokeReceivingWrite(
   input,
   fetchImpl,
 ) {
+  const isComplete = input.action === "complete";
+
+  const rpcPath = isComplete
+    ? "/rest/v1/rpc/warehouse_receiving_complete_write"
+    : "/rest/v1/rpc/warehouse_receiving_write";
+
+  const rpcBody = isComplete
+    ? {
+        p_request_id: input.requestId,
+        p_account_id: input.accountId,
+        p_receiving_id: input.payload.receivingId,
+      }
+    : {
+        p_action: input.action,
+        p_request_id: input.requestId,
+        p_account_id: input.accountId,
+        p_payload: input.payload,
+      };
+
   const response = await fetchImpl(
-    new URL(
-      "/rest/v1/rpc/warehouse_receiving_write",
-      env.SUPABASE_URL,
-    ),
+    new URL(rpcPath, env.SUPABASE_URL),
     {
       method: "POST",
       headers: {
@@ -158,12 +195,7 @@ async function invokeReceivingWrite(
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        p_action: input.action,
-        p_request_id: input.requestId,
-        p_account_id: input.accountId,
-        p_payload: input.payload,
-      }),
+      body: JSON.stringify(rpcBody),
     },
   );
 
@@ -326,6 +358,8 @@ export async function onRequestPost(context) {
         body_invalid: "İstek gövdesi geçersizdir.",
         account_invalid: "Firma kimliği geçerli bir UUID olmalıdır.",
         action_invalid: "Mal kabul işlemi desteklenmiyor.",
+        receiving_id_invalid:
+          "Tamamlanacak mal kabul kimliği geçerli bir UUID olmalıdır.",
         request_id_invalid:
           "Idempotency-Key başlığı geçerli bir UUID olmalıdır.",
       };

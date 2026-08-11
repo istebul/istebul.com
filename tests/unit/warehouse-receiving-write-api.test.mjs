@@ -49,7 +49,7 @@ test("Receiving write API UUID ve işlem adını doğrular", () => {
     normalizeWriteAction("receive_quantity"),
     "receive_quantity",
   );
-  assert.equal(normalizeWriteAction("complete"), null);
+  assert.equal(normalizeWriteAction("complete"), "complete");
 });
 
 test("Receiving write isteği Idempotency-Key olmadan kabul edilmez", () => {
@@ -85,6 +85,43 @@ test("Receiving write isteği normalize edilir", () => {
   assert.equal(result.value.accountId, ACCOUNT_ID);
   assert.equal(result.value.action, "add_item");
   assert.equal(result.value.requestId, REQUEST_ID);
+});
+
+test("Receiving complete geçerli mal kabul kimliği gerektirir", () => {
+  const missing = normalizeWriteRequest(
+    {
+      accountId: ACCOUNT_ID,
+      action: "complete",
+      payload: {},
+    },
+    REQUEST_ID,
+  );
+
+  assert.deepEqual(missing, {
+    ok: false,
+    reason: "receiving_id_invalid",
+  });
+
+  const receivingId =
+    "33333333-3333-4333-8333-333333333333";
+
+  const valid = normalizeWriteRequest(
+    {
+      accountId: ACCOUNT_ID,
+      action: "complete",
+      payload: {
+        receivingId,
+      },
+    },
+    REQUEST_ID,
+  );
+
+  assert.equal(valid.ok, true);
+  assert.equal(valid.value.action, "complete");
+  assert.equal(
+    valid.value.payload.receivingId,
+    receivingId,
+  );
 });
 
 test("Receiving write API servis rolü kullanmaz ve kullanıcı JWT'sini RPC'ye iletir", async () => {
@@ -214,6 +251,110 @@ test("Receiving write API başarılı RPC sonucunu standart zarfla döndürür",
     calls[1].options.headers.Authorization,
     "Bearer kullanici-token",
   );
+});
+
+test("Receiving complete yeni atomik RPC'ye kullanıcı JWT'si ile yönlendirilir", async () => {
+  const calls = [];
+  const receivingId =
+    "33333333-3333-4333-8333-333333333333";
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      options,
+    });
+
+    if (String(url).includes("/auth/v1/user")) {
+      return new Response(
+        JSON.stringify({
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/rest/v1/rpc/warehouse_receiving_complete_write",
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          action: "complete",
+          receivingId,
+          status: "completed",
+          postedMovementCount: 1,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
+    throw new Error(`Beklenmeyen URL: ${url}`);
+  };
+
+  const request = new Request(
+    "https://istebul.com/api/warehouse/receiving",
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer kullanici-token",
+        "Content-Type": "application/json",
+        "Idempotency-Key": REQUEST_ID,
+        Origin: "https://www.istebul.com",
+      },
+      body: JSON.stringify({
+        accountId: ACCOUNT_ID,
+        action: "complete",
+        payload: {
+          receivingId,
+        },
+      }),
+    },
+  );
+
+  const response = await onRequestPost({
+    request,
+    env: {
+      SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_ANON_KEY: "anon-key",
+    },
+    fetch: fetchMock,
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 2);
+  assert.match(
+    calls[1].url,
+    /warehouse_receiving_complete_write$/,
+  );
+
+  const rpcBody = JSON.parse(
+    calls[1].options.body,
+  );
+
+  assert.deepEqual(rpcBody, {
+    p_request_id: REQUEST_ID,
+    p_account_id: ACCOUNT_ID,
+    p_receiving_id: receivingId,
+  });
+  assert.equal(
+    calls[1].options.headers.Authorization,
+    "Bearer kullanici-token",
+  );
+
+  const body = await response.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.data.status, "completed");
 });
 
 test("Receiving write API OPTIONS güvenli CORS başlıklarını döndürür", () => {
