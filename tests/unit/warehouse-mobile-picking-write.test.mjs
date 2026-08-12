@@ -739,3 +739,34 @@ test(
     );
   }
 );
+
+test(
+  "Production build Picking mobil varlıklarını yayınlar",
+  async () => {
+    const source =
+      await readFile(
+        "scripts/production-build.cjs",
+        "utf8"
+      );
+
+    for (
+      const asset of [
+        "css/warehouse/picking-mobile.css",
+        "js/warehouse/picking-lookup.js",
+        "js/warehouse/picking-client.js",
+        "js/warehouse/picking-ui.js",
+        "js/warehouse/picking-write-controller.js"
+      ]
+    ) {
+      assert.match(
+        source,
+        new RegExp(
+          asset.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+          )
+        )
+      );
+    }
+  }
+);
