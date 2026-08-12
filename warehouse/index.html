@@ -546,6 +546,78 @@
       </button>
     </div>
 
+    <div class="warehouse-picking-exceptions">
+      <div class="warehouse-picking-exception-heading">
+        <strong>Açık toplama istisnaları</strong>
+        <span
+          id="toplama-istisna-sayisi"
+          aria-live="polite"
+        >
+          —
+        </span>
+      </div>
+
+      <p>
+        Seçili depodaki çözülmemiş toplama istisnaları salt-okunur olarak
+        listelenir. İstisnayı çözmek stok hareketi oluşturmaz ve toplamayı
+        otomatik tamamlamaz.
+      </p>
+
+      <div class="warehouse-picking-field">
+        <label for="toplama-istisna-secimi">
+          Çözülecek istisna
+        </label>
+
+        <select
+          id="toplama-istisna-secimi"
+          disabled
+        >
+          <option value="">
+            Açık istisnalar yükleniyor
+          </option>
+        </select>
+      </div>
+
+      <div
+        id="toplama-istisna-detayi"
+        class="warehouse-picking-exception-detail"
+        hidden
+      ></div>
+
+      <div class="warehouse-picking-field">
+        <label for="toplama-istisna-cozum-notu">
+          Çözüm notu
+          <small>(opsiyonel)</small>
+        </label>
+
+        <textarea
+          id="toplama-istisna-cozum-notu"
+          rows="3"
+          placeholder="Örn. Fiziksel sayım ile doğrulandı."
+          disabled
+        ></textarea>
+      </div>
+
+      <button
+        id="toplama-istisna-coz"
+        type="button"
+        class="secondary"
+        disabled
+      >
+        İstisnayı Çöz
+      </button>
+
+      <p
+        id="toplama-istisna-durumu"
+        class="warehouse-picking-exception-status"
+        data-state="waiting"
+        aria-live="polite"
+      >
+        Açık istisna verisi bekleniyor.
+      </p>
+    </div>
+
+
   </div>
 </article>
 

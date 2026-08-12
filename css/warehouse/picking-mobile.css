@@ -155,3 +155,85 @@
   cursor: not-allowed;
   opacity: 0.55;
 }
+
+/* A6.5.2 — Picking Exception Resolution */
+
+.warehouse-picking-exceptions {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px dashed rgba(127, 127, 127, 0.45);
+  border-radius: 0.9rem;
+}
+
+.warehouse-picking-exception-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.warehouse-picking-exception-heading span {
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 800;
+}
+
+.warehouse-picking-exceptions > p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.warehouse-picking-exception-detail {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 0.75rem;
+}
+
+.warehouse-picking-exception-detail strong,
+.warehouse-picking-exception-detail span,
+.warehouse-picking-exception-detail small {
+  display: block;
+}
+
+.warehouse-picking-exceptions button {
+  width: 100%;
+  min-height: 48px;
+}
+
+.warehouse-picking-exceptions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.warehouse-picking-exception-status {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  line-height: 1.45;
+}
+
+.warehouse-picking-exception-status[data-state="error"],
+.warehouse-picking-exception-status[data-state="warning"] {
+  font-weight: 700;
+}
+
+.warehouse-picking-exception-status[data-state="success"],
+.warehouse-picking-exception-status[data-state="ready"] {
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .warehouse-picking-exceptions {
+    padding: 0.85rem;
+  }
+
+  .warehouse-picking-exception-heading {
+    align-items: flex-start;
+  }
+}
