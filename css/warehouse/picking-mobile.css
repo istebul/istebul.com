@@ -1,0 +1,132 @@
+.warehouse-picking-panel {
+  scroll-margin-top: 1rem;
+}
+
+.warehouse-picking-help {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+.warehouse-picking-grid,
+.warehouse-picking-scan-grid,
+.warehouse-picking-quantity-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.warehouse-picking-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.warehouse-picking-scan-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.warehouse-picking-quantity-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.warehouse-picking-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.warehouse-picking-field label {
+  font-weight: 700;
+}
+
+.warehouse-picking-field input,
+.warehouse-picking-field select,
+.warehouse-picking-field textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+.warehouse-picking-message {
+  margin: 1rem 0 0;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  line-height: 1.5;
+}
+
+.warehouse-picking-message[data-state="waiting"],
+.warehouse-picking-message[data-state="info"] {
+  opacity: 0.86;
+}
+
+.warehouse-picking-message[data-state="warning"],
+.warehouse-picking-message[data-state="error"] {
+  font-weight: 700;
+}
+
+.warehouse-picking-message[data-state="matched"],
+.warehouse-picking-message[data-state="ready"],
+.warehouse-picking-message[data-state="success"] {
+  font-weight: 700;
+}
+
+.warehouse-picking-scan-step {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 0.9rem;
+}
+
+.warehouse-picking-scan-step small {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.warehouse-picking-scan-step strong {
+  font-size: 1rem;
+}
+
+.warehouse-picking-match,
+.warehouse-picking-task-detail {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 0.75rem;
+}
+
+.warehouse-picking-match span,
+.warehouse-picking-match small,
+.warehouse-picking-task-detail span,
+.warehouse-picking-task-detail small {
+  display: block;
+}
+
+.warehouse-picking-next-step {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px dashed rgba(127, 127, 127, 0.45);
+  border-radius: 0.9rem;
+}
+
+.warehouse-picking-next-step p {
+  margin-top: 0;
+  line-height: 1.5;
+}
+
+.warehouse-picking-next-step button {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .warehouse-picking-grid,
+  .warehouse-picking-scan-grid,
+  .warehouse-picking-quantity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .warehouse-picking-scan-step,
+  .warehouse-picking-next-step {
+    padding: 0.85rem;
+  }
+}

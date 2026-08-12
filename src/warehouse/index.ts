@@ -210,6 +210,7 @@ export type {
 
 export * from "./services/AvailabilityCalculator";
 export * from "./services/ReservationRepository";
+export * from "./services/SupabaseReservationRepository";
 export * from "./services/InMemoryReservationRepository";
 export * from "./services/ReservationValidator";
 export * from "./services/ReservationService";
@@ -274,6 +275,7 @@ export * from "./types/PickingBatch";
 
 export * from "./services/PickingRepository";
 export * from "./services/InMemoryPickingRepository";
+export * from "./services/SupabasePickingRepository";
 export * from "./services/PickingValidator";
 export * from "./services/PickingSuggestionService";
 export * from "./services/PickingRouteOptimizer";
