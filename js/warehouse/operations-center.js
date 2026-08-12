@@ -882,7 +882,18 @@ async function load() {
       return;
     }
 
+    state.accountId = result.data.account?.id || null;
+
     renderData(result.data);
+
+    document.dispatchEvent(
+      new CustomEvent("warehouse:operations-context", {
+        detail: Object.freeze({
+          accountId: state.accountId,
+          warehouseId: state.warehouseId
+        })
+      })
+    );
   } catch (error) {
     renderError(error);
   }
@@ -903,3 +914,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 byId("copilot-ai-btn")?.addEventListener("click", () => {
   void enhanceCopilotWithAi();
 });
+
+export function getWarehouseSupabaseClient() {
+  return getSupabase();
+}
+
+export function getWarehouseOperationsContext() {
+  return Object.freeze({
+    accountId: state.accountId,
+    warehouseId: state.warehouseId
+  });
+}
+
+export async function getWarehouseSession() {
+  return getSession();
+}

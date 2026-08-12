@@ -16,6 +16,7 @@
   <link rel="apple-touch-icon" href="/assets/icons/favicon-192.png">
   <link rel="stylesheet" href="/css/warehouse/operations-center.css">
   <link rel="stylesheet" href="/css/warehouse/barcode-scanner.css">
+  <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
 </head>
 <body>
 <div class="shell">
@@ -39,7 +40,7 @@
       <p>OPERASYON</p>
       <a class="active" href="#genel">⌂ Genel Bakış</a>
       <a href="#stok">▦ Stok Yönetimi</a>
-      <a href="#surecler">⇥ Mal Kabul</a>
+      <a href="#mal-kabul">⇥ Mal Kabul</a>
       <a href="#surecler">⌑ Yerleştirme</a>
       <a href="#surecler">✓ Toplama</a>
       <a href="#surecler">□ Paketleme</a>
@@ -170,6 +171,92 @@
     </section>
 
     <div class="grid">
+      <article class="panel full warehouse-receiving-panel" id="mal-kabul">
+        <div class="heading">
+          <div>
+            <em>MOBİL OPERASYON</em>
+            <h2>Mal Kabul</h2>
+          </div>
+          <span class="count">Barkod + Onay</span>
+        </div>
+
+        <p class="warehouse-receiving-help">
+          Aktif mal kabul kaydını seçin ve ürün barkodunu okutun. Barkod okutma tek başına stok veya mal kabul miktarı yazmaz.
+        </p>
+
+        <div class="warehouse-receiving-grid">
+          <div class="warehouse-receiving-field">
+            <label for="mal-kabul-secimi">Mal kabul kaydı</label>
+            <select id="mal-kabul-secimi" disabled>
+              <option value="">Aktif mal kabul kayıtları yükleniyor</option>
+            </select>
+          </div>
+
+          <div class="warehouse-receiving-field">
+            <label for="mal-kabul-barkod">Okutulan barkod</label>
+            <input
+              id="mal-kabul-barkod"
+              type="text"
+              readonly
+              placeholder="Barkod tarayıcı sonucu bekleniyor"
+            >
+          </div>
+        </div>
+
+        <p
+          id="mal-kabul-mesaji"
+          class="warehouse-receiving-message"
+          data-state="waiting"
+          role="status"
+          aria-live="polite"
+        >
+          Yetkili depo ve aktif mal kabul kayıtları bekleniyor.
+        </p>
+
+        <div
+          id="mal-kabul-eslesme"
+          class="warehouse-receiving-match"
+          hidden
+        ></div>
+
+        <div class="warehouse-receiving-confirmation">
+          <div class="warehouse-receiving-field">
+            <label for="mal-kabul-miktar">Kabul miktarı</label>
+            <input
+              id="mal-kabul-miktar"
+              type="number"
+              inputmode="decimal"
+              min="0.000001"
+              step="0.000001"
+              value="1"
+              disabled
+            >
+          </div>
+
+          <button
+            id="mal-kabul-onayla"
+            type="button"
+            disabled
+          >
+            Miktarı Kabul Et
+          </button>
+        </div>
+
+        <div class="warehouse-receiving-complete">
+          <p>
+            Mal kabulü tamamlamak stok hareketlerinin atomik olarak oluşturulmasını başlatır. Bu işlem miktar kabulünden ayrı bir kullanıcı onayı gerektirir.
+          </p>
+
+          <button
+            id="mal-kabul-tamamla"
+            type="button"
+            disabled
+          >
+            Mal Kabulü Tamamla
+          </button>
+        </div>
+      </article>
+
       <article class="panel wide" id="surecler">
         <div class="heading"><div><em>SÜREÇ HACMİ</em><h2>Operasyon akışı</h2></div><small>Snapshot dönemi</small></div>
         <div class="process" id="surec-listesi">
@@ -265,5 +352,7 @@
 <script type="module" src="/js/warehouse/mobile-navigation.js"></script>
 <script type="module" src="/js/warehouse/barcode-scanner.js"></script>
 <script type="module" src="/js/warehouse/operations-center.js"></script>
+<script type="module" src="/js/warehouse/receiving-ui.js"></script>
+<script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>
 </html>
