@@ -242,6 +242,7 @@ export * from "./types/QualityTask";
 
 export * from "./services/QualityInspectionRepository";
 export * from "./services/InMemoryQualityInspectionRepository";
+export { SupabaseQualityInspectionRepository } from "./services/SupabaseQualityInspectionRepository";
 export * from "./services/QualityInspectionValidator";
 export * from "./services/QualityInspectionService";
 
