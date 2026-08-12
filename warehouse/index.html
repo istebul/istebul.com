@@ -464,8 +464,9 @@
 
   <div class="warehouse-picking-next-step">
     <p>
-      Miktar, eksik toplama, lot/seri teyidi ve atomik stok hareketi bir sonraki
-      kontrollü adımda açık kullanıcı onayı ile etkinleştirilecektir.
+      Kaynak lokasyon ve ürün/SKU barkodu doğrulandıktan sonra miktarı girin.
+      Lot veya seri takibi varsa beklenen değeri teyit edin. Atomik stok hareketi
+      yalnız “Toplamayı Onayla” ve ikinci açık kullanıcı onayından sonra uygulanır.
     </p>
 
     <div class="warehouse-picking-quantity-grid">
@@ -491,6 +492,30 @@
           min="0"
           step="0.000001"
           value="0"
+          disabled
+        >
+      </div>
+    </div>
+
+    <div class="warehouse-picking-quantity-grid warehouse-picking-tracking-grid">
+      <div class="warehouse-picking-field">
+        <label for="toplama-lot-no">Lot teyidi</label>
+        <input
+          id="toplama-lot-no"
+          type="text"
+          autocomplete="off"
+          placeholder="Lot takibi yok"
+          disabled
+        >
+      </div>
+
+      <div class="warehouse-picking-field">
+        <label for="toplama-seri-no">Seri numarası teyidi</label>
+        <input
+          id="toplama-seri-no"
+          type="text"
+          autocomplete="off"
+          placeholder="Seri takibi yok"
           disabled
         >
       </div>
@@ -605,6 +630,7 @@
 <script type="module" src="/js/warehouse/putaway-ui.js"></script>
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
 <script type="module" src="/js/warehouse/picking-ui.js"></script>
+<script type="module" src="/js/warehouse/picking-write-controller.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>

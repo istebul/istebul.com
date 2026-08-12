@@ -110,8 +110,551 @@ function setStage(stage) {
   }
 }
 
+function resetPickingWriteControls() {
+  const quantity =
+    byId(
+      "toplama-miktar"
+    );
+
+  const shortQuantity =
+    byId(
+      "toplama-eksik-miktar"
+    );
+
+  const lot =
+    byId(
+      "toplama-lot-no"
+    );
+
+  const serial =
+    byId(
+      "toplama-seri-no"
+    );
+
+  const confirmButton =
+    byId(
+      "toplama-onayla"
+    );
+
+  if (quantity) {
+    quantity.value = "0";
+    quantity.disabled = true;
+    quantity.removeAttribute("max");
+  }
+
+  if (shortQuantity) {
+    shortQuantity.value = "0";
+    shortQuantity.disabled = true;
+    shortQuantity.removeAttribute("max");
+  }
+
+  if (lot) {
+    lot.value = "";
+    lot.disabled = true;
+    lot.placeholder =
+      "Lot takibi yok";
+  }
+
+  if (serial) {
+    serial.value = "";
+    serial.disabled = true;
+    serial.placeholder =
+      "Seri takibi yok";
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = true;
+  }
+}
+
+function currentPickingItem() {
+  return (
+    uiState.productMatch
+      ?.item ||
+    uiState.taskContext
+      ?.item ||
+    null
+  );
+}
+
+function currentPickingRemainingQuantity() {
+  const fromMatch =
+    Number(
+      uiState.productMatch
+        ?.remainingQuantity
+    );
+
+  if (
+    Number.isFinite(fromMatch)
+  ) {
+    return fromMatch;
+  }
+
+  const fromItem =
+    Number(
+      currentPickingItem()
+        ?.remaining_quantity
+    );
+
+  return Number.isFinite(fromItem)
+    ? fromItem
+    : 0;
+}
+
+function expectedPickingLot() {
+  return String(
+    currentPickingItem()
+      ?.lot_number || ""
+  ).trim();
+}
+
+function expectedPickingSerial() {
+  return String(
+    currentPickingItem()
+      ?.serial_number || ""
+  ).trim();
+}
+
+function pickingQuantityInputValue(
+  id
+) {
+  return Number(
+    byId(id)?.value ?? 0
+  );
+}
+
+function pickingWriteControlsAreValid() {
+  if (
+    !uiState.taskContext ||
+    !uiState.sourceLocationMatch ||
+    !uiState.productMatch
+  ) {
+    return false;
+  }
+
+  const quantity =
+    pickingQuantityInputValue(
+      "toplama-miktar"
+    );
+
+  const shortQuantity =
+    pickingQuantityInputValue(
+      "toplama-eksik-miktar"
+    );
+
+  const remaining =
+    currentPickingRemainingQuantity();
+
+  if (
+    !Number.isFinite(quantity) ||
+    !Number.isFinite(shortQuantity) ||
+    quantity < 0 ||
+    shortQuantity < 0 ||
+    quantity + shortQuantity <= 0 ||
+    !Number.isFinite(remaining) ||
+    quantity + shortQuantity >
+      remaining + 0.0000001
+  ) {
+    return false;
+  }
+
+  const expectedLot =
+    expectedPickingLot();
+
+  if (
+    expectedLot &&
+    String(
+      byId(
+        "toplama-lot-no"
+      )?.value || ""
+    ).trim() !== expectedLot
+  ) {
+    return false;
+  }
+
+  const expectedSerial =
+    expectedPickingSerial();
+
+  if (
+    expectedSerial &&
+    String(
+      byId(
+        "toplama-seri-no"
+      )?.value || ""
+    ).trim() !== expectedSerial
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function refreshPickingConfirmationAvailability() {
+  const confirmButton =
+    byId(
+      "toplama-onayla"
+    );
+
+  if (!confirmButton) {
+    return;
+  }
+
+  confirmButton.disabled =
+    !pickingWriteControlsAreValid();
+}
+
+function preparePickingWriteControls() {
+  if (!uiState.productMatch) {
+    resetPickingWriteControls();
+    return;
+  }
+
+  const remaining =
+    currentPickingRemainingQuantity();
+
+  if (
+    !Number.isFinite(remaining) ||
+    remaining <= 0
+  ) {
+    resetPickingWriteControls();
+    return;
+  }
+
+  const quantity =
+    byId(
+      "toplama-miktar"
+    );
+
+  const shortQuantity =
+    byId(
+      "toplama-eksik-miktar"
+    );
+
+  const lot =
+    byId(
+      "toplama-lot-no"
+    );
+
+  const serial =
+    byId(
+      "toplama-seri-no"
+    );
+
+  if (quantity) {
+    quantity.value = "0";
+    quantity.disabled = false;
+    quantity.max =
+      String(remaining);
+  }
+
+  if (shortQuantity) {
+    shortQuantity.value = "0";
+    shortQuantity.disabled = false;
+    shortQuantity.max =
+      String(remaining);
+  }
+
+  const expectedLot =
+    expectedPickingLot();
+
+  if (lot) {
+    lot.value = "";
+    lot.disabled =
+      !expectedLot;
+
+    lot.placeholder =
+      expectedLot
+        ? `Beklenen lot: ${expectedLot}`
+        : "Lot takibi yok";
+  }
+
+  const expectedSerial =
+    expectedPickingSerial();
+
+  if (serial) {
+    serial.value = "";
+    serial.disabled =
+      !expectedSerial;
+
+    serial.placeholder =
+      expectedSerial
+        ? `Beklenen seri: ${expectedSerial}`
+        : "Seri takibi yok";
+  }
+
+  refreshPickingConfirmationAvailability();
+}
+
+function buildPickingConfirmation() {
+  if (!uiState.taskContext) {
+    throw new Error(
+      "Toplama görevi doğrulanmalıdır."
+    );
+  }
+
+  if (!uiState.sourceLocationMatch) {
+    throw new Error(
+      "Kaynak lokasyon barkodu doğrulanmalıdır."
+    );
+  }
+
+  if (!uiState.productMatch) {
+    throw new Error(
+      "Ürün veya SKU barkodu doğrulanmalıdır."
+    );
+  }
+
+  const quantity =
+    pickingQuantityInputValue(
+      "toplama-miktar"
+    );
+
+  const shortQuantity =
+    pickingQuantityInputValue(
+      "toplama-eksik-miktar"
+    );
+
+  const remaining =
+    currentPickingRemainingQuantity();
+
+  if (
+    !Number.isFinite(quantity) ||
+    quantity < 0
+  ) {
+    throw new Error(
+      "Toplanan miktar geçerli ve sıfır veya sıfırdan büyük olmalıdır."
+    );
+  }
+
+  if (
+    !Number.isFinite(shortQuantity) ||
+    shortQuantity < 0
+  ) {
+    throw new Error(
+      "Eksik toplama miktarı geçerli ve sıfır veya sıfırdan büyük olmalıdır."
+    );
+  }
+
+  if (
+    quantity +
+      shortQuantity <=
+    0
+  ) {
+    throw new Error(
+      "Toplanan miktar veya eksik toplama miktarından en az biri sıfırdan büyük olmalıdır."
+    );
+  }
+
+  if (
+    quantity +
+      shortQuantity >
+      remaining + 0.0000001
+  ) {
+    throw new Error(
+      `Toplanan ve eksik bildirilen toplam miktar kalan miktarı aşamaz. Kalan: ${formatQuantity(
+        remaining
+      )}`
+    );
+  }
+
+  const item =
+    currentPickingItem();
+
+  const pickingId =
+    String(
+      uiState.taskContext
+        ?.picking?.id ||
+      uiState.taskContext
+        ?.task?.picking_id ||
+      ""
+    ).trim();
+
+  const pickingItemId =
+    String(
+      item?.id ||
+      uiState.taskContext
+        ?.task?.picking_item_id ||
+      ""
+    ).trim();
+
+  const sourceLocationId =
+    String(
+      uiState.sourceLocationMatch
+        ?.location?.id ||
+      uiState.taskContext
+        ?.task?.source_location_id ||
+      item?.source_location_id ||
+      ""
+    ).trim();
+
+  const destinationLocationId =
+    String(
+      item?.destination_location_id ||
+      uiState.taskContext
+        ?.task?.destination_location_id ||
+      uiState.taskContext
+        ?.picking?.destination_location_id ||
+      ""
+    ).trim();
+
+  if (!pickingId) {
+    throw new Error(
+      "Toplama kimliği bulunamadı."
+    );
+  }
+
+  if (!pickingItemId) {
+    throw new Error(
+      "Toplama satır kimliği bulunamadı."
+    );
+  }
+
+  if (!sourceLocationId) {
+    throw new Error(
+      "Kaynak lokasyon kimliği bulunamadı."
+    );
+  }
+
+  if (!destinationLocationId) {
+    throw new Error(
+      "Hedef lokasyon kimliği bulunamadı."
+    );
+  }
+
+  if (
+    sourceLocationId ===
+    destinationLocationId
+  ) {
+    throw new Error(
+      "Kaynak ve hedef lokasyon aynı olamaz."
+    );
+  }
+
+  const barcode =
+    String(
+      uiState.productMatch
+        ?.barcode?.value ||
+      uiState.productBarcodeValue ||
+      ""
+    ).trim();
+
+  if (!barcode) {
+    throw new Error(
+      "Doğrulanmış ürün veya SKU barkodu bulunamadı."
+    );
+  }
+
+  const expectedLot =
+    expectedPickingLot();
+
+  const enteredLot =
+    String(
+      byId(
+        "toplama-lot-no"
+      )?.value || ""
+    ).trim();
+
+  if (
+    expectedLot &&
+    enteredLot !== expectedLot
+  ) {
+    throw new Error(
+      `Lot doğrulaması başarısız. Beklenen lot: ${expectedLot}`
+    );
+  }
+
+  const expectedSerial =
+    expectedPickingSerial();
+
+  const enteredSerial =
+    String(
+      byId(
+        "toplama-seri-no"
+      )?.value || ""
+    ).trim();
+
+  if (
+    expectedSerial &&
+    enteredSerial !==
+      expectedSerial
+  ) {
+    throw new Error(
+      `Seri numarası doğrulaması başarısız. Beklenen seri: ${expectedSerial}`
+    );
+  }
+
+  return Object.freeze({
+    pickingId,
+    pickingItemId,
+    sourceLocationId,
+    destinationLocationId,
+    quantity,
+    shortQuantity,
+    barcode,
+
+    ...(expectedLot
+      ? {
+          lotNumber:
+            expectedLot
+        }
+      : {}),
+
+    ...(expectedSerial
+      ? {
+          serialNumber:
+            expectedSerial
+        }
+      : {})
+  });
+}
+
+function confirmPickingCandidate() {
+  const confirmation =
+    buildPickingConfirmation();
+
+  const item =
+    currentPickingItem();
+
+  const quantityText =
+    `${formatQuantity(
+      confirmation.quantity
+    )} ${unitLabel(
+      item?.unit
+    )}`;
+
+  const shortText =
+    confirmation.shortQuantity > 0
+      ? ` · Eksik: ${formatQuantity(
+          confirmation.shortQuantity
+        )} ${unitLabel(
+          item?.unit
+        )}`
+      : "";
+
+  const approved =
+    window.confirm(
+      `${quantityText} toplama işlemini onaylıyor musunuz?${shortText}\n\nBu açık onay sonrasında atomik stok transferi uygulanacaktır.`
+    );
+
+  if (!approved) {
+    return;
+  }
+
+  document.dispatchEvent(
+    new CustomEvent(
+      "warehouse:picking-confirm",
+      {
+        detail:
+          confirmation
+      }
+    )
+  );
+}
+
 function clearProductMatch() {
-  uiState.productMatch =
+  resetPickingWriteControls();
+
+uiState.productMatch =
     null;
 
   uiState.productBarcodeValue =
@@ -930,8 +1473,11 @@ async function resolveProductBarcode(
       result
     );
 
+
+      preparePickingWriteControls();
+
     setMessage(
-      "Kaynak lokasyon ve ürün doğrulandı. Bu A6.2 aşaması salt-okunurdur; barkod taraması execute_item çağırmaz ve stok yazmaz.",
+      "Kaynak lokasyon ve ürün doğrulandı. Toplanan miktarı ve gerekiyorsa eksik toplama miktarını girin. Lot veya seri takibi varsa beklenen değeri teyit edin. Stok hareketi yalnız açık kullanıcı onayından sonra uygulanır.",
       "matched"
     );
   } catch (error) {
@@ -1005,6 +1551,121 @@ function bindPickingEvents() {
       void loadSelectedTaskContext();
     }
   );
+
+  const quantityInput =
+    byId(
+      "toplama-miktar"
+    );
+
+  const shortQuantityInput =
+    byId(
+      "toplama-eksik-miktar"
+    );
+
+  const lotInput =
+    byId(
+      "toplama-lot-no"
+    );
+
+  const serialInput =
+    byId(
+      "toplama-seri-no"
+    );
+
+  const confirmButton =
+    byId(
+      "toplama-onayla"
+    );
+
+  for (
+    const input of [
+      quantityInput,
+      shortQuantityInput,
+      lotInput,
+      serialInput
+    ]
+  ) {
+    input?.addEventListener(
+      "input",
+      () => {
+        refreshPickingConfirmationAvailability();
+      }
+    );
+  }
+
+  confirmButton?.addEventListener(
+    "click",
+    () => {
+      try {
+        confirmPickingCandidate();
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Toplama onayı hazırlanamadı.",
+          "error"
+        );
+      }
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-write-start",
+    () => {
+      for (
+        const input of [
+          quantityInput,
+          shortQuantityInput,
+          lotInput,
+          serialInput
+        ]
+      ) {
+        if (input) {
+          input.disabled =
+            true;
+        }
+      }
+
+      if (confirmButton) {
+        confirmButton.disabled =
+          true;
+      }
+
+      setMessage(
+        "Toplama onayı alındı. Atomik stok transferi güvenli bağlantı üzerinden uygulanıyor.",
+        "info"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-write-success",
+    () => {
+      resetPickingUi();
+
+      setMessage(
+        "Toplama satırı atomik olarak işlendi. Aktif görev listesi yenileniyor.",
+        "success"
+      );
+
+      void loadPickingTaskOptions();
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-write-error",
+    (event) => {
+      preparePickingWriteControls();
+
+      setMessage(
+        event?.detail?.message ||
+          "Toplama işlemi kaydedilemedi.",
+        "error"
+      );
+    }
+  );
+
+
 
   window.addEventListener(
     "hashchange",
