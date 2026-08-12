@@ -255,6 +255,7 @@ export * from "./types/Putaway";
 
 export * from "./services/PutawayRepository";
 export * from "./services/InMemoryPutawayRepository";
+export { SupabasePutawayRepository } from "./services/SupabasePutawayRepository";
 export * from "./services/PutawayValidator";
 export * from "./services/PutawayLocationEvaluator";
 export * from "./services/PutawaySuggestionService";

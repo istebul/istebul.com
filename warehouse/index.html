@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="/css/warehouse/operations-center.css">
   <link rel="stylesheet" href="/css/warehouse/barcode-scanner.css">
   <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
+  <link rel="stylesheet" href="/css/warehouse/putaway-mobile.css">
 </head>
 <body>
 <div class="shell">
@@ -41,7 +42,7 @@
       <a class="active" href="#genel">⌂ Genel Bakış</a>
       <a href="#stok">▦ Stok Yönetimi</a>
       <a href="#mal-kabul">⇥ Mal Kabul</a>
-      <a href="#surecler">⌑ Yerleştirme</a>
+      <a href="#yerlestirme">⌑ Yerleştirme</a>
       <a href="#surecler">✓ Toplama</a>
       <a href="#surecler">□ Paketleme</a>
       <a href="#surecler">→ Sevkiyat</a>
@@ -257,6 +258,120 @@
         </div>
       </article>
 
+<article class="panel full warehouse-putaway-panel" id="yerlestirme">
+  <div class="heading">
+    <div>
+      <em>MOBİL OPERASYON</em>
+      <h2>Yerleştirme</h2>
+    </div>
+    <span class="count">2 Barkod + Onay</span>
+  </div>
+
+  <p class="warehouse-putaway-help">
+    Aktif yerleştirme kaydını seçin. Önce ürün veya SKU barkodunu, ardından hedef lokasyon barkodunu okutun. Barkod okutma tek başına stok hareketi oluşturmaz.
+  </p>
+
+  <div class="warehouse-putaway-grid">
+    <div class="warehouse-putaway-field">
+      <label for="yerlestirme-secimi">Yerleştirme kaydı</label>
+      <select id="yerlestirme-secimi" disabled>
+        <option value="">Aktif yerleştirme kayıtları yükleniyor</option>
+      </select>
+    </div>
+
+    <div class="warehouse-putaway-field">
+      <label for="yerlestirme-asama">Barkod aşaması</label>
+      <input
+        id="yerlestirme-asama"
+        type="text"
+        readonly
+        value="Ürün / SKU barkodu bekleniyor"
+      >
+    </div>
+  </div>
+
+  <p
+    id="yerlestirme-mesaji"
+    class="warehouse-putaway-message"
+    data-state="waiting"
+    role="status"
+    aria-live="polite"
+  >
+    Yetkili depo ve aktif yerleştirme kayıtları bekleniyor.
+  </p>
+
+  <div class="warehouse-putaway-scan-grid">
+    <section class="warehouse-putaway-scan-step">
+      <small>1. ADIM</small>
+      <strong>Ürün / SKU barkodu</strong>
+      <input
+        id="yerlestirme-urun-barkod"
+        type="text"
+        readonly
+        placeholder="Ürün barkodu bekleniyor"
+      >
+      <div
+        id="yerlestirme-urun-eslesme"
+        class="warehouse-putaway-match"
+        hidden
+      ></div>
+    </section>
+
+    <section class="warehouse-putaway-scan-step">
+      <small>2. ADIM</small>
+      <strong>Hedef lokasyon barkodu</strong>
+      <input
+        id="yerlestirme-lokasyon-barkod"
+        type="text"
+        readonly
+        placeholder="Önce ürün doğrulanmalıdır"
+      >
+      <div
+        id="yerlestirme-lokasyon-eslesme"
+        class="warehouse-putaway-match"
+        hidden
+      ></div>
+    </section>
+  </div>
+
+  <div class="warehouse-putaway-confirmation">
+    <div class="warehouse-putaway-field">
+      <label for="yerlestirme-miktar">Yerleştirme miktarı</label>
+      <input
+        id="yerlestirme-miktar"
+        type="number"
+        inputmode="decimal"
+        min="0.000001"
+        step="0.000001"
+        value="1"
+        disabled
+      >
+    </div>
+
+    <button
+      id="yerlestirme-onayla"
+      type="button"
+      disabled
+    >
+      Yerleştirmeyi Onayla
+    </button>
+  </div>
+
+  <div class="warehouse-putaway-complete">
+    <p>
+      Yerleştirmeyi tamamlama işlemi, tüm satırlar yerleştirildikten sonra ayrıca açık kullanıcı onayı gerektirir. Tamamlama işlemi yeni stok transferi oluşturmaz; yalnız doğrulanmış yerleştirme yaşam döngüsünü tamamlar.
+    </p>
+
+    <button
+      id="yerlestirme-tamamla"
+      type="button"
+      disabled
+    >
+      Yerleştirmeyi Tamamla
+    </button>
+  </div>
+</article>
+
       <article class="panel wide" id="surecler">
         <div class="heading"><div><em>SÜREÇ HACMİ</em><h2>Operasyon akışı</h2></div><small>Snapshot dönemi</small></div>
         <div class="process" id="surec-listesi">
@@ -352,6 +467,8 @@
 <script type="module" src="/js/warehouse/mobile-navigation.js"></script>
 <script type="module" src="/js/warehouse/barcode-scanner.js"></script>
 <script type="module" src="/js/warehouse/operations-center.js"></script>
+<script type="module" src="/js/warehouse/putaway-ui.js"></script>
+<script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>
