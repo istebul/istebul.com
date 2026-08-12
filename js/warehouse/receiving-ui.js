@@ -421,7 +421,10 @@ function bindReceivingEvents() {
   document.addEventListener(
     "warehouse:barcode-scan",
     (event) => {
-      if (window.location.hash === "#yerlestirme") {
+      if (
+        window.location.hash === "#yerlestirme" ||
+        window.location.hash === "#toplama"
+      ) {
         return;
       }
 

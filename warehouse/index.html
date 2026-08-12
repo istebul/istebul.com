@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="/css/warehouse/barcode-scanner.css">
   <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
   <link rel="stylesheet" href="/css/warehouse/putaway-mobile.css">
+<link rel="stylesheet" href="/css/warehouse/picking-mobile.css">
 </head>
 <body>
 <div class="shell">
@@ -43,6 +44,7 @@
       <a href="#stok">▦ Stok Yönetimi</a>
       <a href="#mal-kabul">⇥ Mal Kabul</a>
       <a href="#yerlestirme">⌑ Yerleştirme</a>
+<a href="#toplama">⌑ Toplama</a>
       <a href="#surecler">✓ Toplama</a>
       <a href="#surecler">□ Paketleme</a>
       <a href="#surecler">→ Sevkiyat</a>
@@ -372,6 +374,164 @@
   </div>
 </article>
 
+<article class="panel full warehouse-picking-panel" id="toplama">
+  <div class="heading">
+    <div>
+      <em>MOBİL OPERASYON</em>
+      <h2>Toplama</h2>
+    </div>
+    <span class="count">2 Barkod + Açık Onay</span>
+  </div>
+
+  <p class="warehouse-picking-help">
+    Aktif toplama görevini seçin. Önce görevde beklenen kaynak lokasyon barkodunu,
+    ardından ürün veya SKU barkodunu okutun. Barkod okutma tek başına stok hareketi
+    oluşturmaz ve toplama miktarı yazmaz.
+  </p>
+
+  <div class="warehouse-picking-grid">
+    <div class="warehouse-picking-field">
+      <label for="toplama-gorevi-secimi">Toplama görevi</label>
+      <select id="toplama-gorevi-secimi" disabled>
+        <option value="">Aktif toplama görevleri yükleniyor</option>
+      </select>
+    </div>
+
+    <div class="warehouse-picking-field">
+      <label for="toplama-asama">Barkod aşaması</label>
+      <input
+        id="toplama-asama"
+        type="text"
+        readonly
+        value="Kaynak lokasyon barkodu bekleniyor"
+      >
+    </div>
+  </div>
+
+  <div
+    id="toplama-gorev-detayi"
+    class="warehouse-picking-task-detail"
+    hidden
+  ></div>
+
+  <p
+    id="toplama-mesaji"
+    class="warehouse-picking-message"
+    data-state="waiting"
+    role="status"
+    aria-live="polite"
+  >
+    Yetkili depo ve aktif toplama görevleri bekleniyor.
+  </p>
+
+  <div class="warehouse-picking-scan-grid">
+    <section class="warehouse-picking-scan-step">
+      <small>1. ADIM</small>
+      <strong>Kaynak lokasyon barkodu</strong>
+
+      <input
+        id="toplama-kaynak-barkod"
+        type="text"
+        readonly
+        placeholder="Kaynak lokasyon barkodu bekleniyor"
+      >
+
+      <div
+        id="toplama-kaynak-eslesme"
+        class="warehouse-picking-match"
+        hidden
+      ></div>
+    </section>
+
+    <section class="warehouse-picking-scan-step">
+      <small>2. ADIM</small>
+      <strong>Ürün / SKU barkodu</strong>
+
+      <input
+        id="toplama-urun-barkod"
+        type="text"
+        readonly
+        placeholder="Önce kaynak lokasyon doğrulanmalıdır"
+      >
+
+      <div
+        id="toplama-urun-eslesme"
+        class="warehouse-picking-match"
+        hidden
+      ></div>
+    </section>
+  </div>
+
+  <div class="warehouse-picking-next-step">
+    <p>
+      Kaynak lokasyon ve ürün/SKU barkodu doğrulandıktan sonra miktarı girin.
+      Lot veya seri takibi varsa beklenen değeri teyit edin. Atomik stok hareketi
+      yalnız “Toplamayı Onayla” ve ikinci açık kullanıcı onayından sonra uygulanır.
+    </p>
+
+    <div class="warehouse-picking-quantity-grid">
+      <div class="warehouse-picking-field">
+        <label for="toplama-miktar">Toplanan miktar</label>
+        <input
+          id="toplama-miktar"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.000001"
+          value="0"
+          disabled
+        >
+      </div>
+
+      <div class="warehouse-picking-field">
+        <label for="toplama-eksik-miktar">Eksik toplama miktarı</label>
+        <input
+          id="toplama-eksik-miktar"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.000001"
+          value="0"
+          disabled
+        >
+      </div>
+    </div>
+
+    <div class="warehouse-picking-quantity-grid warehouse-picking-tracking-grid">
+      <div class="warehouse-picking-field">
+        <label for="toplama-lot-no">Lot teyidi</label>
+        <input
+          id="toplama-lot-no"
+          type="text"
+          autocomplete="off"
+          placeholder="Lot takibi yok"
+          disabled
+        >
+      </div>
+
+      <div class="warehouse-picking-field">
+        <label for="toplama-seri-no">Seri numarası teyidi</label>
+        <input
+          id="toplama-seri-no"
+          type="text"
+          autocomplete="off"
+          placeholder="Seri takibi yok"
+          disabled
+        >
+      </div>
+    </div>
+
+    <button
+      id="toplama-onayla"
+      type="button"
+      disabled
+    >
+      Toplamayı Onayla
+    </button>
+  </div>
+</article>
+
+
       <article class="panel wide" id="surecler">
         <div class="heading"><div><em>SÜREÇ HACMİ</em><h2>Operasyon akışı</h2></div><small>Snapshot dönemi</small></div>
         <div class="process" id="surec-listesi">
@@ -469,6 +629,8 @@
 <script type="module" src="/js/warehouse/operations-center.js"></script>
 <script type="module" src="/js/warehouse/putaway-ui.js"></script>
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
+<script type="module" src="/js/warehouse/picking-ui.js"></script>
+<script type="module" src="/js/warehouse/picking-write-controller.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>
