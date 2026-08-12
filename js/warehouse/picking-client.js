@@ -370,3 +370,141 @@ export async function executePickingItem({
       body.data
   };
 }
+
+/* A6.4.1 — Explicit Picking Complete */
+
+export function buildPickingCompletePayload(
+  input
+) {
+  return Object.freeze({
+    pickingId:
+      requireUuid(
+        input?.pickingId,
+        "Toplama kimliği"
+      )
+  });
+}
+
+export async function completePicking({
+  accessToken,
+  accountId,
+  pickingId,
+  requestId = createRequestId(),
+  fetchImpl = fetch
+}) {
+  const token =
+    requireAccessToken(
+      accessToken
+    );
+
+  const normalizedAccountId =
+    requireUuid(
+      accountId,
+      "Firma kimliği"
+    );
+
+  const normalizedRequestId =
+    requireUuid(
+      requestId,
+      "İstek kimliği"
+    );
+
+  const payload =
+    buildPickingCompletePayload({
+      pickingId
+    });
+
+  const response =
+    await fetchImpl(
+      PICKING_API_URL,
+      {
+        method: "POST",
+
+        headers: {
+          Accept:
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
+
+          "Content-Type":
+            "application/json",
+
+          "Idempotency-Key":
+            normalizedRequestId
+        },
+
+        cache:
+          "no-store",
+
+        body:
+          JSON.stringify({
+            accountId:
+              normalizedAccountId,
+
+            action:
+              "complete",
+
+            payload
+          })
+      }
+    );
+
+  const body =
+    await readJsonSafely(
+      response
+    );
+
+  if (
+    !response.ok ||
+    !body?.ok
+  ) {
+    if (
+      response.status === 401
+    ) {
+      throw new Error(
+        apiErrorMessage(
+          body,
+          "WarehouseIQ oturumunuz geçersiz veya süresi dolmuş."
+        )
+      );
+    }
+
+    if (
+      response.status === 403
+    ) {
+      throw new Error(
+        apiErrorMessage(
+          body,
+          "Bu firma için toplamayı tamamlama yetkiniz bulunmuyor."
+        )
+      );
+    }
+
+    if (
+      response.status === 409
+    ) {
+      throw new Error(
+        apiErrorMessage(
+          body,
+          "Toplama henüz tamamlanamaz. Kalan satırları ve açık istisnaları kontrol edin."
+        )
+      );
+    }
+
+    throw new Error(
+      apiErrorMessage(
+        body,
+        "Toplama tamamlanamadı."
+      )
+    );
+  }
+
+  return {
+    requestId:
+      normalizedRequestId,
+
+    data:
+      body.data
+  };
+}

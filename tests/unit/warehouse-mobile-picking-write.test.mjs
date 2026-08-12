@@ -697,45 +697,158 @@ test(
 );
 
 test(
-  "A6.3.1 execute UI complete veya resolve_exception işlemini bağlamaz",
+  "A6.3 execute ve barkod akışları A6.4 explicit complete işlemini otomatik başlatmaz",
   async () => {
-    const sources =
-      await Promise.all([
-        readFile(
-          "js/warehouse/picking-client.js",
-          "utf8"
-        ),
-        readFile(
-          "js/warehouse/picking-write-controller.js",
-          "utf8"
-        ),
-        readFile(
-          "js/warehouse/picking-ui.js",
-          "utf8"
-        )
-      ]);
+    const uiSource =
+      await readFile(
+        "js/warehouse/picking-ui.js",
+        "utf8"
+      );
 
-    const combined =
-      sources.join("\n");
+    const controllerSource =
+      await readFile(
+        "js/warehouse/picking-write-controller.js",
+        "utf8"
+      );
 
-    assert.doesNotMatch(
-      combined,
+    const clientSource =
+      await readFile(
+        "js/warehouse/picking-client.js",
+        "utf8"
+      );
+
+    /*
+     * A6.4 ile explicit complete artık UI'da bilinçli olarak vardır.
+     */
+    assert.match(
+      uiSource,
+      /function confirmPickingCompletion/
+    );
+
+    assert.match(
+      uiSource,
       /warehouse:picking-complete-confirm/
     );
 
+    assert.match(
+      controllerSource,
+      /warehouse:picking-complete-confirm/
+    );
+
+    assert.match(
+      clientSource,
+      /action:\s*["']complete["']/
+    );
+
+    /*
+     * Fakat barkod listener complete üretmemelidir.
+     */
+    const barcodeStart =
+      uiSource.indexOf(
+        '"warehouse:barcode-scan"'
+      );
+
+    assert.ok(
+      barcodeStart >= 0,
+      "Picking barkod listener bulunamadı."
+    );
+
+    const barcodeEnd =
+      uiSource.indexOf(
+        "select?.addEventListener",
+        barcodeStart
+      );
+
+    assert.ok(
+      barcodeEnd > barcodeStart,
+      "Picking barkod listener sınırı bulunamadı."
+    );
+
+    const barcodeBlock =
+      uiSource.slice(
+        barcodeStart,
+        barcodeEnd
+      );
+
     assert.doesNotMatch(
-      combined,
+      barcodeBlock,
+      /warehouse:picking-complete-confirm/
+    );
+
+    /*
+     * Controller hiçbir koşulda barkod dinlememelidir.
+     */
+    assert.doesNotMatch(
+      controllerSource,
+      /warehouse:barcode-scan/
+    );
+
+    /*
+     * execute_item success listenerlarının hiçbiri
+     * complete-confirm event üretmemelidir.
+     */
+    let cursor = 0;
+    let writeSuccessCount = 0;
+
+    while (true) {
+      const start =
+        uiSource.indexOf(
+          '"warehouse:picking-write-success"',
+          cursor
+        );
+
+      if (start < 0) {
+        break;
+      }
+
+      writeSuccessCount += 1;
+
+      const end =
+        uiSource.indexOf(
+          "document.addEventListener",
+          start + 1
+        );
+
+      const block =
+        end >= 0
+          ? uiSource.slice(
+              start,
+              end
+            )
+          : uiSource.slice(
+              start
+            );
+
+      assert.doesNotMatch(
+        block,
+        /warehouse:picking-complete-confirm/
+      );
+
+      cursor =
+        start + 1;
+    }
+
+    assert.ok(
+      writeSuccessCount >= 1,
+      "Picking write success listener bulunamadı."
+    );
+
+    /*
+     * A6.5 öncesinde resolve_exception hâlâ bağlı değildir.
+     */
+    assert.doesNotMatch(
+      uiSource,
       /warehouse:picking-exception-confirm/
     );
 
     assert.doesNotMatch(
-      combined,
-      /action:\s*"complete"/
+      controllerSource,
+      /warehouse:picking-exception-confirm/
     );
 
     assert.doesNotMatch(
-      combined,
-      /action:\s*"resolve_exception"/
+      clientSource,
+      /action:\s*["']resolve_exception["']/
     );
   }
 );
