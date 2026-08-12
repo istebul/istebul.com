@@ -1707,3 +1707,247 @@ if (
     }
   );
 }
+
+/* A6.4.2 — Explicit Picking Complete UI */
+
+function pickingIdForCompletion() {
+  const context =
+    uiState.taskContext;
+
+  if (!context) {
+    throw new Error(
+      "Tamamlanacak toplama görevi seçilmelidir."
+    );
+  }
+
+  /*
+   * Lookup sözleşmesinde Picking kimliği task context
+   * üzerinden taşınır. Farklı read-model gösterimlerini
+   * yalnız kimlik okumak amacıyla destekliyoruz.
+   */
+  const candidates = [
+    context.pickingId,
+    context.picking_id,
+    context.picking?.id,
+    context.task?.pickingId,
+    context.task?.picking_id,
+    context.item?.pickingId,
+    context.item?.picking_id
+  ];
+
+  const pickingId =
+    candidates.find(
+      (value) =>
+        typeof value === "string" &&
+        value.trim()
+    );
+
+  if (!pickingId) {
+    throw new Error(
+      "Toplama kimliği doğrulanamadı. Görevi yeniden seçip deneyin."
+    );
+  }
+
+  return String(
+    pickingId
+  ).trim();
+}
+
+function refreshPickingCompletionAvailability() {
+  const button =
+    byId(
+      "toplama-tamamla"
+    );
+
+  if (!button) {
+    return;
+  }
+
+  /*
+   * UI yalnız geçerli bir task context bulunmasını ön koşul yapar.
+   *
+   * Nihai tamamlanabilirlik otoritesi backend RPC'dir:
+   * - remaining_quantity = 0
+   * - movement kanıtı
+   * - çözülmemiş exception olmaması
+   *
+   * Böylece stale/read-model verisi güvenlik sınırını aşamaz.
+   */
+  try {
+    pickingIdForCompletion();
+
+    button.disabled =
+      false;
+  } catch {
+    button.disabled =
+      true;
+  }
+}
+
+function confirmPickingCompletion() {
+  const pickingId =
+    pickingIdForCompletion();
+
+  const approved =
+    window.confirm(
+      "Toplamayı tamamlamak istediğinize emin misiniz?\n\n" +
+      "Tamamlama yalnız tüm toplama satırları işlendiğinde ve açık istisna kalmadığında kabul edilir. " +
+      "Bu işlem yeni stok hareketi oluşturmaz."
+    );
+
+  if (!approved) {
+    return;
+  }
+
+  document.dispatchEvent(
+    new CustomEvent(
+      "warehouse:picking-complete-confirm",
+      {
+        detail:
+          Object.freeze({
+            pickingId
+          })
+      }
+    )
+  );
+}
+
+function bindPickingCompletionEvents() {
+  const button =
+    byId(
+      "toplama-tamamla"
+    );
+
+  button?.addEventListener(
+    "click",
+    () => {
+      try {
+        confirmPickingCompletion();
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Toplama tamamlama onayı hazırlanamadı.",
+          "error"
+        );
+
+        refreshPickingCompletionAvailability();
+      }
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-complete-start",
+    () => {
+      if (button) {
+        button.disabled =
+          true;
+      }
+
+      setMessage(
+        "Toplamayı tamamlama onayı alındı. Görev yaşam döngüsü güvenli bağlantı üzerinden tamamlanıyor.",
+        "info"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-complete-success",
+    () => {
+      resetPickingUi();
+
+      setMessage(
+        "Toplama başarıyla tamamlandı. Aktif görev listesi yenileniyor.",
+        "success"
+      );
+
+      void loadPickingTaskOptions();
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-complete-error",
+    (event) => {
+      refreshPickingCompletionAvailability();
+
+      setMessage(
+        event?.detail?.message ||
+          "Toplama tamamlanamadı. Kalan satırları ve açık istisnaları kontrol edin.",
+        "error"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-write-success",
+    () => {
+      /*
+       * execute_item yalnız read state'i yeniler.
+       * Burada complete event ÜRETİLMEZ.
+       *
+       * Liste yenilendikten ve kullanıcı görevi yeniden seçtikten
+       * sonra complete butonu tekrar değerlendirilecektir.
+       */
+      if (button) {
+        button.disabled =
+          true;
+      }
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:operations-context",
+    () => {
+      refreshPickingCompletionAvailability();
+    }
+  );
+
+  const select =
+    byId(
+      "toplama-gorevi-secimi"
+    );
+
+  select?.addEventListener(
+    "change",
+    () => {
+      /*
+       * loadSelectedTaskContext async çalıştığı için başlangıçta
+       * butonu kapatıyoruz. Task context doğrulandığında aşağıdaki
+       * kısa read-state kontrolü yeniden çalıştırılacaktır.
+       */
+      if (button) {
+        button.disabled =
+          true;
+      }
+
+      setTimeout(
+        refreshPickingCompletionAvailability,
+        0
+      );
+    }
+  );
+
+  refreshPickingCompletionAvailability();
+}
+
+if (
+  typeof document !==
+  "undefined"
+) {
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      bindPickingCompletionEvents();
+
+      /*
+       * Existing task loader async olabilir. UI güvenliği açısından
+       * buton varsayılan disabled başlar ve task context oluşunca
+       * yeniden değerlendirilir.
+       */
+      setTimeout(
+        refreshPickingCompletionAvailability,
+        0
+      );
+    }
+  );
+}

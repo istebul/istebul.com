@@ -445,3 +445,260 @@ if (
     }
   );
 }
+
+/* A6.4.1 — Explicit Picking Complete Controller */
+
+let completePending =
+  false;
+
+const completeRetryRequestIds =
+  new Map();
+
+function completionFingerprint(
+  completion
+) {
+  return requireUuid(
+    completion?.pickingId,
+    "Toplama kimliği"
+  );
+}
+
+function requestIdForCompletion(
+  completion
+) {
+  const fingerprint =
+    completionFingerprint(
+      completion
+    );
+
+  const existing =
+    completeRetryRequestIds.get(
+      fingerprint
+    );
+
+  if (existing) {
+    return {
+      fingerprint,
+      requestId:
+        existing
+    };
+  }
+
+  const requestId =
+    createRequestId();
+
+  completeRetryRequestIds.set(
+    fingerprint,
+    requestId
+  );
+
+  return {
+    fingerprint,
+    requestId
+  };
+}
+
+export function buildPickingCompletionPayload(
+  completion
+) {
+  return Object.freeze({
+    pickingId:
+      requireUuid(
+        completion?.pickingId,
+        "Toplama kimliği"
+      )
+  });
+}
+
+async function loadPickingCompleteDependencies() {
+  const [
+    operationsModule,
+    clientModule
+  ] =
+    await Promise.all([
+      import(
+        "./operations-center.js"
+      ),
+      import(
+        "./picking-client.js"
+      )
+    ]);
+
+  return {
+    getContext:
+      operationsModule
+        .getWarehouseOperationsContext,
+
+    getSession:
+      operationsModule
+        .getWarehouseSession,
+
+    complete:
+      clientModule
+        .completePicking
+  };
+}
+
+export async function persistPickingCompletion(
+  completion,
+  dependencies = {}
+) {
+  let defaults = null;
+
+  if (
+    !dependencies.getContext ||
+    !dependencies.getSession ||
+    !dependencies.complete
+  ) {
+    defaults =
+      await loadPickingCompleteDependencies();
+  }
+
+  const getContext =
+    dependencies.getContext ||
+    defaults.getContext;
+
+  const getSession =
+    dependencies.getSession ||
+    defaults.getSession;
+
+  const complete =
+    dependencies.complete ||
+    defaults.complete;
+
+  const context =
+    getContext();
+
+  const accountId =
+    requireUuid(
+      context?.accountId,
+      "Firma kimliği"
+    );
+
+  const session =
+    await getSession();
+
+  if (
+    !session?.access_token
+  ) {
+    throw new Error(
+      "WarehouseIQ oturumu geçersiz veya süresi dolmuş."
+    );
+  }
+
+  const payload =
+    buildPickingCompletionPayload(
+      completion
+    );
+
+  const {
+    fingerprint,
+    requestId
+  } =
+    requestIdForCompletion(
+      payload
+    );
+
+  try {
+    const result =
+      await complete({
+        accessToken:
+          session.access_token,
+
+        accountId,
+
+        pickingId:
+          payload.pickingId,
+
+        requestId
+      });
+
+    /*
+     * Başarılı complete sonrasında aynı Picking için
+     * yeni bir kullanıcı tamamlama aksiyonu yeni
+     * Idempotency-Key üretmelidir.
+     */
+    completeRetryRequestIds.delete(
+      fingerprint
+    );
+
+    return result;
+  } catch (error) {
+    /*
+     * Ağ veya API hatasında eşleşme bilerek korunur.
+     * Aynı explicit kullanıcı tamamlama retry'ı
+     * aynı Idempotency-Key ile devam eder.
+     */
+    throw error;
+  }
+}
+
+async function handlePickingCompletion(
+  event
+) {
+  if (completePending) {
+    return;
+  }
+
+  completePending =
+    true;
+
+  const completion =
+    event?.detail || {};
+
+  dispatchWriteEvent(
+    "warehouse:picking-complete-start",
+    {
+      completion
+    }
+  );
+
+  try {
+    const result =
+      await persistPickingCompletion(
+        completion
+      );
+
+    dispatchWriteEvent(
+      "warehouse:picking-complete-success",
+      {
+        completion,
+
+        requestId:
+          result.requestId,
+
+        data:
+          result.data
+      }
+    );
+  } catch (error) {
+    dispatchWriteEvent(
+      "warehouse:picking-complete-error",
+      {
+        completion,
+
+        message:
+          error instanceof Error
+            ? error.message
+            : "Toplama tamamlanamadı."
+      }
+    );
+  } finally {
+    completePending =
+      false;
+  }
+}
+
+if (
+  typeof document !==
+  "undefined"
+) {
+  document.addEventListener(
+    "warehouse:picking-complete-confirm",
+    (event) => {
+      void handlePickingCompletion(
+        event
+      );
+    }
+  );
+}
