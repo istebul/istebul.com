@@ -508,3 +508,183 @@ export async function completePicking({
       body.data
   };
 }
+
+/* A6.5.1 — Explicit Picking Exception Resolution */
+
+function normalizePickingResolutionNotes(
+  value
+) {
+  if (
+    value === undefined ||
+    value === null
+  ) {
+    return undefined;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(
+      "İstisna çözüm notu metin olmalıdır."
+    );
+  }
+
+  return value.trim() ||
+    undefined;
+}
+
+export function buildPickingResolveExceptionPayload(
+  input
+) {
+  const resolutionNotes =
+    normalizePickingResolutionNotes(
+      input?.resolutionNotes
+    );
+
+  return Object.freeze({
+    pickingId:
+      requireUuid(
+        input?.pickingId,
+        "Toplama kimliği"
+      ),
+
+    exceptionId:
+      requireUuid(
+        input?.exceptionId,
+        "Toplama istisnası kimliği"
+      ),
+
+    ...(resolutionNotes
+      ? {
+          resolutionNotes
+        }
+      : {})
+  });
+}
+
+export async function resolvePickingException({
+  accessToken,
+  accountId,
+  pickingId,
+  exceptionId,
+  resolutionNotes,
+  requestId = createRequestId(),
+  fetchImpl = fetch
+}) {
+  const token =
+    requireAccessToken(
+      accessToken
+    );
+
+  const normalizedAccountId =
+    requireUuid(
+      accountId,
+      "Firma kimliği"
+    );
+
+  const normalizedRequestId =
+    requireUuid(
+      requestId,
+      "İstek kimliği"
+    );
+
+  const payload =
+    buildPickingResolveExceptionPayload({
+      pickingId,
+      exceptionId,
+      resolutionNotes
+    });
+
+  const response =
+    await fetchImpl(
+      PICKING_API_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          Accept:
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
+
+          "Content-Type":
+            "application/json",
+
+          "Idempotency-Key":
+            normalizedRequestId
+        },
+
+        cache:
+          "no-store",
+
+        body:
+          JSON.stringify({
+            accountId:
+              normalizedAccountId,
+
+            action:
+              "resolve_exception",
+
+            payload
+          })
+      }
+    );
+
+  const body =
+    await readJsonSafely(
+      response
+    );
+
+  if (
+    !response.ok ||
+    !body?.ok
+  ) {
+    if (
+      response.status === 401
+    ) {
+      throw new Error(
+        apiErrorMessage(
+          body,
+          "WarehouseIQ oturumunuz geçersiz veya süresi dolmuş."
+        )
+      );
+    }
+
+    if (
+      response.status === 403
+    ) {
+      throw new Error(
+        apiErrorMessage(
+          body,
+          "Bu firma için toplama istisnası çözme yetkiniz bulunmuyor."
+        )
+      );
+    }
+
+    if (
+      response.status === 409
+    ) {
+      throw new Error(
+        apiErrorMessage(
+          body,
+          "Toplama istisnası çözüm isteği başka bir işlemle çakıştı. Güncel durumu kontrol edip yeniden deneyin."
+        )
+      );
+    }
+
+    throw new Error(
+      apiErrorMessage(
+        body,
+        "Toplama istisnası çözülemedi."
+      )
+    );
+  }
+
+  return {
+    requestId:
+      normalizedRequestId,
+
+    data:
+      body.data
+  };
+}

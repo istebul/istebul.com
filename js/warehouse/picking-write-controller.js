@@ -702,3 +702,306 @@ if (
     }
   );
 }
+
+/* A6.5.1 — Explicit Picking Exception Resolution Controller */
+
+let exceptionPending =
+  false;
+
+const exceptionRetryRequestIds =
+  new Map();
+
+function normalizeControllerResolutionNotes(
+  value
+) {
+  if (
+    value === undefined ||
+    value === null
+  ) {
+    return undefined;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(
+      "İstisna çözüm notu metin olmalıdır."
+    );
+  }
+
+  return value.trim() ||
+    undefined;
+}
+
+export function buildPickingExceptionResolutionPayload(
+  resolution
+) {
+  const resolutionNotes =
+    normalizeControllerResolutionNotes(
+      resolution?.resolutionNotes
+    );
+
+  return Object.freeze({
+    pickingId:
+      requireUuid(
+        resolution?.pickingId,
+        "Toplama kimliği"
+      ),
+
+    exceptionId:
+      requireUuid(
+        resolution?.exceptionId,
+        "Toplama istisnası kimliği"
+      ),
+
+    ...(resolutionNotes
+      ? {
+          resolutionNotes
+        }
+      : {})
+  });
+}
+
+function exceptionResolutionFingerprint(
+  resolution
+) {
+  const payload =
+    buildPickingExceptionResolutionPayload(
+      resolution
+    );
+
+  return JSON.stringify(
+    payload
+  );
+}
+
+function requestIdForExceptionResolution(
+  resolution
+) {
+  const fingerprint =
+    exceptionResolutionFingerprint(
+      resolution
+    );
+
+  const existing =
+    exceptionRetryRequestIds.get(
+      fingerprint
+    );
+
+  if (existing) {
+    return {
+      fingerprint,
+      requestId:
+        existing
+    };
+  }
+
+  const requestId =
+    createRequestId();
+
+  exceptionRetryRequestIds.set(
+    fingerprint,
+    requestId
+  );
+
+  return {
+    fingerprint,
+    requestId
+  };
+}
+
+async function loadPickingExceptionDependencies() {
+  const [
+    operationsModule,
+    clientModule
+  ] =
+    await Promise.all([
+      import(
+        "./operations-center.js"
+      ),
+      import(
+        "./picking-client.js"
+      )
+    ]);
+
+  return {
+    getContext:
+      operationsModule
+        .getWarehouseOperationsContext,
+
+    getSession:
+      operationsModule
+        .getWarehouseSession,
+
+    resolveException:
+      clientModule
+        .resolvePickingException
+  };
+}
+
+export async function persistPickingExceptionResolution(
+  resolution,
+  dependencies = {}
+) {
+  let defaults = null;
+
+  if (
+    !dependencies.getContext ||
+    !dependencies.getSession ||
+    !dependencies.resolveException
+  ) {
+    defaults =
+      await loadPickingExceptionDependencies();
+  }
+
+  const getContext =
+    dependencies.getContext ||
+    defaults.getContext;
+
+  const getSession =
+    dependencies.getSession ||
+    defaults.getSession;
+
+  const resolveException =
+    dependencies.resolveException ||
+    defaults.resolveException;
+
+  const context =
+    getContext();
+
+  const accountId =
+    requireUuid(
+      context?.accountId,
+      "Firma kimliği"
+    );
+
+  const session =
+    await getSession();
+
+  if (
+    !session?.access_token
+  ) {
+    throw new Error(
+      "WarehouseIQ oturumu geçersiz veya süresi dolmuş."
+    );
+  }
+
+  const payload =
+    buildPickingExceptionResolutionPayload(
+      resolution
+    );
+
+  const {
+    fingerprint,
+    requestId
+  } =
+    requestIdForExceptionResolution(
+      payload
+    );
+
+  try {
+    const result =
+      await resolveException({
+        accessToken:
+          session.access_token,
+
+        accountId,
+
+        pickingId:
+          payload.pickingId,
+
+        exceptionId:
+          payload.exceptionId,
+
+        resolutionNotes:
+          payload.resolutionNotes,
+
+        requestId
+      });
+
+    /*
+     * Başarılı çözüm sonrasında aynı payload için yapılacak
+     * yeni explicit kullanıcı aksiyonu yeni Idempotency-Key
+     * üretmelidir.
+     */
+    exceptionRetryRequestIds.delete(
+      fingerprint
+    );
+
+    return result;
+  } catch (error) {
+    /*
+     * Hata halinde aynı kullanıcı çözüm retry'ı aynı request ID
+     * ile devam eder. Böylece ağ/API retry'sı idempotent kalır.
+     */
+    throw error;
+  }
+}
+
+async function handlePickingExceptionResolution(
+  event
+) {
+  if (exceptionPending) {
+    return;
+  }
+
+  exceptionPending =
+    true;
+
+  const resolution =
+    event?.detail || {};
+
+  dispatchWriteEvent(
+    "warehouse:picking-exception-start",
+    {
+      resolution
+    }
+  );
+
+  try {
+    const result =
+      await persistPickingExceptionResolution(
+        resolution
+      );
+
+    dispatchWriteEvent(
+      "warehouse:picking-exception-success",
+      {
+        resolution,
+
+        requestId:
+          result.requestId,
+
+        data:
+          result.data
+      }
+    );
+  } catch (error) {
+    dispatchWriteEvent(
+      "warehouse:picking-exception-error",
+      {
+        resolution,
+
+        message:
+          error instanceof Error
+            ? error.message
+            : "Toplama istisnası çözülemedi."
+      }
+    );
+  } finally {
+    exceptionPending =
+      false;
+  }
+}
+
+if (
+  typeof document !==
+  "undefined"
+) {
+  document.addEventListener(
+    "warehouse:picking-exception-confirm",
+    (event) => {
+      void handlePickingExceptionResolution(
+        event
+      );
+    }
+  );
+}

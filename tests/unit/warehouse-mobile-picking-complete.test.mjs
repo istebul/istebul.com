@@ -431,17 +431,107 @@ test(
   }
 );
 
+
+
 test(
-  "A6.4.1 resolve_exception işlemini client veya controllera bağlamaz",
-  () => {
-    assert.doesNotMatch(
-      client,
-      /action:\s*"resolve_exception"/
+  "A6.4 complete ile A6.5 exception çözümü birbirini otomatik başlatmaz",
+  async () => {
+    const ui =
+      await readFile(
+        "js/warehouse/picking-ui.js",
+        "utf8"
+      );
+
+    const controller =
+      await readFile(
+        "js/warehouse/picking-write-controller.js",
+        "utf8"
+      );
+
+    const client =
+      await readFile(
+        "js/warehouse/picking-client.js",
+        "utf8"
+      );
+
+    assert.match(
+      ui,
+      /warehouse:picking-complete-confirm/
     );
 
-    assert.doesNotMatch(
+    assert.match(
+      ui,
+      /warehouse:picking-exception-confirm/
+    );
+
+    assert.match(
+      controller,
+      /warehouse:picking-complete-confirm/
+    );
+
+    assert.match(
       controller,
       /warehouse:picking-exception-confirm/
+    );
+
+    assert.match(
+      client,
+      /action:\s*["']complete["']/
+    );
+
+    assert.match(
+      client,
+      /action:\s*["']resolve_exception["']/
+    );
+
+    const completeSuccess =
+      ui.indexOf(
+        '"warehouse:picking-complete-success"'
+      );
+
+    assert.ok(
+      completeSuccess >= 0
+    );
+
+    const completeEnd =
+      ui.indexOf(
+        "document.addEventListener",
+        completeSuccess + 1
+      );
+
+    assert.doesNotMatch(
+      ui.slice(
+        completeSuccess,
+        completeEnd >= 0
+          ? completeEnd
+          : undefined
+      ),
+      /dispatchEvent[\s\S]{0,300}?warehouse:picking-exception-confirm/
+    );
+
+    const exceptionSuccess =
+      ui.indexOf(
+        '"warehouse:picking-exception-success"'
+      );
+
+    assert.ok(
+      exceptionSuccess >= 0
+    );
+
+    const exceptionEnd =
+      ui.indexOf(
+        "document.addEventListener",
+        exceptionSuccess + 1
+      );
+
+    assert.doesNotMatch(
+      ui.slice(
+        exceptionSuccess,
+        exceptionEnd >= 0
+          ? exceptionEnd
+          : undefined
+      ),
+      /dispatchEvent[\s\S]{0,300}?warehouse:picking-complete-confirm/
     );
   }
 );
@@ -667,23 +757,50 @@ test(
   }
 );
 
+
 test(
-  "A6.4.2 resolve_exception işlemini UI'ya bağlamaz",
+  "A6.4 complete ve A6.5 exception ayrı explicit kullanıcı kontrolleridir",
   async () => {
-    const source =
+    const ui =
       await readFile(
         "js/warehouse/picking-ui.js",
         "utf8"
       );
 
-    assert.doesNotMatch(
-      source,
-      /warehouse:picking-exception-confirm/
+    const html =
+      await readFile(
+        "warehouse/index.html",
+        "utf8"
+      );
+
+    assert.match(
+      html,
+      /id="toplama-tamamla"/
     );
 
-    assert.doesNotMatch(
-      source,
-      /action:\s*["']resolve_exception["']/
+    assert.match(
+      html,
+      /id="toplama-istisna-coz"/
+    );
+
+    assert.match(
+      ui,
+      /function confirmPickingCompletion/
+    );
+
+    assert.match(
+      ui,
+      /function confirmPickingExceptionResolution/
+    );
+
+    assert.match(
+      ui,
+      /warehouse:picking-complete-confirm/
+    );
+
+    assert.match(
+      ui,
+      /warehouse:picking-exception-confirm/
     );
   }
 );

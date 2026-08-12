@@ -1117,6 +1117,14 @@ async function loadSelectedTaskContext() {
     uiState.taskContext =
       result;
 
+    completionCandidatePickingId =
+      pickingIdFromTaskContext(
+        result
+      ) ||
+      completionCandidatePickingId;
+
+    refreshPickingCompletionAvailability();
+
     renderTaskContext(
       result
     );
@@ -1710,21 +1718,16 @@ if (
 
 /* A6.4.2 — Explicit Picking Complete UI */
 
-function pickingIdForCompletion() {
-  const context =
-    uiState.taskContext;
+let completionCandidatePickingId =
+  null;
 
+function pickingIdFromTaskContext(
+  context
+) {
   if (!context) {
-    throw new Error(
-      "Tamamlanacak toplama görevi seçilmelidir."
-    );
+    return null;
   }
 
-  /*
-   * Lookup sözleşmesinde Picking kimliği task context
-   * üzerinden taşınır. Farklı read-model gösterimlerini
-   * yalnız kimlik okumak amacıyla destekliyoruz.
-   */
   const candidates = [
     context.pickingId,
     context.picking_id,
@@ -1735,24 +1738,38 @@ function pickingIdForCompletion() {
     context.item?.picking_id
   ];
 
-  const pickingId =
+  const value =
     candidates.find(
-      (value) =>
-        typeof value === "string" &&
-        value.trim()
+      (candidate) =>
+        typeof candidate === "string" &&
+        candidate.trim()
     );
+
+  return value
+    ? String(
+        value
+      ).trim()
+    : null;
+}
+
+function pickingIdForCompletion() {
+  const taskPickingId =
+    pickingIdFromTaskContext(
+      uiState.taskContext
+    );
+
+  const pickingId =
+    taskPickingId ||
+    completionCandidatePickingId;
 
   if (!pickingId) {
     throw new Error(
-      "Toplama kimliği doğrulanamadı. Görevi yeniden seçip deneyin."
+      "Tamamlanacak toplama görevi belirlenemedi."
     );
   }
 
-  return String(
-    pickingId
-  ).trim();
+  return pickingId;
 }
-
 function refreshPickingCompletionAvailability() {
   const button =
     byId(
@@ -1948,6 +1965,779 @@ if (
         refreshPickingCompletionAvailability,
         0
       );
+    }
+  );
+}
+
+/* A6.5.2 — Picking Exception Resolution UI */
+
+const PICKING_EXCEPTION_LABELS =
+  Object.freeze({
+    stock_not_found:
+      "Stok bulunamadı",
+
+    insufficient_stock:
+      "Yetersiz stok",
+
+    short_pick:
+      "Eksik toplama",
+
+    location_mismatch:
+      "Lokasyon uyuşmazlığı",
+
+    barcode_mismatch:
+      "Barkod uyuşmazlığı",
+
+    lot_mismatch:
+      "Lot uyuşmazlığı",
+
+    serial_number_mismatch:
+      "Seri numarası uyuşmazlığı",
+
+    expiry_date_mismatch:
+      "Son kullanma tarihi uyuşmazlığı",
+
+    damaged_product:
+      "Hasarlı ürün",
+
+    blocked_location:
+      "Blokajlı lokasyon",
+
+    unit_mismatch:
+      "Birim uyuşmazlığı",
+
+    quantity_exceeded:
+      "Miktar aşımı",
+
+    task_assignment_error:
+      "Görev atama hatası"
+  });
+
+let openPickingExceptionRows =
+  [];
+
+let selectedPickingExceptionId =
+  null;
+
+function pickingExceptionLabel(
+  type
+) {
+  return (
+    PICKING_EXCEPTION_LABELS[
+      String(
+        type || ""
+      ).trim()
+    ] ||
+    String(
+      type || ""
+    ).trim() ||
+    "Toplama istisnası"
+  );
+}
+
+function setPickingExceptionStatus(
+  message,
+  state = "info"
+) {
+  const element =
+    byId(
+      "toplama-istisna-durumu"
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.dataset.state =
+    state;
+
+  element.textContent =
+    message;
+}
+
+function selectedOpenPickingException() {
+  if (!selectedPickingExceptionId) {
+    return null;
+  }
+
+  return (
+    openPickingExceptionRows.find(
+      (row) =>
+        String(
+          row?.id || ""
+        ) ===
+        selectedPickingExceptionId
+    ) ||
+    null
+  );
+}
+
+function renderPickingExceptionDetail() {
+  const row =
+    selectedOpenPickingException();
+
+  const container =
+    byId(
+      "toplama-istisna-detayi"
+    );
+
+  const notes =
+    byId(
+      "toplama-istisna-cozum-notu"
+    );
+
+  const button =
+    byId(
+      "toplama-istisna-coz"
+    );
+
+  if (!row) {
+    if (container) {
+      container.hidden =
+        true;
+
+      container.replaceChildren();
+    }
+
+    if (notes) {
+      notes.value =
+        "";
+
+      notes.disabled =
+        true;
+    }
+
+    if (button) {
+      button.disabled =
+        true;
+    }
+
+    return;
+  }
+
+  if (container) {
+    container.replaceChildren();
+
+    const title =
+      document.createElement(
+        "strong"
+      );
+
+    title.textContent =
+      pickingExceptionLabel(
+        row.type
+      );
+
+    const message =
+      document.createElement(
+        "span"
+      );
+
+    message.textContent =
+      String(
+        row.message ||
+        "Açıklama bulunmuyor."
+      );
+
+    const meta =
+      document.createElement(
+        "small"
+      );
+
+    meta.textContent =
+      `Picking: ${
+        String(
+          row.picking_id || "—"
+        )
+      } · İstisna: ${
+        String(
+          row.id || "—"
+        )
+      }`;
+
+    container.append(
+      title,
+      message,
+      meta
+    );
+
+    container.hidden =
+      false;
+  }
+
+  if (notes) {
+    notes.disabled =
+      false;
+  }
+
+  if (button) {
+    button.disabled =
+      false;
+  }
+}
+
+function renderOpenPickingExceptions(
+  rows
+) {
+  const select =
+    byId(
+      "toplama-istisna-secimi"
+    );
+
+  const count =
+    byId(
+      "toplama-istisna-sayisi"
+    );
+
+  if (!select) {
+    return;
+  }
+
+  const previous =
+    selectedPickingExceptionId;
+
+  openPickingExceptionRows =
+    Array.isArray(rows)
+      ? rows
+      : [];
+
+  select.replaceChildren();
+
+  const placeholder =
+    document.createElement(
+      "option"
+    );
+
+  placeholder.value =
+    "";
+
+  placeholder.textContent =
+    openPickingExceptionRows.length > 0
+      ? "Çözülecek istisnayı seçin"
+      : "Açık toplama istisnası bulunmuyor";
+
+  select.append(
+    placeholder
+  );
+
+  for (
+    const row
+    of openPickingExceptionRows
+  ) {
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      String(
+        row.id || ""
+      );
+
+    const message =
+      String(
+        row.message || ""
+      ).trim();
+
+    const shortMessage =
+      message.length > 72
+        ? `${message.slice(0, 69)}...`
+        : message;
+
+    option.textContent =
+      `${pickingExceptionLabel(
+        row.type
+      )}${
+        shortMessage
+          ? ` · ${shortMessage}`
+          : ""
+      }`;
+
+    select.append(
+      option
+    );
+  }
+
+  if (count) {
+    count.textContent =
+      String(
+        openPickingExceptionRows.length
+      );
+  }
+
+  const previousStillExists =
+    previous &&
+    openPickingExceptionRows.some(
+      (row) =>
+        String(
+          row.id || ""
+        ) ===
+        previous
+    );
+
+  if (previousStillExists) {
+    selectedPickingExceptionId =
+      previous;
+
+    select.value =
+      previous;
+  } else {
+    selectedPickingExceptionId =
+      null;
+
+    select.value =
+      "";
+  }
+
+  select.disabled =
+    openPickingExceptionRows.length === 0;
+
+  renderPickingExceptionDetail();
+
+  setPickingExceptionStatus(
+    openPickingExceptionRows.length > 0
+      ? `${openPickingExceptionRows.length} açık toplama istisnası bulundu. Çözmek için bir kayıt seçin.`
+      : "Seçili depoda açık toplama istisnası bulunmuyor.",
+    openPickingExceptionRows.length > 0
+      ? "warning"
+      : "ready"
+  );
+}
+
+export async function loadOpenPickingExceptions() {
+  const context =
+    getWarehouseOperationsContext();
+
+  const select =
+    byId(
+      "toplama-istisna-secimi"
+    );
+
+  if (!select) {
+    return;
+  }
+
+  if (
+    !context.accountId ||
+    !context.warehouseId
+  ) {
+    openPickingExceptionRows =
+      [];
+
+    selectedPickingExceptionId =
+      null;
+
+    renderOpenPickingExceptions([]);
+
+    select.disabled =
+      true;
+
+    setPickingExceptionStatus(
+      "Açık istisnaları görüntülemek için yetkili firma ve depo seçilmelidir.",
+      "waiting"
+    );
+
+    return;
+  }
+
+  select.disabled =
+    true;
+
+  setPickingExceptionStatus(
+    "Açık toplama istisnaları güvenli salt-okunur bağlantı üzerinden yükleniyor.",
+    "info"
+  );
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await getWarehouseSupabaseClient()
+        .from(
+          "warehouse_picking_exceptions"
+        )
+        .select(
+          "id,picking_id,picking_item_id,task_id,type,message,warehouse_id,location_id,product_id,resolved,created_at,updated_at"
+        )
+        .eq(
+          "account_id",
+          context.accountId
+        )
+        .eq(
+          "warehouse_id",
+          context.warehouseId
+        )
+        .eq(
+          "resolved",
+          false
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              true
+          }
+        );
+
+    if (error) {
+      throw new Error(
+        "Açık toplama istisnaları yüklenemedi."
+      );
+    }
+
+    renderOpenPickingExceptions(
+      Array.isArray(data)
+        ? data
+        : []
+    );
+  } catch (error) {
+    openPickingExceptionRows =
+      [];
+
+    selectedPickingExceptionId =
+      null;
+
+    renderOpenPickingExceptions([]);
+
+    setPickingExceptionStatus(
+      error instanceof Error
+        ? error.message
+        : "Açık toplama istisnaları yüklenemedi.",
+      "error"
+    );
+  }
+}
+
+function buildPickingExceptionUiResolution() {
+  const row =
+    selectedOpenPickingException();
+
+  if (!row) {
+    throw new Error(
+      "Çözülecek toplama istisnasını seçin."
+    );
+  }
+
+  const pickingId =
+    String(
+      row.picking_id || ""
+    ).trim();
+
+  const exceptionId =
+    String(
+      row.id || ""
+    ).trim();
+
+  if (!pickingId) {
+    throw new Error(
+      "Toplama kimliği doğrulanamadı."
+    );
+  }
+
+  if (!exceptionId) {
+    throw new Error(
+      "Toplama istisnası kimliği doğrulanamadı."
+    );
+  }
+
+  const resolutionNotes =
+    String(
+      byId(
+        "toplama-istisna-cozum-notu"
+      )?.value || ""
+    ).trim();
+
+  return Object.freeze({
+    pickingId,
+    exceptionId,
+
+    ...(resolutionNotes
+      ? {
+          resolutionNotes
+        }
+      : {})
+  });
+}
+
+function confirmPickingExceptionResolution() {
+  const resolution =
+    buildPickingExceptionUiResolution();
+
+  const row =
+    selectedOpenPickingException();
+
+  const approved =
+    window.confirm(
+      `${
+        pickingExceptionLabel(
+          row?.type
+        )
+      } istisnasını çözmek istediğinize emin misiniz?\n\n` +
+      "Bu işlem yalnız istisna çözüm kaydını günceller. " +
+      "Stok hareketi oluşturmaz ve toplamayı otomatik tamamlamaz."
+    );
+
+  if (!approved) {
+    return;
+  }
+
+  document.dispatchEvent(
+    new CustomEvent(
+      "warehouse:picking-exception-confirm",
+      {
+        detail:
+          resolution
+      }
+    )
+  );
+}
+
+function setPickingExceptionControlsPending(
+  pending
+) {
+  const select =
+    byId(
+      "toplama-istisna-secimi"
+    );
+
+  const notes =
+    byId(
+      "toplama-istisna-cozum-notu"
+    );
+
+  const button =
+    byId(
+      "toplama-istisna-coz"
+    );
+
+  if (pending) {
+    if (select) {
+      select.disabled =
+        true;
+    }
+
+    if (notes) {
+      notes.disabled =
+        true;
+    }
+
+    if (button) {
+      button.disabled =
+        true;
+    }
+
+    return;
+  }
+
+  if (select) {
+    select.disabled =
+      openPickingExceptionRows.length === 0;
+  }
+
+  renderPickingExceptionDetail();
+}
+
+function bindPickingExceptionResolutionEvents() {
+  const select =
+    byId(
+      "toplama-istisna-secimi"
+    );
+
+  const button =
+    byId(
+      "toplama-istisna-coz"
+    );
+
+  select?.addEventListener(
+    "change",
+    () => {
+      selectedPickingExceptionId =
+        String(
+          select.value || ""
+        ).trim() ||
+        null;
+
+      renderPickingExceptionDetail();
+    }
+  );
+
+  button?.addEventListener(
+    "click",
+    () => {
+      try {
+        confirmPickingExceptionResolution();
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Toplama istisnası çözüm onayı hazırlanamadı.",
+          "error"
+        );
+      }
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-exception-start",
+    () => {
+      setPickingExceptionControlsPending(
+        true
+      );
+
+      setPickingExceptionStatus(
+        "İstisna çözüm onayı alındı. Güvenli bağlantı üzerinden kaydediliyor.",
+        "info"
+      );
+
+      setMessage(
+        "Toplama istisnası çözüm onayı alındı. Bu işlem stok hareketi oluşturmaz.",
+        "info"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-exception-success",
+    (event) => {
+      const resolvedPickingId =
+        String(
+          event?.detail
+            ?.resolution
+            ?.pickingId || ""
+        ).trim();
+
+      if (resolvedPickingId) {
+        completionCandidatePickingId =
+          resolvedPickingId;
+      }
+
+      selectedPickingExceptionId =
+        null;
+
+      const notes =
+        byId(
+          "toplama-istisna-cozum-notu"
+        );
+
+      if (notes) {
+        notes.value =
+          "";
+      }
+
+      setMessage(
+        "Toplama istisnası başarıyla çözüldü. Açık istisnalar yeniden okunuyor.",
+        "success"
+      );
+
+      refreshPickingCompletionAvailability();
+
+      void loadOpenPickingExceptions();
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:picking-exception-error",
+    (event) => {
+      setPickingExceptionControlsPending(
+        false
+      );
+
+      setPickingExceptionStatus(
+        event?.detail?.message ||
+          "Toplama istisnası çözülemedi.",
+        "error"
+      );
+
+      setMessage(
+        event?.detail?.message ||
+          "Toplama istisnası çözülemedi.",
+        "error"
+      );
+    }
+  );
+
+  /*
+   * execute_item başarıyla işlendikten sonra:
+   * - Picking kimliği complete adayı olarak korunur.
+   * - short-pick yeni exception üretmiş olabilir; read-model yenilenir.
+   *
+   * Burada hiçbir exception çözüm write eventi üretilmez.
+   */
+  document.addEventListener(
+    "warehouse:picking-write-success",
+    (event) => {
+      const pickingId =
+        String(
+          event?.detail
+            ?.confirmation
+            ?.pickingId || ""
+        ).trim();
+
+      if (pickingId) {
+        completionCandidatePickingId =
+          pickingId;
+      }
+
+      refreshPickingCompletionAvailability();
+
+      void loadOpenPickingExceptions();
+    }
+  );
+
+  /*
+   * Complete sonrası artık o parent için completion candidate tutulmaz.
+   * Exception listesi de salt-okunur olarak tekrar yenilenir.
+   */
+  document.addEventListener(
+    "warehouse:picking-complete-success",
+    () => {
+      completionCandidatePickingId =
+        null;
+
+      void loadOpenPickingExceptions();
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:operations-context",
+    () => {
+      completionCandidatePickingId =
+        null;
+
+      openPickingExceptionRows =
+        [];
+
+      selectedPickingExceptionId =
+        null;
+
+      renderOpenPickingExceptions([]);
+
+      refreshPickingCompletionAvailability();
+
+      void loadOpenPickingExceptions();
+    }
+  );
+}
+
+if (
+  typeof document !==
+  "undefined"
+) {
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      bindPickingExceptionResolutionEvents();
+
+      const context =
+        getWarehouseOperationsContext();
+
+      if (
+        context.accountId &&
+        context.warehouseId
+      ) {
+        void loadOpenPickingExceptions();
+      }
     }
   );
 }
