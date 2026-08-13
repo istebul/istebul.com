@@ -82,6 +82,7 @@ const uiState = {
   productVerified: false,
   recordedTaskIds: new Set(),
   evaluationPendingTaskIds: new Set(),
+  recountModeActive: false,
   loadVersion: 0
 };
 
@@ -842,7 +843,8 @@ function renderTaskOptions(tasks) {
     select.append(option);
   }
 
-  select.disabled = false;
+  select.disabled =
+    uiState.recountModeActive;
 
   const selectedStillExists =
     tasks.some(
@@ -1027,6 +1029,13 @@ async function loadCycleCountTasks() {
 
     renderTaskOptions([]);
 
+    dispatchCycleCountEvent(
+      "warehouse:cycle-count-recount-tasks",
+      {
+        tasks: []
+      }
+    );
+
     setMessage(
       "Firma ve depo seçimi bekleniyor.",
       "waiting"
@@ -1058,6 +1067,13 @@ async function loadCycleCountTasks() {
 
     renderTaskOptions([]);
 
+    dispatchCycleCountEvent(
+      "warehouse:cycle-count-recount-tasks",
+      {
+        tasks: []
+      }
+    );
+
     setMessage(
       result.message,
       result.kind
@@ -1072,6 +1088,14 @@ async function loadCycleCountTasks() {
     )
       ? result.data.tasks
       : [];
+
+  dispatchCycleCountEvent(
+    "warehouse:cycle-count-recount-tasks",
+    {
+      tasks:
+        rawTasks
+    }
+  );
 
   const recountTaskCount =
     rawTasks.filter(
@@ -1626,10 +1650,66 @@ function bindCycleCountEvents() {
   );
 
   document.addEventListener(
+    "warehouse:cycle-count-recount-mode",
+    (event) => {
+      uiState.recountModeActive =
+        event?.detail?.active ===
+        true;
+
+      if (
+        uiState.recountModeActive
+      ) {
+        resetScanState();
+
+        if (select) {
+          select.disabled =
+            true;
+        }
+
+        setMessage(
+          "Kontrollü yeniden sayım modu açık. İlk sayım ekranı barkod taramalarını işlemez.",
+          "warning"
+        );
+
+        return;
+      }
+
+      const task =
+        currentTask();
+
+      if (select) {
+        select.disabled =
+          !uiState.tasks.length ||
+          isFirstEvaluationPendingTask(
+            task
+          );
+      }
+
+      if (
+        task &&
+        !isFirstEvaluationPendingTask(
+          task
+        )
+      ) {
+        setMessage(
+          "İlk sayım modu yeniden kullanılabilir. Görev lokasyonunun barkodunu okutun.",
+          "ready"
+        );
+      }
+    }
+  );
+
+  document.addEventListener(
     "warehouse:barcode-scan",
     (event) => {
       if (
         !cycleCountPanelIsActive()
+      ) {
+        return;
+      }
+
+      if (
+        uiState.recountModeActive
       ) {
         return;
       }
