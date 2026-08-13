@@ -423,7 +423,8 @@ function bindReceivingEvents() {
     (event) => {
       if (
         window.location.hash === "#yerlestirme" ||
-        window.location.hash === "#toplama"
+        window.location.hash === "#toplama" ||
+      window.location.hash === "#sayim"
       ) {
         return;
       }
