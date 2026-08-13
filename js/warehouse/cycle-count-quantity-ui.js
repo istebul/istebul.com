@@ -1,7 +1,16 @@
 let verificationContext =
   null;
 
+let evaluationContext =
+  null;
+
 let writePending =
+  false;
+
+let evaluationPending =
+  false;
+
+let evaluationRunning =
   false;
 
 function byId(
@@ -150,6 +159,15 @@ function refreshButton() {
     valid = false;
   }
 
+  if (
+    evaluationPending
+  ) {
+    button.disabled =
+      evaluationRunning;
+
+    return;
+  }
+
   button.disabled =
     writePending ||
     !valid ||
@@ -160,7 +178,16 @@ function resetQuantityPanel() {
   verificationContext =
     null;
 
+  evaluationContext =
+    null;
+
   writePending =
+    false;
+
+  evaluationPending =
+    false;
+
+  evaluationRunning =
     false;
 
   const {
@@ -183,6 +210,9 @@ function resetQuantityPanel() {
 
   if (button) {
     button.disabled = true;
+
+    button.textContent =
+      "Sayım Miktarını Kaydet";
   }
 
   if (panel) {
@@ -240,6 +270,15 @@ function prepareQuantityPanel(
   writePending =
     false;
 
+  evaluationContext =
+    null;
+
+  evaluationPending =
+    false;
+
+  evaluationRunning =
+    false;
+
   const {
     panel,
     quantity,
@@ -269,6 +308,103 @@ function prepareQuantityPanel(
   );
 
   quantity?.focus();
+}
+
+function normalizeEvaluationContext(
+  detail
+) {
+  return Object.freeze({
+    cycleCountId:
+      text(
+        detail?.cycleCountId
+      ),
+
+    cycleCountItemId:
+      text(
+        detail?.cycleCountItemId
+      ),
+
+    taskId:
+      text(
+        detail?.taskId
+      )
+  });
+}
+
+function prepareEvaluationRecovery(
+  detail
+) {
+  verificationContext =
+    null;
+
+  evaluationContext =
+    normalizeEvaluationContext(
+      detail
+    );
+
+  evaluationPending =
+    true;
+
+  evaluationRunning =
+    false;
+
+  writePending =
+    false;
+
+  const {
+    panel,
+    quantity,
+    notes,
+    button
+  } =
+    controls();
+
+  if (panel) {
+    panel.hidden = false;
+  }
+
+  if (quantity) {
+    quantity.value = "";
+    quantity.disabled = true;
+  }
+
+  if (notes) {
+    notes.value = "";
+    notes.disabled = true;
+  }
+
+  if (button) {
+    button.textContent =
+      "Değerlendirmeyi Tamamla";
+
+    button.disabled =
+      false;
+  }
+
+  setStatus(
+    "Fiziksel sayım miktarı daha önce güvenli olarak kaydedildi. Miktarı yeniden girmeden değerlendirmeyi tamamlayın.",
+    "ready"
+  );
+}
+
+function dispatchEvaluationRetry() {
+  if (
+    !evaluationPending ||
+    evaluationRunning ||
+    !evaluationContext
+  ) {
+    return;
+  }
+
+  document.dispatchEvent(
+    new CustomEvent(
+      "warehouse:cycle-count-evaluation-retry",
+      {
+        detail:
+          evaluationContext
+      }
+    )
+  );
 }
 
 export function buildQuantityConfirmation() {
@@ -377,6 +513,13 @@ function bindQuantityUi() {
   button?.addEventListener(
     "click",
     () => {
+      if (
+        evaluationPending
+      ) {
+        dispatchEvaluationRetry();
+        return;
+      }
+
       try {
         confirmQuantity();
       } catch (error) {
@@ -450,7 +593,150 @@ function bindQuantityUi() {
         event?.detail
           ?.confirmation || {};
 
-      writePending = false;
+      writePending =
+        false;
+
+      evaluationContext =
+        normalizeEvaluationContext(
+          confirmation
+        );
+
+      evaluationPending =
+        true;
+
+      evaluationRunning =
+        false;
+
+      const {
+        panel,
+        quantity:
+          quantityInput,
+        notes:
+          notesInput,
+        button:
+          confirmButton
+      } =
+        controls();
+
+      if (panel) {
+        panel.hidden =
+          false;
+      }
+
+      if (quantityInput) {
+        quantityInput.disabled =
+          true;
+      }
+
+      if (notesInput) {
+        notesInput.disabled =
+          true;
+      }
+
+      if (confirmButton) {
+        confirmButton.textContent =
+          "Değerlendiriliyor…";
+
+        confirmButton.disabled =
+          true;
+      }
+
+      setStatus(
+        "Fiziksel miktar kaydedildi. Kör sayım sonucu güvenli sunucu değerlendirmesine aktarılıyor.",
+        "loading"
+      );
+
+      document.dispatchEvent(
+        new CustomEvent(
+          "warehouse:cycle-count-evaluation-request",
+          {
+            detail:
+              evaluationContext
+          }
+        )
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-evaluation-recovery",
+    (event) => {
+      prepareEvaluationRecovery(
+        event?.detail || {}
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-evaluation-start",
+    (event) => {
+      evaluationContext =
+        normalizeEvaluationContext(
+          event?.detail
+            ?.evaluation ||
+          evaluationContext ||
+          {}
+        );
+
+      evaluationPending =
+        true;
+
+      evaluationRunning =
+        true;
+
+      const {
+        quantity:
+          quantityInput,
+        notes:
+          notesInput,
+        button:
+          confirmButton
+      } =
+        controls();
+
+      if (quantityInput) {
+        quantityInput.disabled =
+          true;
+      }
+
+      if (notesInput) {
+        notesInput.disabled =
+          true;
+      }
+
+      if (confirmButton) {
+        confirmButton.textContent =
+          "Değerlendiriliyor…";
+
+        confirmButton.disabled =
+          true;
+      }
+
+      setStatus(
+        "İlk fiziksel sayım güvenli olarak değerlendiriliyor.",
+        "loading"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-evaluation-success",
+    (event) => {
+      const completedContext =
+        evaluationContext ||
+        normalizeEvaluationContext(
+          event?.detail
+            ?.evaluation ||
+          {}
+        );
+
+      const data =
+        event?.detail
+          ?.data || null;
+
+      const taskId =
+        completedContext
+          ?.taskId || "";
 
       resetQuantityPanel();
 
@@ -460,16 +746,73 @@ function bindQuantityUi() {
           {
             detail:
               Object.freeze({
-                taskId:
-                  confirmation
-                    .taskId,
-
-                data:
-                  event?.detail
-                    ?.data || null
+                taskId,
+                data
               })
           }
         )
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-evaluation-error",
+    (event) => {
+      evaluationContext =
+        normalizeEvaluationContext(
+          event?.detail
+            ?.evaluation ||
+          evaluationContext ||
+          {}
+        );
+
+      evaluationPending =
+        true;
+
+      evaluationRunning =
+        false;
+
+      const {
+        panel,
+        quantity:
+          quantityInput,
+        notes:
+          notesInput,
+        button:
+          confirmButton
+      } =
+        controls();
+
+      if (panel) {
+        panel.hidden =
+          false;
+      }
+
+      if (quantityInput) {
+        quantityInput.disabled =
+          true;
+      }
+
+      if (notesInput) {
+        notesInput.disabled =
+          true;
+      }
+
+      if (confirmButton) {
+        confirmButton.textContent =
+          "Değerlendirmeyi Tekrar Dene";
+
+        confirmButton.disabled =
+          false;
+      }
+
+      setStatus(
+        `${
+          event?.detail
+            ?.message ||
+          "Sayım değerlendirmesi tamamlanamadı."
+        } Fiziksel miktar kaydedildi; miktarı yeniden girmeyin.`,
+        "error"
       );
     }
   );

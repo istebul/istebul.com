@@ -81,6 +81,7 @@ const uiState = {
   locationVerified: false,
   productVerified: false,
   recordedTaskIds: new Set(),
+  evaluationPendingTaskIds: new Set(),
   loadVersion: 0
 };
 
@@ -428,6 +429,103 @@ function countRecountLines(task) {
         true
     )
     .length;
+}
+
+function isFirstEvaluationPendingTask(
+  task
+) {
+  if (
+    !task ||
+    task.type ===
+      "recount"
+  ) {
+    return false;
+  }
+
+  if (
+    uiState
+      .evaluationPendingTaskIds
+      .has(task.id)
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    task.status ===
+      "in_progress" &&
+    task.item?.status ===
+      "in_progress" &&
+    task.item?.counted_at
+  );
+}
+
+function activateEvaluationRecovery(
+  task
+) {
+  if (
+    !isFirstEvaluationPendingTask(
+      task
+    )
+  ) {
+    return false;
+  }
+
+  const select =
+    byId(
+      "sayim-gorevi-secimi"
+    );
+
+  const stage =
+    byId(
+      "sayim-asama"
+    );
+
+  const locationInput =
+    byId(
+      "sayim-lokasyon-barkod"
+    );
+
+  const productInput =
+    byId(
+      "sayim-urun-barkod"
+    );
+
+  if (select) {
+    select.disabled =
+      true;
+  }
+
+  if (stage) {
+    stage.value =
+      "İlk sayım değerlendirmesi bekleniyor";
+  }
+
+  if (locationInput) {
+    locationInput.disabled =
+      true;
+  }
+
+  if (productInput) {
+    productInput.disabled =
+      true;
+  }
+
+  dispatchCycleCountEvent(
+    "warehouse:cycle-count-evaluation-recovery",
+    {
+      cycleCountId:
+        task.cycle_count_id,
+
+      cycleCountItemId:
+        task.cycle_count_item_id ||
+        task.item?.id,
+
+      taskId:
+        task.id
+    }
+  );
+
+  return true;
 }
 
 function appendDefinition(
@@ -975,8 +1073,37 @@ async function loadCycleCountTasks() {
       ? result.data.tasks
       : [];
 
-  const tasks =
+  const recountTaskCount =
     rawTasks.filter(
+      (task) =>
+        task?.type ===
+        "recount"
+    ).length;
+
+  const firstCountTasks =
+    rawTasks.filter(
+      (task) =>
+        task?.type !==
+        "recount"
+    );
+
+  const recoveryTasks =
+    firstCountTasks.filter(
+      (task) =>
+        isFirstEvaluationPendingTask(
+          task
+        )
+    );
+
+  const candidateTasks =
+    recoveryTasks.length
+      ? [
+          recoveryTasks[0]
+        ]
+      : firstCountTasks;
+
+  const tasks =
+    candidateTasks.filter(
       (task) =>
         !uiState.recordedTaskIds
           .has(task.id)
@@ -991,10 +1118,28 @@ async function loadCycleCountTasks() {
 
   renderTaskOptions(tasks);
 
+  if (
+    tasks.length &&
+    activateEvaluationRecovery(
+      currentTask()
+    )
+  ) {
+    setMessage(
+      "Fiziksel miktar daha önce kaydedilmiş. Yeni miktar girmeden ilk sayım değerlendirmesini tamamlayın.",
+      "warning"
+    );
+
+    return;
+  }
+
   if (!tasks.length) {
     setMessage(
-      "Seçili depoda aktif sayım görevi bulunmuyor.",
-      "empty"
+      recountTaskCount
+        ? "Kontrollü yeniden sayım görevi hazır. İlk sayım ekranı bu görevi değiştirmez."
+        : "Seçili depoda aktif ilk sayım görevi bulunmuyor.",
+      recountTaskCount
+        ? "warning"
+        : "empty"
     );
 
     return;
@@ -1499,6 +1644,19 @@ function bindCycleCountEvents() {
       }
 
       if (
+        isFirstEvaluationPendingTask(
+          currentTask()
+        )
+      ) {
+        setMessage(
+          "Fiziksel miktar zaten kaydedildi. Yeni barkod veya miktar girmeden değerlendirmeyi tamamlayın.",
+          "warning"
+        );
+
+        return;
+      }
+
+      if (
         uiState.locationVerified &&
         uiState.productVerified
       ) {
@@ -1552,6 +1710,43 @@ function bindCycleCountEvents() {
   );
 
   document.addEventListener(
+    "warehouse:cycle-count-quantity-success",
+    (event) => {
+      const taskId =
+        text(
+          event?.detail
+            ?.confirmation
+            ?.taskId
+        );
+
+      if (!taskId) {
+        return;
+      }
+
+      uiState
+        .evaluationPendingTaskIds
+        .add(taskId);
+
+      const task =
+        currentTask();
+
+      if (
+        task?.id ===
+        taskId
+      ) {
+        activateEvaluationRecovery(
+          task
+        );
+      }
+
+      setMessage(
+        "Fiziksel miktar güvenli olarak kaydedildi. İlk sayım değerlendirmesi tamamlanıyor.",
+        "loading"
+      );
+    }
+  );
+
+  document.addEventListener(
     "warehouse:cycle-count-quantity-recorded",
     (event) => {
       const taskId =
@@ -1562,6 +1757,22 @@ function bindCycleCountEvents() {
       if (!taskId) {
         return;
       }
+
+      const data =
+        event?.detail
+          ?.data || {};
+
+      uiState.evaluationPendingTaskIds =
+        new Set(
+          [
+            ...uiState
+              .evaluationPendingTaskIds
+          ].filter(
+            (candidateTaskId) =>
+              candidateTaskId !==
+              taskId
+          )
+        );
 
       uiState.recordedTaskIds
         .add(taskId);
@@ -1578,11 +1789,18 @@ function bindCycleCountEvents() {
       );
 
       setMessage(
-        uiState.tasks.length
-          ? "İlk sayım miktarı güvenli biçimde kaydedildi. Sıradaki görevin lokasyon barkodunu okutun."
-          : "İlk sayım miktarı kaydedildi. Sayım farkı ve yeniden sayım değerlendirmesi sonraki kontrollü aşamada yapılacaktır.",
-        "success"
+        data.recountRequired
+          ? "İlk sayım değerlendirildi. Kontrollü yeniden sayım gerekiyor."
+          : data.reviewRequired
+            ? "İlk sayım değerlendirildi. Sonuç kontrollü incelemeye gönderildi."
+            : "İlk sayım değerlendirildi ve sayım satırı sonuçlandı.",
+        data.recountRequired ||
+        data.reviewRequired
+          ? "warning"
+          : "success"
       );
+
+      void loadCycleCountTasks();
     }
   );
 
