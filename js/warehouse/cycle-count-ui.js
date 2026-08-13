@@ -80,6 +80,7 @@ const uiState = {
   stage: "location",
   locationVerified: false,
   productVerified: false,
+  recordedTaskIds: new Set(),
   loadVersion: 0
 };
 
@@ -262,6 +263,23 @@ function trackingLabel(item) {
   );
 }
 
+function dispatchCycleCountEvent(
+  name,
+  detail = {}
+) {
+  document.dispatchEvent(
+    new CustomEvent(
+      name,
+      {
+        detail:
+          Object.freeze(
+            detail
+          )
+      }
+    )
+  );
+}
+
 function setMessage(
   message,
   state = "info"
@@ -359,6 +377,10 @@ function resetScanState() {
 
   clearNode(
     "sayim-dogrulama-ozeti"
+  );
+
+  dispatchCycleCountEvent(
+    "warehouse:cycle-count-verification-reset"
   );
 }
 
@@ -946,12 +968,19 @@ async function loadCycleCountTasks() {
     return;
   }
 
-  const tasks =
+  const rawTasks =
     Array.isArray(
       result.data.tasks
     )
       ? result.data.tasks
       : [];
+
+  const tasks =
+    rawTasks.filter(
+      (task) =>
+        !uiState.recordedTaskIds
+          .has(task.id)
+    );
 
   uiState.tasks =
     tasks;
@@ -1122,10 +1151,10 @@ function renderVerificationSummary(
       task.location?.code ||
       "Lokasyon"
     } · ${
-      task.product?.code ||
       task.sku?.sku_code ||
+      task.product?.code ||
       "Ürün"
-    }. Bu aşamada herhangi bir miktar veya stok kaydı yapılmadı.`;
+    }. Barkod doğrulaması tamamlandı. Şimdi yalnız fiziksel sayım miktarını güvenli kayıt alanından girin.`;
 
   container.append(
     strong,
@@ -1170,6 +1199,42 @@ function productMatchesTask(
     return false;
   }
 
+  const skuId =
+    text(
+      task.sku?.id ||
+      task.item?.sku_id
+    );
+
+  const barcodes =
+    Array.isArray(
+      task.barcodes
+    )
+      ? task.barcodes
+      : [];
+
+  if (skuId) {
+    if (
+      codeMatches(
+        scanned,
+        task.sku?.sku_code
+      )
+    ) {
+      return true;
+    }
+
+    return barcodes.some(
+      (barcode) =>
+        text(
+          barcode?.sku_id
+        ) ===
+          skuId &&
+        barcodeMatches(
+          scanned,
+          barcode?.value
+        )
+    );
+  }
+
   if (
     codeMatches(
       scanned,
@@ -1179,24 +1244,11 @@ function productMatchesTask(
     return true;
   }
 
-  if (
-    codeMatches(
-      scanned,
-      task.sku?.sku_code
-    )
-  ) {
-    return true;
-  }
-
-  const barcodes =
-    Array.isArray(
-      task.barcodes
-    )
-      ? task.barcodes
-      : [];
-
   return barcodes.some(
     (barcode) =>
+      !text(
+        barcode?.sku_id
+      ) &&
       barcodeMatches(
         scanned,
         barcode?.value
@@ -1365,8 +1417,45 @@ function resolveProductBarcode(
     task
   );
 
+  const locationInput =
+    byId(
+      "sayim-lokasyon-barkod"
+    );
+
+  dispatchCycleCountEvent(
+    "warehouse:cycle-count-verification-ready",
+    {
+      taskId:
+        task.id,
+
+      cycleCountId:
+        task.cycle_count_id,
+
+      cycleCountItemId:
+        task.cycle_count_item_id ||
+        task.item?.id,
+
+      locationScan:
+        text(
+          locationInput?.value
+        ),
+
+      productScan:
+        scanned,
+
+      unit:
+        task.item?.unit ||
+        "",
+
+      label:
+        taskOptionLabel(
+          task
+        )
+    }
+  );
+
   setMessage(
-    "Lokasyon ve ürün doğrulandı. A7.1 salt-okunur aşaması tamamlandı; miktar veya stok değişikliği yapılmadı.",
+    "Lokasyon ve ürün doğrulandı. Fiziksel sayım miktarını girip açık kullanıcı onayı verin.",
     "success"
   );
 }
@@ -1410,6 +1499,18 @@ function bindCycleCountEvents() {
       }
 
       if (
+        uiState.locationVerified &&
+        uiState.productVerified
+      ) {
+        setMessage(
+          "Fiziksel doğrulama tamamlandı. Yeni barkod okutmak yerine sayılan miktarı girin.",
+          "ready"
+        );
+
+        return;
+      }
+
+      if (
         uiState.stage ===
         "product"
       ) {
@@ -1446,6 +1547,41 @@ function bindCycleCountEvents() {
         task
           ? "ready"
           : "waiting"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-quantity-recorded",
+    (event) => {
+      const taskId =
+        text(
+          event?.detail?.taskId
+        );
+
+      if (!taskId) {
+        return;
+      }
+
+      uiState.recordedTaskIds
+        .add(taskId);
+
+      uiState.tasks =
+        uiState.tasks.filter(
+          (task) =>
+            task.id !==
+            taskId
+        );
+
+      renderTaskOptions(
+        uiState.tasks
+      );
+
+      setMessage(
+        uiState.tasks.length
+          ? "İlk sayım miktarı güvenli biçimde kaydedildi. Sıradaki görevin lokasyon barkodunu okutun."
+          : "İlk sayım miktarı kaydedildi. Sayım farkı ve yeniden sayım değerlendirmesi sonraki kontrollü aşamada yapılacaktır.",
+        "success"
       );
     }
   );

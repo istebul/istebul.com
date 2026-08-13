@@ -633,13 +633,14 @@
       <em>MOBİL SAYIM</em>
       <h2>Sayım</h2>
     </div>
-    <small>Salt-okunur doğrulama</small>
+    <small>Güvenli miktar kaydı</small>
   </div>
 
   <p class="warehouse-cycle-count-help">
     Aktif sayım görevleri WarehouseIQ güvenli HTTP API'sinden
     kullanıcı oturumu ve seçili depo kapsamında okunur.
-    İlk tarama görev lokasyonunu, ikinci tarama ürün veya SKU'yu doğrular.
+    Lokasyon ve ürün / SKU doğrulandıktan sonra fiziksel sayım miktarı
+    ayrı açık kullanıcı onayıyla güvenli olarak kaydedilir.
   </p>
 
   <div class="warehouse-cycle-count-grid">
@@ -755,10 +756,82 @@
     hidden
   ></div>
 
+  <section
+    id="sayim-miktar-kaydi"
+    class="warehouse-cycle-count-quantity"
+    hidden
+  >
+    <div class="warehouse-cycle-count-quantity-heading">
+      <div>
+        <small>3. ADIM</small>
+        <strong>Fiziksel sayım miktarı</strong>
+      </div>
+
+      <span>GÜVENLİ KAYIT</span>
+    </div>
+
+    <p>
+      Barkod doğrulaması miktarı otomatik kaydetmez.
+      Fiziksel miktarı girin ve kayıt öncesinde ikinci açık onayı verin.
+    </p>
+
+    <div class="warehouse-cycle-count-quantity-grid">
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-sayilan-miktar">
+          Sayılan miktar
+        </label>
+
+        <input
+          id="sayim-sayilan-miktar"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          disabled
+          placeholder="Örn. 24"
+        >
+      </div>
+
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-notu">
+          Sayım notu
+          <small>İsteğe bağlı</small>
+        </label>
+
+        <textarea
+          id="sayim-notu"
+          rows="2"
+          maxlength="1000"
+          disabled
+          placeholder="Gerekliyse saha notu ekleyin"
+        ></textarea>
+      </div>
+    </div>
+
+    <button
+      id="sayim-miktari-kaydet"
+      type="button"
+      class="warehouse-cycle-count-save"
+      disabled
+    >
+      Sayım Miktarını Kaydet
+    </button>
+
+    <p
+      id="sayim-miktar-durumu"
+      class="warehouse-cycle-count-quantity-status"
+      data-state="waiting"
+      role="status"
+      aria-live="polite"
+    >
+      Önce lokasyon ve ürün doğrulamasını tamamlayın.
+    </p>
+  </section>
+
   <p class="warehouse-cycle-count-safety">
-    Bu A7.1 ekranı salt okunurdur. Barkod taraması sayım miktarı,
-    stok düzeltmesi, yeniden sayım kararı, envanter hareketi veya
-    sayım tamamlama işlemi oluşturmaz.
+    Barkod taraması tek başına sayım kaydı oluşturmaz.
+    Bu A7.2 adımı yalnız ilk fiziksel sayım miktarını kaydeder;
+    stok düzeltmesi, sayım farkı, yeniden sayım kararı,
+    envanter hareketi veya sayım tamamlama işlemi oluşturmaz.
   </p>
 </article>
 
@@ -863,6 +936,8 @@
 <script type="module" src="/js/warehouse/picking-ui.js"></script>
 <script type="module" src="/js/warehouse/picking-write-controller.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-ui.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-quantity-ui.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-write-controller.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>

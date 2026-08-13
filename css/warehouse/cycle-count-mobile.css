@@ -202,3 +202,128 @@
     font-size: 0.68rem;
   }
 }
+
+.warehouse-cycle-count-quantity {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid
+    rgba(37, 99, 235, 0.24);
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37, 99, 235, 0.07),
+      rgba(16, 185, 129, 0.04)
+    );
+}
+
+.warehouse-cycle-count-quantity[hidden] {
+  display: none;
+}
+
+.warehouse-cycle-count-quantity-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.warehouse-cycle-count-quantity-heading > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.warehouse-cycle-count-quantity-heading small {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.warehouse-cycle-count-quantity-heading strong {
+  font-size: 1.05rem;
+}
+
+.warehouse-cycle-count-quantity-heading > span {
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background:
+    rgba(16, 185, 129, 0.12);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.warehouse-cycle-count-quantity > p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.warehouse-cycle-count-quantity-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.8fr)
+    minmax(0, 1.2fr);
+  gap: 0.85rem;
+}
+
+.warehouse-cycle-count-field textarea {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+}
+
+#sayim-sayilan-miktar {
+  min-height: 3.25rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.warehouse-cycle-count-save {
+  width: 100%;
+  min-height: 3.25rem;
+  border: 0;
+  border-radius: 0.85rem;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.warehouse-cycle-count-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.warehouse-cycle-count-quantity-status {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.75rem;
+  background:
+    rgba(127, 127, 127, 0.08);
+  line-height: 1.5;
+}
+
+.warehouse-cycle-count-quantity-status[data-state="ready"],
+.warehouse-cycle-count-quantity-status[data-state="success"] {
+  font-weight: 750;
+}
+
+.warehouse-cycle-count-quantity-status[data-state="error"] {
+  font-weight: 800;
+}
+
+@media (max-width: 800px) {
+  .warehouse-cycle-count-quantity {
+    padding: 0.85rem;
+  }
+
+  .warehouse-cycle-count-quantity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .warehouse-cycle-count-save,
+  #sayim-sayilan-miktar {
+    min-height: 3.25rem;
+  }
+}
