@@ -827,6 +827,215 @@
     </p>
   </section>
 
+  <section
+    id="sayim-yeniden-sayim"
+    class="warehouse-cycle-count-recount"
+  >
+    <div class="warehouse-cycle-count-recount-heading">
+      <div>
+        <small>KONTROLLÜ YENİDEN SAYIM</small>
+        <strong>İkinci fiziksel sayım</strong>
+      </div>
+
+      <button
+        id="sayim-yeniden-modu"
+        type="button"
+        class="warehouse-cycle-count-recount-mode"
+        aria-pressed="false"
+        disabled
+      >
+        Yeniden Sayım Modunu Başlat
+      </button>
+    </div>
+
+    <p class="warehouse-cycle-count-recount-help">
+      Bu alan yalnız ilk fiziksel sayımı tamamlanmış ve kontrollü yeniden
+      sayıma ayrılmış görevler içindir. İlk sayım akışından bağımsız çalışır.
+    </p>
+
+    <div class="warehouse-cycle-count-grid">
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-yeniden-gorevi-secimi">
+          Yeniden sayım görevi
+        </label>
+
+        <select
+          id="sayim-yeniden-gorevi-secimi"
+          disabled
+        >
+          <option value="">
+            Kontrollü yeniden sayım görevleri bekleniyor
+          </option>
+        </select>
+      </div>
+
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-yeniden-asama">
+          Yeniden sayım aşaması
+        </label>
+
+        <input
+          id="sayim-yeniden-asama"
+          type="text"
+          value="Lokasyon barkodu bekleniyor"
+          readonly
+        >
+      </div>
+    </div>
+
+    <p
+      id="sayim-yeniden-mesaji"
+      class="warehouse-cycle-count-message"
+      data-state="waiting"
+      role="status"
+      aria-live="polite"
+    >
+      Kontrollü yeniden sayım görevleri bekleniyor.
+    </p>
+
+    <div class="warehouse-cycle-count-scan-grid">
+      <section class="warehouse-cycle-count-scan-step">
+        <small>1. ADIM</small>
+        <strong>Lokasyonu yeniden doğrula</strong>
+
+        <p>
+          Yeniden sayım görevinin gerçek lokasyon barkodunu okutun.
+        </p>
+
+        <div class="warehouse-cycle-count-field">
+          <label for="sayim-yeniden-lokasyon-barkod">
+            Lokasyon barkodu
+          </label>
+
+          <input
+            id="sayim-yeniden-lokasyon-barkod"
+            type="text"
+            readonly
+            disabled
+            autocomplete="off"
+            placeholder="Yeniden sayım modu bekleniyor"
+          >
+        </div>
+
+        <div
+          id="sayim-yeniden-lokasyon-eslesmesi"
+          class="warehouse-cycle-count-match"
+          hidden
+        ></div>
+      </section>
+
+      <section class="warehouse-cycle-count-scan-step">
+        <small>2. ADIM</small>
+        <strong>Ürün / SKU'yu yeniden doğrula</strong>
+
+        <p>
+          Ürün taraması yalnız lokasyon doğrulandıktan sonra işlenir.
+        </p>
+
+        <div class="warehouse-cycle-count-field">
+          <label for="sayim-yeniden-urun-barkod">
+            Ürün / SKU barkodu
+          </label>
+
+          <input
+            id="sayim-yeniden-urun-barkod"
+            type="text"
+            readonly
+            disabled
+            autocomplete="off"
+            placeholder="Önce lokasyon doğrulanmalı"
+          >
+        </div>
+
+        <div
+          id="sayim-yeniden-urun-eslesmesi"
+          class="warehouse-cycle-count-match"
+          hidden
+        ></div>
+      </section>
+    </div>
+
+    <div
+      id="sayim-yeniden-dogrulama-ozeti"
+      class="warehouse-cycle-count-verified"
+      hidden
+    ></div>
+
+    <section class="warehouse-cycle-count-recount-quantity">
+      <div class="warehouse-cycle-count-quantity-heading">
+        <div>
+          <small>3. ADIM</small>
+          <strong>İkinci fiziksel sayım miktarı</strong>
+        </div>
+
+        <span>AYRI AÇIK ONAY</span>
+      </div>
+
+      <p>
+        Barkod doğrulaması miktarı otomatik kaydetmez.
+        İkinci fiziksel miktarı girin ve kayıt öncesinde ayrıca açık kullanıcı
+        onayı verin.
+      </p>
+
+      <div class="warehouse-cycle-count-quantity-grid">
+        <div class="warehouse-cycle-count-field">
+          <label for="sayim-yeniden-sayilan-miktar">
+            Yeniden sayılan miktar
+          </label>
+
+          <input
+            id="sayim-yeniden-sayilan-miktar"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            disabled
+            placeholder="Örn. 24"
+          >
+        </div>
+
+        <div class="warehouse-cycle-count-field">
+          <label for="sayim-yeniden-notu">
+            Yeniden sayım notu
+            <small>İsteğe bağlı</small>
+          </label>
+
+          <textarea
+            id="sayim-yeniden-notu"
+            rows="2"
+            maxlength="1000"
+            disabled
+            placeholder="Gerekliyse saha notu ekleyin"
+          ></textarea>
+        </div>
+      </div>
+
+      <button
+        id="sayim-yeniden-miktari-kaydet"
+        type="button"
+        class="warehouse-cycle-count-save"
+        disabled
+      >
+        İkinci Sayım Miktarını Kaydet
+      </button>
+
+      <p
+        id="sayim-yeniden-miktar-durumu"
+        class="warehouse-cycle-count-quantity-status"
+        data-state="waiting"
+        role="status"
+        aria-live="polite"
+      >
+        Önce lokasyon ve ürün doğrulamasını tamamlayın.
+      </p>
+    </section>
+
+    <p class="warehouse-cycle-count-recount-safety">
+      Bu A7.3.2.2 adımı yalnız ikinci fiziksel sayım miktarını kaydeder.
+      Final sayım sonucu, fark değerlendirmesi, stok düzeltmesi,
+      envanter hareketi veya sayım tamamlama işlemi oluşturmaz.
+    </p>
+  </section>
+
   <p class="warehouse-cycle-count-safety">
     Barkod taraması tek başına sayım kaydı oluşturmaz.
     Bu A7.2 adımı yalnız ilk fiziksel sayım miktarını kaydeder;
@@ -939,6 +1148,8 @@
 <script type="module" src="/js/warehouse/cycle-count-quantity-ui.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-write-controller.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-evaluation-controller.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-recount-ui.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-recount-controller.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>
