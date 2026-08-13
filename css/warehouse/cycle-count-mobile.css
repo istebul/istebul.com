@@ -1,0 +1,204 @@
+.warehouse-cycle-count-panel {
+  scroll-margin-top: 1rem;
+}
+
+.warehouse-cycle-count-help,
+.warehouse-cycle-count-safety {
+  line-height: 1.6;
+}
+
+.warehouse-cycle-count-grid,
+.warehouse-cycle-count-scan-grid,
+.warehouse-cycle-count-summary {
+  display: grid;
+  gap: 1rem;
+}
+
+.warehouse-cycle-count-grid {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+.warehouse-cycle-count-scan-grid {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.warehouse-cycle-count-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.warehouse-cycle-count-field label {
+  font-weight: 700;
+}
+
+.warehouse-cycle-count-field input,
+.warehouse-cycle-count-field select {
+  width: 100%;
+  min-width: 0;
+}
+
+.warehouse-cycle-count-message {
+  margin: 1rem 0 0;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  line-height: 1.5;
+}
+
+.warehouse-cycle-count-message[data-state="waiting"],
+.warehouse-cycle-count-message[data-state="loading"],
+.warehouse-cycle-count-message[data-state="info"] {
+  opacity: 0.86;
+}
+
+.warehouse-cycle-count-message[data-state="auth"],
+.warehouse-cycle-count-message[data-state="forbidden"],
+.warehouse-cycle-count-message[data-state="warning"],
+.warehouse-cycle-count-message[data-state="error"] {
+  font-weight: 700;
+}
+
+.warehouse-cycle-count-message[data-state="matched"],
+.warehouse-cycle-count-message[data-state="ready"],
+.warehouse-cycle-count-message[data-state="success"] {
+  font-weight: 700;
+}
+
+.warehouse-cycle-count-task-detail {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid
+    rgba(127, 127, 127, 0.3);
+  border-radius: 0.9rem;
+}
+
+.warehouse-cycle-count-task-detail dl {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.warehouse-cycle-count-task-detail dl > div {
+  min-width: 0;
+}
+
+.warehouse-cycle-count-task-detail dt {
+  margin-bottom: 0.25rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  opacity: 0.72;
+}
+
+.warehouse-cycle-count-task-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 650;
+}
+
+.warehouse-cycle-count-summary {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  margin-top: 0.25rem;
+}
+
+.warehouse-cycle-count-summary > div {
+  padding: 0.7rem;
+  border-radius: 0.7rem;
+  background:
+    rgba(127, 127, 127, 0.08);
+}
+
+.warehouse-cycle-count-summary small,
+.warehouse-cycle-count-summary strong {
+  display: block;
+}
+
+.warehouse-cycle-count-summary strong {
+  margin-top: 0.2rem;
+}
+
+.warehouse-cycle-count-scan-step {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid
+    rgba(127, 127, 127, 0.3);
+  border-radius: 0.9rem;
+}
+
+.warehouse-cycle-count-scan-step > small {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.warehouse-cycle-count-match {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid
+    rgba(127, 127, 127, 0.3);
+  border-radius: 0.75rem;
+}
+
+.warehouse-cycle-count-match strong,
+.warehouse-cycle-count-match span,
+.warehouse-cycle-count-match small {
+  display: block;
+}
+
+.warehouse-cycle-count-verified {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px dashed
+    rgba(127, 127, 127, 0.45);
+  border-radius: 0.9rem;
+  line-height: 1.55;
+}
+
+.warehouse-cycle-count-verified strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.warehouse-cycle-count-safety {
+  margin: 1rem 0 0;
+  font-size: 0.86rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 800px) {
+  .warehouse-cycle-count-grid,
+  .warehouse-cycle-count-scan-grid,
+  .warehouse-cycle-count-task-detail dl,
+  .warehouse-cycle-count-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .warehouse-cycle-count-scan-step,
+  .warehouse-cycle-count-task-detail,
+  .warehouse-cycle-count-verified {
+    padding: 0.85rem;
+  }
+
+  /*
+   * Mevcut bottom-nav grid tabanlıysa Sayım ile
+   * altı güvenli hücreye genişler. Flex tabanlı
+   * yüzeylerde bu kural etkisizdir.
+   */
+  .warehouse-mobile-bottom-nav {
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr));
+  }
+
+  .warehouse-mobile-bottom-nav small {
+    font-size: 0.68rem;
+  }
+}

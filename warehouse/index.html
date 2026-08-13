@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
   <link rel="stylesheet" href="/css/warehouse/putaway-mobile.css">
 <link rel="stylesheet" href="/css/warehouse/picking-mobile.css">
+<link rel="stylesheet" href="/css/warehouse/cycle-count-mobile.css">
 </head>
 <body>
 <div class="shell">
@@ -45,6 +46,7 @@
       <a href="#mal-kabul">⇥ Mal Kabul</a>
       <a href="#yerlestirme">⌑ Yerleştirme</a>
 <a href="#toplama">⌑ Toplama</a>
+      <a href="#sayim">≋ Sayım</a>
       <a href="#surecler">✓ Toplama</a>
       <a href="#surecler">□ Paketleme</a>
       <a href="#surecler">→ Sevkiyat</a>
@@ -622,6 +624,144 @@
 </article>
 
 
+      <article
+  class="panel full warehouse-cycle-count-panel"
+  id="sayim"
+>
+  <div class="heading">
+    <div>
+      <em>MOBİL SAYIM</em>
+      <h2>Sayım</h2>
+    </div>
+    <small>Salt-okunur doğrulama</small>
+  </div>
+
+  <p class="warehouse-cycle-count-help">
+    Aktif sayım görevleri WarehouseIQ güvenli HTTP API'sinden
+    kullanıcı oturumu ve seçili depo kapsamında okunur.
+    İlk tarama görev lokasyonunu, ikinci tarama ürün veya SKU'yu doğrular.
+  </p>
+
+  <div class="warehouse-cycle-count-grid">
+    <div class="warehouse-cycle-count-field">
+      <label for="sayim-gorevi-secimi">
+        Sayım görevi
+      </label>
+
+      <select
+        id="sayim-gorevi-secimi"
+        disabled
+      >
+        <option value="">
+          Aktif sayım görevleri yükleniyor
+        </option>
+      </select>
+    </div>
+
+    <div class="warehouse-cycle-count-field">
+      <label for="sayim-asama">
+        Doğrulama aşaması
+      </label>
+
+      <input
+        id="sayim-asama"
+        type="text"
+        value="Lokasyon barkodu bekleniyor"
+        readonly
+      >
+    </div>
+  </div>
+
+  <p
+    id="sayim-mesaji"
+    class="warehouse-cycle-count-message"
+    data-state="waiting"
+    role="status"
+    aria-live="polite"
+  >
+    Firma ve depo kapsamı bekleniyor.
+  </p>
+
+  <div
+    id="sayim-gorev-detayi"
+    class="warehouse-cycle-count-task-detail"
+    hidden
+  ></div>
+
+  <div class="warehouse-cycle-count-scan-grid">
+    <section class="warehouse-cycle-count-scan-step">
+      <small>1. ADIM</small>
+      <strong>Lokasyonu doğrula</strong>
+
+      <p>
+        Seçili görevin gerçek lokasyon barkodunu veya lokasyon kodunu okutun.
+      </p>
+
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-lokasyon-barkod">
+          Lokasyon barkodu
+        </label>
+
+        <input
+          id="sayim-lokasyon-barkod"
+          type="text"
+          readonly
+          autocomplete="off"
+          placeholder="Lokasyon taraması bekleniyor"
+        >
+      </div>
+
+      <div
+        id="sayim-lokasyon-eslesmesi"
+        class="warehouse-cycle-count-match"
+        hidden
+      ></div>
+    </section>
+
+    <section class="warehouse-cycle-count-scan-step">
+      <small>2. ADIM</small>
+      <strong>Ürün / SKU doğrula</strong>
+
+      <p>
+        Ürün taraması yalnız lokasyon doğrulandıktan sonra işlenir.
+      </p>
+
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-urun-barkod">
+          Ürün / SKU barkodu
+        </label>
+
+        <input
+          id="sayim-urun-barkod"
+          type="text"
+          readonly
+          disabled
+          autocomplete="off"
+          placeholder="Önce lokasyon doğrulanmalı"
+        >
+      </div>
+
+      <div
+        id="sayim-urun-eslesmesi"
+        class="warehouse-cycle-count-match"
+        hidden
+      ></div>
+    </section>
+  </div>
+
+  <div
+    id="sayim-dogrulama-ozeti"
+    class="warehouse-cycle-count-verified"
+    hidden
+  ></div>
+
+  <p class="warehouse-cycle-count-safety">
+    Bu A7.1 ekranı salt okunurdur. Barkod taraması sayım miktarı,
+    stok düzeltmesi, yeniden sayım kararı, envanter hareketi veya
+    sayım tamamlama işlemi oluşturmaz.
+  </p>
+</article>
+
       <article class="panel wide" id="surecler">
         <div class="heading"><div><em>SÜREÇ HACMİ</em><h2>Operasyon akışı</h2></div><small>Snapshot dönemi</small></div>
         <div class="process" id="surec-listesi">
@@ -707,6 +847,7 @@
 <nav class="warehouse-mobile-bottom-nav" aria-label="Hızlı operasyon erişimi">
   <a href="#genel" data-mobile-nav="genel"><span aria-hidden="true">⌂</span><small>Genel</small></a>
   <a href="#surecler" data-mobile-nav="surecler"><span aria-hidden="true">⇥</span><small>Süreçler</small></a>
+  <a href="#sayim" data-mobile-nav="sayim"><span aria-hidden="true">≋</span><small>Sayım</small></a>
   <a href="#uyarilar" data-mobile-nav="uyarilar"><span aria-hidden="true">!</span><small>Uyarılar</small></a>
   <a href="#copilot" data-mobile-nav="copilot"><span aria-hidden="true">✦</span><small>Copilot</small></a>
   <a href="#aksiyonlar" data-mobile-nav="aksiyonlar"><span aria-hidden="true">↗</span><small>Aksiyonlar</small></a>
@@ -721,6 +862,7 @@
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
 <script type="module" src="/js/warehouse/picking-ui.js"></script>
 <script type="module" src="/js/warehouse/picking-write-controller.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>
