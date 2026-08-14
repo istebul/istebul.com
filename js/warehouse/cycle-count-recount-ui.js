@@ -7,7 +7,9 @@ const state = {
   productVerified: false,
   locationScan: "",
   productScan: "",
-  busy: false
+  busy: false,
+  pendingEvaluation: null,
+  evaluationFailed: false
 };
 
 function byId(id) {
@@ -340,6 +342,7 @@ function updateControls() {
     select.disabled =
       !state.active ||
       state.busy ||
+      state.evaluationFailed ||
       !state.tasks.length;
   }
 
@@ -374,8 +377,25 @@ function updateControls() {
   }
 
   if (save) {
+    const retryReady =
+      state.active &&
+      !state.busy &&
+      state.evaluationFailed &&
+      Boolean(
+        state.pendingEvaluation
+      ) &&
+      currentTask()?.id ===
+        state.pendingEvaluation
+          ?.taskId;
+
     save.disabled =
-      !ready;
+      !ready &&
+      !retryReady;
+
+    save.textContent =
+      retryReady
+        ? "Değerlendirmeyi Tekrar Dene"
+        : "İkinci Sayım Miktarını Kaydet";
   }
 }
 
@@ -859,6 +879,40 @@ function requestSave() {
     currentTask();
 
   if (
+    state.evaluationFailed &&
+    state.pendingEvaluation &&
+    task?.id ===
+      state.pendingEvaluation.taskId
+  ) {
+    state.busy =
+      true;
+
+    state.evaluationFailed =
+      false;
+
+    updateControls();
+
+    setQuantityStatus(
+      "İkinci fiziksel sayım kaydı korunuyor. Güvenli değerlendirme yeniden deneniyor.",
+      "loading"
+    );
+
+    document.dispatchEvent(
+      new CustomEvent(
+        "warehouse:cycle-count-recount-evaluation-retry",
+        {
+          detail:
+            Object.freeze({
+              ...state.pendingEvaluation
+            })
+        }
+      )
+    );
+
+    return;
+  }
+
+  if (
     !state.active ||
     !task ||
     !state.locationVerified ||
@@ -1124,14 +1178,121 @@ function bind() {
   document.addEventListener(
     "warehouse:cycle-count-recount-success",
     (event) => {
+      const confirmation =
+        event?.detail
+          ?.confirmation ||
+        {};
+
+      const evaluation =
+        Object.freeze({
+          cycleCountId:
+            text(
+              confirmation
+                .cycleCountId
+            ),
+
+          cycleCountItemId:
+            text(
+              confirmation
+                .cycleCountItemId
+            ),
+
+          taskId:
+            text(
+              confirmation
+                .taskId
+            )
+        });
+
+      if (
+        !evaluation.cycleCountId ||
+        !evaluation
+          .cycleCountItemId ||
+        !evaluation.taskId
+      ) {
+        state.busy =
+          false;
+
+        state.pendingEvaluation =
+          null;
+
+        state.evaluationFailed =
+          false;
+
+        updateControls();
+
+        setQuantityStatus(
+          "İkinci fiziksel miktar kaydedildi ancak değerlendirme kimlikleri doğrulanamadı.",
+          "error"
+        );
+
+        return;
+      }
+
+      state.busy =
+        true;
+
+      state.pendingEvaluation =
+        evaluation;
+
+      state.evaluationFailed =
+        false;
+
+      updateControls();
+
+      setQuantityStatus(
+        "İkinci fiziksel sayım miktarı kaydedildi. Güvenli yeniden sayım değerlendirmesi yapılıyor.",
+        "loading"
+      );
+
+      document.dispatchEvent(
+        new CustomEvent(
+          "warehouse:cycle-count-recount-evaluation-request",
+          {
+            detail:
+              evaluation
+          }
+        )
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-recount-evaluation-start",
+    () => {
+      state.busy =
+        true;
+
+      updateControls();
+
+      setQuantityStatus(
+        "Yeniden sayım sonucu güvenli olarak değerlendiriliyor.",
+        "loading"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-recount-evaluation-success",
+    (event) => {
       state.busy =
         false;
 
+      const evaluation =
+        event?.detail
+          ?.evaluation ||
+        state.pendingEvaluation ||
+        {};
+
       const taskId =
         text(
-          event?.detail
-            ?.confirmation
-            ?.taskId
+          evaluation.taskId
+        );
+
+      const cycleCountId =
+        text(
+          evaluation
+            .cycleCountId
         );
 
       if (taskId) {
@@ -1143,16 +1304,35 @@ function bind() {
           );
       }
 
+      state.pendingEvaluation =
+        null;
+
+      state.evaluationFailed =
+        false;
+
+      document.dispatchEvent(
+        new CustomEvent(
+          "warehouse:cycle-count-management-refresh",
+          {
+            detail:
+              Object.freeze({
+                cycleCountId
+              })
+          }
+        )
+      );
+
       if (
         state.tasks.length
       ) {
         state.selectedTaskId =
           state.tasks[0].id;
 
+        resetVerification();
         renderTaskOptions();
 
         setQuantityStatus(
-          "İkinci fiziksel sayım miktarı güvenli olarak kaydedildi. Final değerlendirme veya stok değişikliği yapılmadı.",
+          "Yeniden sayım sonucu güvenli olarak değerlendirildi.",
           "success"
         );
 
@@ -1160,6 +1340,8 @@ function bind() {
           "Sıradaki kontrollü yeniden sayım görevi hazır. Lokasyon barkodunu okutun.",
           "ready"
         );
+
+        updateControls();
 
         return;
       }
@@ -1171,13 +1353,45 @@ function bind() {
       renderTaskOptions();
 
       setQuantityStatus(
-        "İkinci fiziksel sayım miktarı güvenli olarak kaydedildi. Final değerlendirme veya stok değişikliği yapılmadı.",
+        "Yeniden sayım sonucu güvenli olarak değerlendirildi.",
         "success"
       );
 
       setMessage(
-        "Aktif kontrollü yeniden sayım görevi kalmadı. İkinci miktar değerlendirmesi sonraki güvenli aşamada yapılacaktır.",
+        "Aktif kontrollü yeniden sayım görevi kalmadı. Sonuçlar yönetim kontrol akışına aktarıldı.",
         "success"
+      );
+
+      updateControls();
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:cycle-count-recount-evaluation-error",
+    (event) => {
+      state.busy =
+        false;
+
+      state.evaluationFailed =
+        Boolean(
+          state.pendingEvaluation
+        );
+
+      updateControls();
+
+      setQuantityStatus(
+        text(
+          event?.detail?.message
+        ) ||
+          "Yeniden sayım değerlendirmesi tamamlanamadı.",
+        "error"
+      );
+
+      setMessage(
+        state.evaluationFailed
+          ? "İkinci fiziksel miktar kaydı korunuyor. Değerlendirmeyi tekrar deneyin."
+          : "Yeniden sayım değerlendirmesi tamamlanamadı.",
+        "error"
       );
     }
   );
