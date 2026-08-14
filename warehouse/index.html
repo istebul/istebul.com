@@ -1036,6 +1036,202 @@
     </p>
   </section>
 
+  <section
+    class="warehouse-cycle-count-management"
+    aria-labelledby="sayim-yonetim-basligi"
+  >
+    <div class="warehouse-cycle-count-management-heading">
+      <div>
+        <small>Yönetim / Kontrol</small>
+        <h3 id="sayim-yonetim-basligi">
+          Sayım Sonucu ve Tamamlama
+        </h3>
+      </div>
+
+      <button
+        id="sayim-yonetim-yenile"
+        type="button"
+        class="warehouse-cycle-count-management-refresh"
+      >
+        Yönetim Verisini Yenile
+      </button>
+    </div>
+
+    <p class="warehouse-cycle-count-management-help">
+      Bu alan yalnız yetkili yönetim rollerine açıktır.
+      İlk sayım, yeniden sayım, fark inceleme, stok düzeltme,
+      onay ve tamamlanmış rapor yaşam döngüsünü güvenli
+      WarehouseIQ HTTP API'leri üzerinden yönetir.
+    </p>
+
+    <div class="warehouse-cycle-count-management-toolbar">
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-yonetim-secimi">
+          Yönetilecek sayım / rapor
+        </label>
+
+        <select id="sayim-yonetim-secimi">
+          <option value="">
+            Yönetim verisi yükleniyor
+          </option>
+        </select>
+      </div>
+
+      <div class="warehouse-cycle-count-field">
+        <label for="sayim-yonetim-notu">
+          Yönetim notu
+        </label>
+
+        <textarea
+          id="sayim-yonetim-notu"
+          rows="2"
+          maxlength="1000"
+          placeholder="Örn. Sayım farkı fiziksel olarak doğrulandı."
+        ></textarea>
+      </div>
+    </div>
+
+    <p
+      id="sayim-yonetim-mesaji"
+      class="warehouse-cycle-count-message"
+      data-state="loading"
+      role="status"
+      aria-live="polite"
+    >
+      Sayım yönetim verileri yükleniyor…
+    </p>
+
+    <section
+      id="sayim-yonetim-aktif-detay"
+      class="warehouse-cycle-count-management-detail"
+      hidden
+    >
+      <div
+        id="sayim-yonetim-metrikleri"
+        class="warehouse-cycle-count-management-metrics"
+      ></div>
+
+      <div class="warehouse-cycle-count-management-block">
+        <div class="warehouse-cycle-count-management-block-heading">
+          <div>
+            <small>Satır Detayı</small>
+            <strong>Fiziksel Sayım ve Farklar</strong>
+          </div>
+        </div>
+
+        <div class="warehouse-cycle-count-management-table-wrap">
+          <table class="warehouse-cycle-count-management-table">
+            <thead>
+              <tr>
+                <th>Satır</th>
+                <th>Lokasyon</th>
+                <th>Ürün</th>
+                <th>SKU</th>
+                <th>Durum</th>
+                <th>Beklenen</th>
+                <th>İlk Sayım</th>
+                <th>İkinci Sayım</th>
+                <th>Final</th>
+                <th>Hasarlı</th>
+                <th>Fark</th>
+                <th>Fark Değeri</th>
+              </tr>
+            </thead>
+
+            <tbody id="sayim-yonetim-satirlari"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="warehouse-cycle-count-management-block">
+        <div class="warehouse-cycle-count-management-block-heading">
+          <div>
+            <small>Yaşam Döngüsü</small>
+            <strong>Düzeltme / Onay / İstisna</strong>
+          </div>
+        </div>
+
+        <div
+          id="sayim-yonetim-yasam-dongusu"
+          class="warehouse-cycle-count-management-metrics"
+        ></div>
+      </div>
+
+      <div class="warehouse-cycle-count-management-block">
+        <div class="warehouse-cycle-count-management-block-heading">
+          <div>
+            <small>Kontrollü İşlem</small>
+            <strong>Sayım Yönetim Aksiyonları</strong>
+          </div>
+        </div>
+
+        <div
+          id="sayim-yonetim-aksiyonlar"
+          class="warehouse-cycle-count-management-actions"
+        ></div>
+      </div>
+    </section>
+
+    <section
+      id="sayim-rapor-detayi"
+      class="warehouse-cycle-count-management-detail warehouse-cycle-count-report"
+      hidden
+    >
+      <div class="warehouse-cycle-count-management-heading">
+        <div>
+          <small>Değiştirilemez Snapshot</small>
+          <h3 id="sayim-rapor-basligi">
+            Tamamlanmış Sayım Raporu
+          </h3>
+        </div>
+
+        <button
+          id="sayim-rapor-yazdir"
+          type="button"
+          class="warehouse-cycle-count-management-refresh"
+        >
+          Raporu Yazdır
+        </button>
+      </div>
+
+      <div
+        id="sayim-rapor-metrikleri"
+        class="warehouse-cycle-count-management-metrics"
+      ></div>
+
+      <div class="warehouse-cycle-count-management-table-wrap">
+        <table class="warehouse-cycle-count-management-table">
+          <thead>
+            <tr>
+              <th>Satır</th>
+              <th>Lokasyon</th>
+              <th>Ürün</th>
+              <th>SKU</th>
+              <th>Stok Durumu</th>
+              <th>Beklenen</th>
+              <th>İlk Sayım</th>
+              <th>İkinci Sayım</th>
+              <th>Final</th>
+              <th>Hasarlı</th>
+              <th>Fark</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+
+          <tbody id="sayim-rapor-satirlari"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="warehouse-cycle-count-management-safety">
+      Stok bakiyesi yalnız “Stok Düzeltmelerini Uygula”
+      adımında değişir. “Sayımı Tamamla” işlemi ise açık görev,
+      istisna, onay veya düzeltme bulunmadığında değiştirilemez
+      sayım raporunu oluşturur.
+    </p>
+  </section>
+
+
   <p class="warehouse-cycle-count-safety">
     Barkod taraması tek başına sayım kaydı oluşturmaz.
     Bu A7.2 adımı yalnız ilk fiziksel sayım miktarını kaydeder;
@@ -1151,6 +1347,8 @@
     <script type="module" src="/js/warehouse/cycle-count-recount-evaluation-controller.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-recount-ui.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-recount-controller.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-report-ui.js"></script>
+<script type="module" src="/js/warehouse/cycle-count-review-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-ui.js"></script>
 <script type="module" src="/js/warehouse/receiving-write-controller.js"></script>
 </body>
