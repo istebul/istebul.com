@@ -252,39 +252,28 @@ jobs:
         if: steps.gate.outputs.skip != 'true'
         run: bash scripts/lib/retry-command.sh supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
 
-      - name: Push database migrations
-        id: db_push
-        continue-on-error: true
-        if: steps.gate.outputs.skip != 'true'
-        env:
-          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
-        run: |
-          # Latest Supabase CLI can push via SUPABASE_ACCESS_TOKEN (password-less DB role).
-          # Optional: SUPABASE_DB_PASSWORD or SUPABASE_DATABASE_URL for explicit connection.
-          if [ -n "$SUPABASE_DATABASE_URL" ]; then
-            supabase db push --yes --include-all --db-url "$SUPABASE_DATABASE_URL"
-          else
-            supabase db push --yes --include-all
-          fi
+      # Production migration history contains legacy version drift.
+      # Automatic broad migration replay is intentionally disabled.
+      # Production schema changes below use narrow, auditable Management API runners.
 
-      - name: Apply Konut/Finans schema fallback (Management API)
+      - name: Apply Konut/Finans schema (Management API, controlled)
         id: vertical_schema_fallback
-        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        if: steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-migration-api.sh
 
-      - name: Apply vertical partner dispatch schema fallback (Management API)
+      - name: Apply vertical partner dispatch schema (Management API, controlled)
         id: vpd_schema_fallback
-        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        if: steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-partner-dispatch-migration-api.sh
 
-      - name: Apply AI listings schema fallback (Management API)
+      - name: Apply AI listings schema (Management API, controlled)
         id: ai_listings_schema_fallback
-        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        if: steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-ai-listings-migration-api.sh
 
-      - name: Apply WarehouseIQ schema fallback (Management API)
+      - name: Apply WarehouseIQ schema (Management API, controlled)
         id: warehouse_schema_fallback
-        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        if: steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-warehouse-migrations-api.sh
 
       - name: Verify WarehouseIQ schema
@@ -295,16 +284,30 @@ jobs:
         if: steps.gate.outputs.skip != 'true'
         run: node scripts/verify-vertical-partner-dispatch-schema.cjs
 
-      - name: Require Konut/Finans schema
+      - name: Require controlled schema applies
         if: steps.gate.outputs.skip != 'true'
         run: |
-          if [ "${{ steps.db_push.outcome }}" != "success" ] && [ "${{ steps.vertical_schema_fallback.outcome }}" != "success" ] && [ "${{ steps.vpd_schema_fallback.outcome }}" != "success" ]; then
-            echo "::error::Database migrations failed and schema fallbacks did not run."
+          if [ "${{ steps.vertical_schema_fallback.outcome }}" != "success" ]; then
+            echo "::error::Konut/Finans controlled schema apply failed."
             exit 1
           fi
-          if [ "${{ steps.db_push.outcome }}" != "success" ]; then
-            echo "::warning::db push incomplete (migration history drift). Schema applied via Management API fallback where available."
+
+          if [ "${{ steps.vpd_schema_fallback.outcome }}" != "success" ]; then
+            echo "::error::Vertical partner dispatch controlled schema apply failed."
+            exit 1
           fi
+
+          if [ "${{ steps.ai_listings_schema_fallback.outcome }}" != "success" ]; then
+            echo "::error::AI listings controlled schema apply failed."
+            exit 1
+          fi
+
+          if [ "${{ steps.warehouse_schema_fallback.outcome }}" != "success" ]; then
+            echo "::error::WarehouseIQ controlled schema apply failed."
+            exit 1
+          fi
+
+          echo "Controlled production schema applies completed."
 
       - name: Sync edge secrets (analytics ITE)
         if: steps.gate.outputs.skip != 'true'
