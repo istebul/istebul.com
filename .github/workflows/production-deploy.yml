@@ -282,6 +282,15 @@ jobs:
         if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-ai-listings-migration-api.sh
 
+      - name: Apply WarehouseIQ schema fallback (Management API)
+        id: warehouse_schema_fallback
+        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-warehouse-migrations-api.sh
+
+      - name: Verify WarehouseIQ schema
+        if: steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-warehouse-migrations-api.sh --verify-only
+
       - name: Verify vertical partner dispatch schema
         if: steps.gate.outputs.skip != 'true'
         run: node scripts/verify-vertical-partner-dispatch-schema.cjs
