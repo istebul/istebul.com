@@ -296,6 +296,7 @@ export * from "./types/Packing";
 
 export * from "./services/PackingRepository";
 export * from "./services/InMemoryPackingRepository";
+export * from "./services/SupabasePackingRepository";
 export * from "./services/PackingValidator";
 export * from "./services/PackingSuggestionService";
 export * from "./services/PackingContainerService";
