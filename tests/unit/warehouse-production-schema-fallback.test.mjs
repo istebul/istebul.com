@@ -89,10 +89,49 @@ test('runtime hazırsa fallback tekrar migration uygulamaz', () => {
   );
 });
 
-test('production deploy db push failureında WarehouseIQ fallback çalıştırır', () => {
+test('production deploy blind Supabase db push içermez', () => {
+  assert.doesNotMatch(
+    workflow,
+    /supabase\s+db\s+push/i
+  );
+
+  assert.doesNotMatch(
+    workflow,
+    /--include-all/i
+  );
+
+  assert.doesNotMatch(
+    workflow,
+    /steps\.db_push/i
+  );
+});
+
+test('production deploy WarehouseIQ controlled Management API apply kullanır', () => {
   assert.match(
     workflow,
-    /Apply WarehouseIQ schema fallback \(Management API\)[\s\S]*steps\.db_push\.outcome == 'failure'/
+    /Apply WarehouseIQ schema \(Management API, controlled\)[\s\S]*if: steps\.gate\.outputs\.skip != 'true'[\s\S]*apply-warehouse-migrations-api\.sh/
+  );
+});
+
+test('production schema apply gate dört kontrollü runnerı fail-closed doğrular', () => {
+  assert.match(
+    workflow,
+    /steps\.vertical_schema_fallback\.outcome/
+  );
+
+  assert.match(
+    workflow,
+    /steps\.vpd_schema_fallback\.outcome/
+  );
+
+  assert.match(
+    workflow,
+    /steps\.ai_listings_schema_fallback\.outcome/
+  );
+
+  assert.match(
+    workflow,
+    /steps\.warehouse_schema_fallback\.outcome/
   );
 });
 
