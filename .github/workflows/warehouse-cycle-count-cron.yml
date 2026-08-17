@@ -1,0 +1,54 @@
+name: Warehouse Cycle Count Cron
+
+on:
+  schedule:
+    - cron: "10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: warehouse-cycle-count-cron
+  cancel-in-progress: false
+
+jobs:
+  cycle-count:
+    name: Process due cycle count schedules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run WarehouseIQ cycle count scheduler
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          WAREHOUSE_CYCLE_COUNT_CRON_SECRET: ${{ secrets.WAREHOUSE_CYCLE_COUNT_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+
+          for name in \
+            SUPABASE_URL \
+            SUPABASE_ANON_KEY \
+            WAREHOUSE_CYCLE_COUNT_CRON_SECRET
+          do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing required secret: $name"
+              exit 1
+            fi
+          done
+
+          endpoint="${SUPABASE_URL%/}/functions/v1/warehouse-cycle-count-cron"
+
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --retry 3 \
+            --retry-delay 3 \
+            --retry-all-errors \
+            -X POST \
+            "$endpoint" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -H "x-warehouse-cycle-count-cron-secret: $WAREHOUSE_CYCLE_COUNT_CRON_SECRET"

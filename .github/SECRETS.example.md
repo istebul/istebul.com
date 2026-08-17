@@ -20,6 +20,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 |----------|----------|
 | `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role (gizli) |
+| `WAREHOUSE_CYCLE_COUNT_CRON_SECRET` | Güçlü rastgele secret. Aynı değer GitHub Actions secret ve Supabase Edge Function secret olarak tanımlanır; WarehouseIQ aylık/yıllık sayım scheduler erişimini korur. |
 | `TCMB_EVDS_API_KEY` | [EVDS 3](https://evds3.tcmb.gov.tr/) profil → API anahtarı (yalnızca sunucu; `/api/evds-snapshot`). Cloudflare’da yanlış isimle `EVDS_API_KEY` tanımlandıysa kod bunu da okur; tercih edilen ad `TCMB_EVDS_API_KEY`. |
 
 ### AFAD deprem snapshot (OD-2B) — ops notu

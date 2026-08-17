@@ -342,6 +342,7 @@ jobs:
             ops-ingest
             lifecycle-enroll
             lifecycle-cron
+            warehouse-cycle-count-cron
             partner-retry
             partner-dispatch
             partner-endpoint-test

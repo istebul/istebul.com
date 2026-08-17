@@ -460,3 +460,8 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/user-account/deno.json"
 entrypoint = "./functions/user-account/index.ts"
+
+[functions.warehouse-cycle-count-cron]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/warehouse-cycle-count-cron/index.ts"
