@@ -10,6 +10,7 @@ const PASS_STATUSES = new Set([200, 204, 400, 401, 403, 405]);
 const PROBES = [
   { name: 'auto-intake', method: 'OPTIONS' },
   { name: 'lifecycle-cron', method: 'OPTIONS' },
+  { name: 'warehouse-cycle-count-cron', method: 'OPTIONS' },
   { name: 'lifecycle-enroll', method: 'OPTIONS' },
   {
     name: 'lifecycle-enroll',
