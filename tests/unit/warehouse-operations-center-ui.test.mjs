@@ -225,3 +225,119 @@ test(
     );
   }
 );
+
+test("WarehouseIQ production kamera politikası yalnız WarehouseIQ yüzeyinde same-origin erişim açar", async () => {
+  const headers = await readFile(
+    "_headers",
+    "utf8"
+  );
+
+  assert.match(
+    headers,
+    /\/\*\s*\n[\s\S]*?Permissions-Policy:\s*camera=\(\),\s*microphone=\(\),\s*geolocation=\(\)/
+  );
+
+  assert.match(
+    headers,
+    /\/warehouse\/\*\s*\n\s*! Permissions-Policy\s*\n\s*Permissions-Policy:\s*camera=\(self\),\s*microphone=\(\),\s*geolocation=\(\)/
+  );
+
+  const warehouseRules =
+    headers.match(
+      /^\/warehouse\/\*$/gm
+    ) ?? [];
+
+  assert.equal(
+    warehouseRules.length,
+    1
+  );
+});
+
+test("WarehouseIQ sidebar gerçek Toplama ekranını Operasyon Akışı özetinden ayırır", async () => {
+  const html = await readFile(
+    "warehouse/index.html",
+    "utf8"
+  );
+
+  const nav =
+    html.match(
+      /<nav\s+id="warehouse-nav"[\s\S]*?<\/nav>/
+    )?.[0] ?? "";
+
+  assert.ok(
+    nav,
+    "warehouse-nav bulunmalı"
+  );
+
+  assert.match(
+    nav,
+    /href="#toplama"[^>]*>\s*⌑ Toplama\s*<\/a>/
+  );
+
+  assert.match(
+    nav,
+    /href="#surecler"[^>]*>\s*✓ Operasyon Akışı\s*<\/a>/
+  );
+
+  const toplamaLabels =
+    nav.match(
+      />[^<]*Toplama[^<]*<\/a>/g
+    ) ?? [];
+
+  assert.equal(
+    toplamaLabels.length,
+    1
+  );
+});
+
+test("Operations Center oturum ve API beklemelerini süre sınırıyla sonlandırır", async () => {
+  const js = await readFile(
+    "js/warehouse/operations-center.js",
+    "utf8"
+  );
+
+  assert.match(
+    js,
+    /AUTH_SESSION_TIMEOUT_MS\s*=\s*8_000/
+  );
+
+  assert.match(
+    js,
+    /API_REQUEST_TIMEOUT_MS\s*=\s*15_000/
+  );
+
+  assert.match(
+    js,
+    /Promise\.race\s*\(/
+  );
+
+  assert.match(
+    js,
+    /client\.auth\.getSession\(\)/
+  );
+
+  assert.match(
+    js,
+    /new AbortController\(\)/
+  );
+
+  assert.match(
+    js,
+    /controller\.abort\(\)/
+  );
+
+  assert.match(
+    js,
+    /signal:\s*controller\.signal/
+  );
+
+  assert.match(
+    js,
+    /oturum kontrolü zaman aşımına uğradı/
+  );
+
+  assert.match(
+    js,
+    /operasyon bağlantısı zaman aşımına uğradı/
+  );
+});
