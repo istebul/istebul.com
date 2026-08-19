@@ -3,6 +3,7 @@ import { fetchWarehouseCopilotNarration } from "./operations-copilot-narration.j
 
 const API_URL = "/api/warehouse/operations-center";
 const AUTH_STORAGE_KEY = "istebul-auth-public-v1";
+const AUTO_REFRESH_MS = 30_000;
 
 const PROCESS_LABELS = {
   receiving: "Mal Kabul",
@@ -39,6 +40,10 @@ const state = {
 
 let supabase = null;
 let copilotRenderVersion = 0;
+let authSubscription = null;
+let refreshTimer = 0;
+let loadInFlight = false;
+let loadQueued = false;
 
 function byId(id) {
   return document.getElementById(id);
@@ -93,8 +98,20 @@ function getSupabase() {
   return supabase;
 }
 
+function numericValue(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return Number.NaN;
+  }
+
+  return Number(value);
+}
+
 function formatNumber(value) {
-  const number = Number(value);
+  const number = numericValue(value);
   if (!Number.isFinite(number)) return "—";
   return new Intl.NumberFormat("tr-TR", {
     maximumFractionDigits: 0
@@ -102,7 +119,7 @@ function formatNumber(value) {
 }
 
 function formatPercent(value) {
-  const number = Number(value);
+  const number = numericValue(value);
   if (!Number.isFinite(number)) return "—";
   return `${new Intl.NumberFormat("tr-TR", {
     minimumFractionDigits: 0,
@@ -111,7 +128,7 @@ function formatPercent(value) {
 }
 
 function formatScore(value) {
-  const number = Number(value);
+  const number = numericValue(value);
   if (!Number.isFinite(number)) return "—";
   return new Intl.NumberFormat("tr-TR", {
     minimumFractionDigits: 0,
@@ -153,7 +170,7 @@ function setStatus(type, badge, message) {
     type === "live"
       ? "Canlı bağlantı. "
       : type === "empty"
-        ? "Veri bekleniyor. "
+        ? "Sistem bağlı. "
         : type === "auth"
           ? "Oturum gerekli. "
           : type === "forbidden"
@@ -174,8 +191,12 @@ function setStatus(type, badge, message) {
           : "Erişim bekleniyor";
 }
 
-function setTimestamp(value) {
-  byId("zaman").textContent = `Son güncelleme: ${formatDateTime(value)}`;
+function setTimestamp(
+  value,
+  label = "Son güncelleme"
+) {
+  byId("zaman").textContent =
+    `${label}: ${formatDateTime(value)}`;
 }
 
 function setKpi(name, value, meta) {
@@ -260,7 +281,7 @@ function clearCopilot(message = "Copilot verisi bulunmuyor.") {
     button.textContent = "AI anlatımını oluştur";
   }
 
-  setCopilotState("empty", "Veri bekleniyor");
+  setCopilotState("empty", "Henüz veri yok");
   renderEmpty(byId("copilot-ozet"), message);
   renderEmpty(byId("copilot-risk"), "Bu dönem için risk verisi bulunmuyor.");
   renderEmpty(byId("copilot-firsat"), "Fırsat için yeterli dönem karşılaştırması bulunmuyor.");
@@ -491,9 +512,15 @@ function renderProcessVolumes(rows) {
 }
 
 function renderCapacity(snapshot) {
-  const used = Number(snapshot.used_capacity);
-  const total = Number(snapshot.total_capacity);
-  const rate = Number(snapshot.capacity_utilization_rate);
+  const used = numericValue(
+    snapshot.used_capacity
+  );
+  const total = numericValue(
+    snapshot.total_capacity
+  );
+  const rate = numericValue(
+    snapshot.capacity_utilization_rate
+  );
   const available =
     Number.isFinite(total) && Number.isFinite(used)
       ? Math.max(0, total - used)
@@ -621,8 +648,13 @@ function renderTrend(rows) {
   const summary = byId("trend-ozeti");
   container.replaceChildren();
 
-  const points = (rows || []).filter((row) =>
-    Number.isFinite(Number(row.health_score))
+  const points = (rows || []).filter(
+    (row) =>
+      Number.isFinite(
+        numericValue(
+          row.health_score
+        )
+      )
   );
 
   if (!points.length) {
@@ -631,8 +663,12 @@ function renderTrend(rows) {
     return;
   }
 
-  const first = Number(points[0].health_score);
-  const last = Number(points[points.length - 1].health_score);
+  const first = numericValue(
+    points[0].health_score
+  );
+  const last = numericValue(
+    points[points.length - 1].health_score
+  );
   const diff = last - first;
 
   summary.textContent =
@@ -645,7 +681,9 @@ function renderTrend(rows) {
     const bar = document.createElement("i");
     const value = document.createElement("b");
     const label = document.createElement("small");
-    const score = Number(point.health_score);
+    const score = numericValue(
+      point.health_score
+    );
 
     wrap.className = "bar";
     bar.style.height = `${Math.max(4, Math.min(100, score))}%`;
@@ -669,7 +707,14 @@ function renderSnapshot(snapshot) {
   setKpi(
     "health",
     formatScore(snapshot.health_score),
-    HEALTH_LABELS[snapshot.health_status] || "Durum hesaplandı"
+    snapshot.health_status
+      ? (
+          HEALTH_LABELS[
+            snapshot.health_status
+          ] ||
+          "Durum hesaplandı"
+        )
+      : "Yeterli KPI verisi yok"
   );
   setKpi(
     "dispatch",
@@ -847,55 +892,101 @@ function renderData(data) {
     (state.warehouseId ? "Seçili depo" : "Firma geneli");
 
   if (hasSnapshot) {
+    const sourceMessage =
+      data.snapshotSource === "live"
+        ? "güncel operasyon tablolarından anlık hesaplanıyor"
+        : "doğrulanmış operasyon snapshot kaydından okunuyor";
+
     setStatus(
       "live",
       "Canlı veri",
-      `${accountName} · ${scopeName} verileri yetkili oturum ve RLS üzerinden okunuyor.`
+      `${accountName} · ${scopeName} verileri yetkili oturum ve RLS üzerinden ${sourceMessage}.`
     );
   } else {
+    setTimestamp(
+      data.generatedAt ||
+        new Date().toISOString(),
+      "Son bağlantı kontrolü"
+    );
+
     setStatus(
       "empty",
-      "Veri bekleniyor",
-      `${accountName} · ${scopeName} için henüz operasyon snapshot kaydı bulunmuyor.`
+      "Sistem bağlı",
+      `${accountName} · ${scopeName} için henüz operasyon snapshot kaydı bulunmuyor. Güvenli bağlantı aktif; yeni operasyon verisi oluştuğunda görünüm otomatik yenilenir.`
     );
   }
 }
 
 async function load() {
+  if (loadInFlight) {
+    loadQueued = true;
+    return;
+  }
+
+  loadInFlight = true;
+
   setStatus(
     "loading",
     "Canlı veri yükleniyor",
     "WarehouseIQ operasyon verileri güvenli bağlantı üzerinden yükleniyor."
   );
+
   byId("depo").disabled = true;
 
   try {
-    const result = await fetchOperationsCenter();
+    const result =
+      await fetchOperationsCenter();
 
     if (result.authRequired) {
-      renderAuthRequired(result.message);
+      renderAuthRequired(
+        result.message
+      );
       return;
     }
 
     if (result.forbidden) {
-      renderForbidden(result.message);
+      renderForbidden(
+        result.message
+      );
       return;
     }
 
-    state.accountId = result.data.account?.id || null;
+    state.accountId =
+      result.data.account?.id ||
+      null;
 
-    renderData(result.data);
+    renderData(
+      result.data
+    );
 
     document.dispatchEvent(
-      new CustomEvent("warehouse:operations-context", {
-        detail: Object.freeze({
-          accountId: state.accountId,
-          warehouseId: state.warehouseId
-        })
-      })
+      new CustomEvent(
+        "warehouse:operations-context",
+        {
+          detail: Object.freeze({
+            accountId:
+              state.accountId,
+            warehouseId:
+              state.warehouseId
+          })
+        }
+      )
     );
   } catch (error) {
     renderError(error);
+  } finally {
+    loadInFlight = false;
+
+    if (loadQueued) {
+      loadQueued = false;
+
+      window.setTimeout(
+        () => {
+          void load();
+        },
+        0
+      );
+    }
   }
 }
 
@@ -906,8 +997,125 @@ function bindEvents() {
   });
 }
 
+function queueOperationsRefresh() {
+  if (loadInFlight) {
+    loadQueued = true;
+    return;
+  }
+
+  window.setTimeout(
+    () => {
+      if (!document.hidden) {
+        void load();
+      }
+    },
+    0
+  );
+}
+
+function bindAuthLifecycle() {
+  const client =
+    getSupabase();
+
+  const { data } =
+    client.auth.onAuthStateChange(
+      (event, session) => {
+        if (
+          event === "SIGNED_OUT" ||
+          !session
+        ) {
+          state.accountId = null;
+          state.warehouseId = null;
+          state.warehouses = [];
+          state.copilot = null;
+
+          window.setTimeout(
+            () => {
+              renderAuthRequired(
+                "WarehouseIQ oturumu gerekli."
+              );
+            },
+            0
+          );
+
+          return;
+        }
+
+        if (
+          [
+            "INITIAL_SESSION",
+            "SIGNED_IN",
+            "TOKEN_REFRESHED",
+            "USER_UPDATED"
+          ].includes(event)
+        ) {
+          queueOperationsRefresh();
+        }
+      }
+    );
+
+  authSubscription =
+    data?.subscription ||
+    null;
+}
+
+function startAutomaticRefresh() {
+  if (refreshTimer) {
+    window.clearInterval(
+      refreshTimer
+    );
+  }
+
+  refreshTimer =
+    window.setInterval(
+      () => {
+        if (!document.hidden) {
+          void load();
+        }
+      },
+      AUTO_REFRESH_MS
+    );
+}
+
+function cleanupOperationsRuntime() {
+  if (refreshTimer) {
+    window.clearInterval(
+      refreshTimer
+    );
+
+    refreshTimer = 0;
+  }
+
+  if (authSubscription) {
+    authSubscription.unsubscribe();
+    authSubscription = null;
+  }
+}
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (!document.hidden) {
+      queueOperationsRefresh();
+    }
+  }
+);
+
+window.addEventListener(
+  "pagehide",
+  cleanupOperationsRuntime
+);
+
 document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
+
+  try {
+    bindAuthLifecycle();
+    startAutomaticRefresh();
+  } catch {
+    // İlk load güvenli hata yüzeyini yönetecek.
+  }
+
   await load();
 });
 

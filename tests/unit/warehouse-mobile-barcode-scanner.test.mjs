@@ -146,3 +146,78 @@ test("Production build barkod tarayıcı kaynaklarını yayınlar", async () => 
   assert.match(source, /css\/warehouse\/barcode-scanner\.css/);
   assert.match(source, /js\/warehouse\/barcode-scanner\.js/);
 });
+
+test(
+  "Native BarcodeDetector olmayan tarayıcı uyumlu ZXing kamera fallback kullanır",
+  async () => {
+    const source = await readFile(
+      "js/warehouse/barcode-scanner.js",
+      "utf8"
+    );
+
+    assert.match(
+      source,
+      /@zxing\/browser@0\.1\.5\/\+esm/
+    );
+
+    assert.match(
+      source,
+      /BrowserMultiFormatReader/
+    );
+
+    assert.match(
+      source,
+      /decodeFromConstraints/
+    );
+
+    assert.match(
+      source,
+      /startFallbackDecoder/
+    );
+
+    assert.match(
+      source,
+      /Safari ve diğer tarayıcılar için uyumlu okuyucu/
+    );
+
+    assert.doesNotMatch(
+      source,
+      /typeof\s+window\.BarcodeDetector\s*!==\s*"function"\s*\|\|/
+    );
+  }
+);
+
+test(
+  "Fallback decoder ve kamera yaşam döngüsü birlikte güvenli kapanır",
+  async () => {
+    const source = await readFile(
+      "js/warehouse/barcode-scanner.js",
+      "utf8"
+    );
+
+    assert.match(
+      source,
+      /fallbackControls\.stop\(\)/
+    );
+
+    assert.match(
+      source,
+      /fallbackReader = null/
+    );
+
+    assert.match(
+      source,
+      /stream\.getTracks\(\)/
+    );
+
+    assert.match(
+      source,
+      /track\.stop\(\)/
+    );
+
+    assert.match(
+      source,
+      /video\.srcObject = null/
+    );
+  }
+);

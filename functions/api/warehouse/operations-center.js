@@ -92,6 +92,726 @@ function warehouseFilter(warehouseId) {
   return warehouseId ? `eq.${warehouseId}` : "is.null";
 }
 
+
+const LIVE_PERIOD_MS =
+  24 * 60 * 60 * 1000;
+
+function finiteNumber(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  const number =
+    Number(value);
+
+  return Number.isFinite(number)
+    ? number
+    : null;
+}
+
+function sumNumeric(rows, field) {
+  return (rows || []).reduce(
+    (total, row) =>
+      total +
+      (
+        finiteNumber(
+          row?.[field]
+        ) ?? 0
+      ),
+    0
+  );
+}
+
+function percent(
+  numerator,
+  denominator
+) {
+  const top =
+    finiteNumber(numerator);
+
+  const bottom =
+    finiteNumber(denominator);
+
+  if (
+    top === null ||
+    bottom === null ||
+    bottom <= 0
+  ) {
+    return null;
+  }
+
+  return Math.round(
+    (
+      Math.max(
+        0,
+        Math.min(
+          1,
+          top / bottom
+        )
+      ) * 100
+    ) * 100
+  ) / 100;
+}
+
+function healthStatus(score) {
+  const value =
+    finiteNumber(score);
+
+  if (value === null) {
+    return null;
+  }
+
+  if (value >= 85) {
+    return "healthy";
+  }
+
+  if (value >= 65) {
+    return "attention";
+  }
+
+  return "critical";
+}
+
+export function buildLiveSnapshot({
+  accountId,
+  warehouseId = null,
+  periodStart,
+  periodEnd,
+  generatedAt,
+  pickings = [],
+  pickingItems = [],
+  taskRows = [],
+  cycleCountItems = [],
+  locations = [],
+  inventoryBalances = []
+}) {
+  const capacityLocations =
+    new Map();
+
+  for (const location of locations) {
+    const capacity =
+      finiteNumber(
+        location?.maximum_unit_count
+      );
+
+    if (
+      capacity !== null &&
+      capacity > 0 &&
+      location?.id
+    ) {
+      capacityLocations.set(
+        location.id,
+        capacity
+      );
+    }
+  }
+
+  const totalCapacity =
+    [...capacityLocations.values()]
+      .reduce(
+        (total, value) =>
+          total + value,
+        0
+      );
+
+  const usedCapacity =
+    inventoryBalances.reduce(
+      (total, balance) => {
+        if (
+          !capacityLocations.has(
+            balance?.location_id
+          )
+        ) {
+          return total;
+        }
+
+        return total +
+          (
+            finiteNumber(
+              balance?.quantity
+            ) ?? 0
+          );
+      },
+      0
+    );
+
+  const completedPickings =
+    pickings.filter(
+      (row) =>
+        row?.status ===
+          "completed"
+    );
+
+  const completedTasks =
+    taskRows.filter(
+      (row) =>
+        row?.status ===
+          "completed"
+    );
+
+  const exceptionTasks =
+    taskRows.filter(
+      (row) =>
+        row?.status ===
+          "exception"
+    );
+
+  const completedCounts =
+    cycleCountItems.filter(
+      (row) =>
+        finiteNumber(
+          row?.final_count_quantity
+        ) !== null
+    );
+
+  const accurateCounts =
+    completedCounts.filter(
+      (row) => {
+        const expected =
+          finiteNumber(
+            row?.expected_quantity
+          );
+
+        const actual =
+          finiteNumber(
+            row?.final_count_quantity
+          );
+
+        const tolerance =
+          finiteNumber(
+            row?.tolerance_quantity
+          ) ?? 0;
+
+        if (
+          expected === null ||
+          actual === null
+        ) {
+          return false;
+        }
+
+        return (
+          Math.abs(
+            actual - expected
+          ) <= tolerance
+        );
+      }
+    );
+
+  const requestedItems =
+    sumNumeric(
+      pickingItems,
+      "requested_quantity"
+    );
+
+  const fulfilledItems =
+    sumNumeric(
+      pickingItems,
+      "picked_quantity"
+    );
+
+  const shortItems =
+    sumNumeric(
+      pickingItems,
+      "short_quantity"
+    );
+
+  const hasData =
+    pickings.length > 0 ||
+    pickingItems.length > 0 ||
+    taskRows.length > 0 ||
+    completedCounts.length > 0 ||
+    capacityLocations.size > 0 ||
+    inventoryBalances.length > 0;
+
+  if (!hasData) {
+    return null;
+  }
+
+  const orderCompletionRate =
+    percent(
+      completedPickings.length,
+      pickings.length
+    );
+
+  const taskCompletionRate =
+    percent(
+      completedTasks.length,
+      taskRows.length
+    );
+
+  const taskExceptionRate =
+    percent(
+      exceptionTasks.length,
+      taskRows.length
+    );
+
+  const inventoryAccuracyRate =
+    percent(
+      accurateCounts.length,
+      completedCounts.length
+    );
+
+  const capacityUtilizationRate =
+    totalCapacity > 0
+      ? percent(
+          usedCapacity,
+          totalCapacity
+        )
+      : null;
+
+  const itemFulfillmentRate =
+    percent(
+      fulfilledItems,
+      requestedItems
+    );
+
+  const shortPickRate =
+    percent(
+      shortItems,
+      requestedItems
+    );
+
+  const healthInputs = [
+    orderCompletionRate,
+    taskCompletionRate,
+    inventoryAccuracyRate,
+    itemFulfillmentRate
+  ].filter(
+    (value) =>
+      value !== null
+  );
+
+  const healthScore =
+    healthInputs.length > 0
+      ? Math.round(
+          (
+            healthInputs.reduce(
+              (total, value) =>
+                total + value,
+              0
+            ) /
+            healthInputs.length
+          ) * 100
+        ) / 100
+      : null;
+
+  return {
+    id:
+      `live:${accountId}:` +
+      `${warehouseId || "all"}:` +
+      `${generatedAt}`,
+
+    account_id:
+      accountId,
+
+    warehouse_id:
+      warehouseId || null,
+
+    period_start:
+      periodStart,
+
+    period_end:
+      periodEnd,
+
+    total_orders:
+      pickings.length,
+
+    completed_orders:
+      completedPickings.length,
+
+    on_time_orders:
+      null,
+
+    delayed_orders:
+      null,
+
+    total_tasks:
+      taskRows.length,
+
+    completed_tasks:
+      completedTasks.length,
+
+    exception_tasks:
+      exceptionTasks.length,
+
+    total_inventory_checks:
+      completedCounts.length,
+
+    accurate_inventory_checks:
+      accurateCounts.length,
+
+    used_capacity:
+      totalCapacity > 0
+        ? usedCapacity
+        : null,
+
+    total_capacity:
+      totalCapacity > 0
+        ? totalCapacity
+        : null,
+
+    productive_minutes:
+      null,
+
+    available_labor_minutes:
+      null,
+
+    requested_items:
+      requestedItems,
+
+    fulfilled_items:
+      fulfilledItems,
+
+    short_items:
+      shortItems,
+
+    order_completion_rate:
+      orderCompletionRate,
+
+    on_time_dispatch_rate:
+      null,
+
+    task_completion_rate:
+      taskCompletionRate,
+
+    task_exception_rate:
+      taskExceptionRate,
+
+    inventory_accuracy_rate:
+      inventoryAccuracyRate,
+
+    capacity_utilization_rate:
+      capacityUtilizationRate,
+
+    labor_utilization_rate:
+      null,
+
+    item_fulfillment_rate:
+      itemFulfillmentRate,
+
+    short_pick_rate:
+      shortPickRate,
+
+    health_score:
+      healthScore,
+
+    health_status:
+      healthStatus(
+        healthScore
+      ),
+
+    kpis: [],
+    alerts: [],
+
+    calculated_at:
+      generatedAt
+  };
+}
+
+async function optionalRows(
+  env,
+  token,
+  table,
+  params,
+  fetchImpl
+) {
+  try {
+    return await rows(
+      env,
+      token,
+      table,
+      params,
+      fetchImpl
+    );
+  } catch (error) {
+    logApiEvent(
+      "warn",
+      "warehouse_operations_live_source_unavailable",
+      {
+        table,
+        message:
+          error instanceof Error
+            ? error.message
+            : String(error)
+      }
+    );
+
+    return [];
+  }
+}
+
+function scopedLiveParams({
+  accountId,
+  warehouseId,
+  select,
+  periodStart,
+  timeColumn = "created_at",
+  warehouseScoped = true,
+  currentState = false
+}) {
+  if (
+    warehouseId &&
+    !warehouseScoped
+  ) {
+    return null;
+  }
+
+  const params = {
+    select,
+    account_id:
+      `eq.${accountId}`,
+    limit: "1000"
+  };
+
+  if (warehouseId) {
+    params.warehouse_id =
+      `eq.${warehouseId}`;
+  }
+
+  if (!currentState) {
+    params[timeColumn] =
+      `gte.${periodStart}`;
+
+    params.order =
+      `${timeColumn}.desc`;
+  }
+
+  return params;
+}
+
+async function loadLiveOperationsSnapshot({
+  env,
+  token,
+  accountId,
+  warehouseId,
+  generatedAt,
+  fetchImpl
+}) {
+  const periodEnd =
+    generatedAt;
+
+  const periodStart =
+    new Date(
+      new Date(
+        generatedAt
+      ).getTime() -
+      LIVE_PERIOD_MS
+    ).toISOString();
+
+  const read = (
+    table,
+    select,
+    options = {}
+  ) => {
+    const params =
+      scopedLiveParams({
+        accountId,
+        warehouseId,
+        select,
+        periodStart,
+        ...options
+      });
+
+    if (!params) {
+      return Promise.resolve([]);
+    }
+
+    return optionalRows(
+      env,
+      token,
+      table,
+      params,
+      fetchImpl
+    );
+  };
+
+  const [
+    pickings,
+    pickingItems,
+    cycleCountItems,
+    locations,
+    inventoryBalances,
+    receivingRows,
+    putawayRows,
+    qualityRows,
+    packingRows,
+    cycleCountRows,
+    pickingTasks,
+    cycleCountTasks,
+    packingTasks,
+    receivingTasks,
+    putawayTasks,
+    qualityTasks,
+    operationExceptions
+  ] = await Promise.all([
+    read(
+      "warehouse_pickings",
+      "id,status,warehouse_id,created_at,completed_at"
+    ),
+
+    read(
+      "warehouse_picking_items",
+      "id,warehouse_id,requested_quantity,picked_quantity,short_quantity,created_at"
+    ),
+
+    read(
+      "warehouse_cycle_count_items",
+      "id,warehouse_id,expected_quantity,final_count_quantity,tolerance_quantity,status,created_at"
+    ),
+
+    read(
+      "warehouse_locations",
+      "id,warehouse_id,maximum_unit_count,status",
+      {
+        currentState: true
+      }
+    ),
+
+    read(
+      "warehouse_inventory_balances",
+      "id,warehouse_id,location_id,quantity,updated_at",
+      {
+        currentState: true
+      }
+    ),
+
+    read(
+      "warehouse_receivings",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_putaways",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_quality_inspections",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_packings",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_cycle_counts",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_picking_tasks",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_cycle_count_tasks",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_packing_tasks",
+      "id,status,warehouse_id,created_at"
+    ),
+
+    read(
+      "warehouse_receiving_tasks",
+      "id,status,created_at",
+      {
+        warehouseScoped: false
+      }
+    ),
+
+    read(
+      "warehouse_putaway_tasks",
+      "id,status,created_at",
+      {
+        warehouseScoped: false
+      }
+    ),
+
+    read(
+      "warehouse_quality_tasks",
+      "id,status,created_at",
+      {
+        warehouseScoped: false
+      }
+    ),
+
+    read(
+      "warehouse_operations_exceptions",
+      "id,account_id,warehouse_id,process,category,code,severity,root_cause,description,occurred_at,resolved_at,resolution_note,delay_minutes,impacted_orders,impacted_tasks,impacted_items,created_at",
+      {
+        timeColumn:
+          "occurred_at"
+      }
+    )
+  ]);
+
+  const taskRows = [
+    ...pickingTasks,
+    ...cycleCountTasks,
+    ...packingTasks,
+    ...receivingTasks,
+    ...putawayTasks,
+    ...qualityTasks
+  ];
+
+  const processGroups = [
+    ["receiving", receivingRows],
+    ["quality_control", qualityRows],
+    ["putaway", putawayRows],
+    ["picking", pickings],
+    ["packing", packingRows],
+    ["cycle_count", cycleCountRows]
+  ];
+
+  const processVolumes =
+    processGroups
+      .filter(
+        ([, records]) =>
+          records.length > 0
+      )
+      .map(
+        ([process, records]) => ({
+          process,
+          operation_count:
+            records.length,
+          period_start:
+            periodStart,
+          period_end:
+            periodEnd
+        })
+      );
+
+  const snapshot =
+    buildLiveSnapshot({
+      accountId,
+      warehouseId,
+      periodStart,
+      periodEnd,
+      generatedAt,
+      pickings,
+      pickingItems,
+      taskRows,
+      cycleCountItems,
+      locations,
+      inventoryBalances
+    });
+
+  return {
+    snapshot,
+    processVolumes,
+    exceptions:
+      operationExceptions
+  };
+}
+
 export async function loadOperationsCenter({
   env,
   token,
@@ -136,7 +856,14 @@ export async function loadOperationsCenter({
   const warehouseId = requestedWarehouseId || null;
   const warehouse_id = warehouseFilter(warehouseId);
 
-  const [snapshots, trend] = await Promise.all([
+  const generatedAt =
+    new Date().toISOString();
+
+  const [
+    snapshots,
+    trend,
+    live
+  ] = await Promise.all([
     rows(env, token, "warehouse_operations_dashboard_snapshots", {
       select: "*",
       account_id: `eq.${accountId}`,
@@ -144,49 +871,121 @@ export async function loadOperationsCenter({
       order: "calculated_at.desc",
       limit: "1"
     }, fetchImpl),
+
     rows(env, token, "warehouse_operations_dashboard_snapshots", {
       select: "*",
       account_id: `eq.${accountId}`,
       warehouse_id,
       order: "calculated_at.desc",
       limit: "7"
-    }, fetchImpl)
+    }, fetchImpl),
+
+    loadLiveOperationsSnapshot({
+      env,
+      token,
+      accountId,
+      warehouseId,
+      generatedAt,
+      fetchImpl
+    })
   ]);
 
-  const snapshot = snapshots[0] ?? null;
-  let exceptions = [];
-  let processVolumes = [];
+  const persistedSnapshot =
+    snapshots[0] ?? null;
 
-  if (snapshot) {
+  const snapshot =
+    live.snapshot ??
+    persistedSnapshot;
+
+  const snapshotSource =
+    live.snapshot
+      ? "live"
+      : persistedSnapshot
+        ? "persisted"
+        : "empty";
+
+  let exceptions =
+    live.snapshot
+      ? live.exceptions
+      : [];
+
+  let processVolumes =
+    live.snapshot
+      ? live.processVolumes
+      : [];
+
+  if (
+    !live.snapshot &&
+    persistedSnapshot
+  ) {
     const exceptionParams = {
       select: "id,account_id,warehouse_id,process,category,code,severity,root_cause,description,occurred_at,resolved_at,resolution_note,delay_minutes,impacted_orders,impacted_tasks,impacted_items,created_at",
       account_id: `eq.${accountId}`,
-      occurred_at: `gte.${snapshot.period_start}`,
-      and: `(occurred_at.lte.${snapshot.period_end})`,
+      occurred_at: `gte.${persistedSnapshot.period_start}`,
+      and: `(occurred_at.lte.${persistedSnapshot.period_end})`,
       order: "occurred_at.desc",
       limit: "100"
     };
 
-    if (warehouseId) exceptionParams.warehouse_id = `eq.${warehouseId}`;
+    if (warehouseId) {
+      exceptionParams.warehouse_id =
+        `eq.${warehouseId}`;
+    }
 
-    [exceptions, processVolumes] = await Promise.all([
-      rows(env, token, "warehouse_operations_exceptions", exceptionParams, fetchImpl),
-      rows(env, token, "warehouse_operations_process_volumes", {
-        select: "process,operation_count,period_start,period_end",
-        account_id: `eq.${accountId}`,
-        warehouse_id,
-        period_end: `gte.${snapshot.period_start}`,
-        period_start: `lte.${snapshot.period_end}`,
-        order: "process.asc"
-      }, fetchImpl)
+    [
+      exceptions,
+      processVolumes
+    ] = await Promise.all([
+      rows(
+        env,
+        token,
+        "warehouse_operations_exceptions",
+        exceptionParams,
+        fetchImpl
+      ),
+
+      rows(
+        env,
+        token,
+        "warehouse_operations_process_volumes",
+        {
+          select:
+            "process,operation_count,period_start,period_end",
+          account_id:
+            `eq.${accountId}`,
+          warehouse_id,
+          period_end:
+            `gte.${persistedSnapshot.period_start}`,
+          period_start:
+            `lte.${persistedSnapshot.period_end}`,
+          order:
+            "process.asc"
+        },
+        fetchImpl
+      )
     ]);
   }
 
-  const normalizedTrend = [...trend].reverse();
-  const generatedAt = new Date().toISOString();
+  const normalizedTrend =
+    [...trend].reverse();
+
+  if (
+    snapshotSource === "live" &&
+    finiteNumber(
+      snapshot?.health_score
+    ) !== null
+  ) {
+    normalizedTrend.push(
+      snapshot
+    );
+  }
+
   let copilot = null;
 
-  if (snapshot) {
+  if (
+    snapshot &&
+    snapshotSource === "persisted"
+  ) {
     try {
       copilot =
         await buildWarehouseOperationsCopilotRuntime({
@@ -224,6 +1023,7 @@ export async function loadOperationsCenter({
       processVolumes,
       copilot,
       liveData: true,
+      snapshotSource,
       generatedAt
     }
   };
