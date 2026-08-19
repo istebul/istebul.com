@@ -324,6 +324,7 @@ export * from "./types/Shipping";
 
 export * from "./services/ShippingRepository";
 export * from "./services/InMemoryShippingRepository";
+export * from "./services/SupabaseShippingRepository";
 export * from "./services/ShippingValidator";
 export * from "./services/ShippingCarrierService";
 export * from "./services/ShippingSuggestionService";
