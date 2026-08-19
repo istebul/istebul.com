@@ -351,3 +351,39 @@ test(
     );
   },
 );
+
+test(
+  "rule FK delete semantics preserves tenant account_id and nulls only nullable rule_id",
+  () => {
+    const masterTable =
+      migration.match(
+        /create\s+table\s+if\s+not\s+exists\s+public\.warehouse_replenishments\s*\([\s\S]*?\n\);/i,
+      )?.[0] ?? "";
+
+    assert.notEqual(
+      masterTable,
+      "",
+      "warehouse_replenishments table definition bulunmalı",
+    );
+
+    assert.match(
+      masterTable,
+      /\baccount_id\s+uuid\s+not\s+null\b/i,
+    );
+
+    assert.match(
+      masterTable,
+      /\brule_id\s+uuid\s*,/i,
+    );
+
+    assert.match(
+      masterTable,
+      /constraint\s+warehouse_replenishments_rule_fk[\s\S]*?foreign\s+key\s*\(\s*account_id\s*,\s*rule_id\s*\)[\s\S]*?references\s+public\.warehouse_replenishment_rules\s*\(\s*account_id\s*,\s*id\s*\)[\s\S]*?on\s+delete\s+set\s+null\s*\(\s*rule_id\s*\)/i,
+    );
+
+    assert.doesNotMatch(
+      masterTable,
+      /constraint\s+warehouse_replenishments_rule_fk[\s\S]*?on\s+delete\s+set\s+null\s*(?=\n|\r|,)/i,
+    );
+  },
+);

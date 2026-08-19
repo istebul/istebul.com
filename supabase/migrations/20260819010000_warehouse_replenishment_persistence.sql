@@ -300,7 +300,7 @@ create table if not exists public.warehouse_replenishments (
   constraint warehouse_replenishments_rule_fk
     foreign key (account_id, rule_id)
     references public.warehouse_replenishment_rules(account_id, id)
-    on delete set null
+    on delete set null (rule_id)
 );
 
 create unique index if not exists
