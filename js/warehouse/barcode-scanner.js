@@ -1,6 +1,9 @@
 const MAX_BARCODE_LENGTH = 256;
 const DUPLICATE_WINDOW_MS = 1800;
 
+const ZXING_FALLBACK_URL =
+  "https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm";
+
 const DETECTOR_FORMAT_MAP = Object.freeze({
   ean_13: "ean13",
   ean_8: "ean8",
@@ -26,6 +29,8 @@ const resultMeta = document.getElementById("barkod-sonuc-meta");
 
 let stream = null;
 let detector = null;
+let fallbackReader = null;
+let fallbackControls = null;
 let animationFrameId = 0;
 let detectionPending = false;
 let lastAcceptedScan = null;
@@ -79,6 +84,29 @@ function stopCamera({ keepStatus = true } = {}) {
   }
 
   detectionPending = false;
+
+  if (fallbackControls) {
+    try {
+      fallbackControls.stop();
+    } catch {
+      // Decoder zaten kapanmış olabilir.
+    }
+  }
+
+  fallbackControls = null;
+
+  if (
+    fallbackReader &&
+    typeof fallbackReader.reset === "function"
+  ) {
+    try {
+      fallbackReader.reset();
+    } catch {
+      // Decoder cleanup en iyi çaba ile yapılır.
+    }
+  }
+
+  fallbackReader = null;
 
   if (stream) {
     for (const track of stream.getTracks()) {
@@ -180,28 +208,171 @@ async function createDetector() {
     return null;
   }
 
-  if (typeof Detector.getSupportedFormats !== "function") {
-    return new Detector();
+  try {
+    if (
+      typeof Detector.getSupportedFormats !== "function"
+    ) {
+      return new Detector();
+    }
+
+    const supported =
+      await Detector.getSupportedFormats();
+
+    const preferred = [
+      "ean_13",
+      "ean_8",
+      "upc_a",
+      "upc_e",
+      "code_128",
+      "code_39",
+      "itf",
+      "qr_code"
+    ].filter(
+      (format) =>
+        supported.includes(format)
+    );
+
+    return preferred.length > 0
+      ? new Detector({
+          formats: preferred
+        })
+      : new Detector();
+  } catch {
+    return null;
+  }
+}
+
+function fallbackResultValue(result) {
+  if (
+    result &&
+    typeof result.getText === "function"
+  ) {
+    return String(
+      result.getText() || ""
+    ).trim();
   }
 
-  const supported = await Detector.getSupportedFormats();
-  const preferred = [
-    "ean_13",
-    "ean_8",
-    "upc_a",
-    "upc_e",
-    "code_128",
-    "code_39",
-    "itf",
-    "qr_code"
-  ].filter((format) => supported.includes(format));
+  return String(
+    result?.text ||
+      result?.rawValue ||
+      ""
+  ).trim();
+}
 
-  return preferred.length > 0
-    ? new Detector({ formats: preferred })
-    : new Detector();
+async function startFallbackDecoder() {
+  if (!video) {
+    throw new Error(
+      "video_element_missing"
+    );
+  }
+
+  let zxingModule;
+
+  try {
+    zxingModule =
+      await import(
+        ZXING_FALLBACK_URL
+      );
+  } catch {
+    const error =
+      new Error(
+        "barcode_decoder_load_failed"
+      );
+
+    error.name =
+      "BarcodeDecoderLoadError";
+
+    throw error;
+  }
+
+  const Reader =
+    zxingModule
+      .BrowserMultiFormatReader;
+
+  if (typeof Reader !== "function") {
+    const error =
+      new Error(
+        "barcode_decoder_unavailable"
+      );
+
+    error.name =
+      "BarcodeDecoderUnavailableError";
+
+    throw error;
+  }
+
+  fallbackReader =
+    new Reader();
+
+  fallbackControls =
+    await fallbackReader
+      .decodeFromConstraints(
+        {
+          audio: false,
+          video: {
+            facingMode: {
+              ideal: "environment"
+            }
+          }
+        },
+        video,
+        (result, error) => {
+          const value =
+            fallbackResultValue(
+              result
+            );
+
+          if (value) {
+            emitScan(
+              value,
+              "camera",
+              null
+            );
+            return;
+          }
+
+          if (
+            error &&
+            ![
+              "NotFoundException",
+              "ChecksumException",
+              "FormatException"
+            ].includes(error.name)
+          ) {
+            setCameraState(
+              "Kamera açık · barkod aranıyor"
+            );
+          }
+        }
+      );
+
+  stream =
+    video.srcObject || null;
+
+  if (
+    !stream ||
+    typeof stream.getTracks !== "function"
+  ) {
+    throw new Error(
+      "fallback_stream_unavailable"
+    );
+  }
 }
 
 function getCameraErrorMessage(error) {
+  if (
+    error?.name === "BarcodeDecoderLoadError" ||
+    error?.name === "BarcodeDecoderUnavailableError"
+  ) {
+    return "Uyumlu barkod okuyucu yüklenemedi. İnternet bağlantınızı kontrol edip yeniden deneyebilir veya barkodu elle girebilirsiniz.";
+  }
+
+  if (
+    error?.message === "fallback_stream_unavailable"
+  ) {
+    return "Kamera açıldı ancak görüntü akışı barkod okuyucuya bağlanamadı. Yeniden deneyebilir veya barkodu elle girebilirsiniz.";
+  }
+
   switch (error?.name) {
     case "NotAllowedError":
       return "Kamera izni verilmedi. Tarayıcı ayarlarından izin verebilir veya barkodu elle girebilirsiniz.";
@@ -246,58 +417,122 @@ async function detectFrame() {
 }
 
 async function startCamera() {
-  if (!scanner || scanner.hidden || stream) return;
-
   if (
-    typeof window.BarcodeDetector !== "function" ||
-    !navigator.mediaDevices?.getUserMedia
+    !scanner ||
+    scanner.hidden ||
+    stream
   ) {
-    setCameraState("Kamera ile tarama desteklenmiyor");
-    setStatus("Bu tarayıcıda kamera ile barkod okuma kullanılamıyor. Barkodu elle girebilirsiniz.");
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setCameraState(
+      "Kamera erişimi desteklenmiyor"
+    );
+
+    setStatus(
+      "Bu tarayıcı kamera erişimi sunmuyor. HTTPS bağlantısını ve kamera izinlerini kontrol edebilir veya barkodu elle girebilirsiniz."
+    );
+
     manualInput?.focus();
     return;
   }
 
   if (cameraStartButton) {
-    cameraStartButton.disabled = true;
-    cameraStartButton.textContent = "Kamera Açılıyor…";
+    cameraStartButton.disabled =
+      true;
+
+    cameraStartButton.textContent =
+      "Kamera Açılıyor…";
   }
 
-  setCameraState("Kamera hazırlanıyor");
-  setStatus("Kamera izni bekleniyor…");
+  setCameraState(
+    "Kamera hazırlanıyor"
+  );
+
+  setStatus(
+    "Kamera izni bekleniyor…"
+  );
 
   try {
-    detector = await createDetector();
+    detector =
+      await createDetector();
 
-    if (!detector) {
-      throw new Error("barcode_detector_unavailable");
-    }
+    if (detector) {
+      stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: {
+              ideal: "environment"
+            }
+          }
+        });
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: { ideal: "environment" }
+      if (!video) {
+        throw new Error(
+          "video_element_missing"
+        );
       }
-    });
 
-    if (!video) {
-      throw new Error("video_element_missing");
+      video.srcObject =
+        stream;
+
+      await video.play();
+
+      setCameraState(
+        "Kamera açık · yerel barkod okuyucu"
+      );
+
+      setStatus(
+        "Kamera açık. Barkodu çerçevenin ortasında sabit tutun. İlk geçerli okuma sonrası kamera otomatik kapanır."
+      );
+
+      animationFrameId =
+        requestAnimationFrame(
+          detectFrame
+        );
+    } else {
+      setCameraState(
+        "Kamera açılıyor · uyumlu barkod okuyucu"
+      );
+
+      setStatus(
+        "Tarayıcının yerel barkod okuyucusu bulunamadı. Safari ve diğer tarayıcılar için uyumlu okuyucu hazırlanıyor…"
+      );
+
+      await startFallbackDecoder();
+
+      setCameraState(
+        "Kamera açık · uyumlu barkod okuyucu"
+      );
+
+      setStatus(
+        "Kamera açık. Uyumlu barkod okuyucu etkin. Barkodu çerçevenin ortasında sabit tutun."
+      );
     }
-
-    video.srcObject = stream;
-    await video.play();
 
     if (cameraStartButton) {
-      cameraStartButton.disabled = false;
-      cameraStartButton.textContent = "Kamerayı Durdur";
-    }
+      cameraStartButton.disabled =
+        false;
 
-    setCameraState("Kamera açık");
-    setStatus("Barkodu çerçevenin ortasında sabit tutun. İlk geçerli okuma sonrası kamera otomatik kapanır.");
-    animationFrameId = requestAnimationFrame(detectFrame);
+      cameraStartButton.textContent =
+        "Kamerayı Durdur";
+    }
   } catch (error) {
-    stopCamera({ keepStatus: true });
-    setStatus(getCameraErrorMessage(error));
+    stopCamera({
+      keepStatus: true
+    });
+
+    setCameraState(
+      "Kamera açılamadı"
+    );
+
+    setStatus(
+      getCameraErrorMessage(
+        error
+      )
+    );
   }
 }
 

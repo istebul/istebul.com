@@ -80,7 +80,7 @@ test("WarehouseIQ canlı UI auth, yetki, boş veri ve hata durumlarını ayırı
   for (const text of [
     "Oturum gerekli",
     "Erişim yok",
-    "Veri bekleniyor",
+    "Sistem bağlı",
     "Bağlantı hatası",
     "henüz operasyon snapshot kaydı bulunmuyor",
     "aktif WarehouseIQ üyeliği bulunmuyor"
@@ -135,3 +135,93 @@ test("production build WarehouseIQ statik dosyalarını yayınlar", async () => 
     );
   }
 });
+
+test(
+  "Operasyon merkezi auth lifecycle ve bounded canlı yenileme kullanır",
+  async () => {
+    const source = await readFile(
+      "js/warehouse/operations-center.js",
+      "utf8"
+    );
+
+    assert.match(
+      source,
+      /AUTO_REFRESH_MS\s*=\s*30_000/
+    );
+
+    assert.match(
+      source,
+      /\.onAuthStateChange\s*\(/
+    );
+
+    assert.match(
+      source,
+      /"TOKEN_REFRESHED"/
+    );
+
+    assert.match(
+      source,
+      /\bsetInterval\s*\(/
+    );
+
+    assert.match(
+      source,
+      /visibilitychange/
+    );
+
+    assert.match(
+      source,
+      /document\.hidden/
+    );
+
+    assert.match(
+      source,
+      /authSubscription[\s\S]*?unsubscribe/
+    );
+
+    assert.match(
+      source,
+      /loadInFlight/
+    );
+
+    assert.match(
+      source,
+      /loadQueued/
+    );
+  }
+);
+
+test(
+  "Operasyon merkezi boş veri durumunu bağlantı hatası olarak göstermez",
+  async () => {
+    const source = await readFile(
+      "js/warehouse/operations-center.js",
+      "utf8"
+    );
+
+    assert.match(
+      source,
+      /"Sistem bağlı"/
+    );
+
+    assert.match(
+      source,
+      /"Son bağlantı kontrolü"/
+    );
+
+    assert.match(
+      source,
+      /henüz operasyon snapshot kaydı bulunmuyor/
+    );
+
+    assert.match(
+      source,
+      /snapshotSource === "live"/
+    );
+
+    assert.doesNotMatch(
+      source,
+      /setStatus\(\s*"empty",\s*"Veri bekleniyor"/
+    );
+  }
+);
