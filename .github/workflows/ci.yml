@@ -42,7 +42,11 @@ jobs:
         continue-on-error: ${{ github.event_name == 'pull_request' }}
 
   e2e-site-health:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      options: --ipc=host
     needs: quality
     steps:
       - uses: actions/checkout@v7
@@ -51,13 +55,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       - name: Run contrast visibility guard
         run: npm run test:contrast-visibility
       - run: npm run test:e2e:ci
 
   e2e-release:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      options: --ipc=host
     needs: quality
     # Same e2e:release gate as Production Deploy — also on PRs so Cursor ↔ Actions match
     steps:
@@ -67,7 +74,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:release
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
