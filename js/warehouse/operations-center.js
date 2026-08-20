@@ -4,6 +4,8 @@ import { fetchWarehouseCopilotNarration } from "./operations-copilot-narration.j
 const API_URL = "/api/warehouse/operations-center";
 const AUTH_STORAGE_KEY = "istebul-auth-public-v1";
 const AUTO_REFRESH_MS = 30_000;
+const AUTH_SESSION_TIMEOUT_MS = 8_000;
+const API_REQUEST_TIMEOUT_MS = 15_000;
 
 const PROCESS_LABELS = {
   receiving: "Mal Kabul",
@@ -754,9 +756,48 @@ function apiErrorMessage(body, fallback) {
   );
 }
 
+async function withTimeout(
+  promise,
+  timeoutMs,
+  timeoutMessage
+) {
+  let timeoutId = 0;
+
+  const timeoutPromise =
+    new Promise((_, reject) => {
+      timeoutId = window.setTimeout(
+        () => {
+          reject(
+            new Error(timeoutMessage)
+          );
+        },
+        timeoutMs
+      );
+    });
+
+  try {
+    return await Promise.race([
+      promise,
+      timeoutPromise
+    ]);
+  } finally {
+    if (timeoutId) {
+      window.clearTimeout(
+        timeoutId
+      );
+    }
+  }
+}
+
 async function getSession() {
   const client = getSupabase();
-  const { data, error } = await client.auth.getSession();
+
+  const { data, error } =
+    await withTimeout(
+      client.auth.getSession(),
+      AUTH_SESSION_TIMEOUT_MS,
+      "WarehouseIQ oturum kontrolü zaman aşımına uğradı. Lütfen sayfayı yenileyin veya yeniden giriş yapın."
+    );
 
   if (error) {
     throw new Error(
@@ -779,14 +820,42 @@ async function fetchOperationsCenter() {
   if (state.warehouseId) params.set("warehouseId", state.warehouseId);
 
   const suffix = params.size ? `?${params.toString()}` : "";
-  const response = await fetch(`${API_URL}${suffix}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${session.access_token}`
-    },
-    cache: "no-store"
-  });
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    window.setTimeout(
+      () => {
+        controller.abort();
+      },
+      API_REQUEST_TIMEOUT_MS
+    );
+
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}${suffix}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${session.access_token}`
+      },
+      cache: "no-store",
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(
+        "WarehouseIQ operasyon bağlantısı zaman aşımına uğradı. Lütfen bağlantınızı kontrol edip yeniden deneyin."
+      );
+    }
+
+    throw error;
+  } finally {
+    window.clearTimeout(
+      timeoutId
+    );
+  }
 
   const body = await response.json().catch(() => null);
 
