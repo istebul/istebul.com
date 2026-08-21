@@ -75,3 +75,34 @@
     width: 100%;
   }
 }
+
+.warehouse-packing-lifecycle {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 0.9rem;
+}
+
+.warehouse-packing-lifecycle > strong {
+  font-size: 1rem;
+}
+
+.warehouse-packing-lifecycle-actions {
+  align-items: stretch;
+}
+
+.warehouse-packing-lifecycle-actions button {
+  flex: 1 1 180px;
+}
+
+@media (max-width: 760px) {
+  .warehouse-packing-lifecycle-actions {
+    display: grid;
+  }
+
+  .warehouse-packing-lifecycle-actions button {
+    width: 100%;
+  }
+}

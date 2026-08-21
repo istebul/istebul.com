@@ -10,6 +10,12 @@ const CONTAINER_TABLE =
 const PACKAGE_TABLE =
   "warehouse_packing_packages";
 
+const LABEL_TABLE =
+  "warehouse_packing_labels";
+
+const EXCEPTION_TABLE =
+  "warehouse_packing_exceptions";
+
 const PICKING_TABLE =
   "warehouse_pickings";
 
@@ -28,7 +34,8 @@ const MOBILE_PACKING_STATUSES =
     "planned",
     "released",
     "in_progress",
-    "partially_packed"
+    "partially_packed",
+    "packed"
   ]);
 
 const CONFIRMABLE =
@@ -358,7 +365,7 @@ export async function loadPackingPackages({
         PACKAGE_TABLE
       )
       .select(
-        "id,packing_id,package_number,container_id,parent_package_id,status,weight_unit,volume_unit,created_at,updated_at"
+        "id,packing_id,package_number,container_id,parent_package_id,status,seal_number,actual_weight,actual_volume,weight_unit,volume_unit,sscc,sealed_at,created_at,updated_at"
       )
       .eq(
         "account_id",
@@ -390,6 +397,243 @@ export async function loadPackingPackages({
 
   return Object.freeze(
     data || []
+  );
+}
+
+
+export async function loadPackingLabels({
+  client,
+  accountId,
+  packingId
+}) {
+  requireClient(client);
+
+  const {
+    data,
+    error
+  } =
+    await client
+      .from(
+        LABEL_TABLE
+      )
+      .select(
+        "id,packing_id,package_id,type,status,label_number,barcode_value,sscc,format,printer_id,generated_at,printed_at,failed_at,cancelled_at,created_at,updated_at"
+      )
+      .eq(
+        "account_id",
+        uuid(
+          accountId,
+          "Firma kimliği"
+        )
+      )
+      .eq(
+        "packing_id",
+        uuid(
+          packingId,
+          "Paketleme kimliği"
+        )
+      )
+      .order(
+        "created_at",
+        {
+          ascending:
+            false
+        }
+      );
+
+  if (error) {
+    throw new Error(
+      "Paketleme etiketleri yüklenemedi."
+    );
+  }
+
+  return Object.freeze(
+    data || []
+  );
+}
+
+export async function loadPackingExceptions({
+  client,
+  accountId,
+  packingId
+}) {
+  requireClient(client);
+
+  const {
+    data,
+    error
+  } =
+    await client
+      .from(
+        EXCEPTION_TABLE
+      )
+      .select(
+        "id,packing_id,packing_item_id,package_id,container_id,task_id,warehouse_id,location_id,product_id,type,message,resolved,resolved_by,resolved_at,resolution_notes,created_at"
+      )
+      .eq(
+        "account_id",
+        uuid(
+          accountId,
+          "Firma kimliği"
+        )
+      )
+      .eq(
+        "packing_id",
+        uuid(
+          packingId,
+          "Paketleme kimliği"
+        )
+      )
+      .order(
+        "created_at",
+        {
+          ascending:
+            true
+        }
+      );
+
+  if (error) {
+    throw new Error(
+      "Paketleme istisnaları yüklenemedi."
+    );
+  }
+
+  return Object.freeze(
+    data || []
+  );
+}
+
+export function isPackingPackageSealable(
+  packingPackage
+) {
+  return (
+    Boolean(packingPackage) &&
+    OPEN_PACKAGES.includes(
+      text(
+        packingPackage.status
+      ).toLowerCase()
+    )
+  );
+}
+
+export function isPackingPackageLabelable(
+  packingPackage
+) {
+  return (
+    Boolean(packingPackage) &&
+    text(
+      packingPackage.status
+    ).toLowerCase() ===
+      "sealed"
+  );
+}
+
+export function canCompletePacking(
+  context
+) {
+  if (
+    !context ||
+    !isPackingConfirmable(
+      context.packing
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    context.remainingItems?.length
+  ) {
+    return false;
+  }
+
+  if (
+    context.unresolvedExceptions?.length
+  ) {
+    return false;
+  }
+
+  if (
+    !context.packages?.length
+  ) {
+    return false;
+  }
+
+  return context.packages.every(
+    (row) =>
+      [
+        "sealed",
+        "labelled",
+        "shipping_ready"
+      ].includes(
+        text(
+          row.status
+        ).toLowerCase()
+      )
+  );
+}
+
+export function canMarkPackingShippingReady(
+  context
+) {
+  if (
+    text(
+      context?.packing?.status
+    ).toLowerCase() !==
+      "packed"
+  ) {
+    return false;
+  }
+
+  return (
+    Boolean(
+      context?.packages?.length
+    ) &&
+    context.packages.every(
+      (row) =>
+        [
+          "labelled",
+          "shipping_ready"
+        ].includes(
+          text(
+            row.status
+          ).toLowerCase()
+        )
+    )
+  );
+}
+
+export function canCancelPacking(
+  context
+) {
+  const status =
+    text(
+      context?.packing?.status
+    ).toLowerCase();
+
+  if (
+    !status ||
+    [
+      "packed",
+      "shipping_ready",
+      "cancelled"
+    ].includes(status)
+  ) {
+    return false;
+  }
+
+  return !(
+    context?.packages || []
+  ).some(
+    (row) =>
+      [
+        "sealed",
+        "labelled",
+        "shipping_ready"
+      ].includes(
+        text(
+          row.status
+        ).toLowerCase()
+      )
   );
 }
 
@@ -457,7 +701,9 @@ export async function loadPackingContext({
   const [
     items,
     containers,
-    packages
+    packages,
+    labels,
+    exceptions
   ] =
     await Promise.all([
       loadPackingItems({
@@ -480,6 +726,22 @@ export async function loadPackingContext({
           normalizedAccountId,
         packingId:
           normalizedPackingId
+      }),
+
+      loadPackingLabels({
+        client,
+        accountId:
+          normalizedAccountId,
+        packingId:
+          normalizedPackingId
+      }),
+
+      loadPackingExceptions({
+        client,
+        accountId:
+          normalizedAccountId,
+        packingId:
+          normalizedPackingId
       })
     ]);
 
@@ -488,6 +750,8 @@ export async function loadPackingContext({
     items,
     containers,
     packages,
+    labels,
+    exceptions,
 
     remainingItems:
       Object.freeze(
@@ -503,6 +767,14 @@ export async function loadPackingContext({
       Object.freeze(
         packages.filter(
           isPackingPackageOpen
+        )
+      ),
+
+    unresolvedExceptions:
+      Object.freeze(
+        exceptions.filter(
+          (row) =>
+            row.resolved !== true
         )
       )
   });

@@ -4,10 +4,15 @@ import {
 } from "./operations-center.js";
 
 import {
+  canCancelPacking,
+  canCompletePacking,
+  canMarkPackingShippingReady,
   expectedPackingLot,
   expectedPackingSerial,
   isPackingConfirmable,
+  isPackingPackageLabelable,
   isPackingPackageOpen,
+  isPackingPackageSealable,
   loadPackingContext,
   loadPackingCreationOptions,
   loadPackingOperations,
@@ -183,6 +188,239 @@ function selectedPackage() {
     "paketleme-paket-secimi",
     state.context?.packages
   );
+}
+
+
+function lifecycleMessage(
+  value,
+  kind = "info"
+) {
+  const target =
+    byId(
+      "paketleme-yasam-mesaji"
+    );
+
+  if (!target) return;
+
+  target.dataset.state =
+    kind;
+
+  target.textContent =
+    value;
+}
+
+function selectedLifecyclePackage() {
+  return selected(
+    "paketleme-yasam-paket-secimi",
+    state.context?.packages
+  );
+}
+
+function selectedException() {
+  return selected(
+    "paketleme-istisna-secimi",
+    state.context
+      ?.unresolvedExceptions
+  );
+}
+
+function refreshLifecycleControls() {
+  const context =
+    state.context;
+
+  const packingPackage =
+    selectedLifecyclePackage();
+
+  const exception =
+    selectedException();
+
+  const sealable =
+    isPackingPackageSealable(
+      packingPackage
+    );
+
+  const labelable =
+    isPackingPackageLabelable(
+      packingPackage
+    );
+
+  for (const id of [
+    "paketleme-muhur-no",
+    "paketleme-gercek-agirlik",
+    "paketleme-gercek-hacim"
+  ]) {
+    const element =
+      byId(id);
+
+    if (element) {
+      element.disabled =
+        !sealable;
+    }
+  }
+
+  for (const id of [
+    "paketleme-etiket-formati",
+    "paketleme-yazici-kimligi"
+  ]) {
+    const element =
+      byId(id);
+
+    if (element) {
+      element.disabled =
+        !labelable;
+    }
+  }
+
+  const seal =
+    byId(
+      "paketleme-muhurle"
+    );
+
+  if (seal) {
+    seal.disabled =
+      !sealable;
+  }
+
+  const label =
+    byId(
+      "paketleme-etiket-uret"
+    );
+
+  if (label) {
+    label.disabled =
+      !labelable;
+  }
+
+  const resolution =
+    byId(
+      "paketleme-istisna-cozum-notu"
+    );
+
+  if (resolution) {
+    resolution.disabled =
+      !exception;
+  }
+
+  const resolve =
+    byId(
+      "paketleme-istisna-coz"
+    );
+
+  if (resolve) {
+    resolve.disabled =
+      !exception;
+  }
+
+  const complete =
+    byId(
+      "paketleme-tamamla"
+    );
+
+  if (complete) {
+    complete.disabled =
+      !canCompletePacking(
+        context
+      );
+  }
+
+  const shippingReady =
+    byId(
+      "paketleme-sevkiyata-hazir"
+    );
+
+  if (shippingReady) {
+    shippingReady.disabled =
+      !canMarkPackingShippingReady(
+        context
+      );
+  }
+
+  const cancel =
+    byId(
+      "paketleme-iptal"
+    );
+
+  const cancellationReason =
+    byId(
+      "paketleme-iptal-nedeni"
+    );
+
+  const cancellable =
+    canCancelPacking(
+      context
+    );
+
+  if (cancel) {
+    cancel.disabled =
+      !cancellable;
+  }
+
+  if (cancellationReason) {
+    cancellationReason.disabled =
+      !cancellable;
+  }
+}
+
+function renderLifecycleControls(
+  context
+) {
+  optionList(
+    byId(
+      "paketleme-yasam-paket-secimi"
+    ),
+    context?.packages || [],
+    "Paket bulunmuyor",
+    (row) =>
+      `${row.package_number || row.id} · ${row.status}`
+  );
+
+  optionList(
+    byId(
+      "paketleme-istisna-secimi"
+    ),
+    context
+      ?.unresolvedExceptions ||
+      [],
+    "Çözülmemiş istisna yok",
+    (row) =>
+      `${row.type || "İstisna"} · ${row.message || row.id}`
+  );
+
+  refreshLifecycleControls();
+
+  if (
+    canMarkPackingShippingReady(
+      context
+    )
+  ) {
+    lifecycleMessage(
+      "Paketleme tamamlandı. Sevkiyata hazır geçişi yapılabilir.",
+      "ready"
+    );
+  } else if (
+    canCompletePacking(
+      context
+    )
+  ) {
+    lifecycleMessage(
+      "Tüm satırlar ve istisnalar hazır. Paketleme tamamlanabilir.",
+      "ready"
+    );
+  } else if (
+    context
+      ?.unresolvedExceptions
+      ?.length
+  ) {
+    lifecycleMessage(
+      `${context.unresolvedExceptions.length} çözülmemiş istisna var.`,
+      "warning"
+    );
+  } else {
+    lifecycleMessage(
+      "Paket durumlarını kontrol ederek yaşam döngüsü adımlarını ilerletin.",
+      "info"
+    );
+  }
 }
 
 function refreshConfirmButton() {
@@ -474,6 +712,10 @@ async function loadSelectedPacking() {
 
     state.context =
       result;
+
+    renderLifecycleControls(
+      result
+    );
 
     optionList(
       byId(
@@ -1004,6 +1246,359 @@ function setup() {
     }
   );
 
+
+  byId(
+    "paketleme-yasam-paket-secimi"
+  )?.addEventListener(
+    "change",
+    refreshLifecycleControls
+  );
+
+  byId(
+    "paketleme-istisna-secimi"
+  )?.addEventListener(
+    "change",
+    refreshLifecycleControls
+  );
+
+  byId(
+    "paketleme-muhurle"
+  )?.addEventListener(
+    "click",
+    () => {
+      const packing =
+        state.context?.packing;
+
+      const packingPackage =
+        selectedLifecyclePackage();
+
+      if (
+        !packing ||
+        !isPackingPackageSealable(
+          packingPackage
+        )
+      ) {
+        lifecycleMessage(
+          "Mühürlenebilir açık paket seçilmelidir.",
+          "error"
+        );
+        return;
+      }
+
+      const sealNumber =
+        text(
+          byId(
+            "paketleme-muhur-no"
+          )?.value
+        );
+
+      const weightText =
+        text(
+          byId(
+            "paketleme-gercek-agirlik"
+          )?.value
+        );
+
+      const volumeText =
+        text(
+          byId(
+            "paketleme-gercek-hacim"
+          )?.value
+        );
+
+      if (
+        globalThis.confirm?.(
+          "Seçili paket mühürlensin mi? Bu işlem açık kullanıcı onayıyla kaydedilecektir."
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:packing-seal-package-confirm",
+        {
+          packingId:
+            packing.id,
+
+          packageId:
+            packingPackage.id,
+
+          ...(sealNumber
+            ? { sealNumber }
+            : {}),
+
+          ...(weightText
+            ? {
+                actualWeight:
+                  Number(
+                    weightText
+                  )
+              }
+            : {}),
+
+          ...(volumeText
+            ? {
+                actualVolume:
+                  Number(
+                    volumeText
+                  )
+              }
+            : {})
+        }
+      );
+    }
+  );
+
+  byId(
+    "paketleme-etiket-uret"
+  )?.addEventListener(
+    "click",
+    () => {
+      const packing =
+        state.context?.packing;
+
+      const packingPackage =
+        selectedLifecyclePackage();
+
+      if (
+        !packing ||
+        !isPackingPackageLabelable(
+          packingPackage
+        )
+      ) {
+        lifecycleMessage(
+          "Etiket üretmek için mühürlenmiş paket seçilmelidir.",
+          "error"
+        );
+        return;
+      }
+
+      const format =
+        text(
+          byId(
+            "paketleme-etiket-formati"
+          )?.value
+        ) ||
+        "zpl";
+
+      const printerId =
+        text(
+          byId(
+            "paketleme-yazici-kimligi"
+          )?.value
+        );
+
+      if (
+        globalThis.confirm?.(
+          "Seçili mühürlenmiş paket için paket etiketi üretilecek. Devam edilsin mi?"
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:packing-generate-package-label-confirm",
+        {
+          packingId:
+            packing.id,
+
+          packageId:
+            packingPackage.id,
+
+          format,
+
+          ...(printerId
+            ? { printerId }
+            : {})
+        }
+      );
+    }
+  );
+
+  byId(
+    "paketleme-istisna-coz"
+  )?.addEventListener(
+    "click",
+    () => {
+      const packing =
+        state.context?.packing;
+
+      const exception =
+        selectedException();
+
+      if (
+        !packing ||
+        !exception
+      ) {
+        lifecycleMessage(
+          "Çözülmemiş istisna seçilmelidir.",
+          "error"
+        );
+        return;
+      }
+
+      const resolutionNotes =
+        text(
+          byId(
+            "paketleme-istisna-cozum-notu"
+          )?.value
+        );
+
+      if (
+        globalThis.confirm?.(
+          "Seçili paketleme istisnası çözüldü olarak işaretlensin mi?"
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:packing-resolve-exception-confirm",
+        {
+          packingId:
+            packing.id,
+
+          exceptionId:
+            exception.id,
+
+          ...(resolutionNotes
+            ? { resolutionNotes }
+            : {})
+        }
+      );
+    }
+  );
+
+  byId(
+    "paketleme-tamamla"
+  )?.addEventListener(
+    "click",
+    () => {
+      const context =
+        state.context;
+
+      if (
+        !canCompletePacking(
+          context
+        )
+      ) {
+        lifecycleMessage(
+          "Paketleme tamamlanmaya hazır değil.",
+          "error"
+        );
+        return;
+      }
+
+      if (
+        globalThis.confirm?.(
+          "Tüm satırlar işlendi ve paketler kapatıldı. Paketleme tamamlanıp packed durumuna geçirilsin mi?"
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:packing-complete-confirm",
+        {
+          packingId:
+            context.packing.id
+        }
+      );
+    }
+  );
+
+  byId(
+    "paketleme-sevkiyata-hazir"
+  )?.addEventListener(
+    "click",
+    () => {
+      const context =
+        state.context;
+
+      if (
+        !canMarkPackingShippingReady(
+          context
+        )
+      ) {
+        lifecycleMessage(
+          "Paketleme sevkiyata hazır geçişine uygun değil.",
+          "error"
+        );
+        return;
+      }
+
+      if (
+        globalThis.confirm?.(
+          "Paketleme sevkiyata hazır durumuna geçirilsin mi? Bu işlem Shipping kaydı oluşturmaz."
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:packing-shipping-ready-confirm",
+        {
+          packingId:
+            context.packing.id
+        }
+      );
+    }
+  );
+
+  byId(
+    "paketleme-iptal"
+  )?.addEventListener(
+    "click",
+    () => {
+      const context =
+        state.context;
+
+      if (
+        !canCancelPacking(
+          context
+        )
+      ) {
+        lifecycleMessage(
+          "Bu paketleme doğrudan iptal edilemez.",
+          "error"
+        );
+        return;
+      }
+
+      const reason =
+        text(
+          byId(
+            "paketleme-iptal-nedeni"
+          )?.value
+        );
+
+      if (!reason) {
+        lifecycleMessage(
+          "İptal nedeni zorunludur.",
+          "error"
+        );
+        return;
+      }
+
+      if (
+        globalThis.confirm?.(
+          "Paketleme operasyonu iptal edilsin mi? Bu işlem açık kullanıcı onayı gerektirir."
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:packing-cancel-confirm",
+        {
+          packingId:
+            context.packing.id,
+          reason
+        }
+      );
+    }
+  );
+
   byId(
     "paketleme-onayla"
   )?.addEventListener(
@@ -1082,6 +1677,72 @@ function setup() {
       );
     }
   );
+
+
+  for (const [
+    eventName,
+    successMessage
+  ] of [
+    [
+      "warehouse:packing-seal-package-success",
+      "Paket mühürlendi."
+    ],
+    [
+      "warehouse:packing-generate-package-label-success",
+      "Paket etiketi üretildi."
+    ],
+    [
+      "warehouse:packing-resolve-exception-success",
+      "Paketleme istisnası çözüldü."
+    ],
+    [
+      "warehouse:packing-complete-success",
+      "Paketleme tamamlandı."
+    ],
+    [
+      "warehouse:packing-shipping-ready-success",
+      "Paketleme sevkiyata hazır durumuna geçirildi."
+    ],
+    [
+      "warehouse:packing-cancel-success",
+      "Paketleme iptal edildi."
+    ]
+  ]) {
+    document.addEventListener(
+      eventName,
+      () => {
+        lifecycleMessage(
+          successMessage,
+          "success"
+        );
+
+        void loadPackingOptions();
+        void loadSelectedPacking();
+      }
+    );
+  }
+
+  for (const eventName of [
+    "warehouse:packing-seal-package-error",
+    "warehouse:packing-generate-package-label-error",
+    "warehouse:packing-resolve-exception-error",
+    "warehouse:packing-complete-error",
+    "warehouse:packing-shipping-ready-error",
+    "warehouse:packing-cancel-error"
+  ]) {
+    document.addEventListener(
+      eventName,
+      (event) => {
+        lifecycleMessage(
+          event?.detail?.message ||
+            "Paketleme yaşam döngüsü işlemi tamamlanamadı.",
+          "error"
+        );
+
+        refreshLifecycleControls();
+      }
+    );
+  }
 
   document.addEventListener(
     "warehouse:packing-write-success",

@@ -7,7 +7,13 @@ const UUID =
 const ACTIONS = Object.freeze([
   "create_from_picking",
   "create_package",
-  "confirm_item"
+  "confirm_item",
+  "seal_package",
+  "generate_package_label",
+  "resolve_exception",
+  "complete",
+  "mark_shipping_ready",
+  "cancel"
 ]);
 
 function uuid(value, label) {
@@ -314,6 +320,207 @@ export function buildPackingConfirmItemPayload(
   });
 }
 
+
+function positiveOptionalQuantity(
+  value,
+  label
+) {
+  if (
+    value === null ||
+    value === undefined ||
+    String(value).trim() === ""
+  ) {
+    return null;
+  }
+
+  const result =
+    Number(value);
+
+  if (
+    !Number.isFinite(result) ||
+    result <= 0
+  ) {
+    throw new Error(
+      `${label} sıfırdan büyük olmalıdır.`
+    );
+  }
+
+  return result;
+}
+
+export function buildPackingSealPackagePayload(
+  input
+) {
+  const sealNumber =
+    optionalText(
+      input?.sealNumber
+    );
+
+  const actualWeight =
+    positiveOptionalQuantity(
+      input?.actualWeight,
+      "Gerçek paket ağırlığı"
+    );
+
+  const actualVolume =
+    positiveOptionalQuantity(
+      input?.actualVolume,
+      "Gerçek paket hacmi"
+    );
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    packageId:
+      uuid(
+        input?.packageId,
+        "Paket kimliği"
+      ),
+
+    ...(sealNumber
+      ? { sealNumber }
+      : {}),
+
+    ...(actualWeight !== null
+      ? { actualWeight }
+      : {}),
+
+    ...(actualVolume !== null
+      ? { actualVolume }
+      : {})
+  });
+}
+
+export function buildPackingGeneratePackageLabelPayload(
+  input
+) {
+  const format =
+    (
+      optionalText(
+        input?.format
+      ) ||
+      "zpl"
+    ).toLowerCase();
+
+  if (
+    ![
+      "zpl",
+      "pdf",
+      "png",
+      "svg",
+      "text"
+    ].includes(format)
+  ) {
+    throw new Error(
+      "Etiket formatı geçersizdir."
+    );
+  }
+
+  const printerId =
+    optionalText(
+      input?.printerId
+    );
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    packageId:
+      uuid(
+        input?.packageId,
+        "Paket kimliği"
+      ),
+
+    format,
+
+    ...(printerId
+      ? { printerId }
+      : {})
+  });
+}
+
+export function buildPackingResolveExceptionPayload(
+  input
+) {
+  const resolutionNotes =
+    optionalText(
+      input?.resolutionNotes
+    );
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    exceptionId:
+      uuid(
+        input?.exceptionId,
+        "Paketleme istisnası kimliği"
+      ),
+
+    ...(resolutionNotes
+      ? { resolutionNotes }
+      : {})
+  });
+}
+
+export function buildPackingCompletePayload(
+  input
+) {
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      )
+  });
+}
+
+export function buildPackingMarkShippingReadyPayload(
+  input
+) {
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      )
+  });
+}
+
+export function buildPackingCancelPayload(
+  input
+) {
+  const reason =
+    optionalText(
+      input?.reason
+    );
+
+  if (!reason) {
+    throw new Error(
+      "Paketleme iptal nedeni zorunludur."
+    );
+  }
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+    reason
+  });
+}
+
 export async function writePacking({
   accessToken,
   accountId,
@@ -488,6 +695,132 @@ export async function confirmPackingItem(
     requestId:
       input.requestId,
 
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function sealPackingPackage(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "seal_package",
+    payload:
+      buildPackingSealPackagePayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function generatePackingPackageLabel(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "generate_package_label",
+    payload:
+      buildPackingGeneratePackageLabelPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function resolvePackingException(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "resolve_exception",
+    payload:
+      buildPackingResolveExceptionPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function completePacking(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "complete",
+    payload:
+      buildPackingCompletePayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function markPackingShippingReady(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "mark_shipping_ready",
+    payload:
+      buildPackingMarkShippingReadyPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function cancelPacking(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "cancel",
+    payload:
+      buildPackingCancelPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
     fetchImpl:
       input.fetchImpl
   });
