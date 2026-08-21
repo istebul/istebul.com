@@ -31,11 +31,13 @@ const ID = {
   container:
     "77777777-7777-4777-8777-777777777777",
   package:
-    "88888888-8888-4888-8888-888888888888"
+    "88888888-8888-4888-8888-888888888888",
+  exception:
+    "99999999-9999-4999-8999-999999999999"
 };
 
 test(
-  "Packing client exact üç write actionını taşır",
+  "Packing client exact dokuz write actionını taşır",
   async () => {
     const source =
       await readFile(
@@ -46,7 +48,13 @@ test(
     for (const action of [
       "create_from_picking",
       "create_package",
-      "confirm_item"
+      "confirm_item",
+      "seal_package",
+      "generate_package_label",
+      "resolve_exception",
+      "complete",
+      "mark_shipping_ready",
+      "cancel"
     ]) {
       assert.match(
         source,
@@ -508,7 +516,7 @@ test(
 );
 
 test(
-  "Controller exact üç explicit confirm eventini dinler",
+  "Controller exact dokuz explicit confirm eventini dinler",
   async () => {
     const source =
       await readFile(
@@ -519,7 +527,13 @@ test(
     for (const event of [
       "warehouse:packing-create-from-picking-confirm",
       "warehouse:packing-create-package-confirm",
-      "warehouse:packing-confirm"
+      "warehouse:packing-confirm",
+      "warehouse:packing-seal-package-confirm",
+      "warehouse:packing-generate-package-label-confirm",
+      "warehouse:packing-resolve-exception-confirm",
+      "warehouse:packing-complete-confirm",
+      "warehouse:packing-shipping-ready-confirm",
+      "warehouse:packing-cancel-confirm"
     ]) {
       assert.match(
         source,
@@ -587,7 +601,13 @@ test(
     for (const event of [
       "warehouse:packing-create-from-picking-confirm",
       "warehouse:packing-create-package-confirm",
-      "warehouse:packing-confirm"
+      "warehouse:packing-confirm",
+      "warehouse:packing-seal-package-confirm",
+      "warehouse:packing-generate-package-label-confirm",
+      "warehouse:packing-resolve-exception-confirm",
+      "warehouse:packing-complete-confirm",
+      "warehouse:packing-shipping-ready-confirm",
+      "warehouse:packing-cancel-confirm"
     ]) {
       assert.match(
         source,
@@ -735,5 +755,356 @@ test(
       lookup,
       /\.(?:insert|update|delete|upsert)\s*\(/
     );
+  }
+);
+
+test(
+  "Packing lifecycle client builderları exact payload üretir",
+  async () => {
+    const {
+      buildPackingSealPackagePayload,
+      buildPackingGeneratePackageLabelPayload,
+      buildPackingResolveExceptionPayload,
+      buildPackingCompletePayload,
+      buildPackingMarkShippingReadyPayload,
+      buildPackingCancelPayload
+    } =
+      await import(
+        "../../js/warehouse/packing-client.js"
+      );
+
+    assert.deepEqual(
+      buildPackingSealPackagePayload({
+        packingId:
+          ID.packing,
+        packageId:
+          ID.package,
+        sealNumber:
+          "SEAL-01",
+        actualWeight:
+          3.5
+      }),
+      {
+        packingId:
+          ID.packing,
+        packageId:
+          ID.package,
+        sealNumber:
+          "SEAL-01",
+        actualWeight:
+          3.5
+      }
+    );
+
+    assert.equal(
+      buildPackingGeneratePackageLabelPayload({
+        packingId:
+          ID.packing,
+        packageId:
+          ID.package
+      }).format,
+      "zpl"
+    );
+
+    assert.equal(
+      buildPackingResolveExceptionPayload({
+        packingId:
+          ID.packing,
+        exceptionId:
+          ID.exception
+      }).exceptionId,
+      ID.exception
+    );
+
+    assert.equal(
+      buildPackingCompletePayload({
+        packingId:
+          ID.packing
+      }).packingId,
+      ID.packing
+    );
+
+    assert.equal(
+      buildPackingMarkShippingReadyPayload({
+        packingId:
+          ID.packing
+      }).packingId,
+      ID.packing
+    );
+
+    assert.throws(
+      () =>
+        buildPackingCancelPayload({
+          packingId:
+            ID.packing,
+          reason:
+            " "
+        }),
+      /iptal nedeni/i
+    );
+  }
+);
+
+test(
+  "Packing lifecycle lookup labels exceptions ve readiness contractını taşır",
+  async () => {
+    const source =
+      await readFile(
+        LOOKUP,
+        "utf8"
+      );
+
+    assert.match(
+      source,
+      /warehouse_packing_labels/
+    );
+
+    assert.match(
+      source,
+      /warehouse_packing_exceptions/
+    );
+
+    assert.doesNotMatch(
+      source,
+      /\.rpc\s*\(/
+    );
+
+    assert.doesNotMatch(
+      source,
+      /\.(?:insert|update|delete|upsert)\s*\(/
+    );
+
+    const {
+      canCompletePacking,
+      canMarkPackingShippingReady,
+      canCancelPacking
+    } =
+      await import(
+        "../../js/warehouse/packing-lookup.js"
+      );
+
+    const ready = {
+      packing: {
+        status:
+          "in_progress"
+      },
+      remainingItems: [],
+      unresolvedExceptions: [],
+      packages: [
+        {
+          status:
+            "labelled"
+        }
+      ]
+    };
+
+    assert.equal(
+      canCompletePacking(
+        ready
+      ),
+      true
+    );
+
+    assert.equal(
+      canMarkPackingShippingReady({
+        ...ready,
+        packing: {
+          status:
+            "packed"
+        }
+      }),
+      true
+    );
+
+    assert.equal(
+      canCancelPacking({
+        packing: {
+          status:
+            "released"
+        },
+        packages: [
+          {
+            status:
+              "open"
+          }
+        ]
+      }),
+      true
+    );
+
+    assert.equal(
+      canCancelPacking({
+        packing: {
+          status:
+            "released"
+        },
+        packages: [
+          {
+            status:
+              "sealed"
+          }
+        ]
+      }),
+      false
+    );
+  }
+);
+
+test(
+  "Lifecycle controller failed retry aynı requestId değerini korur",
+  async () => {
+    const {
+      persistPackingSealPackage
+    } =
+      await import(
+        "../../js/warehouse/packing-write-controller.js"
+      );
+
+    const ids = [];
+
+    const injected = {
+      getContext() {
+        return {
+          accountId:
+            ID.account
+        };
+      },
+
+      async getSession() {
+        return {
+          access_token:
+            "jwt"
+        };
+      },
+
+      async sealPackage(input) {
+        ids.push(
+          input.requestId
+        );
+
+        throw new Error(
+          "network"
+        );
+      }
+    };
+
+    const payload = {
+      packingId:
+        ID.packing,
+      packageId:
+        ID.package
+    };
+
+    await assert.rejects(
+      persistPackingSealPackage(
+        payload,
+        injected
+      )
+    );
+
+    await assert.rejects(
+      persistPackingSealPackage(
+        payload,
+        injected
+      )
+    );
+
+    assert.equal(
+      ids[0],
+      ids[1]
+    );
+  }
+);
+
+test(
+  "Warehouse HTML exact lifecycle kontrol kimliklerini içerir",
+  async () => {
+    const html =
+      await readFile(
+        HTML,
+        "utf8"
+      );
+
+    for (const id of [
+      "paketleme-yasam-paket-secimi",
+      "paketleme-muhur-no",
+      "paketleme-gercek-agirlik",
+      "paketleme-gercek-hacim",
+      "paketleme-muhurle",
+      "paketleme-etiket-formati",
+      "paketleme-yazici-kimligi",
+      "paketleme-etiket-uret",
+      "paketleme-istisna-secimi",
+      "paketleme-istisna-cozum-notu",
+      "paketleme-istisna-coz",
+      "paketleme-tamamla",
+      "paketleme-sevkiyata-hazir",
+      "paketleme-iptal-nedeni",
+      "paketleme-iptal"
+    ]) {
+      assert.match(
+        html,
+        new RegExp(
+          `id=["']${id}["']`
+        )
+      );
+    }
+  }
+);
+
+test(
+  "Packing lifecycle Shipping oluşturmaz ve label ledger lifecycle açmaz",
+  async () => {
+    const [
+      client,
+      ui,
+      controller
+    ] =
+      await Promise.all([
+        readFile(
+          CLIENT,
+          "utf8"
+        ),
+        readFile(
+          UI,
+          "utf8"
+        ),
+        readFile(
+          CONTROLLER,
+          "utf8"
+        )
+      ]);
+
+    const browser =
+      [
+        client,
+        ui,
+        controller
+      ].join("\n");
+
+    assert.doesNotMatch(
+      browser,
+      /warehouse_shipping_create_from_packing_write/
+    );
+
+    assert.doesNotMatch(
+      browser,
+      /warehouse_packing_label_write/
+    );
+
+    for (const blocked of [
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label"
+    ]) {
+      assert.equal(
+        browser.includes(
+          `"${blocked}"`
+        ),
+        false
+      );
+    }
   }
 );

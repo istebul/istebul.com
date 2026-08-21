@@ -786,9 +786,112 @@
       </button>
     </div>
 
+    <section class="warehouse-packing-lifecycle" aria-labelledby="paketleme-yasam-dongusu-baslik">
+      <strong id="paketleme-yasam-dongusu-baslik">Paketleme yaşam döngüsü</strong>
+
+      <div class="warehouse-packing-grid">
+        <div class="warehouse-packing-field">
+          <label for="paketleme-yasam-paket-secimi">Yaşam döngüsü paketi</label>
+          <select id="paketleme-yasam-paket-secimi" disabled>
+            <option value="">Önce paketleme seçin</option>
+          </select>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-muhur-no">Mühür numarası</label>
+          <input id="paketleme-muhur-no" type="text" autocomplete="off" disabled>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-gercek-agirlik">Gerçek ağırlık</label>
+          <input id="paketleme-gercek-agirlik" type="number" min="0.000001" step="0.000001" disabled>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-gercek-hacim">Gerçek hacim</label>
+          <input id="paketleme-gercek-hacim" type="number" min="0.000001" step="0.000001" disabled>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-etiket-formati">Etiket formatı</label>
+          <select id="paketleme-etiket-formati" disabled>
+            <option value="zpl">ZPL</option>
+            <option value="pdf">PDF</option>
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+            <option value="text">Metin</option>
+          </select>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-yazici-kimligi">Yazıcı kimliği</label>
+          <input id="paketleme-yazici-kimligi" type="text" autocomplete="off" disabled>
+        </div>
+      </div>
+
+      <div class="warehouse-packing-actions">
+        <button id="paketleme-muhurle" type="button" class="secondary" disabled>
+          Paketi Mühürle
+        </button>
+
+        <button id="paketleme-etiket-uret" type="button" class="secondary" disabled>
+          Paket Etiketi Üret
+        </button>
+      </div>
+
+      <div class="warehouse-packing-grid">
+        <div class="warehouse-packing-field">
+          <label for="paketleme-istisna-secimi">Çözülmemiş istisna</label>
+          <select id="paketleme-istisna-secimi" disabled>
+            <option value="">Çözülmemiş istisna yok</option>
+          </select>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-istisna-cozum-notu">Çözüm notu</label>
+          <textarea id="paketleme-istisna-cozum-notu" rows="3" disabled></textarea>
+        </div>
+      </div>
+
+      <div class="warehouse-packing-actions">
+        <button id="paketleme-istisna-coz" type="button" class="secondary" disabled>
+          İstisnayı Çöz
+        </button>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-iptal-nedeni">İptal nedeni</label>
+        <textarea id="paketleme-iptal-nedeni" rows="3" disabled></textarea>
+      </div>
+
+      <div class="warehouse-packing-actions warehouse-packing-lifecycle-actions">
+        <button id="paketleme-tamamla" type="button" disabled>
+          Paketlemeyi Tamamla
+        </button>
+
+        <button id="paketleme-sevkiyata-hazir" type="button" disabled>
+          Sevkiyata Hazırla
+        </button>
+
+        <button id="paketleme-iptal" type="button" class="secondary" disabled>
+          Paketlemeyi İptal Et
+        </button>
+      </div>
+
+      <p
+        id="paketleme-yasam-mesaji"
+        class="warehouse-packing-message"
+        data-state="waiting"
+        aria-live="polite"
+      >
+        Yaşam döngüsü için paketleme operasyonu seçin.
+      </p>
+    </section>
+
     <p class="warehouse-packing-safety">
-      Bu ilk dilim yalnız create_from_picking, create_package ve confirm_item işlemlerini kapsar.
-      Mühürleme, etiketleme, istisna çözümü, tamamlama ve sevkiyat işlemleri bu adımın dışındadır.
+      Barkod taraması hiçbir yaşam döngüsü yazmasını otomatik başlatmaz.
+      Mühürleme, paket etiketi üretimi, istisna çözümü, tamamlama, sevkiyata hazır geçişi ve iptal işlemleri açık kullanıcı onayı gerektirir.
+      Etiket ledger yazdırıldı / başarısız / iptal akışı ve Shipping oluşturma bu dilimin dışındadır.
     </p>
   </section>
 </article>

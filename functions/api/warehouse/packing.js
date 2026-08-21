@@ -14,6 +14,12 @@ const WRITE_ACTIONS = Object.freeze([
   "create_from_picking",
   "create_package",
   "confirm_item",
+  "seal_package",
+  "generate_package_label",
+  "resolve_exception",
+  "complete",
+  "mark_shipping_ready",
+  "cancel",
 ]);
 
 const UUID_PATTERN =
@@ -566,6 +572,341 @@ function normalizeConfirmItem(
   };
 }
 
+
+function optionalPositiveQuantity(
+  value,
+) {
+  if (
+    value === undefined ||
+    value === null ||
+    value === ""
+  ) {
+    return {
+      ok: true,
+      value: null,
+    };
+  }
+
+  const normalized =
+    Number(value);
+
+  if (
+    !Number.isFinite(normalized) ||
+    normalized <= 0
+  ) {
+    return {
+      ok: false,
+    };
+  }
+
+  return {
+    ok: true,
+    value: normalized,
+  };
+}
+
+function normalizePackingOnly(
+  payload,
+) {
+  const packingId =
+    normalizeUuid(payload.packingId);
+
+  if (!packingId) {
+    return {
+      ok: false,
+      reason:
+        "packing_id_invalid",
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      packingId,
+    },
+  };
+}
+
+function normalizeSealPackage(
+  payload,
+) {
+  const packingId =
+    normalizeUuid(payload.packingId);
+
+  if (!packingId) {
+    return {
+      ok: false,
+      reason:
+        "packing_id_invalid",
+    };
+  }
+
+  const packageId =
+    normalizeUuid(payload.packageId);
+
+  if (!packageId) {
+    return {
+      ok: false,
+      reason:
+        "package_id_invalid",
+    };
+  }
+
+  const sealNumber =
+    optionalText(payload.sealNumber);
+
+  if (!sealNumber.ok) {
+    return {
+      ok: false,
+      reason:
+        "seal_number_invalid",
+    };
+  }
+
+  const actualWeight =
+    optionalPositiveQuantity(
+      payload.actualWeight,
+    );
+
+  if (!actualWeight.ok) {
+    return {
+      ok: false,
+      reason:
+        "actual_weight_invalid",
+    };
+  }
+
+  const actualVolume =
+    optionalPositiveQuantity(
+      payload.actualVolume,
+    );
+
+  if (!actualVolume.ok) {
+    return {
+      ok: false,
+      reason:
+        "actual_volume_invalid",
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      packingId,
+      packageId,
+
+      ...(sealNumber.value
+        ? {
+            sealNumber:
+              sealNumber.value,
+          }
+        : {}),
+
+      ...(actualWeight.value !== null
+        ? {
+            actualWeight:
+              actualWeight.value,
+          }
+        : {}),
+
+      ...(actualVolume.value !== null
+        ? {
+            actualVolume:
+              actualVolume.value,
+          }
+        : {}),
+    },
+  };
+}
+
+function normalizeGeneratePackageLabel(
+  payload,
+) {
+  const packingId =
+    normalizeUuid(payload.packingId);
+
+  if (!packingId) {
+    return {
+      ok: false,
+      reason:
+        "packing_id_invalid",
+    };
+  }
+
+  const packageId =
+    normalizeUuid(payload.packageId);
+
+  if (!packageId) {
+    return {
+      ok: false,
+      reason:
+        "package_id_invalid",
+    };
+  }
+
+  const format =
+    optionalText(
+      payload.format,
+    );
+
+  if (!format.ok) {
+    return {
+      ok: false,
+      reason:
+        "label_format_invalid",
+    };
+  }
+
+  const normalizedFormat =
+    (
+      format.value ||
+      "zpl"
+    ).toLowerCase();
+
+  if (
+    ![
+      "zpl",
+      "pdf",
+      "png",
+      "svg",
+      "text",
+    ].includes(
+      normalizedFormat,
+    )
+  ) {
+    return {
+      ok: false,
+      reason:
+        "label_format_invalid",
+    };
+  }
+
+  const printerId =
+    optionalText(
+      payload.printerId,
+    );
+
+  if (!printerId.ok) {
+    return {
+      ok: false,
+      reason:
+        "printer_id_invalid",
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      packingId,
+      packageId,
+      format:
+        normalizedFormat,
+
+      ...(printerId.value
+        ? {
+            printerId:
+              printerId.value,
+          }
+        : {}),
+    },
+  };
+}
+
+function normalizeResolveException(
+  payload,
+) {
+  const packingId =
+    normalizeUuid(payload.packingId);
+
+  if (!packingId) {
+    return {
+      ok: false,
+      reason:
+        "packing_id_invalid",
+    };
+  }
+
+  const exceptionId =
+    normalizeUuid(
+      payload.exceptionId,
+    );
+
+  if (!exceptionId) {
+    return {
+      ok: false,
+      reason:
+        "exception_id_invalid",
+    };
+  }
+
+  const resolutionNotes =
+    optionalText(
+      payload.resolutionNotes,
+    );
+
+  if (!resolutionNotes.ok) {
+    return {
+      ok: false,
+      reason:
+        "resolution_notes_invalid",
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      packingId,
+      exceptionId,
+
+      ...(resolutionNotes.value
+        ? {
+            resolutionNotes:
+              resolutionNotes.value,
+          }
+        : {}),
+    },
+  };
+}
+
+function normalizeCancel(
+  payload,
+) {
+  const base =
+    normalizePackingOnly(
+      payload,
+    );
+
+  if (!base.ok) {
+    return base;
+  }
+
+  const reason =
+    optionalText(
+      payload.reason,
+    );
+
+  if (
+    !reason.ok ||
+    !reason.value
+  ) {
+    return {
+      ok: false,
+      reason:
+        "cancellation_reason_invalid",
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      packingId:
+        base.value.packingId,
+      reason:
+        reason.value,
+    },
+  };
+}
+
 export function normalizeWriteRequest(
   body,
   requestId,
@@ -642,9 +983,49 @@ export function normalizeWriteRequest(
       normalizeCreatePackage(
         payload,
       );
-  } else {
+  } else if (
+    action ===
+    "confirm_item"
+  ) {
     normalizedPayload =
       normalizeConfirmItem(
+        payload,
+      );
+  } else if (
+    action ===
+    "seal_package"
+  ) {
+    normalizedPayload =
+      normalizeSealPackage(
+        payload,
+      );
+  } else if (
+    action ===
+    "generate_package_label"
+  ) {
+    normalizedPayload =
+      normalizeGeneratePackageLabel(
+        payload,
+      );
+  } else if (
+    action ===
+    "resolve_exception"
+  ) {
+    normalizedPayload =
+      normalizeResolveException(
+        payload,
+      );
+  } else if (
+    action ===
+    "cancel"
+  ) {
+    normalizedPayload =
+      normalizeCancel(
+        payload,
+      );
+  } else {
+    normalizedPayload =
+      normalizePackingOnly(
         payload,
       );
   }
@@ -853,6 +1234,147 @@ function packingRpcRequest(
         p_notes:
           input.payload.notes ??
           null,
+      },
+    };
+  }
+
+  if (
+    input.action ===
+    "seal_package"
+  ) {
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_seal_package_write",
+
+      body: {
+        p_request_id:
+          input.requestId,
+        p_account_id:
+          input.accountId,
+        p_packing_id:
+          input.payload.packingId,
+        p_package_id:
+          input.payload.packageId,
+        p_seal_number:
+          input.payload.sealNumber ??
+          null,
+        p_actual_weight:
+          input.payload.actualWeight ??
+          null,
+        p_actual_volume:
+          input.payload.actualVolume ??
+          null,
+      },
+    };
+  }
+
+  if (
+    input.action ===
+    "generate_package_label"
+  ) {
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_generate_package_label_write",
+
+      body: {
+        p_request_id:
+          input.requestId,
+        p_account_id:
+          input.accountId,
+        p_packing_id:
+          input.payload.packingId,
+        p_package_id:
+          input.payload.packageId,
+        p_format:
+          input.payload.format ??
+          "zpl",
+        p_printer_id:
+          input.payload.printerId ??
+          null,
+      },
+    };
+  }
+
+  if (
+    input.action ===
+    "resolve_exception"
+  ) {
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_resolve_exception_write",
+
+      body: {
+        p_request_id:
+          input.requestId,
+        p_account_id:
+          input.accountId,
+        p_packing_id:
+          input.payload.packingId,
+        p_exception_id:
+          input.payload.exceptionId,
+        p_resolution_notes:
+          input.payload
+            .resolutionNotes ??
+          null,
+      },
+    };
+  }
+
+  if (
+    input.action ===
+    "complete"
+  ) {
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_complete_write",
+
+      body: {
+        p_request_id:
+          input.requestId,
+        p_account_id:
+          input.accountId,
+        p_packing_id:
+          input.payload.packingId,
+      },
+    };
+  }
+
+  if (
+    input.action ===
+    "mark_shipping_ready"
+  ) {
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_mark_shipping_ready_write",
+
+      body: {
+        p_request_id:
+          input.requestId,
+        p_account_id:
+          input.accountId,
+        p_packing_id:
+          input.payload.packingId,
+      },
+    };
+  }
+
+  if (
+    input.action ===
+    "cancel"
+  ) {
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_cancel_write",
+
+      body: {
+        p_request_id:
+          input.requestId,
+        p_account_id:
+          input.accountId,
+        p_packing_id:
+          input.payload.packingId,
+        p_reason:
+          input.payload.reason,
       },
     };
   }
@@ -1195,6 +1717,30 @@ export async function onRequestPost(
 
         notes_invalid:
           "Paketleme notu metin olmalıdır.",
+
+        seal_number_invalid:
+          "Mühür numarası metin olmalıdır.",
+
+        actual_weight_invalid:
+          "Gerçek paket ağırlığı sıfırdan büyük sayı olmalıdır.",
+
+        actual_volume_invalid:
+          "Gerçek paket hacmi sıfırdan büyük sayı olmalıdır.",
+
+        label_format_invalid:
+          "Etiket formatı zpl, pdf, png, svg veya text olmalıdır.",
+
+        printer_id_invalid:
+          "Yazıcı kimliği metin olmalıdır.",
+
+        exception_id_invalid:
+          "Paketleme istisnası kimliği geçerli bir UUID olmalıdır.",
+
+        resolution_notes_invalid:
+          "İstisna çözüm notu metin olmalıdır.",
+
+        cancellation_reason_invalid:
+          "Paketleme iptal nedeni boş bırakılamaz.",
       };
 
       return corsJsonError(

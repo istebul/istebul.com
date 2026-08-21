@@ -88,7 +88,7 @@ test(
 );
 
 test(
-  "Packing API yalnız A8.3.1 üç write actionını açar",
+  "Packing API exact dokuz write actionını açar",
   () => {
     assert.equal(
       normalizeWriteAction(
@@ -111,14 +111,30 @@ test(
       "confirm_item",
     );
 
-    for (const blocked of [
-      "complete",
-      "cancel",
+    for (const allowed of [
       "seal_package",
-      "mark_shipping_ready",
       "generate_package_label",
+      "resolve_exception",
+      "complete",
+      "mark_shipping_ready",
+      "cancel",
+    ]) {
+      assert.equal(
+        normalizeWriteAction(
+          allowed,
+        ),
+        allowed,
+      );
+    }
+
+    for (const blocked of [
       "create",
       "add_item",
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label",
     ]) {
       assert.equal(
         normalizeWriteAction(
@@ -1188,5 +1204,135 @@ test(
       }).status,
       502,
     );
+  },
+);
+
+test(
+  "Packing lifecycle payloadları fail closed normalize edilir",
+  () => {
+    const seal =
+      normalizeWriteRequest(
+        {
+          accountId:
+            ACCOUNT_ID,
+          action:
+            "seal_package",
+          payload: {
+            packingId:
+              PACKING_ID,
+            packageId:
+              PACKAGE_ID,
+            sealNumber:
+              "SEAL-001",
+            actualWeight:
+              4.25,
+          },
+        },
+        REQUEST_ID,
+      );
+
+    assert.equal(
+      seal.ok,
+      true,
+    );
+
+    assert.equal(
+      seal.value.payload
+        .sealNumber,
+      "SEAL-001",
+    );
+
+    const label =
+      normalizeWriteRequest(
+        {
+          accountId:
+            ACCOUNT_ID,
+          action:
+            "generate_package_label",
+          payload: {
+            packingId:
+              PACKING_ID,
+            packageId:
+              PACKAGE_ID,
+          },
+        },
+        REQUEST_ID,
+      );
+
+    assert.equal(
+      label.ok,
+      true,
+    );
+
+    assert.equal(
+      label.value.payload
+        .format,
+      "zpl",
+    );
+
+    const invalidCancel =
+      normalizeWriteRequest(
+        {
+          accountId:
+            ACCOUNT_ID,
+          action:
+            "cancel",
+          payload: {
+            packingId:
+              PACKING_ID,
+            reason:
+              "   ",
+          },
+        },
+        REQUEST_ID,
+      );
+
+    assert.deepEqual(
+      invalidCancel,
+      {
+        ok: false,
+        reason:
+          "cancellation_reason_invalid",
+      },
+    );
+  },
+);
+
+test(
+  "Packing lifecycle exact altı dedicated RPC contractını taşır",
+  async () => {
+    const source =
+      await readFile(
+        "functions/api/warehouse/packing.js",
+        "utf8",
+      );
+
+    for (const rpc of [
+      "warehouse_packing_seal_package_write",
+      "warehouse_packing_generate_package_label_write",
+      "warehouse_packing_resolve_exception_write",
+      "warehouse_packing_complete_write",
+      "warehouse_packing_mark_shipping_ready_write",
+      "warehouse_packing_cancel_write",
+    ]) {
+      assert.match(
+        source,
+        new RegExp(rpc),
+      );
+    }
+
+    for (const parameter of [
+      "p_seal_number",
+      "p_actual_weight",
+      "p_actual_volume",
+      "p_exception_id",
+      "p_resolution_notes",
+      "p_reason",
+    ]) {
+      assert.match(
+        source,
+        new RegExp(parameter),
+      );
+    }
   },
 );

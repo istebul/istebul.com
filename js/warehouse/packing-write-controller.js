@@ -117,7 +117,31 @@ async function dependencies() {
 
     confirmItem:
       client
-        .confirmPackingItem
+        .confirmPackingItem,
+
+    sealPackage:
+      client
+        .sealPackingPackage,
+
+    generatePackageLabel:
+      client
+        .generatePackingPackageLabel,
+
+    resolveException:
+      client
+        .resolvePackingException,
+
+    complete:
+      client
+        .completePacking,
+
+    markShippingReady:
+      client
+        .markPackingShippingReady,
+
+    cancel:
+      client
+        .cancelPacking
   };
 }
 
@@ -233,6 +257,91 @@ export async function persistPackingConfirmation(
     payload,
     method:
       "confirmItem",
+    injected
+  });
+}
+
+
+export async function persistPackingSealPackage(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "seal_package",
+    payload,
+    method:
+      "sealPackage",
+    injected
+  });
+}
+
+export async function persistPackingGeneratePackageLabel(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "generate_package_label",
+    payload,
+    method:
+      "generatePackageLabel",
+    injected
+  });
+}
+
+export async function persistPackingResolveException(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "resolve_exception",
+    payload,
+    method:
+      "resolveException",
+    injected
+  });
+}
+
+export async function persistPackingComplete(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "complete",
+    payload,
+    method:
+      "complete",
+    injected
+  });
+}
+
+export async function persistPackingShippingReady(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "mark_shipping_ready",
+    payload,
+    method:
+      "markShippingReady",
+    injected
+  });
+}
+
+export async function persistPackingCancel(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "cancel",
+    payload,
+    method:
+      "cancel",
     injected
   });
 }
@@ -364,6 +473,120 @@ if (
           "warehouse:packing-write-success",
         failure:
           "warehouse:packing-write-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-seal-package-confirm",
+    (event) => {
+      void handle({
+        action:
+          "seal_package",
+        event,
+        execute:
+          persistPackingSealPackage,
+        start:
+          "warehouse:packing-seal-package-start",
+        success:
+          "warehouse:packing-seal-package-success",
+        failure:
+          "warehouse:packing-seal-package-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-generate-package-label-confirm",
+    (event) => {
+      void handle({
+        action:
+          "generate_package_label",
+        event,
+        execute:
+          persistPackingGeneratePackageLabel,
+        start:
+          "warehouse:packing-generate-package-label-start",
+        success:
+          "warehouse:packing-generate-package-label-success",
+        failure:
+          "warehouse:packing-generate-package-label-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-resolve-exception-confirm",
+    (event) => {
+      void handle({
+        action:
+          "resolve_exception",
+        event,
+        execute:
+          persistPackingResolveException,
+        start:
+          "warehouse:packing-resolve-exception-start",
+        success:
+          "warehouse:packing-resolve-exception-success",
+        failure:
+          "warehouse:packing-resolve-exception-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-complete-confirm",
+    (event) => {
+      void handle({
+        action:
+          "complete",
+        event,
+        execute:
+          persistPackingComplete,
+        start:
+          "warehouse:packing-complete-start",
+        success:
+          "warehouse:packing-complete-success",
+        failure:
+          "warehouse:packing-complete-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-shipping-ready-confirm",
+    (event) => {
+      void handle({
+        action:
+          "mark_shipping_ready",
+        event,
+        execute:
+          persistPackingShippingReady,
+        start:
+          "warehouse:packing-shipping-ready-start",
+        success:
+          "warehouse:packing-shipping-ready-success",
+        failure:
+          "warehouse:packing-shipping-ready-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-cancel-confirm",
+    (event) => {
+      void handle({
+        action:
+          "cancel",
+        event,
+        execute:
+          persistPackingCancel,
+        start:
+          "warehouse:packing-cancel-start",
+        success:
+          "warehouse:packing-cancel-success",
+        failure:
+          "warehouse:packing-cancel-error"
       });
     }
   );
