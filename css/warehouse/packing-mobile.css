@@ -1,0 +1,77 @@
+.warehouse-packing-panel {
+  scroll-margin-top: 1rem;
+}
+
+.warehouse-packing-help,
+.warehouse-packing-safety {
+  line-height: 1.6;
+}
+
+.warehouse-packing-create,
+.warehouse-packing-workspace {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 0.9rem;
+}
+
+.warehouse-packing-grid,
+.warehouse-packing-quantity-grid,
+.warehouse-packing-tracking-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.warehouse-packing-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.warehouse-packing-field label {
+  font-weight: 700;
+}
+
+.warehouse-packing-field input,
+.warehouse-packing-field select,
+.warehouse-packing-field textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+.warehouse-packing-message,
+.warehouse-packing-create-message,
+.warehouse-packing-match {
+  margin: 0;
+  padding: 0.8rem;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 0.75rem;
+}
+
+.warehouse-packing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.warehouse-packing-actions button {
+  min-height: 48px;
+}
+
+@media (max-width: 760px) {
+  .warehouse-packing-grid,
+  .warehouse-packing-quantity-grid,
+  .warehouse-packing-tracking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .warehouse-packing-actions {
+    display: grid;
+  }
+
+  .warehouse-packing-actions button {
+    width: 100%;
+  }
+}
