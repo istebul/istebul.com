@@ -13,7 +13,12 @@ const ACTIONS = Object.freeze([
   "resolve_exception",
   "complete",
   "mark_shipping_ready",
-  "cancel"
+  "cancel",
+  "create_label",
+  "generate_label",
+  "mark_label_printed",
+  "mark_label_failed",
+  "cancel_label"
 ]);
 
 function uuid(value, label) {
@@ -521,6 +526,203 @@ export function buildPackingCancelPayload(
   });
 }
 
+
+export function buildPackingCreateLabelPayload(
+  input
+) {
+  const packageId =
+    optionalUuid(
+      input?.packageId,
+      "Paket kimliği"
+    );
+
+  const type =
+    optionalText(
+      input?.type
+    ).toLowerCase();
+
+  const format =
+    optionalText(
+      input?.format
+    ).toLowerCase();
+
+  const barcodeValue =
+    optionalText(
+      input?.barcodeValue
+    );
+
+  const sscc =
+    optionalText(
+      input?.sscc
+    );
+
+  const printerId =
+    optionalText(
+      input?.printerId
+    );
+
+  if (!type) {
+    throw new Error(
+      "Etiket türü zorunludur."
+    );
+  }
+
+  if (!format) {
+    throw new Error(
+      "Etiket formatı zorunludur."
+    );
+  }
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    ...(packageId
+      ? { packageId }
+      : {}),
+
+    type,
+    format,
+
+    ...(barcodeValue
+      ? { barcodeValue }
+      : {}),
+
+    ...(sscc
+      ? { sscc }
+      : {}),
+
+    ...(printerId
+      ? { printerId }
+      : {})
+  });
+}
+
+export function buildPackingGenerateLabelPayload(
+  input
+) {
+  const sscc =
+    optionalText(
+      input?.sscc
+    );
+
+  const barcodeValue =
+    optionalText(
+      input?.barcodeValue
+    );
+
+  const content =
+    optionalText(
+      input?.content
+    );
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    labelId:
+      uuid(
+        input?.labelId,
+        "Etiket kimliği"
+      ),
+
+    ...(sscc
+      ? { sscc }
+      : {}),
+
+    ...(barcodeValue
+      ? { barcodeValue }
+      : {}),
+
+    ...(content
+      ? { content }
+      : {})
+  });
+}
+
+export function buildPackingMarkLabelPrintedPayload(
+  input
+) {
+  const printerId =
+    optionalText(
+      input?.printerId
+    );
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    labelId:
+      uuid(
+        input?.labelId,
+        "Etiket kimliği"
+      ),
+
+    ...(printerId
+      ? { printerId }
+      : {})
+  });
+}
+
+export function buildPackingMarkLabelFailedPayload(
+  input
+) {
+  const failureReason =
+    optionalText(
+      input?.failureReason
+    );
+
+  if (!failureReason) {
+    throw new Error(
+      "Etiket hata nedeni zorunludur."
+    );
+  }
+
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    labelId:
+      uuid(
+        input?.labelId,
+        "Etiket kimliği"
+      ),
+
+    failureReason
+  });
+}
+
+export function buildPackingCancelLabelPayload(
+  input
+) {
+  return Object.freeze({
+    packingId:
+      uuid(
+        input?.packingId,
+        "Paketleme kimliği"
+      ),
+
+    labelId:
+      uuid(
+        input?.labelId,
+        "Etiket kimliği"
+      )
+  });
+}
+
+
 export async function writePacking({
   accessToken,
   accountId,
@@ -817,6 +1019,111 @@ export async function cancelPacking(
       "cancel",
     payload:
       buildPackingCancelPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function createPackingLabel(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "create_label",
+    payload:
+      buildPackingCreateLabelPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function generatePackingLabel(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "generate_label",
+    payload:
+      buildPackingGenerateLabelPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function markPackingLabelPrinted(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "mark_label_printed",
+    payload:
+      buildPackingMarkLabelPrintedPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function markPackingLabelFailed(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "mark_label_failed",
+    payload:
+      buildPackingMarkLabelFailedPayload(
+        input
+      ),
+    requestId:
+      input.requestId,
+    fetchImpl:
+      input.fetchImpl
+  });
+}
+
+export async function cancelPackingLabel(
+  input
+) {
+  return writePacking({
+    accessToken:
+      input.accessToken,
+    accountId:
+      input.accountId,
+    action:
+      "cancel_label",
+    payload:
+      buildPackingCancelLabelPayload(
         input
       ),
     requestId:

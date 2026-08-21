@@ -878,6 +878,79 @@
         </button>
       </div>
 
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-ledger-etiket-secimi">Etiket ledger kaydı</label>
+        <select id="paketleme-ledger-etiket-secimi" disabled>
+          <option value="">Etiket bulunmuyor</option>
+        </select>
+      </div>
+
+      <div class="warehouse-packing-grid">
+        <div class="warehouse-packing-field">
+          <label for="paketleme-ledger-tur">Etiket türü</label>
+          <input id="paketleme-ledger-tur" type="text" autocomplete="off" placeholder="Örn. sscc" disabled>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-ledger-format">Ledger formatı</label>
+          <select id="paketleme-ledger-format" disabled>
+            <option value="zpl">ZPL</option>
+            <option value="pdf">PDF</option>
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+            <option value="text">Metin</option>
+          </select>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-ledger-barkod">Barkod değeri</label>
+          <input id="paketleme-ledger-barkod" type="text" autocomplete="off" disabled>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-ledger-sscc">SSCC</label>
+          <input id="paketleme-ledger-sscc" type="text" inputmode="numeric" autocomplete="off" disabled>
+        </div>
+
+        <div class="warehouse-packing-field">
+          <label for="paketleme-ledger-yazici">Yazıcı kimliği</label>
+          <input id="paketleme-ledger-yazici" type="text" autocomplete="off" disabled>
+        </div>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-ledger-icerik">Etiket içeriği</label>
+        <textarea id="paketleme-ledger-icerik" rows="3" disabled></textarea>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-ledger-hata-nedeni">Etiket hata nedeni</label>
+        <textarea id="paketleme-ledger-hata-nedeni" rows="2" disabled></textarea>
+      </div>
+
+      <div class="warehouse-packing-actions warehouse-packing-lifecycle-actions">
+        <button id="paketleme-ledger-olustur" type="button" class="secondary" disabled>
+          Ledger Etiketi Oluştur
+        </button>
+
+        <button id="paketleme-ledger-uret" type="button" class="secondary" disabled>
+          Ledger Etiketi Üret
+        </button>
+
+        <button id="paketleme-ledger-yazdirildi" type="button" class="secondary" disabled>
+          Yazdırıldı İşaretle
+        </button>
+
+        <button id="paketleme-ledger-basarisiz" type="button" class="secondary" disabled>
+          Başarısız İşaretle
+        </button>
+
+        <button id="paketleme-ledger-iptal" type="button" class="secondary" disabled>
+          Etiketi İptal Et
+        </button>
+      </div>
+
       <p
         id="paketleme-yasam-mesaji"
         class="warehouse-packing-message"
@@ -891,7 +964,7 @@
     <p class="warehouse-packing-safety">
       Barkod taraması hiçbir yaşam döngüsü yazmasını otomatik başlatmaz.
       Mühürleme, paket etiketi üretimi, istisna çözümü, tamamlama, sevkiyata hazır geçişi ve iptal işlemleri açık kullanıcı onayı gerektirir.
-      Etiket ledger yazdırıldı / başarısız / iptal akışı ve Shipping oluşturma bu dilimin dışındadır.
+      Etiket ledger oluşturma, üretme, yazdırıldı, başarısız ve iptal işlemleri de açık kullanıcı onayı gerektirir. Shipping oluşturma ayrı bir dilimdir.
     </p>
   </section>
 </article>

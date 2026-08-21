@@ -37,7 +37,7 @@ const ID = {
 };
 
 test(
-  "Packing client exact dokuz write actionını taşır",
+  "Packing client exact on dört write actionını taşır",
   async () => {
     const source =
       await readFile(
@@ -54,13 +54,98 @@ test(
       "resolve_exception",
       "complete",
       "mark_shipping_ready",
-      "cancel"
+      "cancel",
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label"
     ]) {
       assert.match(
         source,
         new RegExp(action)
       );
     }
+
+    const {
+      buildPackingCreateLabelPayload,
+      buildPackingGenerateLabelPayload,
+      buildPackingMarkLabelPrintedPayload,
+      buildPackingMarkLabelFailedPayload,
+      buildPackingCancelLabelPayload
+    } =
+      await import(
+        "../../js/warehouse/packing-client.js"
+      );
+
+    assert.deepEqual(
+      buildPackingCreateLabelPayload({
+        packingId:
+          ID.packing,
+        packageId:
+          ID.package,
+        type:
+          "sscc",
+        format:
+          "zpl"
+      }),
+      {
+        packingId:
+          ID.packing,
+        packageId:
+          ID.package,
+        type:
+          "sscc",
+        format:
+          "zpl"
+      }
+    );
+
+    const labelId =
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+    assert.equal(
+      buildPackingGenerateLabelPayload({
+        packingId:
+          ID.packing,
+        labelId,
+        content:
+          "^XA^XZ"
+      }).content,
+      "^XA^XZ"
+    );
+
+    assert.equal(
+      buildPackingMarkLabelPrintedPayload({
+        packingId:
+          ID.packing,
+        labelId,
+        printerId:
+          "PRN-01"
+      }).printerId,
+      "PRN-01"
+    );
+
+    assert.throws(
+      () =>
+        buildPackingMarkLabelFailedPayload({
+          packingId:
+            ID.packing,
+          labelId,
+          failureReason:
+            " "
+        }),
+      /hata nedeni/i
+    );
+
+    assert.equal(
+      buildPackingCancelLabelPayload({
+        packingId:
+          ID.packing,
+        labelId
+      }).labelId,
+      labelId
+    );
   }
 );
 
@@ -516,7 +601,7 @@ test(
 );
 
 test(
-  "Controller exact dokuz explicit confirm eventini dinler",
+  "Controller exact on dört explicit confirm eventini dinler",
   async () => {
     const source =
       await readFile(
@@ -533,7 +618,12 @@ test(
       "warehouse:packing-resolve-exception-confirm",
       "warehouse:packing-complete-confirm",
       "warehouse:packing-shipping-ready-confirm",
-      "warehouse:packing-cancel-confirm"
+      "warehouse:packing-cancel-confirm",
+      "warehouse:packing-create-label-confirm",
+      "warehouse:packing-generate-label-confirm",
+      "warehouse:packing-mark-label-printed-confirm",
+      "warehouse:packing-mark-label-failed-confirm",
+      "warehouse:packing-cancel-label-confirm"
     ]) {
       assert.match(
         source,
@@ -607,7 +697,12 @@ test(
       "warehouse:packing-resolve-exception-confirm",
       "warehouse:packing-complete-confirm",
       "warehouse:packing-shipping-ready-confirm",
-      "warehouse:packing-cancel-confirm"
+      "warehouse:packing-cancel-confirm",
+      "warehouse:packing-create-label-confirm",
+      "warehouse:packing-generate-label-confirm",
+      "warehouse:packing-mark-label-printed-confirm",
+      "warehouse:packing-mark-label-failed-confirm",
+      "warehouse:packing-cancel-label-confirm"
     ]) {
       assert.match(
         source,
@@ -1053,16 +1148,22 @@ test(
 );
 
 test(
-  "Packing lifecycle Shipping oluşturmaz ve label ledger lifecycle açmaz",
+  "Packing label ledger browser lifecycle açılır ve Shipping ayrı kalır",
   async () => {
     const [
       client,
+      lookup,
       ui,
-      controller
+      controller,
+      html
     ] =
       await Promise.all([
         readFile(
           CLIENT,
+          "utf8"
+        ),
+        readFile(
+          LOOKUP,
           "utf8"
         ),
         readFile(
@@ -1072,12 +1173,17 @@ test(
         readFile(
           CONTROLLER,
           "utf8"
+        ),
+        readFile(
+          HTML,
+          "utf8"
         )
       ]);
 
     const browser =
       [
         client,
+        lookup,
         ui,
         controller
       ].join("\n");
@@ -1089,10 +1195,15 @@ test(
 
     assert.doesNotMatch(
       browser,
-      /warehouse_packing_label_write/
+      /\.rpc\s*\(/
     );
 
-    for (const blocked of [
+    assert.doesNotMatch(
+      browser,
+      /SUPABASE_SERVICE_ROLE_KEY|service_role/
+    );
+
+    for (const action of [
       "create_label",
       "generate_label",
       "mark_label_printed",
@@ -1101,10 +1212,77 @@ test(
     ]) {
       assert.equal(
         browser.includes(
-          `"${blocked}"`
+          `"${action}"`
         ),
-        false
+        true
       );
     }
+
+    for (const field of [
+      "content",
+      "failure_reason",
+      "created_by"
+    ]) {
+      assert.match(
+        lookup,
+        new RegExp(field)
+      );
+    }
+
+    assert.doesNotMatch(
+      lookup,
+      /failed_at|cancelled_at/
+    );
+
+    for (const id of [
+      "paketleme-ledger-etiket-secimi",
+      "paketleme-ledger-tur",
+      "paketleme-ledger-format",
+      "paketleme-ledger-barkod",
+      "paketleme-ledger-sscc",
+      "paketleme-ledger-yazici",
+      "paketleme-ledger-icerik",
+      "paketleme-ledger-hata-nedeni",
+      "paketleme-ledger-olustur",
+      "paketleme-ledger-uret",
+      "paketleme-ledger-yazdirildi",
+      "paketleme-ledger-basarisiz",
+      "paketleme-ledger-iptal"
+    ]) {
+      assert.match(
+        html,
+        new RegExp(
+          `id=["']${id}["']`
+        )
+      );
+    }
+
+    for (const event of [
+      "warehouse:packing-create-label-confirm",
+      "warehouse:packing-generate-label-confirm",
+      "warehouse:packing-mark-label-printed-confirm",
+      "warehouse:packing-mark-label-failed-confirm",
+      "warehouse:packing-cancel-label-confirm"
+    ]) {
+      assert.match(
+        controller,
+        new RegExp(event)
+      );
+
+      assert.match(
+        ui,
+        new RegExp(event)
+      );
+    }
+
+    assert.match(
+      ui,
+      /globalThis\.confirm/
+    );
+
+    assert.match(
+      html,
+      /Shipping oluşturma ayrı bir dilimdir/
+    );
   }
 );
