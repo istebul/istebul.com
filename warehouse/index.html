@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
   <link rel="stylesheet" href="/css/warehouse/putaway-mobile.css">
 <link rel="stylesheet" href="/css/warehouse/picking-mobile.css">
+<link rel="stylesheet" href="/css/warehouse/packing-mobile.css">
 <link rel="stylesheet" href="/css/warehouse/cycle-count-mobile.css">
 </head>
 <body>
@@ -46,6 +47,7 @@
       <a href="#mal-kabul">⇥ Mal Kabul</a>
       <a href="#yerlestirme">⌑ Yerleştirme</a>
 <a href="#toplama">⌑ Toplama</a>
+      <a href="#paketleme">▣ Paketleme</a>
       <a href="#sayim">≋ Sayım</a>
       <a href="#surecler">✓ Operasyon Akışı</a>
       <a href="#surecler">□ Paketleme</a>
@@ -624,7 +626,174 @@
 </article>
 
 
-      <article
+
+<article class="panel full warehouse-packing-panel" id="paketleme">
+  <div class="heading">
+    <div>
+      <em>MOBİL OPERASYON</em>
+      <h2>Paketleme</h2>
+    </div>
+    <span class="count">Barkod + Açık Onay</span>
+  </div>
+
+  <p class="warehouse-packing-help">
+    Paketleme operasyonunu seçin, açık paket oluşturun ve ürün / SKU barkodunu doğrulayın.
+    Barkod taraması tek başına paketleme miktarı veya sevkiyat işlemi oluşturmaz.
+  </p>
+
+  <section class="warehouse-packing-create">
+    <strong>Toplamadan paketleme oluştur</strong>
+
+    <div class="warehouse-packing-grid">
+      <div class="warehouse-packing-field">
+        <label for="paketleme-toplama-secimi">Tamamlanmış toplama</label>
+        <select id="paketleme-toplama-secimi" disabled>
+          <option value="">Toplama kayıtları yükleniyor</option>
+        </select>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-lokasyon-secimi">Paketleme lokasyonu</label>
+        <select id="paketleme-lokasyon-secimi" disabled>
+          <option value="">Lokasyonlar yükleniyor</option>
+        </select>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-sevkiyat-lokasyon-secimi">Sevkiyat lokasyonu</label>
+        <select id="paketleme-sevkiyat-lokasyon-secimi" disabled>
+          <option value="">Opsiyonel</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="warehouse-packing-actions">
+      <button id="paketleme-olustur" type="button" class="secondary" disabled>
+        Paketleme Oluştur
+      </button>
+    </div>
+
+    <p
+      id="paketleme-olusturma-mesaji"
+      class="warehouse-packing-create-message"
+      data-state="waiting"
+      aria-live="polite"
+    >
+      Firma ve depo kapsamı bekleniyor.
+    </p>
+  </section>
+
+  <section class="warehouse-packing-workspace">
+    <div class="warehouse-packing-grid">
+      <div class="warehouse-packing-field">
+        <label for="paketleme-secimi">Paketleme operasyonu</label>
+        <select id="paketleme-secimi" disabled>
+          <option value="">Paketleme operasyonları yükleniyor</option>
+        </select>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-satiri-secimi">Paketlenecek satır</label>
+        <select id="paketleme-satiri-secimi" disabled>
+          <option value="">Önce paketleme seçin</option>
+        </select>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-ambalaj-secimi">Ambalaj</label>
+        <select id="paketleme-ambalaj-secimi" disabled>
+          <option value="">Ambalajlar yükleniyor</option>
+        </select>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-paket-secimi">Açık paket</label>
+        <select id="paketleme-paket-secimi" disabled>
+          <option value="">Açık paketler yükleniyor</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="warehouse-packing-actions">
+      <button id="paketleme-paket-olustur" type="button" class="secondary" disabled>
+        Açık Paket Oluştur
+      </button>
+    </div>
+
+    <p
+      id="paketleme-mesaji"
+      class="warehouse-packing-message"
+      data-state="waiting"
+      role="status"
+      aria-live="polite"
+    >
+      Firma ve depo kapsamı bekleniyor.
+    </p>
+
+    <div class="warehouse-packing-field">
+      <label for="paketleme-barkod">Ürün / SKU barkodu</label>
+      <input
+        id="paketleme-barkod"
+        type="text"
+        readonly
+        placeholder="Barkod tarayıcı sonucu bekleniyor"
+      >
+    </div>
+
+    <div
+      id="paketleme-barkod-eslesmesi"
+      class="warehouse-packing-match"
+      hidden
+    ></div>
+
+    <div class="warehouse-packing-quantity-grid">
+      <div class="warehouse-packing-field">
+        <label for="paketleme-miktar">Paketlenen miktar</label>
+        <input id="paketleme-miktar" type="number" min="0" step="0.000001" value="0" disabled>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-hasarli-miktar">Hasarlı miktar</label>
+        <input id="paketleme-hasarli-miktar" type="number" min="0" step="0.000001" value="0" disabled>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-eksik-miktar">Eksik miktar</label>
+        <input id="paketleme-eksik-miktar" type="number" min="0" step="0.000001" value="0" disabled>
+      </div>
+    </div>
+
+    <div class="warehouse-packing-tracking-grid">
+      <div class="warehouse-packing-field">
+        <label for="paketleme-lot-no">Lot teyidi</label>
+        <input id="paketleme-lot-no" type="text" autocomplete="off" disabled>
+      </div>
+
+      <div class="warehouse-packing-field">
+        <label for="paketleme-seri-no">Seri numarası teyidi</label>
+        <input id="paketleme-seri-no" type="text" autocomplete="off" disabled>
+      </div>
+    </div>
+
+    <div class="warehouse-packing-field">
+      <label for="paketleme-notu">Paketleme notu</label>
+      <textarea id="paketleme-notu" rows="3" disabled></textarea>
+    </div>
+
+    <div class="warehouse-packing-actions">
+      <button id="paketleme-onayla" type="button" disabled>
+        Paketlemeyi Onayla
+      </button>
+    </div>
+
+    <p class="warehouse-packing-safety">
+      Bu ilk dilim yalnız create_from_picking, create_package ve confirm_item işlemlerini kapsar.
+      Mühürleme, etiketleme, istisna çözümü, tamamlama ve sevkiyat işlemleri bu adımın dışındadır.
+    </p>
+  </section>
+</article>
+
+<article
   class="panel full warehouse-cycle-count-panel"
   id="sayim"
 >
@@ -1325,6 +1494,7 @@
 <nav class="warehouse-mobile-bottom-nav" aria-label="Hızlı operasyon erişimi">
   <a href="#genel" data-mobile-nav="genel"><span aria-hidden="true">⌂</span><small>Genel</small></a>
   <a href="#surecler" data-mobile-nav="surecler"><span aria-hidden="true">⇥</span><small>Süreçler</small></a>
+  <a href="#paketleme" data-mobile-nav="paketleme"><span aria-hidden="true">▣</span><small>Paketleme</small></a>
   <a href="#sayim" data-mobile-nav="sayim"><span aria-hidden="true">≋</span><small>Sayım</small></a>
   <a href="#uyarilar" data-mobile-nav="uyarilar"><span aria-hidden="true">!</span><small>Uyarılar</small></a>
   <a href="#copilot" data-mobile-nav="copilot"><span aria-hidden="true">✦</span><small>Copilot</small></a>
@@ -1340,6 +1510,8 @@
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
 <script type="module" src="/js/warehouse/picking-ui.js"></script>
 <script type="module" src="/js/warehouse/picking-write-controller.js"></script>
+<script type="module" src="/js/warehouse/packing-ui.js"></script>
+<script type="module" src="/js/warehouse/packing-write-controller.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-ui.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-quantity-ui.js"></script>
 <script type="module" src="/js/warehouse/cycle-count-write-controller.js"></script>
