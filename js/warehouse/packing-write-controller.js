@@ -139,6 +139,26 @@ async function dependencies() {
       client
         .markPackingShippingReady,
 
+    createLabel:
+      client
+        .createPackingLabel,
+
+    generateLabel:
+      client
+        .generatePackingLabel,
+
+    markLabelPrinted:
+      client
+        .markPackingLabelPrinted,
+
+    markLabelFailed:
+      client
+        .markPackingLabelFailed,
+
+    cancelLabel:
+      client
+        .cancelPackingLabel,
+
     cancel:
       client
         .cancelPacking
@@ -345,6 +365,78 @@ export async function persistPackingCancel(
     injected
   });
 }
+
+
+export async function persistPackingCreateLabel(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "create_label",
+    payload,
+    method:
+      "createLabel",
+    injected
+  });
+}
+
+export async function persistPackingGenerateLabel(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "generate_label",
+    payload,
+    method:
+      "generateLabel",
+    injected
+  });
+}
+
+export async function persistPackingMarkLabelPrinted(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "mark_label_printed",
+    payload,
+    method:
+      "markLabelPrinted",
+    injected
+  });
+}
+
+export async function persistPackingMarkLabelFailed(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "mark_label_failed",
+    payload,
+    method:
+      "markLabelFailed",
+    injected
+  });
+}
+
+export async function persistPackingCancelLabel(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "cancel_label",
+    payload,
+    method:
+      "cancelLabel",
+    injected
+  });
+}
+
 
 function emit(
   name,
@@ -587,6 +679,106 @@ if (
           "warehouse:packing-cancel-success",
         failure:
           "warehouse:packing-cancel-error"
+      });
+    }
+  );
+}
+
+if (
+  typeof document !==
+  "undefined"
+) {
+  document.addEventListener(
+    "warehouse:packing-create-label-confirm",
+    (event) => {
+      void handle({
+        action:
+          "create_label",
+        event,
+        execute:
+          persistPackingCreateLabel,
+        start:
+          "warehouse:packing-create-label-start",
+        success:
+          "warehouse:packing-create-label-success",
+        failure:
+          "warehouse:packing-create-label-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-generate-label-confirm",
+    (event) => {
+      void handle({
+        action:
+          "generate_label",
+        event,
+        execute:
+          persistPackingGenerateLabel,
+        start:
+          "warehouse:packing-generate-label-start",
+        success:
+          "warehouse:packing-generate-label-success",
+        failure:
+          "warehouse:packing-generate-label-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-mark-label-printed-confirm",
+    (event) => {
+      void handle({
+        action:
+          "mark_label_printed",
+        event,
+        execute:
+          persistPackingMarkLabelPrinted,
+        start:
+          "warehouse:packing-mark-label-printed-start",
+        success:
+          "warehouse:packing-mark-label-printed-success",
+        failure:
+          "warehouse:packing-mark-label-printed-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-mark-label-failed-confirm",
+    (event) => {
+      void handle({
+        action:
+          "mark_label_failed",
+        event,
+        execute:
+          persistPackingMarkLabelFailed,
+        start:
+          "warehouse:packing-mark-label-failed-start",
+        success:
+          "warehouse:packing-mark-label-failed-success",
+        failure:
+          "warehouse:packing-mark-label-failed-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:packing-cancel-label-confirm",
+    (event) => {
+      void handle({
+        action:
+          "cancel_label",
+        event,
+        execute:
+          persistPackingCancelLabel,
+        start:
+          "warehouse:packing-cancel-label-start",
+        success:
+          "warehouse:packing-cancel-label-success",
+        failure:
+          "warehouse:packing-cancel-label-error"
       });
     }
   );

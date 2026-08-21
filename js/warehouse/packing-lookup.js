@@ -417,7 +417,7 @@ export async function loadPackingLabels({
         LABEL_TABLE
       )
       .select(
-        "id,packing_id,package_id,type,status,label_number,barcode_value,sscc,format,printer_id,generated_at,printed_at,failed_at,cancelled_at,created_at,updated_at"
+        "id,packing_id,package_id,type,status,label_number,barcode_value,sscc,format,content,printer_id,generated_at,printed_at,failure_reason,created_by,created_at,updated_at"
       )
       .eq(
         "account_id",

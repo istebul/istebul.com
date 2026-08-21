@@ -88,53 +88,38 @@ test(
 );
 
 test(
-  "Packing API exact dokuz write actionını açar",
+  "Packing API exact on dört write actionını açar",
   () => {
-    assert.equal(
-      normalizeWriteAction(
-        "create_from_picking",
-      ),
+    const allowed = [
       "create_from_picking",
-    );
-
-    assert.equal(
-      normalizeWriteAction(
-        "create_package",
-      ),
       "create_package",
-    );
-
-    assert.equal(
-      normalizeWriteAction(
-        "confirm_item",
-      ),
       "confirm_item",
-    );
-
-    for (const allowed of [
       "seal_package",
       "generate_package_label",
       "resolve_exception",
       "complete",
       "mark_shipping_ready",
       "cancel",
-    ]) {
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label",
+    ];
+
+    for (const action of allowed) {
       assert.equal(
         normalizeWriteAction(
-          allowed,
+          action,
         ),
-        allowed,
+        action,
       );
     }
 
     for (const blocked of [
       "create",
       "add_item",
-      "create_label",
-      "generate_label",
-      "mark_label_printed",
-      "mark_label_failed",
-      "cancel_label",
+      "unknown",
     ]) {
       assert.equal(
         normalizeWriteAction(
@@ -143,6 +128,111 @@ test(
         null,
       );
     }
+
+    const createLabel =
+      normalizeWriteRequest(
+        {
+          accountId:
+            ACCOUNT_ID,
+
+          action:
+            "create_label",
+
+          payload: {
+            packingId:
+              PACKING_ID,
+
+            packageId:
+              PACKAGE_ID,
+
+            type:
+              "sscc",
+
+            format:
+              "zpl",
+
+            sscc:
+              "123456789012345678",
+          },
+        },
+        REQUEST_ID,
+      );
+
+    assert.equal(
+      createLabel.ok,
+      true,
+    );
+
+    assert.equal(
+      createLabel.value.action,
+      "create_label",
+    );
+
+    assert.equal(
+      createLabel.value.payload
+        .type,
+      "sscc",
+    );
+
+    const failedLabel =
+      normalizeWriteRequest(
+        {
+          accountId:
+            ACCOUNT_ID,
+
+          action:
+            "mark_label_failed",
+
+          payload: {
+            packingId:
+              PACKING_ID,
+
+            labelId:
+              "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+
+            failureReason:
+              "Yazıcı çevrimdışı",
+          },
+        },
+        REQUEST_ID,
+      );
+
+    assert.equal(
+      failedLabel.ok,
+      true,
+    );
+
+    const invalidFailedLabel =
+      normalizeWriteRequest(
+        {
+          accountId:
+            ACCOUNT_ID,
+
+          action:
+            "mark_label_failed",
+
+          payload: {
+            packingId:
+              PACKING_ID,
+
+            labelId:
+              "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+
+            failureReason:
+              " ",
+          },
+        },
+        REQUEST_ID,
+      );
+
+    assert.deepEqual(
+      invalidFailedLabel,
+      {
+        ok: false,
+        reason:
+          "failure_reason_invalid",
+      },
+    );
 
     assert.equal(
       normalizeUuid(
@@ -476,6 +566,11 @@ test(
     assert.match(
       source,
       /warehouse_packing_write/,
+    );
+
+    assert.match(
+      source,
+      /warehouse_packing_label_write/,
     );
 
     assert.match(
@@ -1299,7 +1394,7 @@ test(
 );
 
 test(
-  "Packing lifecycle exact altı dedicated RPC contractını taşır",
+  "Packing lifecycle ve label ledger dedicated RPC contractlarını taşır",
   async () => {
     const source =
       await readFile(
@@ -1314,6 +1409,7 @@ test(
       "warehouse_packing_complete_write",
       "warehouse_packing_mark_shipping_ready_write",
       "warehouse_packing_cancel_write",
+      "warehouse_packing_label_write",
     ]) {
       assert.match(
         source,
@@ -1321,18 +1417,49 @@ test(
       );
     }
 
-    for (const parameter of [
-      "p_seal_number",
-      "p_actual_weight",
-      "p_actual_volume",
-      "p_exception_id",
-      "p_resolution_notes",
-      "p_reason",
+    for (const action of [
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label",
     ]) {
       assert.match(
         source,
-        new RegExp(parameter),
+        new RegExp(
+          `"${action}"`,
+        ),
       );
     }
+
+    assert.match(
+      source,
+      /p_action/,
+    );
+
+    assert.match(
+      source,
+      /p_request_id/,
+    );
+
+    assert.match(
+      source,
+      /p_account_id/,
+    );
+
+    assert.match(
+      source,
+      /p_packing_id/,
+    );
+
+    assert.match(
+      source,
+      /p_label_id/,
+    );
+
+    assert.match(
+      source,
+      /p_payload/,
+    );
   },
 );

@@ -20,6 +20,11 @@ const WRITE_ACTIONS = Object.freeze([
   "complete",
   "mark_shipping_ready",
   "cancel",
+  "create_label",
+  "generate_label",
+  "mark_label_printed",
+  "mark_label_failed",
+  "cancel_label",
 ]);
 
 const UUID_PATTERN =
@@ -907,6 +912,325 @@ function normalizeCancel(
   };
 }
 
+
+function normalizeLabelLedger(
+  action,
+  payload,
+) {
+  const packingId =
+    normalizeUuid(
+      payload.packingId,
+    );
+
+  if (!packingId) {
+    return {
+      ok: false,
+      reason:
+        "packing_id_invalid",
+    };
+  }
+
+  const create =
+    action ===
+    "create_label";
+
+  let labelId = null;
+
+  if (!create) {
+    labelId =
+      normalizeUuid(
+        payload.labelId,
+      );
+
+    if (!labelId) {
+      return {
+        ok: false,
+        reason:
+          "label_id_invalid",
+      };
+    }
+  }
+
+  const value = {
+    packingId,
+
+    ...(labelId
+      ? { labelId }
+      : {}),
+  };
+
+  if (create) {
+    const packageId =
+      optionalUuid(
+        payload.packageId,
+      );
+
+    if (!packageId.ok) {
+      return {
+        ok: false,
+        reason:
+          "package_id_invalid",
+      };
+    }
+
+    const type =
+      optionalText(
+        payload.type,
+      );
+
+    const format =
+      optionalText(
+        payload.format,
+      );
+
+    if (
+      !type.ok ||
+      !type.value
+    ) {
+      return {
+        ok: false,
+        reason:
+          "label_type_invalid",
+      };
+    }
+
+    if (
+      !format.ok ||
+      !format.value
+    ) {
+      return {
+        ok: false,
+        reason:
+          "label_format_invalid",
+      };
+    }
+
+    const barcodeValue =
+      optionalText(
+        payload.barcodeValue,
+      );
+
+    const sscc =
+      optionalText(
+        payload.sscc,
+      );
+
+    const printerId =
+      optionalText(
+        payload.printerId,
+      );
+
+    for (const [
+      result,
+      reason,
+    ] of [
+      [
+        barcodeValue,
+        "barcode_value_invalid",
+      ],
+      [
+        sscc,
+        "sscc_invalid",
+      ],
+      [
+        printerId,
+        "printer_id_invalid",
+      ],
+    ]) {
+      if (!result.ok) {
+        return {
+          ok: false,
+          reason,
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      value: {
+        ...value,
+
+        ...(packageId.value
+          ? {
+              packageId:
+                packageId.value,
+            }
+          : {}),
+
+        type:
+          type.value
+            .toLowerCase(),
+
+        format:
+          format.value
+            .toLowerCase(),
+
+        ...(barcodeValue.value
+          ? {
+              barcodeValue:
+                barcodeValue.value,
+            }
+          : {}),
+
+        ...(sscc.value
+          ? {
+              sscc:
+                sscc.value,
+            }
+          : {}),
+
+        ...(printerId.value
+          ? {
+              printerId:
+                printerId.value,
+            }
+          : {}),
+      },
+    };
+  }
+
+  if (
+    action ===
+    "generate_label"
+  ) {
+    const sscc =
+      optionalText(
+        payload.sscc,
+      );
+
+    const barcodeValue =
+      optionalText(
+        payload.barcodeValue,
+      );
+
+    const content =
+      optionalText(
+        payload.content,
+      );
+
+    for (const [
+      result,
+      reason,
+    ] of [
+      [
+        sscc,
+        "sscc_invalid",
+      ],
+      [
+        barcodeValue,
+        "barcode_value_invalid",
+      ],
+      [
+        content,
+        "label_content_invalid",
+      ],
+    ]) {
+      if (!result.ok) {
+        return {
+          ok: false,
+          reason,
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      value: {
+        ...value,
+
+        ...(sscc.value
+          ? {
+              sscc:
+                sscc.value,
+            }
+          : {}),
+
+        ...(barcodeValue.value
+          ? {
+              barcodeValue:
+                barcodeValue.value,
+            }
+          : {}),
+
+        ...(content.value
+          ? {
+              content:
+                content.value,
+            }
+          : {}),
+      },
+    };
+  }
+
+  if (
+    action ===
+    "mark_label_printed"
+  ) {
+    const printerId =
+      optionalText(
+        payload.printerId,
+      );
+
+    if (!printerId.ok) {
+      return {
+        ok: false,
+        reason:
+          "printer_id_invalid",
+      };
+    }
+
+    return {
+      ok: true,
+      value: {
+        ...value,
+
+        ...(printerId.value
+          ? {
+              printerId:
+                printerId.value,
+            }
+          : {}),
+      },
+    };
+  }
+
+  if (
+    action ===
+    "mark_label_failed"
+  ) {
+    const failureReason =
+      optionalText(
+        payload.failureReason,
+      );
+
+    if (
+      !failureReason.ok ||
+      !failureReason.value
+    ) {
+      return {
+        ok: false,
+        reason:
+          "failure_reason_invalid",
+      };
+    }
+
+    return {
+      ok: true,
+      value: {
+        ...value,
+        failureReason:
+          failureReason.value,
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    value,
+  };
+}
+
+
 export function normalizeWriteRequest(
   body,
   requestId,
@@ -1013,6 +1337,22 @@ export function normalizeWriteRequest(
   ) {
     normalizedPayload =
       normalizeResolveException(
+        payload,
+      );
+  } else if (
+    [
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label",
+    ].includes(
+      action,
+    )
+  ) {
+    normalizedPayload =
+      normalizeLabelLedger(
+        action,
         payload,
       );
   } else if (
@@ -1375,6 +1715,52 @@ function packingRpcRequest(
           input.payload.packingId,
         p_reason:
           input.payload.reason,
+      },
+    };
+  }
+
+
+  if (
+    [
+      "create_label",
+      "generate_label",
+      "mark_label_printed",
+      "mark_label_failed",
+      "cancel_label",
+    ].includes(
+      input.action,
+    )
+  ) {
+    const {
+      packingId,
+      labelId,
+      ...payload
+    } =
+      input.payload;
+
+    return {
+      path:
+        "/rest/v1/rpc/warehouse_packing_label_write",
+
+      body: {
+        p_action:
+          input.action,
+
+        p_request_id:
+          input.requestId,
+
+        p_account_id:
+          input.accountId,
+
+        p_packing_id:
+          packingId,
+
+        p_label_id:
+          labelId ??
+          null,
+
+        p_payload:
+          payload,
       },
     };
   }
