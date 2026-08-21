@@ -87,7 +87,8 @@ function requestIdFor(
 async function dependencies() {
   const [
     operations,
-    client
+    client,
+    shipping
   ] =
     await Promise.all([
       import(
@@ -95,6 +96,9 @@ async function dependencies() {
       ),
       import(
         "./packing-client.js"
+      ),
+      import(
+        "./shipping-client.js"
       )
     ]);
 
@@ -138,6 +142,10 @@ async function dependencies() {
     markShippingReady:
       client
         .markPackingShippingReady,
+
+    createShippingFromPacking:
+      shipping
+        .createShippingFromPacking,
 
     createLabel:
       client
@@ -348,6 +356,20 @@ export async function persistPackingShippingReady(
     payload,
     method:
       "markShippingReady",
+    injected
+  });
+}
+
+export async function persistShippingCreateFromPacking(
+  payload,
+  injected = {}
+) {
+  return persist({
+    action:
+      "shipping_create_from_packing",
+    payload,
+    method:
+      "createShippingFromPacking",
     injected
   });
 }
@@ -660,6 +682,30 @@ if (
           "warehouse:packing-shipping-ready-success",
         failure:
           "warehouse:packing-shipping-ready-error"
+      });
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:shipping-create-from-packing-confirm",
+    (event) => {
+      void handle({
+        action:
+          "shipping_create_from_packing",
+
+        event,
+
+        execute:
+          persistShippingCreateFromPacking,
+
+        start:
+          "warehouse:shipping-create-from-packing-start",
+
+        success:
+          "warehouse:shipping-create-from-packing-success",
+
+        failure:
+          "warehouse:shipping-create-from-packing-error"
       });
     }
   );

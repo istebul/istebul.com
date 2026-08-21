@@ -7,6 +7,7 @@ import {
   canCancelPacking,
   canCompletePacking,
   canMarkPackingShippingReady,
+  canCreateShippingFromPacking,
   expectedPackingLot,
   expectedPackingSerial,
   isPackingConfirmable,
@@ -335,6 +336,18 @@ function refreshLifecycleControls() {
       );
   }
 
+  const createShipping =
+    byId(
+      "paketleme-sevkiyat-olustur"
+    );
+
+  if (createShipping) {
+    createShipping.disabled =
+      !canCreateShippingFromPacking(
+        context
+      );
+  }
+
   const cancel =
     byId(
       "paketleme-iptal"
@@ -505,6 +518,15 @@ function renderLifecycleControls(
   refreshLifecycleControls();
 
   if (
+    canCreateShippingFromPacking(
+      context
+    )
+  ) {
+    lifecycleMessage(
+      "Paketleme sevkiyata hazır. Sevkiyat kaydı ayrı kullanıcı onayıyla oluşturulabilir.",
+      "ready"
+    );
+  } else if (
     canMarkPackingShippingReady(
       context
     )
@@ -1662,6 +1684,61 @@ function setup() {
   );
 
   byId(
+    "paketleme-sevkiyat-olustur"
+  )?.addEventListener(
+    "click",
+    () => {
+      const context =
+        state.context;
+
+      if (
+        !canCreateShippingFromPacking(
+          context
+        )
+      ) {
+        lifecycleMessage(
+          "Sevkiyat oluşturmak için sevkiyata hazır paketleme ve geçerli sevkiyat lokasyonu gereklidir.",
+          "error"
+        );
+
+        return;
+      }
+
+      const packing =
+        context.packing;
+
+      const shippingLocationId =
+        text(
+          packing
+            .shipping_location_id ??
+          packing
+            .shippingLocationId
+        );
+
+      if (
+        globalThis.confirm?.(
+          "Seçili sevkiyata hazır paketlemeden yeni sevkiyat kaydı oluşturulsun mu?"
+        ) !== true
+      ) {
+        return;
+      }
+
+      dispatch(
+        "warehouse:shipping-create-from-packing-confirm",
+        {
+          packingId:
+            packing.id,
+
+          shippingLocationId,
+
+          strategy:
+            "single_shipment"
+        }
+      );
+    }
+  );
+
+  byId(
     "paketleme-iptal"
   )?.addEventListener(
     "click",
@@ -1859,6 +1936,57 @@ function setup() {
       }
     );
   }
+
+  document.addEventListener(
+    "warehouse:shipping-create-from-packing-start",
+    () => {
+      lifecycleMessage(
+        "Sevkiyat kaydı oluşturuluyor…",
+        "loading"
+      );
+
+      const button =
+        byId(
+          "paketleme-sevkiyat-olustur"
+        );
+
+      if (button) {
+        button.disabled =
+          true;
+      }
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:shipping-create-from-packing-success",
+    (event) => {
+      const shippingNumber =
+        text(
+          event?.detail?.data
+            ?.shippingNumber
+        );
+
+      lifecycleMessage(
+        shippingNumber
+          ? `Sevkiyat oluşturuldu: ${shippingNumber}`
+          : "Sevkiyat başarıyla oluşturuldu.",
+        "success"
+      );
+    }
+  );
+
+  document.addEventListener(
+    "warehouse:shipping-create-from-packing-error",
+    (event) => {
+      lifecycleMessage(
+        event?.detail?.message ||
+          "Sevkiyat oluşturulamadı.",
+        "error"
+      );
+
+      refreshLifecycleControls();
+    }
+  );
 
   document.addEventListener(
     "warehouse:packing-write-success",

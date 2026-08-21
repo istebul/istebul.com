@@ -602,6 +602,37 @@ export function canMarkPackingShippingReady(
   );
 }
 
+export function canCreateShippingFromPacking(
+  context
+) {
+  const packing =
+    context?.packing;
+
+  if (
+    text(
+      packing?.status
+    ).toLowerCase() !==
+      "shipping_ready"
+  ) {
+    return false;
+  }
+
+  const shippingLocationId =
+    text(
+      packing
+        ?.shipping_location_id ??
+      packing
+        ?.shippingLocationId
+    );
+
+  return (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      .test(
+        shippingLocationId
+      )
+  );
+}
+
 export function canCancelPacking(
   context
 ) {
