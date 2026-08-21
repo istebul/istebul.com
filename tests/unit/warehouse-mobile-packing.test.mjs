@@ -1286,3 +1286,281 @@ test(
     );
   }
 );
+
+
+test(
+  "Shipping handoff yalnız shipping_ready Packing ve geçerli lokasyon için açılır",
+  async () => {
+    const {
+      canCreateShippingFromPacking
+    } =
+      await import(
+        "../../js/warehouse/packing-lookup.js"
+      );
+
+    assert.equal(
+      canCreateShippingFromPacking({
+        packing: {
+          status:
+            "shipping_ready",
+
+          shipping_location_id:
+            ID.account
+        }
+      }),
+      true
+    );
+
+    assert.equal(
+      canCreateShippingFromPacking({
+        packing: {
+          status:
+            "packed",
+
+          shipping_location_id:
+            ID.account
+        }
+      }),
+      false
+    );
+
+    assert.equal(
+      canCreateShippingFromPacking({
+        packing: {
+          status:
+            "shipping_ready",
+
+          shipping_location_id:
+            "invalid"
+        }
+      }),
+      false
+    );
+  }
+);
+
+test(
+  "Shipping client yalnız güvenli HTTP transport kullanır",
+  async () => {
+    const source =
+      await readFile(
+        new URL(
+          "../../js/warehouse/shipping-client.js",
+          import.meta.url
+        ),
+        "utf8"
+      );
+
+    assert.match(
+      source,
+      /\/api\/warehouse\/shipping/
+    );
+
+    assert.match(
+      source,
+      /Idempotency-Key/
+    );
+
+    assert.match(
+      source,
+      /Authorization:\s*`Bearer \$\{accessToken\}`/
+    );
+
+    assert.doesNotMatch(
+      source,
+      /\.rpc\s*\(/
+    );
+
+    assert.doesNotMatch(
+      source,
+      /SUPABASE_SERVICE_ROLE_KEY|\bservice_role\b/i
+    );
+
+    assert.doesNotMatch(
+      source,
+      /warehouse_shipping_create_from_packing_write/
+    );
+  }
+);
+
+test(
+  "Shipping handoff failed retry aynı requestId değerini korur",
+  async () => {
+    const {
+      persistShippingCreateFromPacking
+    } =
+      await import(
+        "../../js/warehouse/packing-write-controller.js"
+      );
+
+    const requestIds = [];
+
+    const injected = {
+      getContext() {
+        return {
+          accountId:
+            ID.account
+        };
+      },
+
+      async getSession() {
+        return {
+          access_token:
+            "jwt"
+        };
+      },
+
+      async createShippingFromPacking(
+        input
+      ) {
+        requestIds.push(
+          input.requestId
+        );
+
+        throw new Error(
+          "network"
+        );
+      }
+    };
+
+    const payload = {
+      packingId:
+        ID.packing,
+
+      shippingLocationId:
+        ID.account,
+
+      strategy:
+        "single_shipment"
+    };
+
+    await assert.rejects(
+      persistShippingCreateFromPacking(
+        payload,
+        injected
+      )
+    );
+
+    await assert.rejects(
+      persistShippingCreateFromPacking(
+        payload,
+        injected
+      )
+    );
+
+    assert.equal(
+      requestIds.length,
+      2
+    );
+
+    assert.equal(
+      requestIds[0],
+      requestIds[1]
+    );
+  }
+);
+
+test(
+  "Shipping create ayrı explicit eventtir ve legacy Shipping separation korunur",
+  async () => {
+    const [
+      ui,
+      controller,
+      html,
+      build
+    ] =
+      await Promise.all([
+        readFile(
+          new URL(
+            "../../js/warehouse/packing-ui.js",
+            import.meta.url
+          ),
+          "utf8"
+        ),
+
+        readFile(
+          new URL(
+            "../../js/warehouse/packing-write-controller.js",
+            import.meta.url
+          ),
+          "utf8"
+        ),
+
+        readFile(
+          new URL(
+            "../../warehouse/index.html",
+            import.meta.url
+          ),
+          "utf8"
+        ),
+
+        readFile(
+          new URL(
+            "../../scripts/production-build.cjs",
+            import.meta.url
+          ),
+          "utf8"
+        )
+      ]);
+
+    assert.match(
+      html,
+      /Shipping oluşturma ayrı bir dilimdir/
+    );
+
+    assert.match(
+      html,
+      /id=["']paketleme-sevkiyat-olustur["']/
+    );
+
+    assert.match(
+      ui,
+      /globalThis\.confirm/
+    );
+
+    for (const event of [
+      "warehouse:shipping-create-from-packing-confirm",
+      "warehouse:shipping-create-from-packing-start",
+      "warehouse:shipping-create-from-packing-success",
+      "warehouse:shipping-create-from-packing-error"
+    ]) {
+      assert.match(
+        `${ui}\n${controller}`,
+        new RegExp(event)
+      );
+    }
+
+    const readyIndex =
+      controller.indexOf(
+        '"warehouse:packing-shipping-ready-confirm"'
+      );
+
+    const shippingIndex =
+      controller.indexOf(
+        '"warehouse:shipping-create-from-packing-confirm"'
+      );
+
+    assert.notEqual(
+      readyIndex,
+      -1
+    );
+
+    assert.notEqual(
+      shippingIndex,
+      -1
+    );
+
+    assert.doesNotMatch(
+      controller.slice(
+        readyIndex,
+        shippingIndex
+      ),
+      /persistShippingCreateFromPacking/
+    );
+
+    assert.match(
+      build,
+      /js\/warehouse\/shipping-client\.js/
+    );
+  }
+);
