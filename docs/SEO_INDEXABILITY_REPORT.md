@@ -1,21 +1,21 @@
 # SEO Indexability Report
 
-**Generated:** 2026-07-23  
+**Generated:** 2026-08-29  
 **Build artifact:** `dist/` present
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| noindex pages (repo scan) | 121 |
+| noindex pages (repo scan) | 125 |
 | sitemap URL count | 180 |
 | canonical issues | 0 |
-| orphan HTML (vs sitemap) | 41 |
+| orphan HTML (vs sitemap) | 44 |
 | internal /rehber/ links (sample) | 358 |
 | FAQ schema pages (scan) | 24 |
 | Rehber BreadcrumbList pages | 14 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 71 |
+| Indexable public HTML (estimate) | 72 |
 
 ## noindex pages
 
@@ -44,6 +44,8 @@
 - `platform-preview/index.html`
 - `r/index.html`
 - `r/onay/index.html`
+- `warehouse/index.html`
+- `warehouse/offline.html`
 - `dist/admin/acquisition-exit/index.html`
 - `dist/admin/ai-listings/index.html`
 - `dist/admin/ai-listings.html`
@@ -140,6 +142,8 @@
 - `dist/r/demo-cafe/index.html`
 - `dist/r/index.html`
 - `dist/r/onay/index.html`
+- `dist/warehouse/index.html`
+- `dist/warehouse/offline.html`
 
 ## Guide word counts (build-time merge)
 
