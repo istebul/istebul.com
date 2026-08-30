@@ -5,12 +5,22 @@ import {
 
 import {
   canAcknowledgeAsn,
+  canApproveManifest,
   canCancelAsn,
+  canCompleteLoadingShipping,
+  canCreateAsn,
+  canCreateManifest,
   canDispatchShipping,
+  canGenerateAsnDraft,
+  canGenerateManifest,
   canRecordProofOfDelivery,
   canRejectAsn,
   canResolveException,
   canSendAsn,
+  canStartLoading,
+  canSubmitManifest,
+  isShippingItemLoadable,
+  isShippingPackageLoadable,
   loadShippingContext,
   loadShippingOperations
 } from "./shipping-lookup.js";
@@ -288,6 +298,108 @@ function renderDetail() {
 
       <h4>Yeni İstisna Bildir</h4>
       <button type="button" data-action="create_exception">İstisna Ekle</button>
+
+      <h4>Yükleme (Loading)</h4>
+      ${actionButton({
+        label: "Yüklemeyi Başlat",
+        action: "start_loading",
+        disabled: !canStartLoading(shipping)
+      })}
+      ${actionButton({
+        label: "Yüklemeyi Tamamla",
+        action: "complete_loading",
+        disabled: !canCompleteLoadingShipping(shipping)
+      })}
+
+      ${
+        (state.context.items || []).length === 0
+          ? ""
+          : `<ul class="sevkiyat-item-liste">
+              ${state.context.items
+                .map(
+                  (item) => `
+                <li data-item-id="${escapeHtml(item.id)}">
+                  <span>Satır ${escapeHtml(item.line_number)} — kalan: ${escapeHtml(item.remaining_quantity)}</span>
+                  ${actionButton({
+                    label: "Yükleme Onayla",
+                    action: "confirm_item_load",
+                    disabled: !isShippingItemLoadable(shipping, item)
+                  })}
+                </li>
+              `
+                )
+                .join("")}
+            </ul>`
+      }
+
+      ${
+        (state.context.packages || []).length === 0
+          ? ""
+          : `<ul class="sevkiyat-package-liste">
+              ${state.context.packages
+                .map(
+                  (pkg) => `
+                <li data-package-id="${escapeHtml(pkg.id)}">
+                  <span>Paket ${escapeHtml(pkg.id)} — ${escapeHtml(statusLabel(pkg.status))}</span>
+                  ${actionButton({
+                    label: "Araca Yükle",
+                    action: "load_package",
+                    disabled: !isShippingPackageLoadable(shipping, pkg)
+                  })}
+                </li>
+              `
+                )
+                .join("")}
+            </ul>`
+      }
+
+      <h4>Manifest</h4>
+      ${actionButton({
+        label: "Manifest Oluştur",
+        action: "create_manifest",
+        disabled: !canCreateManifest(shipping, state.context.manifests)
+      })}
+      ${
+        (state.context.manifests || []).length === 0
+          ? "<p>Manifest kaydı yok.</p>"
+          : `<ul class="sevkiyat-manifest-liste">
+              ${state.context.manifests
+                .map(
+                  (manifest) => `
+                <li data-manifest-id="${escapeHtml(manifest.id)}">
+                  <span>${escapeHtml(manifest.manifest_number || manifest.id)} — ${escapeHtml(manifest.status)}</span>
+                  ${actionButton({ label: "Oluştur/Yenile", action: "generate_manifest", disabled: !canGenerateManifest(manifest) })}
+                  ${actionButton({ label: "Onayla", action: "approve_manifest", disabled: !canApproveManifest(manifest) })}
+                  ${actionButton({ label: "Taşıyıcıya Gönder", action: "submit_manifest", disabled: !canSubmitManifest(manifest) })}
+                </li>
+              `
+                )
+                .join("")}
+            </ul>`
+      }
+
+      <h4>ASN Oluşturma</h4>
+      ${actionButton({
+        label: "ASN Oluştur (Taslak)",
+        action: "create_asn",
+        disabled: !canCreateAsn(shipping, asns)
+      })}
+      ${
+        asns.length === 0
+          ? ""
+          : `<ul class="sevkiyat-asn-generate-liste">
+              ${asns
+                .map(
+                  (asn) => `
+                <li data-asn-generate-id="${escapeHtml(asn.id)}">
+                  <span>${escapeHtml(asn.asn_number || asn.id)} — ${escapeHtml(asn.status)}</span>
+                  ${actionButton({ label: "İçerik Oluştur", action: "generate_asn", disabled: !canGenerateAsnDraft(asn) })}
+                </li>
+              `
+                )
+                .join("")}
+            </ul>`
+      }
     </div>
   `;
 
@@ -401,6 +513,106 @@ function wireDetailActions() {
           break;
         }
 
+        case "start_loading":
+          dispatch("warehouse:shipping-start-loading-confirm", { shippingId });
+          break;
+
+        case "confirm_item_load": {
+          const shippingItemId = btn
+            .closest("[data-item-id]")
+            ?.getAttribute("data-item-id");
+          const quantityText = promptFor("Yüklenen miktar:");
+          if (!quantityText) return;
+          const loadedBy = promptFor("Yüklemeyi yapan kullanıcı:");
+          if (!loadedBy) return;
+          dispatch("warehouse:shipping-confirm-item-load-confirm", {
+            shippingId,
+            shippingItemId,
+            quantity: Number(quantityText),
+            loadedBy
+          });
+          break;
+        }
+
+        case "load_package": {
+          const shippingPackageId = btn
+            .closest("[data-package-id]")
+            ?.getAttribute("data-package-id");
+          const loadedBy = promptFor("Yüklemeyi yapan kullanıcı:");
+          if (!loadedBy) return;
+          dispatch("warehouse:shipping-load-package-confirm", {
+            shippingId,
+            shippingPackageId,
+            loadedBy
+          });
+          break;
+        }
+
+        case "complete_loading":
+          dispatch("warehouse:shipping-complete-loading-confirm", { shippingId });
+          break;
+
+        case "create_manifest":
+          dispatch("warehouse:shipping-create-manifest-confirm", { shippingId });
+          break;
+
+        case "generate_manifest": {
+          const manifestId = btn
+            .closest("[data-manifest-id]")
+            ?.getAttribute("data-manifest-id");
+          const generatedBy = promptFor("Manifesti oluşturan kullanıcı:");
+          if (!generatedBy) return;
+          dispatch("warehouse:shipping-generate-manifest-confirm", {
+            shippingId,
+            manifestId,
+            generatedBy
+          });
+          break;
+        }
+
+        case "approve_manifest": {
+          const manifestId = btn
+            .closest("[data-manifest-id]")
+            ?.getAttribute("data-manifest-id");
+          const approvedBy = promptFor("Manifesti onaylayan kullanıcı:");
+          if (!approvedBy) return;
+          dispatch("warehouse:shipping-approve-manifest-confirm", {
+            shippingId,
+            manifestId,
+            approvedBy
+          });
+          break;
+        }
+
+        case "submit_manifest": {
+          const manifestId = btn
+            .closest("[data-manifest-id]")
+            ?.getAttribute("data-manifest-id");
+          dispatch("warehouse:shipping-submit-manifest-confirm", {
+            shippingId,
+            manifestId
+          });
+          break;
+        }
+
+        case "create_asn":
+          dispatch("warehouse:shipping-create-asn-confirm", { shippingId });
+          break;
+
+        case "generate_asn": {
+          const asnId = btn
+            .closest("[data-asn-generate-id]")
+            ?.getAttribute("data-asn-generate-id");
+          const generatedBy = promptFor("ASN'yi oluşturan kullanıcı:");
+          if (!generatedBy) return;
+          dispatch("warehouse:shipping-generate-asn-confirm", {
+            shippingId,
+            asnId,
+            generatedBy
+          });
+          break;
+        }
+
         default:
           break;
       }
@@ -432,7 +644,17 @@ const ACTIONS = [
   "dispatch",
   "record-proof-of-delivery",
   "create-exception",
-  "resolve-exception"
+  "resolve-exception",
+  "start-loading",
+  "confirm-item-load",
+  "load-package",
+  "complete-loading",
+  "create-manifest",
+  "generate-manifest",
+  "approve-manifest",
+  "submit-manifest",
+  "create-asn",
+  "generate-asn"
 ];
 
 function wireControllerEvents() {
