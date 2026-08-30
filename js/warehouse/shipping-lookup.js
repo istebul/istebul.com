@@ -457,7 +457,9 @@ export async function loadShippingContext({
     asns,
     packages,
     exceptions,
-    proofsOfDelivery
+    proofsOfDelivery,
+    items,
+    manifests
   ] =
     await Promise.all([
       loadShippingAsns({
@@ -490,6 +492,22 @@ export async function loadShippingContext({
           normalizedAccountId,
         shippingId:
           normalizedShippingId
+      }),
+
+      loadShippingItems({
+        client,
+        accountId:
+          normalizedAccountId,
+        shippingId:
+          normalizedShippingId
+      }),
+
+      loadShippingManifests({
+        client,
+        accountId:
+          normalizedAccountId,
+        shippingId:
+          normalizedShippingId
       })
     ]);
 
@@ -499,6 +517,22 @@ export async function loadShippingContext({
     packages,
     exceptions,
     proofsOfDelivery,
+    items,
+    manifests,
+
+    activeManifest:
+      Object.freeze(
+        manifests.find(
+          (m) => !["cancelled", "rejected"].includes(m.status)
+        ) || null
+      ),
+
+    loadableItems:
+      Object.freeze(
+        items.filter(
+          (item) => Number(item.remaining_quantity) > 0
+        )
+      ),
 
     sendableAsns:
       Object.freeze(
@@ -538,4 +572,134 @@ export async function loadShippingContext({
         shipping
       )
   });
+}
+
+const ITEM_TABLE = "warehouse_shipping_items";
+const MANIFEST_TABLE = "warehouse_shipping_manifests";
+
+export async function loadShippingItems({
+  client,
+  accountId,
+  shippingId
+}) {
+  requireClient(client);
+
+  const {
+    data,
+    error
+  } =
+    await client
+      .from(ITEM_TABLE)
+      .select(
+        "id,shipping_id,line_number,product_id,sku_id,packing_id,requested_quantity,loaded_quantity,damaged_quantity,missing_quantity,remaining_quantity,unit,notes,created_at,updated_at"
+      )
+      .eq(
+        "account_id",
+        uuid(accountId, "Firma kimliği")
+      )
+      .eq(
+        "shipping_id",
+        uuid(shippingId, "Sevkiyat kimliği")
+      )
+      .order("line_number", { ascending: true });
+
+  if (error) {
+    throw new Error("Sevkiyat satırları yüklenemedi.");
+  }
+
+  return Object.freeze(data || []);
+}
+
+export async function loadShippingManifests({
+  client,
+  accountId,
+  shippingId
+}) {
+  requireClient(client);
+
+  const {
+    data,
+    error
+  } =
+    await client
+      .from(MANIFEST_TABLE)
+      .select(
+        "id,shipping_id,manifest_number,status,carrier_id,service_level_id,vehicle_id,package_count,total_weight,total_volume,weight_unit,volume_unit,generated_by,generated_at,approved_by,approved_at,submitted_at,accepted_at,rejection_reason,notes,created_by,created_at,updated_at"
+      )
+      .eq(
+        "account_id",
+        uuid(accountId, "Firma kimliği")
+      )
+      .eq(
+        "shipping_id",
+        uuid(shippingId, "Sevkiyat kimliği")
+      )
+      .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error("Sevkiyat manifestleri yüklenemedi.");
+  }
+
+  return Object.freeze(data || []);
+}
+
+export function canStartLoading(shipping) {
+  return (
+    !!shipping &&
+    ["released", "loading_ready"].includes(text(shipping.status))
+  );
+}
+
+export function canCompleteLoadingShipping(shipping) {
+  return !!shipping && text(shipping.status) === "loading";
+}
+
+export function isShippingItemLoadable(shipping, item) {
+  return (
+    !!shipping &&
+    text(shipping.status) === "loading" &&
+    !!item &&
+    Number(item.remaining_quantity) > 0
+  );
+}
+
+export function isShippingPackageLoadable(shipping, shippingPackage) {
+  return (
+    !!shipping &&
+    text(shipping.status) === "loading" &&
+    !!shippingPackage &&
+    ["loading_ready", "loading"].includes(text(shippingPackage.status))
+  );
+}
+
+export function canCreateManifest(shipping, manifests) {
+  if (!shipping || text(shipping.status) !== "loaded") return false;
+  return !(manifests || []).some(
+    (m) => !["cancelled", "rejected"].includes(text(m.status))
+  );
+}
+
+export function canGenerateManifest(manifest) {
+  return !!manifest && ["draft", "rejected"].includes(text(manifest.status));
+}
+
+export function canApproveManifest(manifest) {
+  return !!manifest && text(manifest.status) === "generated";
+}
+
+export function canSubmitManifest(manifest) {
+  return !!manifest && text(manifest.status) === "approved";
+}
+
+export function canCreateAsn(shipping, asns) {
+  if (!shipping || !["loaded", "dispatched"].includes(text(shipping.status))) {
+    return false;
+  }
+  return !(asns || []).some(
+    (a) => !["cancelled", "rejected"].includes(text(a.status))
+  );
+}
+
+export function canGenerateAsnDraft(asn) {
+  return !!asn && ["draft", "rejected"].includes(text(asn.status));
 }

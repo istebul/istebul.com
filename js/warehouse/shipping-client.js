@@ -781,3 +781,293 @@ export async function resolveShippingException(input) {
     fetchImpl: input?.fetchImpl
   });
 }
+
+const MANIFEST_ASN_FORMATS = Object.freeze([
+  "json",
+  "xml",
+  "edi",
+  "edifact",
+  "custom"
+]);
+
+// ---------- start_loading ----------
+
+export function buildShippingStartLoadingPayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği")
+  });
+}
+
+export async function startShippingLoading(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingStartLoadingPayload(input);
+
+  return postShippingAction({
+    action: "start_loading",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- confirm_item_load ----------
+
+export function buildShippingConfirmItemLoadPayload(input) {
+  const quantity = Number(input?.quantity);
+
+  if (!Number.isFinite(quantity) || quantity < 0) {
+    throw new Error("Yüklenen miktar geçerli ve negatif olmayan bir sayı olmalıdır.");
+  }
+
+  const damagedQuantity = Number(input?.damagedQuantity ?? 0);
+  const missingQuantity = Number(input?.missingQuantity ?? 0);
+
+  if (!Number.isFinite(damagedQuantity) || damagedQuantity < 0) {
+    throw new Error("Hasarlı miktar geçerli ve negatif olmayan bir sayı olmalıdır.");
+  }
+
+  if (!Number.isFinite(missingQuantity) || missingQuantity < 0) {
+    throw new Error("Eksik miktar geçerli ve negatif olmayan bir sayı olmalıdır.");
+  }
+
+  if (quantity === 0 && damagedQuantity === 0 && missingQuantity === 0) {
+    throw new Error(
+      "Yüklenen, hasarlı veya eksik miktarlardan en az biri sıfırdan büyük olmalıdır."
+    );
+  }
+
+  const notes = optionalText(input?.notes, "Not", 4000);
+  const shippingPackageId = optionalUuid(
+    input?.shippingPackageId,
+    "Sevkiyat paketi kimliği"
+  );
+
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    shippingItemId: uuid(input?.shippingItemId, "Sevkiyat satırı kimliği"),
+    ...(shippingPackageId ? { shippingPackageId } : {}),
+    quantity,
+    ...(damagedQuantity ? { damagedQuantity } : {}),
+    ...(missingQuantity ? { missingQuantity } : {}),
+    loadedBy: requiredText(input?.loadedBy, "Yüklemeyi yapan kullanıcı"),
+    ...(notes ? { notes } : {})
+  });
+}
+
+export async function confirmShippingItemLoad(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingConfirmItemLoadPayload(input);
+
+  return postShippingAction({
+    action: "confirm_item_load",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- load_package ----------
+
+export function buildShippingLoadPackagePayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    shippingPackageId: uuid(input?.shippingPackageId, "Sevkiyat paketi kimliği"),
+    loadedBy: requiredText(input?.loadedBy, "Yüklemeyi yapan kullanıcı")
+  });
+}
+
+export async function loadShippingPackageOnVehicle(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingLoadPackagePayload(input);
+
+  return postShippingAction({
+    action: "load_package",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- complete_loading ----------
+
+export function buildShippingCompleteLoadingPayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği")
+  });
+}
+
+export async function completeShippingLoading(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingCompleteLoadingPayload(input);
+
+  return postShippingAction({
+    action: "complete_loading",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- create_manifest ----------
+
+export function buildShippingCreateManifestPayload(input) {
+  const notes = optionalText(input?.notes, "Not", 4000);
+
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    ...(notes ? { notes } : {})
+  });
+}
+
+export async function createShippingManifest(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingCreateManifestPayload(input);
+
+  return postShippingAction({
+    action: "create_manifest",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- generate_manifest ----------
+
+export function buildShippingGenerateManifestPayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    manifestId: uuid(input?.manifestId, "Manifest kimliği"),
+    generatedBy: requiredText(input?.generatedBy, "Manifesti oluşturan kullanıcı")
+  });
+}
+
+export async function generateShippingManifest(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingGenerateManifestPayload(input);
+
+  return postShippingAction({
+    action: "generate_manifest",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- approve_manifest ----------
+
+export function buildShippingApproveManifestPayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    manifestId: uuid(input?.manifestId, "Manifest kimliği"),
+    approvedBy: requiredText(input?.approvedBy, "Manifesti onaylayan kullanıcı")
+  });
+}
+
+export async function approveShippingManifest(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingApproveManifestPayload(input);
+
+  return postShippingAction({
+    action: "approve_manifest",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- submit_manifest ----------
+
+export function buildShippingSubmitManifestPayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    manifestId: uuid(input?.manifestId, "Manifest kimliği")
+  });
+}
+
+export async function submitShippingManifest(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingSubmitManifestPayload(input);
+
+  return postShippingAction({
+    action: "submit_manifest",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- create_asn ----------
+
+export function buildShippingCreateAsnPayload(input) {
+  const format = String(input?.format || "json").trim().toLowerCase();
+
+  if (!MANIFEST_ASN_FORMATS.includes(format)) {
+    throw new Error("ASN biçimi geçersizdir.");
+  }
+
+  const senderCode = optionalText(input?.senderCode, "Gönderici kodu");
+  const receiverCode = optionalText(input?.receiverCode, "Alıcı kodu");
+  const notes = optionalText(input?.notes, "Not", 4000);
+
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    format,
+    ...(senderCode ? { senderCode } : {}),
+    ...(receiverCode ? { receiverCode } : {}),
+    ...(notes ? { notes } : {})
+  });
+}
+
+export async function createShippingAsn(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingCreateAsnPayload(input);
+
+  return postShippingAction({
+    action: "create_asn",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
+
+// ---------- generate_asn ----------
+
+export function buildShippingGenerateAsnPayload(input) {
+  return Object.freeze({
+    shippingId: uuid(input?.shippingId, "Sevkiyat kimliği"),
+    asnId: uuid(input?.asnId, "ASN kimliği"),
+    generatedBy: requiredText(input?.generatedBy, "ASN oluşturan kullanıcı")
+  });
+}
+
+export async function generateShippingAsn(input) {
+  const { accessToken, accountId, requestId } = resolveAuth(input);
+  const payload = buildShippingGenerateAsnPayload(input);
+
+  return postShippingAction({
+    action: "generate_asn",
+    accessToken,
+    accountId,
+    requestId,
+    payload,
+    fetchImpl: input?.fetchImpl
+  });
+}
