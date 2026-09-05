@@ -235,6 +235,7 @@ async function createLocation(event) {
     await authenticatedRequest("/api/warehouse/locations", {
       method: "POST",
       body: JSON.stringify({
+        requestId: globalThis.crypto.randomUUID(),
         accountId: context.accountId,
         warehouseId: context.warehouseId,
         code,
