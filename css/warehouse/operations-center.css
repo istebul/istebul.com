@@ -454,3 +454,193 @@ article[id]{
     transition:none
   }
 }
+
+/* =========================================================
+   WarehouseIQ — Lokasyon Yönetimi
+   ========================================================= */
+
+.location-management {
+  display: grid;
+  gap: 24px;
+}
+
+.location-form {
+  padding: 20px;
+  border: 1px solid var(--border-color, rgba(255,255,255,.08));
+  border-radius: 16px;
+  background: var(--panel-inner, rgba(255,255,255,.02));
+}
+
+.location-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.location-form label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.location-form label span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  opacity: .78;
+}
+
+.location-form input,
+.location-form select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, rgba(255,255,255,.1));
+  border-radius: 10px;
+  background: var(--input-background, rgba(255,255,255,.035));
+  color: inherit;
+  font: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.location-form input:focus,
+.location-form select:focus {
+  border-color: currentColor;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.05);
+}
+
+.location-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.location-form-actions button {
+  min-height: 42px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.location-form-actions button:disabled {
+  cursor: wait;
+  opacity: .6;
+}
+
+.location-message {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.location-message.error {
+  color: #dc2626;
+}
+
+.location-list {
+  min-width: 0;
+}
+
+.location-list-heading {
+  margin-bottom: 14px;
+}
+
+.location-list-heading em {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .08em;
+  opacity: .55;
+}
+
+.location-list-heading h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.location-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color, rgba(255,255,255,.08));
+  border-radius: 14px;
+}
+
+.location-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.location-table th,
+.location-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,.06));
+  white-space: nowrap;
+}
+
+.location-table th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  opacity: .6;
+}
+
+.location-table td {
+  font-size: 13px;
+}
+
+.location-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.location-table code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  opacity: .8;
+}
+
+.location-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255,255,255,.06);
+}
+
+@media (max-width: 1100px) {
+  .location-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .location-form {
+    padding: 16px;
+  }
+
+  .location-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .location-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .location-form-actions button {
+    width: 100%;
+  }
+}
+

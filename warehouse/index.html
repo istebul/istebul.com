@@ -55,6 +55,7 @@
       <a href="#uyarilar">! Uyarılar</a>
       <p>YÖNETİM</p>
       <a href="#raporlar">▥ Raporlar</a>
+      <a href="#lokasyonlar">⌗ Lokasyon Yönetimi</a>
       <a href="#copilot">✦ AI Copilot</a>
       <a href="#aksiyonlar">↗ Yönetici Aksiyonları</a>
     </nav>
@@ -1629,6 +1630,134 @@
         </div>
       </article>
 
+      <article class="panel full" id="lokasyonlar">
+        <div class="heading">
+          <div>
+            <em>MASTER DATA</em>
+            <h2>Lokasyon Yönetimi</h2>
+          </div>
+          <small>Yetkili depo lokasyonları</small>
+        </div>
+
+        <div class="location-management">
+          <form id="lokasyon-form" class="location-form" novalidate>
+            <div class="location-form-grid">
+              <label>
+                <span>Lokasyon kodu *</span>
+                <input
+                  id="lokasyon-kodu"
+                  name="code"
+                  type="text"
+                  maxlength="80"
+                  placeholder="A-01-01-01"
+                  autocomplete="off"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Lokasyon adı *</span>
+                <input
+                  id="lokasyon-adi"
+                  name="name"
+                  type="text"
+                  maxlength="160"
+                  placeholder="Raf A01 / Seviye 01"
+                  autocomplete="off"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Lokasyon tipi *</span>
+                <select id="lokasyon-tipi" name="locationType" required></select>
+              </label>
+
+              <label>
+                <span>Zone *</span>
+                <input
+                  id="lokasyon-zone"
+                  name="zoneCode"
+                  type="text"
+                  maxlength="40"
+                  placeholder="A"
+                  autocomplete="off"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Aisle</span>
+                <input
+                  id="lokasyon-aisle"
+                  name="aisleCode"
+                  type="text"
+                  maxlength="40"
+                  placeholder="01"
+                  autocomplete="off"
+                />
+              </label>
+
+              <label>
+                <span>Rack</span>
+                <input
+                  id="lokasyon-rack"
+                  name="rackCode"
+                  type="text"
+                  maxlength="40"
+                  placeholder="01"
+                  autocomplete="off"
+                />
+              </label>
+
+              <label>
+                <span>Level</span>
+                <input
+                  id="lokasyon-level"
+                  name="levelCode"
+                  type="text"
+                  maxlength="40"
+                  placeholder="01"
+                  autocomplete="off"
+                />
+              </label>
+
+              <label>
+                <span>Bin</span>
+                <input
+                  id="lokasyon-bin"
+                  name="binCode"
+                  type="text"
+                  maxlength="40"
+                  placeholder="01"
+                  autocomplete="off"
+                />
+              </label>
+            </div>
+
+            <div class="location-form-actions">
+              <button id="lokasyon-olustur" type="submit">
+                Lokasyon Oluştur
+              </button>
+              <p id="lokasyon-mesaji" class="location-message" hidden></p>
+            </div>
+          </form>
+
+          <div class="location-list">
+            <div class="location-list-heading">
+              <div>
+                <em>AKTİF LOKASYONLAR</em>
+                <h3>Depo lokasyonları</h3>
+              </div>
+            </div>
+
+            <div id="lokasyon-listesi">
+              <p class="empty-state">Lokasyonlar yükleniyor.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
       <article class="panel full copilot-panel" id="copilot">
         <div class="heading">
           <div><em>WAREHOUSEIQ COPILOT</em><h2>Günlük yönetici özeti</h2></div>
@@ -1686,6 +1815,7 @@
 <script type="module" src="/js/warehouse/mobile-navigation.js"></script>
 <script type="module" src="/js/warehouse/barcode-scanner.js"></script>
 <script type="module" src="/js/warehouse/operations-center.js"></script>
+<script type="module" src="/js/warehouse/locations-ui.js"></script>
 <script type="module" src="/js/warehouse/putaway-ui.js"></script>
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
 <script type="module" src="/js/warehouse/picking-ui.js"></script>
