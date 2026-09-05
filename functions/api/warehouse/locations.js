@@ -615,13 +615,14 @@ export async function onRequestPost(context) {
       result.payload?.hint ||
       "Lokasyon oluşturulamadı.";
 
-    await logApiEvent?.(env, {
-      event: "warehouse_location_bootstrap_failed",
-      userId: auth.user.id,
-      accountId: input.accountId,
-      warehouseId: input.warehouseId,
-      status: result.status,
-    }).catch?.(() => {});
+    try {
+      logApiEvent("error", "warehouse_location_bootstrap_failed", {
+        userId: auth.user.id,
+        accountId: input.accountId,
+        warehouseId: input.warehouseId,
+        status: result.status,
+      });
+    } catch {}
 
     return corsJsonError(
       result.status >= 400 && result.status < 500
