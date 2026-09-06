@@ -1,4 +1,4 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm";
+import { getSupabaseClient } from "../core/supabase.js";
 import { fetchWarehouseCopilotNarration } from "./operations-copilot-narration.js";
 
 const API_URL = "/api/warehouse/operations-center";
@@ -70,33 +70,7 @@ function envValue(...keys) {
 
 function getSupabase() {
   if (supabase) return supabase;
-
-  const url = envValue(
-    "SUPABASE_URL",
-    "VITE_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_URL"
-  );
-  const anonKey = envValue(
-    "SUPABASE_ANON_KEY",
-    "VITE_SUPABASE_ANON_KEY",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY"
-  );
-
-  if (!url || !anonKey) {
-    throw new Error(
-      "Kimlik doğrulama yapılandırması eksik. WarehouseIQ canlı verisi yüklenemiyor."
-    );
-  }
-
-  supabase = createClient(url, anonKey, {
-    auth: {
-      storageKey: AUTH_STORAGE_KEY,
-      detectSessionInUrl: true,
-      persistSession: true,
-      autoRefreshToken: true
-    }
-  });
-
+  supabase = getSupabaseClient();
   return supabase;
 }
 
