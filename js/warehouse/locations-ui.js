@@ -1,7 +1,7 @@
 import {
   getWarehouseOperationsContext,
   getWarehouseSession,
-} from "./operations-center.js";
+} from "./operations-center.js?v=20799872";
 
 const LOCATION_TYPES = [
   ["receiving", "Mal Kabul"],
@@ -279,8 +279,14 @@ function bind() {
     });
   }
 
-  loadLocations();
+  if (getWarehouseOperationsContext().accountId) {
+    void loadLocations();
+  }
 }
+
+document.addEventListener("warehouse:operations-context", () => {
+  void loadLocations();
+});
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", bind, { once: true });
