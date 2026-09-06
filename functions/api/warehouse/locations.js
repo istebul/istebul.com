@@ -369,7 +369,7 @@ async function listLocations(
 ) {
   const params = new URLSearchParams({
     select:
-      "id,account_id,warehouse_id,parent_location_id,code,full_code,barcode,name,type,status,zone_code,aisle_code,rack_code,level_code,bin_code,description,maximum_weight_kilograms,maximum_volume_cubic_meters,maximum_pallet_count,maximum_unit_count,width_centimeters,depth_centimeters,height_centimeters,coordinate_x,coordinate_y,coordinate_z,temperature_minimum_celsius,temperature_maximum_celsius,hazardous_material_allowed,mixed_sku_allowed,active,created_by,created_at,updated_at",
+      "id,account_id,warehouse_id,parent_location_id,code,full_code,barcode,name,location_type:type,status,zone_code,aisle_code,rack_code,level_code,bin_code,description,maximum_weight_kilograms,maximum_volume_cubic_meters,maximum_pallet_count,maximum_unit_count,width_centimeters,depth_centimeters,height_centimeters,coordinate_x,coordinate_y,coordinate_z,temperature_minimum_celsius,temperature_maximum_celsius,hazardous_material_allowed,mixed_sku_allowed,active,created_by,created_at,updated_at",
     account_id: `eq.${accountId}`,
     active: "eq.true",
     order: "full_code.asc",
