@@ -324,6 +324,7 @@ export function buildLiveSnapshot({
     pickingItems.length > 0 ||
     taskRows.length > 0 ||
     completedCounts.length > 0 ||
+    locations.length > 0 ||
     capacityLocations.size > 0 ||
     inventoryBalances.length > 0;
 

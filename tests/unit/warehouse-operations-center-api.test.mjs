@@ -220,6 +220,39 @@ test(
 );
 
 test(
+  "WarehouseIQ API gerçek lokasyon varken kapasite tanımlı olmasa da canlı snapshot üretir",
+  () => {
+    const snapshot =
+      buildLiveSnapshot({
+        accountId:
+          "11111111-1111-4111-8111-111111111111",
+        warehouseId:
+          "22222222-2222-4222-8222-222222222222",
+        periodStart:
+          "2026-08-18T20:00:00.000Z",
+        periodEnd:
+          "2026-08-19T20:00:00.000Z",
+        generatedAt:
+          "2026-08-19T20:00:00.000Z",
+        locations: [
+          {
+            id:
+              "33333333-3333-4333-8333-333333333333",
+            maximum_unit_count: null
+          }
+        ]
+      });
+
+    assert.ok(snapshot);
+    assert.equal(snapshot.total_orders, 0);
+    assert.equal(snapshot.total_tasks, 0);
+    assert.equal(snapshot.total_inventory_checks, 0);
+    assert.equal(snapshot.used_capacity, null);
+    assert.equal(snapshot.total_capacity, null);
+  }
+);
+
+test(
   "WarehouseIQ API veri yokken sahte sıfır snapshot üretmez",
   () => {
     const snapshot =
