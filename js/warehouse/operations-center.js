@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "../core/supabase.js";
+import { warehouseSupabase } from "./supabase-browser.js";
 import { fetchWarehouseCopilotNarration } from "./operations-copilot-narration.js";
 
 const API_URL = "/api/warehouse/operations-center";
@@ -40,7 +40,6 @@ const state = {
   copilot: null
 };
 
-let supabase = null;
 let copilotRenderVersion = 0;
 let authSubscription = null;
 let refreshTimer = 0;
@@ -69,9 +68,11 @@ function envValue(...keys) {
 }
 
 function getSupabase() {
-  if (supabase) return supabase;
-  supabase = getSupabaseClient();
-  return supabase;
+  return warehouseSupabase;
+}
+
+export function getWarehouseSupabaseClient() {
+  return getSupabase();
 }
 
 function numericValue(value) {
@@ -1165,10 +1166,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 byId("copilot-ai-btn")?.addEventListener("click", () => {
   void enhanceCopilotWithAi();
 });
-
-export function getWarehouseSupabaseClient() {
-  return getSupabase();
-}
 
 export function getWarehouseOperationsContext() {
   return Object.freeze({
