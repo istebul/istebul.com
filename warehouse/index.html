@@ -55,6 +55,7 @@
       <a href="#uyarilar">! Uyarılar</a>
       <p>YÖNETİM</p>
       <a href="#raporlar">▥ Raporlar</a>
+      <a href="#depo-yonetimi">▣ Depo Yönetimi</a>
       <a href="#lokasyonlar">⌗ Lokasyon Yönetimi</a>
       <a href="#copilot">✦ AI Copilot</a>
       <a href="#aksiyonlar">↗ Yönetici Aksiyonları</a>
@@ -1630,6 +1631,234 @@
         </div>
       </article>
 
+      <article class="panel full warehouse-management" id="depo-yonetimi">
+        <div class="heading">
+          <div>
+            <em>MASTER DATA</em>
+            <h2>Depo Yönetimi</h2>
+          </div>
+          <small>Yetkili depo tanımları ve yönetimi</small>
+        </div>
+
+        <div class="warehouse-management-grid">
+          <form id="depo-form" class="location-form" novalidate>
+            <div class="warehouse-form-section">
+              <div class="location-list-heading">
+                <div>
+                  <em>TEMEL BİLGİLER</em>
+                  <h3>Depo tanımı</h3>
+                </div>
+              </div>
+
+              <div class="location-form-grid">
+                <label>
+                  <span>Depo kodu *</span>
+                  <input
+                    id="depo-kodu"
+                    name="code"
+                    type="text"
+                    maxlength="32"
+                    placeholder="ANA-DEPO"
+                    autocomplete="off"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>Depo adı *</span>
+                  <input
+                    id="depo-adi"
+                    name="name"
+                    type="text"
+                    maxlength="160"
+                    placeholder="Ana Depo"
+                    autocomplete="off"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>Saat dilimi</span>
+                  <input
+                    id="depo-saat-dilimi"
+                    name="timezone"
+                    type="text"
+                    maxlength="80"
+                    value="Europe/Istanbul"
+                    autocomplete="off"
+                  />
+                </label>
+
+                <label>
+                  <span>Açıklama</span>
+                  <input
+                    id="depo-aciklama"
+                    name="description"
+                    type="text"
+                    maxlength="500"
+                    placeholder="Depo açıklaması"
+                    autocomplete="off"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="warehouse-form-section">
+              <div class="location-list-heading">
+                <div>
+                  <em>ADRES</em>
+                  <h3>Depo adresi</h3>
+                </div>
+              </div>
+
+              <div class="location-form-grid">
+                <label>
+                  <span>Adres</span>
+                  <input
+                    id="depo-adres"
+                    name="addressLine"
+                    type="text"
+                    maxlength="300"
+                    placeholder="Adres"
+                    autocomplete="street-address"
+                  />
+                </label>
+
+                <label>
+                  <span>İlçe</span>
+                  <input
+                    id="depo-ilce"
+                    name="district"
+                    type="text"
+                    maxlength="100"
+                    placeholder="İlçe"
+                    autocomplete="address-level3"
+                  />
+                </label>
+
+                <label>
+                  <span>Şehir</span>
+                  <input
+                    id="depo-sehir"
+                    name="city"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Şehir"
+                    autocomplete="address-level2"
+                  />
+                </label>
+
+                <label>
+                  <span>Posta kodu</span>
+                  <input
+                    id="depo-posta-kodu"
+                    name="postalCode"
+                    type="text"
+                    maxlength="20"
+                    placeholder="Posta kodu"
+                    autocomplete="postal-code"
+                  />
+                </label>
+
+                <label>
+                  <span>Ülke kodu</span>
+                  <input
+                    id="depo-ulke-kodu"
+                    name="countryCode"
+                    type="text"
+                    maxlength="2"
+                    value="TR"
+                    autocomplete="country"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="warehouse-form-section">
+              <div class="location-list-heading">
+                <div>
+                  <em>KAPASİTE</em>
+                  <h3>Depo kapasitesi</h3>
+                </div>
+              </div>
+
+              <div class="location-form-grid">
+                <label>
+                  <span>Toplam alan (m²)</span>
+                  <input
+                    id="depo-toplam-alan"
+                    name="totalAreaSquareMeters"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    placeholder="0"
+                  />
+                </label>
+
+                <label>
+                  <span>Kullanılabilir alan (m²)</span>
+                  <input
+                    id="depo-kullanilabilir-alan"
+                    name="usableAreaSquareMeters"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    placeholder="0"
+                  />
+                </label>
+
+                <label>
+                  <span>Maksimum palet</span>
+                  <input
+                    id="depo-maksimum-palet"
+                    name="maximumPalletCapacity"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                  />
+                </label>
+
+                <label>
+                  <span>Maksimum bin / lokasyon</span>
+                  <input
+                    id="depo-maksimum-bin"
+                    name="maximumBinCapacity"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="location-form-actions">
+              <button id="depo-olustur" type="submit">
+                Depo Oluştur
+              </button>
+              <button id="depo-form-temizle" type="button" disabled>
+                Temizle
+              </button>
+              <p id="depo-mesaji" class="location-message" hidden></p>
+            </div>
+          </form>
+
+          <div class="warehouse-list">
+            <div class="location-list-heading">
+              <div>
+                <em>YETKİLİ DEPOLAR</em>
+                <h3>Depo kayıtları</h3>
+              </div>
+            </div>
+
+            <div id="depo-yonetim-listesi">
+              <p class="empty-state">Depolar yükleniyor.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
       <article class="panel full" id="lokasyonlar">
         <div class="heading">
           <div>
@@ -1814,7 +2043,8 @@
 <script type="module" src="/js/warehouse/pwa.js"></script>
 <script type="module" src="/js/warehouse/mobile-navigation.js"></script>
 <script type="module" src="/js/warehouse/barcode-scanner.js"></script>
-<script type="module" src="/js/warehouse/operations-center.js?v=4c8fd36"></script>
+<script type="module" src="/js/warehouse/operations-center.js?v=20799872"></script>
+<script type="module" src="/js/warehouse/warehouses-ui.js"></script>
 <script type="module" src="/js/warehouse/locations-ui.js?v=e5ff64b2"></script>
 <script type="module" src="/js/warehouse/putaway-ui.js"></script>
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
