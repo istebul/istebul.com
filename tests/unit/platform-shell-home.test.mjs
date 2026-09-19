@@ -133,7 +133,7 @@ test('WarehouseIQ live landing product contract', async () => {
   const products = getPlatformLandingProducts();
   const byId = Object.fromEntries(products.map((product) => [product.id, product]));
 
-  assert.equal(products.length, 4);
+  assert.equal(products.length, 5);
   assert.equal(byId.warehouseiq.url, '/warehouse/');
   assert.equal(byId.warehouseiq.statusLabel, 'Pilot');
   assert.equal(byId.warehouseiq.slogan, 'Depo ve lojistik ekipleri');

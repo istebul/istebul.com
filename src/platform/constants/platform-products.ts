@@ -86,6 +86,24 @@ export const PLATFORM_PRODUCTS: readonly PlatformProduct[] = Object.freeze([
     defaultColor: '#14b8a6',
     platformLabel: 'Akıllı Depo Yönetimi',
     ctaLabel: 'Operasyon Merkezine Git'
+  }),
+  Object.freeze({
+    id: 'paraasistan',
+    name: 'ParaAsistan',
+    shortName: 'PA',
+    description:
+      'Kişisel finans yönetimi uygulaması. Gelir, gider, bütçe, hedef ve aboneliklerinizi tek ekranda takip etmenize yardımcı olur.',
+    shortDescription: 'Kişisel finans yönetimi.',
+    slogan: 'Paranı izle. Geleceğini planla.',
+    url: getPlatformProductUrl('paraasistan'),
+    logoKey: 'istebul-icon',
+    status: 'canli',
+    statusLabel: 'Canlı',
+    order: 5,
+    visibility: 'gorunur',
+    defaultColor: '#416b9c',
+    platformLabel: 'Kişisel Finans',
+    ctaLabel: 'ParaAsistan\'ı Kullan'
   })
 ]);
 

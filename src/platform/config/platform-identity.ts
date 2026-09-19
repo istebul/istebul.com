@@ -16,7 +16,7 @@ export const PLATFORM_IDENTITY: Readonly<PlatformIdentity> = Object.freeze({
   name: 'İSTEBUL',
   shortName: 'İSTEBUL',
   description:
-    'İSTEBUL; yapay zekâ destekli dijital ürünler geliştiren bir teknoloji platformudur. İSTEBUL AI, GarsonAI, İSTEBUL Business ve WarehouseIQ bağımsız ürünler olarak yaşar.',
+    'İSTEBUL; yapay zekâ destekli dijital ürünler geliştiren bir teknoloji platformudur. İSTEBUL AI, GarsonAI, İSTEBUL Business, WarehouseIQ ve ParaAsistan bağımsız ürünler olarak yaşar.',
   shortDescription: 'Yapay zekâ destekli dijital ürünler platformu.',
   slogan: 'Doğru ürünle ilerleyin.',
   url: getPlatformSurfaceUrl('platform-root'),

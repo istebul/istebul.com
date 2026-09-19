@@ -38,6 +38,12 @@ const LANDING_PRODUCT_COPY = Object.freeze({
     shortDescription: 'Akıllı Depo Yönetimi',
     statusLabel: 'Pilot',
     ctaLabel: 'Operasyon Merkezini Aç'
+  }),
+  paraasistan: Object.freeze({
+    slogan: 'Bireysel finans',
+    shortDescription: 'Kişisel Finans Yönetimi',
+    statusLabel: 'Canlı',
+    ctaLabel: 'ParaAsistan\'ı Kullan'
   })
 });
 
@@ -85,7 +91,7 @@ export function initPlatformLanding() {
   const leadTitle = document.createElement('h2');
   leadTitle.id = 'platform-landing-lead-title';
   leadTitle.className = 'ib-platform-landing-preview__lead-title';
-  leadTitle.textContent = 'Dört bağımsız ürün, tek platform';
+  leadTitle.textContent = 'Beş bağımsız ürün, tek platform';
 
   const leadText = document.createElement('p');
   leadText.className = 'ib-platform-landing-preview__lead-text';

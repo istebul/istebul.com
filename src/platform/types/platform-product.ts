@@ -6,7 +6,7 @@
  */
 
 /** Resmî platform ürün kimlikleri. */
-export type PlatformProductId = 'istebul-ai' | 'garsonai' | 'business' | 'warehouseiq';
+export type PlatformProductId = 'istebul-ai' | 'garsonai' | 'business' | 'warehouseiq' | 'paraasistan';
 
 /**
  * Ürün yaşam durumu (teknik değer).

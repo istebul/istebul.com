@@ -41,6 +41,13 @@ export const PLATFORM_NAV_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
       href: getPlatformProductUrl('business', 'current'),
       productId: 'business',
       role: 'product'
+    }),
+    Object.freeze({
+      id: 'nav-product-paraasistan',
+      label: 'ParaAsistan',
+      href: getPlatformProductUrl('paraasistan', 'current'),
+      productId: 'paraasistan',
+      role: 'product'
     })
   ]);
 
@@ -69,6 +76,13 @@ export const PLATFORM_FOOTER_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[
       label: 'İSTEBUL Business',
       href: getPlatformProductUrl('business', 'current'),
       productId: 'business',
+      role: 'product'
+    }),
+    Object.freeze({
+      id: 'footer-product-paraasistan',
+      label: 'ParaAsistan',
+      href: getPlatformProductUrl('paraasistan', 'current'),
+      productId: 'paraasistan',
       role: 'product'
     }),
     Object.freeze({

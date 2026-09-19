@@ -39,6 +39,11 @@ export const PLATFORM_PRODUCT_URLS: Readonly<
     current: '/warehouse/',
     target: '/warehouse/',
     note: 'WarehouseIQ operasyon merkezi ürün girişi.'
+  }),
+  paraasistan: Object.freeze({
+    current: 'https://paraasistan.istebul.com/',
+    target: 'https://paraasistan.istebul.com/',
+    note: 'ParaAsistan bağımsız web uygulaması.'
   })
 });
 
