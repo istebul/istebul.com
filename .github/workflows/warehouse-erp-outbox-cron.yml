@@ -1,0 +1,66 @@
+name: Warehouse Integration Hub Cron
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: warehouse-erp-outbox-cron
+  cancel-in-progress: false
+
+jobs:
+  erp-outbox:
+    name: Process WarehouseIQ Integration Hub outbox
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Process ERP/ERI outbox
+        env:
+          ERP_OUTBOX_SCHEME: "https"
+          ERP_OUTBOX_HOST: "www.istebul.com"
+          ERP_OUTBOX_PATH: "/api/warehouse/erp-outbox"
+          WAREHOUSE_ERP_OUTBOX_PROCESS_SECRET: ${{ secrets.WAREHOUSE_ERP_OUTBOX_PROCESS_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${WAREHOUSE_ERP_OUTBOX_PROCESS_SECRET:-}" ]; then
+            echo "::notice::WAREHOUSE_ERP_OUTBOX_PROCESS_SECRET is not configured; Integration Hub scheduler skipped."
+            exit 0
+          fi
+
+          response_file="$(mktemp)"
+          ERP_OUTBOX_URL="${ERP_OUTBOX_SCHEME}://${ERP_OUTBOX_HOST}${ERP_OUTBOX_PATH}"
+
+          http_code="$(
+            curl \
+              --silent \
+              --show-error \
+              --retry 3 \
+              --retry-delay 3 \
+              --retry-all-errors \
+              -o "$response_file" \
+              -w "%{http_code}" \
+              -X POST \
+              "$ERP_OUTBOX_URL" \
+              -H "Content-Type: application/json" \
+              -H "X-Warehouse-ERP-Outbox-Secret: $WAREHOUSE_ERP_OUTBOX_PROCESS_SECRET" \
+              --data '{"limit":10}'
+          )"
+
+          echo "HTTP $http_code"
+          cat "$response_file"
+          echo
+
+          case "$http_code" in
+            2??)
+              ;;
+            *)
+              echo "::error::Warehouse Integration Hub returned HTTP $http_code"
+              exit 1
+              ;;
+          esac
