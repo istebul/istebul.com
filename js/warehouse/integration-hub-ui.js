@@ -17,6 +17,7 @@ if (panel) {
     accountId: null,
     connectors: [],
     integrations: [],
+    testResults: new Map(),
     loading: false
   };
 
@@ -183,6 +184,47 @@ if (panel) {
           </form>
         </details>`;
 
+      const testResult = state.testResults.get(integration.id);
+      const testResultMarkup = testResult
+        ? `<div class="ih-test-result ${testResult.ok ? "is-success" : "is-error"}" role="status">
+             <strong>${testResult.ok ? "Bağlantı başarılı" : "Bağlantı başarısız"}</strong>
+             <span>${escapeHtml(testResult.message || "Test tamamlandı.")}</span>
+             <small>HTTP ${escapeHtml(testResult.httpStatus ?? "yanıt yok")} · ${escapeHtml(testResult.elapsedMs ?? 0)} ms · ${escapeHtml(formatDate(testResult.testedAt))}</small>
+           </div>`
+        : "";
+
+      const canTest =
+        !busy &&
+        integration.connector_key === "custom_rest" &&
+        Boolean(integration.base_url);
+      const needsTestSecret = integration.auth_type !== "none";
+
+      const testForm = integration.connector_key === "custom_rest"
+        ? `
+          <details class="ih-details">
+            <summary>Bağlantıyı test et (HEAD)</summary>
+            <form class="ih-test-form" data-integration-id="${id}">
+              ${needsTestSecret ? `
+                <label>
+                  Test için gizli anahtar / token
+                  <input name="secret" type="password" required maxlength="50000"
+                    autocomplete="new-password"
+                    ${canTest ? "" : "disabled"}
+                    placeholder="Test sırasında gönderilir; kaydedilmez">
+                </label>
+              ` : `
+                <p class="ih-help">Bu bağlantı türü test sırasında gizli anahtar gerektirmiyor.</p>
+              `}
+              <p class="ih-help">
+                Yalnızca HEAD isteği gönderilir. Sevkiyat veya sipariş verisi gönderilmez.
+              </p>
+              <button type="submit" class="ih-button" ${canTest ? "" : "disabled"}>
+                HEAD ile test et
+              </button>
+            </form>
+          </details>`
+        : "";
+
       const capabilityButton = canChangeCapability
         ? `<button type="button" class="ih-button ${shipmentEnabled ? "ih-button-secondary" : ""}"
              data-action="toggle-shipment" data-integration-id="${id}"
@@ -210,6 +252,7 @@ if (panel) {
             <div><span>Kimlik bilgisi</span><strong>${hasCredential ? "Güvenli kasada kayıtlı · değer gizli" : "Bağlı değil"}</strong></div>
           </div>
           ${integration.last_error ? `<p class="ih-card-error">${escapeHtml(integration.last_error)}</p>` : ""}
+          ${testResultMarkup}
           <div class="ih-capability">
             <div>
               <strong>Sevkiyat gönderimi</strong>
@@ -218,6 +261,7 @@ if (panel) {
             ${capabilityButton}
           </div>
           <div class="ih-card-actions">
+            ${testForm}
             ${credentialForm}
             ${hasCredential
               ? `<button type="button" class="ih-button ih-button-danger"
@@ -307,6 +351,61 @@ if (panel) {
     } finally {
       createSubmit.textContent = submitLabel;
       renderConnectorOptions();
+    }
+  });
+
+  listNode.addEventListener("submit", async (event) => {
+    const form = event.target.closest(".ih-test-form");
+    if (!form) return;
+    event.preventDefault();
+
+    const button = form.querySelector('button[type="submit"]');
+    if (!button || button.disabled) return;
+
+    const integrationId = form.dataset.integrationId;
+    const values = new FormData(form);
+    const secret = String(values.get("secret") || "");
+
+    if (!integrationId) return;
+
+    button.disabled = true;
+    button.textContent = "HEAD testi sürüyor…";
+
+    try {
+      const data = await postAction("test-connection", {
+        integrationId,
+        secret
+      });
+
+      form.reset();
+
+      const result = data.connectionTest;
+      if (!result) {
+        throw new Error("API bağlantı testi sonucu döndürmedi.");
+      }
+
+      state.testResults.set(integrationId, result);
+      await load();
+
+      const details =
+        `HTTP ${result.httpStatus ?? "yanıt yok"} · ${result.elapsedMs ?? 0} ms`;
+      setAlert(
+        `${result.ok ? "Bağlantı testi başarılı" : "Bağlantı testi başarısız"}: ${result.message} (${details}).`,
+        result.ok ? "success" : "error"
+      );
+    } catch (error) {
+      form.reset();
+      setAlert(
+        error instanceof Error
+          ? error.message
+          : "Bağlantı testi tamamlanamadı.",
+        "error"
+      );
+    } finally {
+      if (button.isConnected) {
+        button.disabled = false;
+        button.textContent = "HEAD ile test et";
+      }
     }
   });
 

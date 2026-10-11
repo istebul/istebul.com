@@ -386,3 +386,41 @@
     flex-shrink: 0;
   }
 }
+
+
+/* Explicit, user-triggered HEAD connection test result */
+.ih-test-result {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid #d0d8e4;
+  border-radius: 10px;
+  background: #f7f9fc;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.ih-test-result strong {
+  font-size: 13px;
+}
+
+.ih-test-result small {
+  color: #667085;
+  font-size: 11px;
+}
+
+.ih-test-result.is-success {
+  border-color: #b8dec9;
+  background: #f2faf5;
+  color: #176642;
+}
+
+.ih-test-result.is-error {
+  border-color: #efc1c1;
+  background: #fff6f5;
+  color: #9f2d2d;
+}

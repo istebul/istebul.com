@@ -981,6 +981,19 @@ test("test-connection yalnız HEAD gönderir ve credential yanıtı sızdırmaz"
   assert.equal(payload.data.connectionTest.httpStatus, 204);
   assert.equal(JSON.stringify(payload).includes(CREDENTIAL), false);
 
+  const integrationPatches = calls.filter(
+    (call) =>
+      call.url.pathname === "/rest/v1/warehouse_integrations" &&
+      call.method === "PATCH",
+  );
+  assert.equal(integrationPatches.length, 2);
+  assert.equal(
+    JSON.parse(
+      integrationPatches[integrationPatches.length - 1].options.body,
+    ).status,
+    "draft",
+  );
+
   const erpCalls = calls.filter(
     (call) => call.url.hostname === "erp.example.test",
   );
@@ -993,6 +1006,43 @@ test("test-connection yalnız HEAD gönderir ve credential yanıtı sızdırmaz"
     CREDENTIAL,
   );
   assert.equal(erpCalls.some((call) => call.method === "POST"), false);
+});
+
+test("test-connection başarılı pasif entegrasyonu pasif bırakır", async () => {
+  const { fetchImpl, calls } = mockFetch({
+    integrations: [{ ...INTEGRATION, status: "inactive" }],
+  });
+
+  const result = await onRequestPost(
+    context(
+      request(
+        "POST",
+        {
+          integrationId: INTEGRATION_ID,
+          secret: CREDENTIAL,
+        },
+        { query: "?action=test-connection" },
+      ),
+      fetchImpl,
+    ),
+  );
+
+  assert.equal(result.status, 200);
+  const payload = await result.json();
+  assert.equal(payload.data.connectionTest.ok, true);
+
+  const integrationPatches = calls.filter(
+    (call) =>
+      call.url.pathname === "/rest/v1/warehouse_integrations" &&
+      call.method === "PATCH",
+  );
+  assert.equal(integrationPatches.length, 2);
+  assert.equal(
+    JSON.parse(
+      integrationPatches[integrationPatches.length - 1].options.body,
+    ).status,
+    "inactive",
+  );
 });
 
 test("test-connection aktif entegrasyonu test için değiştirmez", async () => {

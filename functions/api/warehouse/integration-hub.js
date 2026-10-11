@@ -1649,7 +1649,9 @@ export async function onRequestPost(context) {
           Prefer: "return=representation",
         },
         body: JSON.stringify({
-          status: testOk ? "testing" : "error",
+          status: testOk
+            ? (row.status === "inactive" ? "inactive" : "draft")
+            : "error",
           last_test_at: testedAt,
           last_error: testOk ? null : message,
           updated_at: testedAt,
