@@ -318,7 +318,7 @@ if (panel) {
       `/api/warehouse/integration-hub?action=${encodeURIComponent(action)}`,
       {
         method: "POST",
-        body: { value }
+        body: value
       }
     );
   }
