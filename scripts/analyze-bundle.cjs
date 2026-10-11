@@ -13,6 +13,16 @@ const maxTotalBytes = 5000 * 1024;
  * EPIC-002: platform is multi-entry; / and /ai are independent product shells.
  */
 const BUDGET_EXCLUDE = [
+  /** Standalone applications: these entry bundles are not loaded by the homepage shell. */
+  /^garson\/erp\/assets\//,
+  /^r\/cx-assets\//,
+  /^assets\/kds-admin-runtime\//,
+  /^assets\/garson-admin-runtime\//,
+  /^assets\/garson-ai-dashboard-runtime\//,
+  /^assets\/reservation-runtime\//,
+  /^assets\/reservation-confirm-runtime\//,
+  /^assets\/restoran-runtime\//,
+  /^assets\/garson-launch-runtime\//,
   /^js\/admin-panel\.js$/,
   /^js\/corporate\//,
   /^js\/chunks\//,
