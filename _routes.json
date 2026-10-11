@@ -1,5 +1,10 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": ["/env.js", "/admin", "/admin/*"]
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/admin",
+    "/admin/*"
+  ]
 }
