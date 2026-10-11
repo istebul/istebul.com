@@ -432,67 +432,6 @@ export async function onRequestGet({
   request,
   env
 }) {
-  const url = new URL(request.url);
-
-  if (url.searchParams.get("diagnostic") === "env") {
-    const expectedSecret =
-      text(
-        env.WAREHOUSE_ERP_OUTBOX_PROCESS_SECRET
-      );
-
-    const bearerHeader =
-      text(
-        request.headers.get("Authorization")
-      );
-
-    const secretHeader =
-      text(
-        request.headers.get(
-          "X-Warehouse-ERP-Outbox-Secret"
-        )
-      );
-
-    return json({
-      ok: true,
-      diagnostic: true,
-      envPresence: {
-        supabaseUrl: Boolean(text(env.SUPABASE_URL)),
-        supabaseServiceRoleKey:
-          Boolean(
-            text(
-              env.SUPABASE_SERVICE_ROLE_KEY
-            )
-          ),
-        processSecret:
-          Boolean(expectedSecret)
-      },
-      authProbe: {
-        envSecretLength:
-          expectedSecret.length,
-        bearerHeaderPresent:
-          Boolean(bearerHeader),
-        bearerHeaderLength:
-          bearerHeader.length,
-        bearerMatches:
-          Boolean(
-            expectedSecret &&
-            bearerHeader ===
-              `Bearer ${expectedSecret}`
-          ),
-        secretHeaderPresent:
-          Boolean(secretHeader),
-        secretHeaderLength:
-          secretHeader.length,
-        secretHeaderMatches:
-          Boolean(
-            expectedSecret &&
-            secretHeader === expectedSecret
-          )
-      },
-      ts: new Date().toISOString()
-    });
-  }
-
   if (!authorized(request, env)) {
     return json(
       {
