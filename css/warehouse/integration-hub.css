@@ -1,0 +1,388 @@
+/* WarehouseIQ Integration Hub */
+.ih-panel {
+  scroll-margin-top: 24px;
+}
+
+.ih-heading {
+  gap: 16px;
+  align-items: center;
+}
+
+.ih-intro {
+  max-width: 850px;
+  margin: 8px 0 20px;
+  color: #596579;
+  line-height: 1.6;
+}
+
+.ih-alert {
+  margin: 12px 0 22px;
+  padding: 11px 14px;
+  border: 1px solid #d7deea;
+  border-radius: 10px;
+  background: #f7f9fc;
+  color: #344054;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.ih-alert-success {
+  border-color: #b8dec9;
+  background: #f2faf5;
+  color: #176642;
+}
+
+.ih-alert-error {
+  border-color: #efc1c1;
+  background: #fff6f5;
+  color: #9f2d2d;
+}
+
+.ih-create-panel,
+.ih-integration-card {
+  min-width: 0;
+  border: 1px solid #e0e6ef;
+  border-radius: 14px;
+  padding: 18px;
+  background: #fff;
+}
+
+.ih-create-panel {
+  margin-bottom: 26px;
+  background: #fbfcfe;
+}
+
+.ih-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.ih-section-heading h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #172033;
+}
+
+.ih-section-heading p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ih-form-grid,
+.ih-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ih-form-grid label,
+.ih-credential-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ih-form-grid input,
+.ih-form-grid select,
+.ih-credential-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 11px;
+  border: 1px solid #d0d8e4;
+  border-radius: 8px;
+  background: #fff;
+  color: #152033;
+  font: inherit;
+  font-weight: 400;
+}
+
+.ih-form-grid input:focus,
+.ih-form-grid select:focus,
+.ih-credential-form input:focus {
+  outline: 2px solid #b7cdfc;
+  outline-offset: 1px;
+  border-color: #7295e8;
+}
+
+.ih-field-wide,
+.ih-meta-wide {
+  grid-column: 1 / -1;
+}
+
+.ih-form-actions,
+.ih-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.ih-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 13px;
+  border: 1px solid #1e3a68;
+  border-radius: 8px;
+  background: #203e70;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.ih-button:hover:not(:disabled) {
+  background: #172f59;
+}
+
+.ih-button-secondary {
+  color: #344054;
+  border-color: #d0d8e4;
+  background: #fff;
+}
+
+.ih-button-secondary:hover:not(:disabled) {
+  color: #152033;
+  background: #f3f6fa;
+}
+
+.ih-button-danger {
+  color: #a22b32;
+  background: #fff;
+  border-color: #e6bfc2;
+}
+
+.ih-button-danger:hover:not(:disabled) {
+  background: #fff4f4;
+}
+
+.ih-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.ih-help,
+.ih-muted {
+  color: #667085;
+  font-size: 12px;
+}
+
+.ih-list {
+  display: grid;
+  gap: 14px;
+}
+
+.ih-integration-card {
+  padding: 17px;
+}
+
+.ih-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.ih-card-title {
+  min-width: 0;
+}
+
+.ih-card-title h4 {
+  margin: 0 0 5px;
+  color: #172033;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.ih-status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #475467;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ih-status-draft {
+  background: #eef4ff;
+  color: #254e91;
+}
+
+.ih-status-active {
+  background: #eaf8ef;
+  color: #1c7044;
+}
+
+.ih-status-testing {
+  background: #fff4df;
+  color: #915b10;
+}
+
+.ih-status-error {
+  background: #fff0ef;
+  color: #a22b32;
+}
+
+.ih-meta-grid {
+  padding: 14px 0;
+  border-top: 1px solid #edf0f5;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.ih-meta-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ih-meta-grid span,
+.ih-capability span {
+  color: #667085;
+  font-size: 11px;
+}
+
+.ih-meta-grid strong {
+  color: #344054;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ih-url {
+  word-break: break-word;
+}
+
+.ih-card-error {
+  margin: 12px 0 0;
+  color: #a22b32;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.ih-capability {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.ih-capability > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ih-capability strong {
+  color: #344054;
+  font-size: 12px;
+}
+
+.ih-card-actions {
+  align-items: flex-start;
+}
+
+.ih-details {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.ih-details summary {
+  display: inline-flex;
+  padding: 9px 0;
+  color: #23477c;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ih-credential-form {
+  display: grid;
+  gap: 13px;
+  margin: 8px 0 4px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f7f9fc;
+}
+
+.ih-card-footnote {
+  margin: 14px 0 0;
+  color: #7b8495;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ih-empty,
+.ih-empty-state {
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed #d0d8e4;
+  border-radius: 12px;
+  color: #667085;
+  font-size: 13px;
+  text-align: center;
+}
+
+.ih-empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  line-height: 1.5;
+}
+
+.ih-empty-state strong {
+  color: #344054;
+}
+
+@media (max-width: 650px) {
+  .ih-create-panel,
+  .ih-integration-card {
+    padding: 13px;
+  }
+
+  .ih-form-grid,
+  .ih-meta-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ih-field-wide,
+  .ih-meta-wide {
+    grid-column: auto;
+  }
+
+  .ih-heading,
+  .ih-card-top,
+  .ih-capability {
+    align-items: flex-start;
+  }
+
+  .ih-card-top,
+  .ih-capability {
+    flex-direction: column;
+  }
+
+  .ih-heading .ih-button {
+    flex-shrink: 0;
+  }
+}

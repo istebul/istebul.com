@@ -15,6 +15,7 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/assets/icons/favicon-192.png">
   <link rel="stylesheet" href="/css/warehouse/operations-center.css">
+  <link rel="stylesheet" href="/css/warehouse/integration-hub.css">
   <link rel="stylesheet" href="/css/warehouse/barcode-scanner.css">
   <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
   <link rel="stylesheet" href="/css/warehouse/putaway-mobile.css">
@@ -56,6 +57,7 @@
       <p>YÖNETİM</p>
       <a href="#raporlar">▥ Raporlar</a>
       <a href="#depo-yonetimi">▣ Depo Yönetimi</a>
+      <a href="#entegrasyonlar">⇄ Entegrasyonlar</a>
       <a href="#lokasyonlar">⌗ Lokasyon Yönetimi</a>
       <a href="#copilot">✦ AI Copilot</a>
       <a href="#aksiyonlar">↗ Yönetici Aksiyonları</a>
@@ -2025,6 +2027,83 @@
           <p class="empty-state">Aksiyon verisi yükleniyor.</p>
         </div>
       </article>
+<article class="panel full ih-panel" id="entegrasyonlar">
+        <div class="heading ih-heading">
+          <div>
+            <em>SİSTEM BAĞLANTILARI</em>
+            <h2>Entegrasyon Merkezi</h2>
+          </div>
+          <button type="button" class="ih-button ih-button-secondary" id="ih-refresh">Yenile</button>
+        </div>
+
+        <p class="ih-intro">
+          ERP ve harici sistem bağlantılarını buradan yönetin. Yeni bağlantılar
+          taslak oluşturulur; erişim anahtarları ekranda gösterilmez.
+        </p>
+
+        <div id="ih-alert" class="ih-alert" role="status" aria-live="polite">
+          WarehouseIQ oturumu kontrol ediliyor…
+        </div>
+
+        <section class="ih-create-panel" aria-labelledby="ih-create-title">
+          <div class="ih-section-heading">
+            <div>
+              <h3 id="ih-create-title">Yeni bağlantı</h3>
+              <p>Şimdilik kullanılabilir olan Özel REST bağlantısı destekleniyor.</p>
+            </div>
+          </div>
+          <form id="ih-create-form">
+            <div class="ih-form-grid">
+              <label>
+                Bağlantı adı
+                <input name="name" required minlength="2" maxlength="160"
+                  placeholder="Örn. Ana ERP" autocomplete="off">
+              </label>
+              <label>
+                Sağlayıcı adı
+                <input name="providerName" maxlength="160"
+                  placeholder="Örn. Şirket içi ERP" autocomplete="organization">
+              </label>
+              <label>
+                Bağlantı türü
+                <select name="connectorKey" id="ih-connector" required>
+                  <option value="custom_rest">Özel REST</option>
+                </select>
+              </label>
+              <label>
+                Kimlik doğrulama
+                <select name="authType" required>
+                  <option value="api_key">API anahtarı</option>
+                  <option value="bearer">Bearer token</option>
+                </select>
+              </label>
+              <label class="ih-field-wide">
+                HTTPS API adresi
+                <input name="baseUrl" type="url" required maxlength="2000"
+                  placeholder="https://erp.example.com" autocomplete="url">
+              </label>
+            </div>
+            <div class="ih-form-actions">
+              <button type="submit" class="ih-button" id="ih-create-submit" disabled>
+                Taslak oluştur
+              </button>
+              <span class="ih-help">Bu işlem harici sisteme veri göndermez.</span>
+            </div>
+          </form>
+        </section>
+
+        <section class="ih-list-section" aria-labelledby="ih-list-title">
+          <div class="ih-section-heading">
+            <div>
+              <h3 id="ih-list-title">Kayıtlı bağlantılar</h3>
+              <p>Durum, kimlik bilgisi ve sevkiyat izni.</p>
+            </div>
+          </div>
+          <div id="ih-list" class="ih-list" aria-live="polite">
+            <p class="ih-empty">Entegrasyonlar yükleniyor…</p>
+          </div>
+        </section>
+      </article>
     </div>
   </main>
 </div>
@@ -2044,6 +2123,7 @@
 <script type="module" src="/js/warehouse/mobile-navigation.js"></script>
 <script type="module" src="/js/warehouse/barcode-scanner.js"></script>
 <script type="module" src="/js/warehouse/operations-center.js?v=20799872"></script>
+<script type="module" src="/js/warehouse/integration-hub-ui.js"></script>
 <script type="module" src="/js/warehouse/warehouses-ui.js"></script>
 <script type="module" src="/js/warehouse/locations-ui.js?v=e5ff64b2"></script>
 <script type="module" src="/js/warehouse/putaway-ui.js"></script>
