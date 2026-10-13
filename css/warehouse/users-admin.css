@@ -1,0 +1,40 @@
+#warehouse-users-admin[hidden], #warehouse-users-nav-link[hidden] { display: none !important; }
+#warehouse-users-admin { scroll-margin-top: 1rem; }
+.wu-admin-layout { display: grid; grid-template-columns: minmax(270px, .85fr) minmax(0, 1.15fr); gap: 1rem; margin-top: 1rem; }
+.wu-admin-card { min-width: 0; border: 1px solid rgba(148,163,184,.2); border-radius: 16px; padding: 1rem; background: rgba(9,18,28,.55); }
+.wu-admin-card h3 { margin: 0 0 .8rem; font-size: 1rem; }
+.wu-admin-form { display: grid; gap: .85rem; }
+.wu-field { display: grid; gap: .35rem; font-size: .86rem; color: #c8d4e2; }
+.wu-field input, .wu-field select { width: 100%; min-width: 0; border: 1px solid rgba(148,163,184,.3); border-radius: 9px; padding: .7rem .75rem; color: #eef6ff; background: #101e2c; font: inherit; }
+.wu-field input:disabled { opacity: .7; }
+.wu-fieldset { min-width: 0; border: 1px solid rgba(148,163,184,.2); border-radius: 12px; padding: .75rem; }
+.wu-fieldset legend { padding: 0 .35rem; color: #d9e7f5; font-size: .82rem; font-weight: 700; }
+.wu-check-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .4rem; }
+.wu-check { display: flex; align-items: flex-start; gap: .5rem; padding: .55rem; border-radius: 8px; background: rgba(148,163,184,.06); font-size: .82rem; cursor: pointer; }
+.wu-check input { flex: 0 0 auto; margin-top: .12rem; accent-color: #38bdf8; }
+.wu-check span { min-width: 0; overflow-wrap: anywhere; }
+.wu-check small { display: block; margin-top: .12rem; color: #8ea2b8; }
+.wu-muted { color: #95a9bd; font-size: .85rem; }
+.wu-admin-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.wu-admin-actions button, .wu-user-actions button { min-height: 40px; border-radius: 9px; padding: .55rem .85rem; cursor: pointer; }
+#warehouse-users-submit { color: #061522; background: #75d3f5; border: 1px solid #75d3f5; font-weight: 750; }
+#warehouse-users-refresh, #warehouse-users-cancel, .wu-user-actions button { color: #e2edf8; border: 1px solid rgba(148,163,184,.32); background: rgba(148,163,184,.08); }
+#warehouse-users-message { margin: .8rem 0 0; border-radius: 9px; padding: .75rem; color: #bde8ff; background: rgba(14,116,144,.14); font-size: .88rem; }
+#warehouse-users-message.error { color: #fecaca; background: rgba(185,28,28,.13); }
+#warehouse-users-message[hidden] { display: none; }
+.wu-user-list { display: grid; gap: .7rem; }
+.wu-user-row { min-width: 0; border: 1px solid rgba(148,163,184,.2); border-radius: 12px; padding: .85rem; background: rgba(148,163,184,.045); }
+.wu-user-primary { display: flex; flex-direction: column; gap: .15rem; overflow-wrap: anywhere; }
+.wu-user-primary strong { color: #eef6ff; }
+.wu-user-primary span, .wu-user-row p { color: #9fb1c5; font-size: .8rem; overflow-wrap: anywhere; }
+.wu-user-row p { margin: .5rem 0 0; }
+.wu-user-row p b { color: #d5e4f3; }
+.wu-user-meta { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .5rem; font-size: .78rem; color: #c8d4e2; }
+.wu-status { display: inline-flex; align-items: center; border-radius: 100px; padding: .2rem .55rem; background: rgba(148,163,184,.12); }
+.wu-status-active { color: #86efac; background: rgba(22,163,74,.12); }
+.wu-status-invited { color: #fde68a; background: rgba(217,119,6,.13); }
+.wu-status-suspended, .wu-status-inactive { color: #fca5a5; background: rgba(220,38,38,.12); }
+.wu-user-actions { display: flex; justify-content: flex-end; margin-top: .65rem; }
+#warehouse-user-admin-role-note { color: #fcd34d; font-size: .78rem; }
+@media (max-width: 840px) { .wu-admin-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 430px) { .wu-check-grid { grid-template-columns: minmax(0,1fr); } .wu-admin-card { padding: .75rem; } }

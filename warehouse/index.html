@@ -16,6 +16,7 @@
   <link rel="apple-touch-icon" href="/assets/icons/favicon-192.png">
   <link rel="stylesheet" href="/css/warehouse/operations-center.css">
   <link rel="stylesheet" href="/css/warehouse/integration-hub.css">
+  <link rel="stylesheet" href="/css/warehouse/users-admin.css">
   <link rel="stylesheet" href="/css/warehouse/barcode-scanner.css">
   <link rel="stylesheet" href="/css/warehouse/receiving-mobile.css">
   <link rel="stylesheet" href="/css/warehouse/putaway-mobile.css">
@@ -57,6 +58,7 @@
       <p>YÖNETİM</p>
       <a href="#raporlar">▥ Raporlar</a>
       <a href="#depo-yonetimi">▣ Depo Yönetimi</a>
+      <a id="warehouse-users-nav-link" href="#kullanici-yonetimi" hidden>♙ Kullanıcı Yönetimi</a>
       <a href="#entegrasyonlar">⇄ Entegrasyonlar</a>
       <a href="#lokasyonlar">⌗ Lokasyon Yönetimi</a>
       <a href="#copilot">✦ AI Copilot</a>
@@ -2027,6 +2029,50 @@
           <p class="empty-state">Aksiyon verisi yükleniyor.</p>
         </div>
       </article>
+<article class="panel full" id="warehouse-users-admin" hidden>
+  <div class="heading">
+    <div><em>YÖNETİM MERKEZİ</em><h2>Kullanıcı ve Yetki Yönetimi</h2></div>
+    <small>Admin yetkisi gerektirir</small>
+  </div>
+  <div class="wu-admin-layout">
+    <section class="wu-admin-card" aria-labelledby="warehouse-users-form-title">
+      <h3 id="warehouse-users-form-title">Yeni kullanıcı davet et</h3>
+      <form id="warehouse-users-form" class="wu-admin-form" novalidate>
+        <input id="warehouse-user-id" type="hidden" value="">
+        <label class="wu-field"><span>E-posta adresi *</span><input id="warehouse-user-email" type="email" autocomplete="email" maxlength="254" placeholder="kullanici@firma.com" required></label>
+        <label class="wu-field"><span>Görünen ad</span><input id="warehouse-user-display-name" type="text" maxlength="120" autocomplete="name" placeholder="Ad Soyad"></label>
+        <label class="wu-field"><span>Rol *</span><select id="warehouse-user-role" required>
+          <option value="admin">Admin · Tam yetki</option>
+          <option value="warehouse_manager">Depo yöneticisi</option>
+          <option value="supervisor">Süpervizör</option>
+          <option value="inventory_controller">Stok kontrol</option>
+          <option value="receiver">Mal kabul</option>
+          <option value="quality_controller">Kalite kontrol</option>
+          <option value="forklift_operator">Forklift operatörü</option>
+          <option value="picker">Toplayıcı</option>
+          <option value="packer">Paketleyici</option>
+          <option value="dispatcher">Sevkiyat sorumlusu</option>
+          <option value="driver">Sürücü</option>
+          <option value="operator" selected>Operatör</option>
+          <option value="viewer">Salt okunur</option>
+        </select></label>
+        <p id="warehouse-user-admin-role-note" hidden>Admin rolü, tüm modüllerde tam yetki sağlar.</p>
+        <label id="warehouse-user-status-row" class="wu-field" hidden><span>Üyelik durumu</span><select id="warehouse-user-status">
+          <option value="invited">Davet edildi</option><option value="active">Aktif</option><option value="suspended">Askıda</option><option value="inactive">Pasif</option>
+        </select></label>
+        <fieldset class="wu-fieldset"><legend>Modül izinleri</legend><div id="warehouse-user-permissions" class="wu-check-grid"></div></fieldset>
+        <fieldset class="wu-fieldset"><legend>Erişebileceği depolar</legend><div id="warehouse-user-warehouses" class="wu-check-grid"></div></fieldset>
+        <div class="wu-admin-actions"><button id="warehouse-users-submit" type="submit">Davet Gönder</button><button id="warehouse-users-cancel" type="button" hidden>İptal</button></div>
+      </form>
+    </section>
+    <section class="wu-admin-card" aria-labelledby="warehouse-users-list-title">
+      <div class="heading"><div><h3 id="warehouse-users-list-title">Hesap kullanıcıları</h3></div><button id="warehouse-users-refresh" type="button">Yenile</button></div>
+      <div id="warehouse-users-list" class="wu-user-list"><p class="wu-muted">Kullanıcı listesi yükleniyor.</p></div>
+    </section>
+  </div>
+  <p id="warehouse-users-message" role="status" aria-live="polite" hidden></p>
+</article>
+
 <article class="panel full ih-panel" id="entegrasyonlar">
         <div class="heading ih-heading">
           <div>
@@ -2125,6 +2171,7 @@
 <script type="module" src="/js/warehouse/operations-center.js?v=20799872"></script>
 <script type="module" src="/js/warehouse/integration-hub-ui.js?v=20261011-payload-fix"></script>
 <script type="module" src="/js/warehouse/warehouses-ui.js"></script>
+<script type="module" src="/js/warehouse/users-admin-ui.js"></script>
 <script type="module" src="/js/warehouse/locations-ui.js?v=e5ff64b2"></script>
 <script type="module" src="/js/warehouse/putaway-ui.js"></script>
 <script type="module" src="/js/warehouse/putaway-write-controller.js"></script>
