@@ -141,3 +141,25 @@ test('production deploy WarehouseIQ şemasını ayrıca verify eder', () => {
     /Verify WarehouseIQ schema[\s\S]*apply-warehouse-migrations-api\.sh --verify-only/
   );
 });
+
+
+test('WarehouseIQ Admin/access has its own controlled apply and verify gates', () => {
+  const adminRunner = fs.readFileSync(
+    'scripts/apply-warehouse-admin-access-api.sh',
+    'utf8'
+  );
+
+  assert.match(adminRunner, /20261011190000_warehouse_admin_user_access\.sql/);
+  assert.match(adminRunner, /20261011200000_warehouse_operational_access_guards\.sql/);
+  assert.match(adminRunner, /20261011210000_warehouse_rpc_role_alignment\.sql/);
+  assert.match(adminRunner, /BEGIN;/i);
+  assert.match(adminRunner, /COMMIT;/i);
+  assert.match(adminRunner, /--verify-only/);
+  assert.match(adminRunner, /prerequisites_ok/);
+  assert.match(adminRunner, /rpc_roles_ready/);
+  assert.doesNotMatch(adminRunner, /schema_migrations|migration repair|supabase\s+db\s+push|--include-all/i);
+
+  assert.match(workflow, /Apply WarehouseIQ Admin\/access schema \(Management API, controlled\)[\s\S]*warehouse_admin_access_schema[\s\S]*apply-warehouse-admin-access-api\.sh/);
+  assert.match(workflow, /Verify WarehouseIQ Admin\/access schema[\s\S]*apply-warehouse-admin-access-api\.sh --verify-only/);
+  assert.match(workflow, /steps\.warehouse_admin_access_verification\.outcome/);
+});
