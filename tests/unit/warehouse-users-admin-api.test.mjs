@@ -124,7 +124,7 @@ test("POST refuses owner and never sends an Auth invitation", async () => {
 });
 
 test("POST creates an immediately active account with an admin-set password", async () => {
-  const password = "Warehouse-Test-2026!";
+  const password = "Test6!";
   const { fetchImpl, calls } = mockFetch();
   const result = await onRequestPost(context(request("POST", validBody({
     action: "create_with_password",
@@ -153,7 +153,7 @@ test("POST creates an immediately active account with an admin-set password", as
   assert.equal(JSON.parse(upsert.options.body).target_status, "active");
 });
 
-test("POST rejects a short initial password before creating an Auth identity", async () => {
+test("POST rejects passwords shorter than six characters before creating an Auth identity", async () => {
   const { fetchImpl, calls } = mockFetch();
   const result = await onRequestPost(context(request("POST", validBody({
     action: "create_with_password",
