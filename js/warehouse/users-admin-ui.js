@@ -140,21 +140,25 @@ function setEditMode(user = null) {
   const idField = byId("warehouse-user-id");
   const email = byId("warehouse-user-email");
   const statusRow = byId("warehouse-user-status-row");
+  const passwordRow = byId("warehouse-user-password-row");
+  const passwordInput = byId("warehouse-user-password");
   const submit = byId("warehouse-users-submit");
   const cancel = byId("warehouse-users-cancel");
   idField.value = user?.user_id || "";
   email.value = user?.auth_email || "";
   email.disabled = Boolean(user);
+  if (passwordRow) passwordRow.hidden = Boolean(user);
+  if (passwordInput) { passwordInput.value = ""; passwordInput.required = !user; }
   byId("warehouse-user-display-name").value = user?.display_name || "";
   // Never offer `owner` as a new role; a legacy owner editing their own row is normalized to admin.
   byId("warehouse-user-role").value = user?.role === "owner" ? "admin" : (user?.role || "operator");
   byId("warehouse-user-status").value = user?.status || "invited";
   statusRow.hidden = !user;
-  if (submit) submit.textContent = user ? "Değişiklikleri Kaydet" : "Davet Gönder";
+  if (submit) submit.textContent = user ? "Değişiklikleri Kaydet" : "Kullanıcı Oluştur";
   if (cancel) cancel.hidden = !user;
   renderPermissionOptions(user?.permissions || []);
   renderWarehouseOptions(user?.warehouse_ids || []);
-  byId("warehouse-users-form-title").textContent = user ? "Kullanıcıyı düzenle" : "Yeni kullanıcı davet et";
+  byId("warehouse-users-form-title").textContent = user ? "Kullanıcıyı düzenle" : "Yeni kullanıcı oluştur";
 }
 function selectedValues(name) {
   return [...document.querySelectorAll(`#warehouse-users-admin input[name="${name}"]:checked`)].map((input) => input.value);
@@ -232,14 +236,16 @@ async function submitForm(event) {
     accountId,
     userId: userId || undefined,
     email: userId ? undefined : byId("warehouse-user-email").value.trim(),
+    action: userId ? undefined : "create_with_password",
+    password: userId ? undefined : byId("warehouse-user-password").value,
     displayName: byId("warehouse-user-display-name").value.trim() || null,
     role: byId("warehouse-user-role").value,
-    status: userId ? byId("warehouse-user-status").value : "invited",
+    status: userId ? byId("warehouse-user-status").value : "active",
     permissions: selectedValues("permissions"),
     warehouseIds: selectedValues("warehouseIds"),
   };
   setBusy(true);
-  setMessage(userId ? "Kullanıcı yetkileri güncelleniyor…" : "Davet hazırlanıyor…");
+  setMessage(userId ? "Kullanıcı yetkileri güncelleniyor…" : "Kullanıcı hesabı oluşturuluyor…");
   try {
     await authenticatedRequest("/api/warehouse/users", {
       method: userId ? "PATCH" : "POST",
@@ -248,7 +254,7 @@ async function submitForm(event) {
     setBusy(false);
     setEditMode(null);
     await load();
-    setMessage(userId ? "Kullanıcı bilgileri ve yetkileri güncellendi." : "Davet gönderildi. Kullanıcı, davet bağlantısını tamamladıktan sonra giriş yapabilir.");
+    setMessage(userId ? "Kullanıcı bilgileri ve yetkileri güncellendi." : "Kullanıcı hesabı oluşturuldu. Kullanıcı başlangıç parolasıyla giriş yapabilir.");
   } catch (error) {
     setMessage(error instanceof Error ? error.message : "Kullanıcı kaydedilemedi.", true);
   } finally {

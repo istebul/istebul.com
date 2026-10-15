@@ -2036,10 +2036,11 @@
   </div>
   <div class="wu-admin-layout">
     <section class="wu-admin-card" aria-labelledby="warehouse-users-form-title">
-      <h3 id="warehouse-users-form-title">Yeni kullanıcı davet et</h3>
+      <h3 id="warehouse-users-form-title">Yeni kullanıcı oluştur</h3>
       <form id="warehouse-users-form" class="wu-admin-form" novalidate>
         <input id="warehouse-user-id" type="hidden" value="">
         <label class="wu-field"><span>E-posta adresi *</span><input id="warehouse-user-email" type="email" autocomplete="email" maxlength="254" placeholder="kullanici@firma.com" required></label>
+        <label id="warehouse-user-password-row" class="wu-field"><span>Başlangıç parolası *</span><input id="warehouse-user-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="En az 12 karakter" required><small>Parolayı kullanıcıya güvenli bir kanaldan iletin. Parola kullanıcı listesinde saklanmaz veya gösterilmez.</small></label>
         <label class="wu-field"><span>Görünen ad</span><input id="warehouse-user-display-name" type="text" maxlength="120" autocomplete="name" placeholder="Ad Soyad"></label>
         <label class="wu-field"><span>Rol *</span><select id="warehouse-user-role" required>
           <option value="admin">Admin · Tam yetki</option>
@@ -2062,7 +2063,7 @@
         </select></label>
         <fieldset class="wu-fieldset"><legend>Modül izinleri</legend><div id="warehouse-user-permissions" class="wu-check-grid"></div></fieldset>
         <fieldset class="wu-fieldset"><legend>Erişebileceği depolar</legend><div id="warehouse-user-warehouses" class="wu-check-grid"></div></fieldset>
-        <div class="wu-admin-actions"><button id="warehouse-users-submit" type="submit">Davet Gönder</button><button id="warehouse-users-cancel" type="button" hidden>İptal</button></div>
+        <div class="wu-admin-actions"><button id="warehouse-users-submit" type="submit">Kullanıcı Oluştur</button><button id="warehouse-users-cancel" type="button" hidden>İptal</button></div>
       </form>
     </section>
     <section class="wu-admin-card" aria-labelledby="warehouse-users-list-title">

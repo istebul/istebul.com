@@ -38,7 +38,7 @@ function request(method, body, authorization = `Bearer ${TOKEN}`, url = "https:/
 function context(requestObject, fetchImpl, env = ENV) {
   return { request: requestObject, env, fetch: fetchImpl };
 }
-function mockFetch({ list = { ok: true, users: [] }, validate = { ok: true }, upsert = { ok: true, user: { user_id: INVITED_ID } }, legacyConvert = { ok: true, role: "admin" }, inviteStatus = 200, invitePayload = { id: INVITED_ID }, validateStatus = 200 } = {}) {
+function mockFetch({ list = { ok: true, users: [] }, validate = { ok: true }, upsert = { ok: true, user: { user_id: INVITED_ID } }, legacyConvert = { ok: true, role: "admin" }, inviteStatus = 200, invitePayload = { id: INVITED_ID }, validateStatus = 200, deleteStatus = 200 } = {}) {
   const calls = [];
   const fetchImpl = async (url, options = {}) => {
     const parsed = new URL(url);
@@ -49,7 +49,8 @@ function mockFetch({ list = { ok: true, users: [] }, validate = { ok: true }, up
     if (parsed.pathname === "/rest/v1/rpc/warehouse_admin_convert_own_legacy_owner") return response(legacyConvert, legacyConvert?.ok === false ? 403 : 200);
     if (parsed.pathname === "/rest/v1/rpc/warehouse_admin_upsert_user") return response(upsert, upsert?.ok === false ? 400 : 200);
     if (parsed.pathname === "/auth/v1/invite") return response(invitePayload, inviteStatus);
-    if (parsed.pathname.startsWith("/auth/v1/admin/users/")) return response({ id: INVITED_ID }, 200);
+    if (parsed.pathname === "/auth/v1/admin/users" && options.method === "POST") return response({ id: INVITED_ID });
+    if (parsed.pathname.startsWith("/auth/v1/admin/users/") && options.method === "DELETE") return response({ id: INVITED_ID }, deleteStatus);
     return response({ message: `unexpected request ${parsed.pathname}` }, 500);
   };
   return { fetchImpl, calls };
@@ -122,6 +123,48 @@ test("POST refuses owner and never sends an Auth invitation", async () => {
   assert.equal(calls.some((call) => call.url.pathname === "/auth/v1/invite"), false);
 });
 
+test("POST creates an immediately active account with an admin-set password", async () => {
+  const password = "Warehouse-Test-2026!";
+  const { fetchImpl, calls } = mockFetch();
+  const result = await onRequestPost(context(request("POST", validBody({
+    action: "create_with_password",
+    password,
+  })), fetchImpl));
+
+  assert.equal(result.status, 201);
+  const body = await result.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.creationMode, "password");
+  assert.equal(JSON.stringify(body).includes(password), false);
+
+  const authCreate = calls.find((call) =>
+    call.url.pathname === "/auth/v1/admin/users" && call.options.method === "POST");
+  assert.ok(authCreate);
+  assert.equal(authCreate.options.headers.Authorization, `Bearer ${SERVICE_KEY}`);
+  const authPayload = JSON.parse(authCreate.options.body);
+  assert.equal(authPayload.email, "worker@example.com");
+  assert.equal(authPayload.password, password);
+  assert.equal(authPayload.email_confirm, true);
+  assert.equal(calls.some((call) => call.url.pathname === "/auth/v1/invite"), false);
+
+  const upsert = calls.find((call) =>
+    call.url.pathname === "/rest/v1/rpc/warehouse_admin_upsert_user");
+  assert.equal(JSON.parse(upsert.options.body).target_user_id, INVITED_ID);
+  assert.equal(JSON.parse(upsert.options.body).target_status, "active");
+});
+
+test("POST rejects a short initial password before creating an Auth identity", async () => {
+  const { fetchImpl, calls } = mockFetch();
+  const result = await onRequestPost(context(request("POST", validBody({
+    action: "create_with_password",
+    password: "short",
+  })), fetchImpl));
+
+  assert.equal(result.status, 400);
+  assert.equal((await result.json()).error.code, "password_invalid");
+  assert.equal(calls.some((call) => call.url.pathname === "/auth/v1/admin/users"), false);
+});
+
 test("POST creates an invited membership after Supabase Auth invite succeeds", async () => {
   const { fetchImpl, calls } = mockFetch();
   const result = await onRequestPost(context(request("POST", validBody()), fetchImpl));
@@ -168,6 +211,51 @@ test("PATCH rejects cross-account warehouse assignment", async () => {
   const result = await onRequestPatch(context(request("PATCH", validBody({ userId: INVITED_ID })), fetchImpl));
   assert.equal(result.status, 400);
   assert.equal((await result.json()).error.code, "warehouse_assignment_invalid");
+});
+
+test("failed membership write compensates the newly created password Auth identity", async () => {
+  const password = "Warehouse-Test-2026!";
+  const { fetchImpl, calls } = mockFetch({
+    upsert: { message: "warehouse_user_email_required", code: "22023" },
+  });
+
+  const result = await onRequestPost(context(request("POST", validBody({
+    action: "create_with_password",
+    password,
+  })), fetchImpl));
+
+  assert.equal(result.status, 400);
+  const responseBody = await result.json();
+  assert.equal(JSON.stringify(responseBody).includes(password), false);
+
+  const authCreate = calls.find((call) =>
+    call.url.pathname === "/auth/v1/admin/users" && call.options.method === "POST");
+  assert.ok(authCreate);
+  assert.equal(JSON.parse(authCreate.options.body).password, password);
+
+  assert.equal(calls.some((call) =>
+    call.options.method === "DELETE" &&
+    call.url.pathname === `/auth/v1/admin/users/${INVITED_ID}`), true);
+});
+
+
+
+test("Auth cleanup failure returns 502", async () => {
+  const { fetchImpl, calls } = mockFetch({
+    upsert: { message: "warehouse_user_email_required", code: "22023" },
+    deleteStatus: 500,
+  });
+  const result = await onRequestPost(context(request("POST", validBody({
+    action: "create_with_password",
+    password: "Warehouse-Test-2026!",
+  })), fetchImpl));
+
+  assert.equal(result.status, 502);
+  const deletion = calls.find((call) =>
+    call.options.method === "DELETE" &&
+    call.url.pathname === `/auth/v1/admin/users/${INVITED_ID}`);
+  assert.ok(deletion);
+  assert.equal((await response({}, 500)).status, 500);
 });
 
 test("failed membership write compensates the newly invited Auth identity", async () => {
