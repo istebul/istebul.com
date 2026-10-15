@@ -147,7 +147,7 @@ function normalizeInput(body, accountId, targetUserId = null) {
       target_email: email || null,
       target_display_name: displayName,
       target_role: role,
-      target_status: targetUserId ? status : "invited",
+      target_status: status,
       requested_permissions: [...new Set(permissions)],
       requested_warehouse_ids: [...new Set(warehouseIds)],
     },
@@ -217,11 +217,23 @@ export async function onRequestPost(context) {
     }
     return json({ ok: true, role: "admin", message: "Eski rol admin olarak güncellendi." });
   }
-  const normalized = normalizeInput({ ...parsed.body, status: "invited" }, accountId, null);
-  if (!normalized.ok) return errorResponse(normalized.status, normalized.code, normalized.message);
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) return errorResponse(503, "invite_unconfigured", "Kullanıcı daveti için sunucu Auth yapılandırması eksik.");
+  const createWithPassword = parsed.body.action === "create_with_password";
+  const password = parsed.body.password;
+  if (createWithPassword &&
+      (typeof password !== "string" || password.length < 12 || password.length > 128)) {
+    return errorResponse(400, "password_invalid", "Başlangıç parolası 12–128 karakter olmalıdır.");
+  }
 
-  // First verify admin authority and avoid duplicate membership invitations.
+  const normalized = normalizeInput({
+    ...parsed.body,
+    status: createWithPassword ? "active" : "invited",
+  }, accountId, null);
+  if (!normalized.ok) return errorResponse(normalized.status, normalized.code, normalized.message);
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
+    return errorResponse(503, "auth_unconfigured", "Sunucu Auth yapılandırması eksik.");
+  }
+
+  // Verify admin authority and avoid duplicate membership creation.
   const listed = await rpc(env, auth.token, "warehouse_admin_list_users", {
     requested_account_id: accountId,
   }, fetchImpl);
@@ -236,58 +248,104 @@ export async function onRequestPost(context) {
 
   const validation = await validateRequest(env, auth.token, normalized.args, fetchImpl);
   if (!validation.ok) {
-    const mapped = mapRpcError(validation, "Davet bilgileri doğrulanamadı.");
+    const mapped = mapRpcError(validation, "Kullanıcı bilgileri doğrulanamadı.");
     return errorResponse(mapped.status, mapped.code, mapped.message);
   }
 
-  let inviteResponse;
+  const authPath = createWithPassword ? "/auth/v1/admin/users" : "/auth/v1/invite";
+  const authBody = createWithPassword
+    ? {
+        email: normalized.args.target_email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          display_name: normalized.args.target_display_name || normalized.args.target_email,
+        },
+      }
+    : {
+        email: normalized.args.target_email,
+        data: {
+          display_name: normalized.args.target_display_name || normalized.args.target_email,
+        },
+      };
+
+  let authResponse;
   try {
-    inviteResponse = await fetchImpl(new URL("/auth/v1/invite", env.SUPABASE_URL), {
+    authResponse = await fetchImpl(new URL(authPath, env.SUPABASE_URL), {
       method: "POST",
       headers: {
         apikey: env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: normalized.args.target_email,
-        data: { display_name: normalized.args.target_display_name || normalized.args.target_email },
-      }),
+      body: JSON.stringify(authBody),
     });
   } catch {
-    return errorResponse(502, "invite_unavailable", "Supabase Auth davet servisine ulaşılamadı.");
+    return errorResponse(502, "auth_unavailable", "Supabase Auth servisine ulaşılamadı.");
   }
-  const inviteUser = await readJson(inviteResponse);
-  const invitedUserId = inviteUser?.id || inviteUser?.user?.id;
-  if (!inviteResponse.ok || !UUID_RE.test(String(invitedUserId || ""))) {
-    const inviteMessage = String(inviteUser?.msg || inviteUser?.message || inviteUser?.error_description || "").toLowerCase();
-    if (inviteResponse.status === 422 || inviteMessage.includes("already") || inviteMessage.includes("registered")) {
-      return errorResponse(409, "auth_user_exists", "Bu e-posta Supabase Auth üzerinde zaten kayıtlı. Mevcut kimliğin hesaba güvenli biçimde bağlanması ayrıca yapılmalı.");
+
+  const authUser = await readJson(authResponse);
+  const createdAuthUserId = authUser?.id || authUser?.user?.id;
+  if (!authResponse.ok || !UUID_RE.test(String(createdAuthUserId || ""))) {
+    const authMessage = String(
+      authUser?.msg || authUser?.message || authUser?.error_description || authUser?.error || ""
+    ).toLowerCase();
+
+    if (authMessage.includes("already") || authMessage.includes("registered") ||
+        authMessage.includes("already exists")) {
+      return errorResponse(409, "auth_user_exists", "Bu e-posta Supabase Auth üzerinde zaten kayıtlı. Mevcut kimlik ayrıca güvenli biçimde bağlanmalıdır.");
     }
-    return errorResponse(502, "invite_failed", "Kullanıcı daveti gönderilemedi. Supabase Auth yapılandırmasını kontrol edin.");
+    if (!createWithPassword && authResponse.status === 422) {
+      return errorResponse(409, "auth_user_exists", "Bu e-posta Supabase Auth üzerinde zaten kayıtlı. Mevcut kimlik ayrıca güvenli biçimde bağlanmalıdır.");
+    }
+    if (createWithPassword && authResponse.status === 422) {
+      return errorResponse(400, "auth_user_rejected", "Supabase Auth hesabı oluşturmayı reddetti. E-posta ve parola politikasını kontrol edin.");
+    }
+    return errorResponse(502, createWithPassword ? "auth_user_create_failed" : "invite_failed",
+      createWithPassword ? "Kullanıcı hesabı oluşturulamadı." : "Kullanıcı daveti gönderilemedi.");
   }
 
   const upsertArgs = {
     ...normalized.args,
-    target_user_id: invitedUserId,
-    target_status: "invited",
+    target_user_id: createdAuthUserId,
+    target_status: createWithPassword ? "active" : "invited",
   };
   const created = await rpc(env, auth.token, "warehouse_admin_upsert_user", upsertArgs, fetchImpl);
   if (!created.ok || created.payload?.ok !== true) {
-    // Compensate only the Auth identity created by this successful invite request.
+    // Roll back only the Auth identity created by this request.
+    let cleanupSucceeded = false;
     try {
-      await fetchImpl(new URL(`/auth/v1/admin/users/${encodeURIComponent(invitedUserId)}`, env.SUPABASE_URL), {
-        method: "DELETE",
-        headers: {
-          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      const cleanupResponse = await fetchImpl(
+        new URL(`/auth/v1/admin/users/${encodeURIComponent(createdAuthUserId)}`, env.SUPABASE_URL),
+        {
+          method: "DELETE",
+          headers: {
+            apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+            Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+          },
         },
-      });
-    } catch { /* Do not leak credentials or internal errors to the client. */ }
-    const mapped = mapRpcError(created, "Davet veritabanına kaydedilemedi; işlem geri alınmaya çalışıldı.");
+      );
+      cleanupSucceeded = cleanupResponse.ok;
+    } catch {
+      // Do not expose credentials or internal errors.
+    }
+
+    if (!cleanupSucceeded) {
+      return errorResponse(
+        502,
+        "auth_cleanup_failed",
+        "Kullanıcı kaydı tamamlanamadı; otomatik hesap temizliği doğrulanamadı. Supabase Auth kullanıcılarını kontrol edin.",
+      );
+    }
+
+    const mapped = mapRpcError(created, "Kullanıcı veritabanına kaydedilemedi; işlem geri alınmaya çalışıldı.");
     return errorResponse(mapped.status, mapped.code, mapped.message);
   }
-  return json({ ok: true, user: created.payload.user }, 201);
+  return json({
+    ok: true,
+    user: created.payload.user,
+    creationMode: createWithPassword ? "password" : "invite",
+  }, 201);
 }
 
 export async function onRequestPatch(context) {
