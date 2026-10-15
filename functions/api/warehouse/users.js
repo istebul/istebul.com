@@ -220,8 +220,8 @@ export async function onRequestPost(context) {
   const createWithPassword = parsed.body.action === "create_with_password";
   const password = parsed.body.password;
   if (createWithPassword &&
-      (typeof password !== "string" || password.length < 12 || password.length > 128)) {
-    return errorResponse(400, "password_invalid", "Başlangıç parolası 12–128 karakter olmalıdır.");
+      (typeof password !== "string" || password.length < 6 || password.length > 128)) {
+    return errorResponse(400, "password_invalid", "Başlangıç parolası 6–128 karakter olmalıdır.");
   }
 
   const normalized = normalizeInput({
