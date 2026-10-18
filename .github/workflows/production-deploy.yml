@@ -288,6 +288,15 @@ jobs:
         if: steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-warehouse-migrations-api.sh --verify-only
 
+      - name: Apply WarehouseIQ ERP/ERI outbox schema (Management API, controlled)
+        id: warehouse_erp_schema
+        if: steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-warehouse-erp-migrations-api.sh --apply
+
+      - name: Verify WarehouseIQ ERP/ERI outbox schema
+        if: steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-warehouse-erp-migrations-api.sh --verify-only
+
       - name: Apply WarehouseIQ Admin/access schema (Management API, controlled)
         id: warehouse_admin_access_schema
         if: steps.gate.outputs.skip != 'true' && github.event_name == 'workflow_dispatch' && inputs.apply_warehouse_admin_access
@@ -328,6 +337,11 @@ jobs:
 
           if [ "${{ steps.warehouse_schema_fallback.outcome }}" != "success" ]; then
             echo "::error::WarehouseIQ controlled schema apply failed."
+            exit 1
+          fi
+
+          if [ "${{ steps.warehouse_erp_schema.outcome }}" != "success" ]; then
+            echo "::error::WarehouseIQ ERP/ERI outbox schema apply failed."
             exit 1
           fi
 
