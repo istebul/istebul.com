@@ -76,6 +76,29 @@ function createPageElement(route: BusinessRouteDefinition): HTMLElement {
   }
 }
 
+function createBusinessAccessErrorElement(
+  message = "İşletme çalışma alanı yüklenemedi. Lütfen yeniden deneyin."
+): HTMLElement {
+  const root = document.createElement("section");
+  root.className = "ib-biz-empty-state";
+  root.setAttribute("role", "alert");
+
+  const title = document.createElement("h2");
+  title.textContent = "İşletme erişimi doğrulanamadı";
+
+  const description = document.createElement("p");
+  description.textContent = message;
+
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "ib-biz-button ib-biz-button-primary";
+  retry.textContent = "Yeniden dene";
+  retry.addEventListener("click", () => window.location.reload());
+
+  root.append(title, description, retry);
+  return root;
+}
+
 /**
  * Business MVP uygulamasını hedef kapsayıcıya mount eder.
  * Auth / tenant / API çağrısı yapmaz.
@@ -112,8 +135,26 @@ export function mountBusinessApp(
       return;
     }
 
+    if (access.state === 'error') {
+      content.replaceChildren(
+        createBusinessAccessErrorElement(access.error)
+      );
+      return;
+    }
+
     if (access.state === 'needs-business') {
       content.replaceChildren(createBusinessOnboardingPage());
+      return;
+    }
+
+    if (route.navId === 'ayarlar' && access.businessId) {
+      content.replaceChildren(
+        createBusinessSettingsPageElement({
+          runtime,
+          businessId: access.businessId,
+          role: access.role
+        })
+      );
       return;
     }
 
@@ -159,11 +200,15 @@ export function mountBusinessApp(
     }
 
     void loadBusinessWorkspace(runtime).then((state) => {
+      if (state.error) {
+        content.replaceChildren(createBusinessAccessErrorElement());
+        return;
+      }
+
       if (
         !state.authenticated ||
         !state.userId ||
-        !state.businessId ||
-        state.error
+        !state.businessId
       ) {
         return;
       }
@@ -202,7 +247,11 @@ export function mountBusinessApp(
       };
 
       renderProjects(state.projects);
+    }).catch(() => {
+      content.replaceChildren(createBusinessAccessErrorElement());
     });
+  }).catch(() => {
+    content.replaceChildren(createBusinessAccessErrorElement());
   });
 }
 
