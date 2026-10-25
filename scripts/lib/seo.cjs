@@ -500,7 +500,7 @@ function renderSeoFooter({ site, guideLinks }) {
     <div class="seo-footer-grid">
       <div>
         <strong>${escapeHtml(site.siteName)}</strong>
-        <p>Türkiye odaklı araç alım karar destek platformu — TCO, kredi ve karşılaştırma.</p>
+        <p>Türkiye odaklı yapay zekâ destekli karar platformu — araç, konut, tatil ve finansman kararlarında maliyet, risk ve uygunluk analizi.</p>
         ${renderSiteSocialFooterNav()}
       </div>
       <div>
