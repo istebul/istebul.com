@@ -21,6 +21,18 @@ const FOOTER_GUIDE_SLUGS = new Set([
  * Target: 1200+ Turkish words per /rehber/ page.
  */
 
+
+const HOUSING_FAQ_TAIL = [
+  {
+    q: 'Konut kararı için hangi maliyetler birlikte hesaplanmalıdır?',
+    a: 'Başlangıç masrafları, kredi geri ödemesi, aidat, faturalar, sigorta, bakım ve taşınma giderleri birlikte değerlendirilmelidir.'
+  },
+  {
+    q: 'Rehber taşınmazın hukuki veya teknik açıdan uygun olduğunu garanti eder mi?',
+    a: 'Hayır. Güncel resmî kayıtlar, gerekli teknik incelemeler ve uzman görüşleri ayrıca alınmalıdır.'
+  }
+];
+
 const SHARED_FAQ_TAIL = [
   {
     q: 'isteBul analizi finansal tavsiye midir?',
@@ -309,6 +321,86 @@ const EXPANSIONS = {
     ],
     conclusion:
       'İkinci el alımında fiyat kadar şeffaflık önemlidir. Kontrol listesini eksiksiz uygulayın; isteBul ile bütçe ve segment uyumunu önce hesaplayın, ekspertiz sonrası nihai teklifi verin.'
+  },
+  'konut-karar-rehberi': {
+    comparisonTable: {
+      headers: ['Karar ölçütü', 'Kontrol edilecekler', 'Karara etkisi'],
+      rows: [
+        ['Toplam bütçe', 'Peşinat, kredi masrafları, tapu harcı ve taşınma giderleri', 'Satın alma için gereken gerçek nakit ihtiyacını gösterir.'],
+        ['Aylık taşıma maliyeti', 'Kredi taksiti, aidat, faturalar, bakım ve sigorta', 'Hane bütçesinin sürdürülebilirliğini gösterir.'],
+        ['Hukuki durum', 'Tapu kaydı, takyidat, ipotek, şerh ve iskan bilgisi', 'İşlem öncesi hukuki risklerin uzmanla incelenmesini sağlar.'],
+        ['Bina ve çevre', 'Deprem performansı, yapı yaşı, bakım geçmişi ve ulaşım', 'Güvenlik, yaşam kalitesi ve gelecekteki giderleri etkiler.'],
+        ['Finansman dayanıklılığı', 'Faiz türü, vade, toplam geri ödeme ve gelir değişimi', 'Ödeme planının farklı koşullarda sürdürülebilirliğini sınar.']
+      ]
+    },
+    advantages: [
+      'Satın alma fiyatını tek başına değerlendirmek yerine toplam sahip olma maliyetini görünür kılar.',
+      'Tapu, bina güvenliği, sigorta ve finansman kontrollerini aynı karar akışında toplar.',
+      'Aylık nakit akışını ve beklenmeyen giderler için ayrılması gereken rezervi dikkate alır.',
+      'Farklı konut seçeneklerini aynı ölçütlerle karşılaştırmayı kolaylaştırır.'
+    ],
+    disadvantages: [
+      'Eksik veya doğrulanmamış ilan bilgileri, hesaplanan maliyetleri ve karşılaştırmaları yanıltabilir.',
+      'Bina güvenliği, tapu uygunluğu ve kredi koşulları yalnızca rehber üzerinden kesinleştirilemez.',
+      'Gelecekteki fiyat değişimleri, bakım giderleri ve faiz koşulları kesin olarak öngörülemez.'
+    ],
+    extraSections: [
+      {
+        heading: 'Tapu ve taşınmazın hukuki durumu',
+        body: 'Satın alma kararı vermeden önce tapudaki malik bilgileri ile satıcının işlem yapma yetkisi doğrulanmalıdır. Taşınmaz üzerindeki ipotek, haciz, şerh, intifa hakkı ve diğer takyidatlar güncel kayıtlar üzerinden incelenmelidir. Kat mülkiyeti veya kat irtifakı durumu, bağımsız bölüm bilgileri ve yapı kullanma izin belgesi gibi belgeler taşınmazın niteliğine göre kontrol edilmelidir. İlan metni veya satıcının sözlü beyanı resmî kayıtların yerine geçmez. Belirsizlik varsa ödeme veya sözleşme aşamasından önce tapu ve gayrimenkul hukuku konusunda yetkin bir uzmandan destek alınmalıdır.'
+      },
+      {
+        heading: 'Satın alma bedeli dışındaki başlangıç giderleri',
+        body: 'Konut bütçesi yalnızca satış bedeli ve peşinattan oluşmaz. İşlemin koşullarına göre tapu harcı, döner sermaye bedeli, kredi tahsis ve ekspertiz giderleri, ipotek işlemleri, sigorta primleri, taşınma, tadilat ve eşya masrafları doğabilir. Hangi kalemin kim tarafından ödeneceği ve hangi tutarın geçerli olduğu işlem öncesinde güncel resmî kaynaklardan ve ilgili kurumlardan doğrulanmalıdır. Satış fiyatına ek giderleri ayrı satırlarda hesaplamak, peşinatı karşılayabilen fakat işlem sonrasındaki nakit ihtiyacını karşılayamayan bir bütçe oluşturma riskini azaltır.'
+      },
+      {
+        heading: 'Konut kredisi ve ödeme dayanıklılığı',
+        body: 'Kredi seçenekleri karşılaştırılırken yalnızca ilan edilen faiz oranına veya aylık taksite bakılmamalıdır. Vade, toplam geri ödeme, masraflar, faiz türü, ödeme planı ve varsa erken ödeme koşulları birlikte değerlendirilmelidir. Gelirin azalması, zorunlu harcamaların artması veya beklenmedik bir gider çıkması durumunda taksitlerin ödenebilir kalıp kalmayacağı ayrıca sınanmalıdır. Peşinatı yükseltmek kredi ihtiyacını azaltabilir; ancak tüm birikimi peşinata ayırmak acil durum rezervini ortadan kaldırabilir. Bankanın güncel teklif ve onay koşulları doğrudan bankadan doğrulanmalıdır.'
+      },
+      {
+        heading: 'Aidat, bakım ve düzenli işletme giderleri',
+        body: 'Aylık konut maliyetine kredi taksitinin yanında aidat, ısınma, su, elektrik, internet, ortak alan giderleri ve düzenli bakım ihtiyacı da eklenmelidir. Site veya apartman yönetiminden aidatın hangi hizmetleri kapsadığı, geçmiş bütçeler, planlanan büyük bakım işleri ve varsa olağanüstü gider kararları öğrenilmelidir. Binanın yaşı, asansör ve tesisat durumu, çatı ve cephe bakımı gelecekteki masrafları etkileyebilir. Sadece bugünkü aidatı kullanmak yerine olası gider artışları için bütçede pay ayırmak daha gerçekçi bir değerlendirme sağlar.'
+      },
+      {
+        heading: 'Deprem güvenliği, DASK ve konut sigortası',
+        body: 'Zorunlu Deprem Sigortası (DASK) ile konut sigortası aynı kapsamı ifade etmez. DASK poliçesinin varlığı, kapsamı, geçerlilik süresi ve güncel teminat bilgileri doğrulanmalı; ihtiyaçlara göre konut sigortasının yangın, su hasarı, hırsızlık ve diğer teminatları ayrıca incelenmelidir. Poliçelerin istisnaları, muafiyetleri ve teminat limitleri karşılaştırılmalıdır. Sigorta poliçesi binanın yapısal güvenliğine ilişkin teknik incelemenin yerine geçmez. Yapı güvenliği konusunda yalnızca dış görünüşe veya bina yaşına dayanılmamalı; gerektiğinde yetkin teknik uzmanlardan değerlendirme alınmalıdır.'
+      },
+      {
+        heading: 'Konum, ulaşım ve günlük yaşam',
+        body: 'Konutun gerçek kullanım değeri, oda sayısı ve metrekare kadar günlük ihtiyaçlara erişimle de ilişkilidir. İşe veya okula ulaşım, toplu taşıma, sağlık hizmetleri, alışveriş, çevresel gürültü, gün ışığı ve çevredeki planlama kararları değerlendirilmelidir. Mümkünse çevre farklı gün ve saatlerde ziyaret edilmeli; ilan fotoğraflarıyla sınırlı kalınmamalıdır. Ortak alanların durumu, otopark, erişilebilirlik ve yönetim düzeni de kullanım deneyimini etkileyebilir. Konum değerlendirmesi kişisel ihtiyaçlara göre ağırlıklandırılmalı, yalnızca popülerlik veya gelecekte değer kazanacağı iddiası üzerinden karar verilmemelidir.'
+      },
+      {
+        heading: 'Konut seçeneklerini karşılaştırma yöntemi',
+        body: 'Birden fazla taşınmazı aynı tabloya koyarken aynı maliyet dönemi, aynı gider varsayımları ve doğrulanmış bilgiler kullanılmalıdır. Her seçenek için başlangıç nakit ihtiyacı, aylık gider, tahmini bakım yükü, ulaşım maliyeti, hukuki durum ve bina güvenliği ayrı ayrı kaydedilmelidir. Bilinmeyen bir bilgi kesinmiş gibi doldurulmamalı; doğrulanması gereken kalem olarak işaretlenmelidir. Ağırlıklandırma yapılacaksa güvenlik, bütçe ve konum gibi ölçütlerin önemi karar verene göre belirlenmelidir. Böylece tek bir gösterge yerine gerekçesi açıklanabilir bir karar ortaya çıkar.'
+      },
+      {
+        heading: 'Teklif, sözleşme ve teslim öncesi kontroller',
+        body: 'Teklif vermeden önce satış bedeli, ödeme takvimi, teslim tarihi, taşınmazın boş veya kiracılı olması, demirbaşlar ve masrafların paylaşımı açıkça netleştirilmelidir. Sözleşmedeki şartlar, kapora veya cayma hükümleri ve ödeme alıcısı dikkatle incelenmelidir. Para transferleri doğrulanmış taraflara ve belgeli bir işlem kapsamında yapılmalıdır. Teslim sırasında sayaçlar, anahtarlar, mevcut hasarlar ve üzerinde anlaşılmış işler kayıt altına alınmalıdır. İşlemin hukuki veya teknik yönünde belirsizlik varsa imza ve ödeme öncesinde bağımsız uzman desteği alınmalıdır.'
+      }
+    ],
+    extraFaqs: [
+      {
+        q: 'Konut alırken sadece satış fiyatına bakmak yeterli midir?',
+        a: 'Hayır. Peşinat ve satın alma masraflarıyla birlikte kredi geri ödemesi, aidat, bakım, sigorta, faturalar ve taşınma giderleri de değerlendirilmelidir.'
+      },
+      {
+        q: 'Tapuda hangi bilgiler kontrol edilmelidir?',
+        a: 'Malik ve bağımsız bölüm bilgileriyle birlikte taşınmaz üzerindeki ipotek, haciz, şerh ve diğer takyidatlar güncel kayıtlar üzerinden incelenmelidir. Gerekirse uzman desteği alınmalıdır.'
+      },
+      {
+        q: 'DASK, konutun güvenli olduğunu gösterir mi?',
+        a: 'Hayır. DASK bir sigorta ürünüdür; binanın yapısal güvenliğini onaylayan teknik rapor değildir. Yapı güvenliği ayrı şekilde değerlendirilmelidir.'
+      },
+      {
+        q: 'Konut kredilerini nasıl karşılaştırmalıyım?',
+        a: 'Faiz türü, vade, aylık taksit, toplam geri ödeme, masraflar ve ödeme planı birlikte incelenmeli; bankanın güncel koşulları doğrudan doğrulanmalıdır.'
+      },
+      {
+        q: 'Konut rehberi hukuki veya finansal danışmanlık yerine geçer mi?',
+        a: 'Hayır. Rehber genel karar desteği sunar. Tapu, sözleşme, kredi ve yapı güvenliği gibi konularda ilgili resmî kayıtlar ve yetkin uzmanlar esas alınmalıdır.'
+      }
+    ],
+    conclusion: 'Konut kararını yalnızca satış fiyatına göre vermeyin. Başlangıç nakit ihtiyacını, aylık giderleri, finansman dayanıklılığını, tapu durumunu, bina güvenliğini ve konumun günlük yaşama etkisini birlikte değerlendirin. Bilgileri doğrulayın, belirsizlikleri açıkça kaydedin ve hukuki veya teknik riskleri işlemden önce uzmanlarla netleştirin.'
   }
 };
 
@@ -394,6 +486,35 @@ function getGuideExpansion(slug, h1) {
 }
 
 function universalSupplementSections(slug, h1) {
+  if (slug === 'konut-karar-rehberi') {
+    return [
+      {
+        heading: 'Konut kararında temel bütçe kontrolü',
+        body: 'Önce kullanılabilir birikimi, düzenli hane gelirini ve zorunlu aylık harcamaları ayrı ayrı kaydedin. Peşinat için ayrılan tutar, satın alma işlemi sırasında ödenecek masraflar ve işlem sonrasında elde tutulacak acil durum rezervi birbirinden ayrılmalıdır. Aylık ödeme kapasitesi belirlenirken yalnızca mevcut gelir değil, gelirde geçici azalma ihtimali ve değişebilecek giderler de düşünülmelidir. Böylece konutun alınabilir olması ile uzun vadede sürdürülebilir olması arasındaki fark görünür hale gelir.'
+      },
+      {
+        heading: 'Gerçekçi toplam sahip olma maliyeti',
+        body: 'Konutun toplam maliyetini değerlendirirken tek seferlik harcamalar ile tekrarlanan giderleri ayırın. Başlangıç kalemlerine peşinat, tapu ve işlem giderleri, kredi masrafları, taşınma ve gerekli tadilatlar girebilir. Düzenli kalemlerde ise kredi taksiti, aidat, faturalar, sigorta ve bakım için ayrılan pay yer alır. Her tutarın kaynağını ve hangi döneme ait olduğunu kaydetmek seçeneklerin tutarlı biçimde karşılaştırılmasını sağlar. Henüz bilinmeyen giderler sıfır kabul edilmemeli; araştırılacak veya tahmin aralığı belirlenecek kalemler olarak gösterilmelidir.'
+      },
+      {
+        heading: 'Belge ve bilgi doğrulama listesi',
+        body: 'İlan bilgileri, tapu kayıtları, bağımsız bölüm özellikleri, yapı kullanma izin belgesi ve varsa yönetim belgeleri birbirleriyle tutarlı olmalıdır. Satıcının yetkisi ve taşınmazın hukuki durumu doğrulanmadan yalnızca sözlü açıklamalara dayanarak ödeme yapılmamalıdır. Kredi kullanılacaksa bankanın ekspertiz süreci ve güncel kredi koşulları ayrıca teyit edilmelidir. Teknik açıdan önemli bir şüphe varsa uzman incelemesi istenmelidir. Her belge için kontrol tarihi ve doğrulama kaynağını not etmek, karar sürecinde eski veya eksik bilginin kullanılmasını önler.'
+      },
+      {
+        heading: 'Beklenmeyen giderlere karşı hazırlık',
+        body: 'Taşınmaz satın alındıktan sonra tesisat, ısıtma, su sızıntısı, ortak alan bakımı veya zorunlu tadilat gibi beklenmeyen giderler ortaya çıkabilir. Bütün birikimi peşinat ve başlangıç giderlerine ayırmak bu tür durumlarda finansal baskı yaratabilir. Hane bütçesine uygun bir rezerv belirleyin ve bu tutarı satın alma maliyetinden ayrı izleyin. Rezervin miktarı herkes için aynı değildir; gelir düzeni, mevcut borçlar, bakmakla yükümlü olunan kişiler ve konutun durumu dikkate alınmalıdır.'
+      },
+      {
+        heading: 'Konut karşılaştırmasında sık yapılan hatalar',
+        body: 'Yalnızca metrekare fiyatına göre karar vermek, aidatı ve bakım ihtiyacını göz ardı etmek, hukuki belgeleri son aşamaya bırakmak ve sigorta kapsamını yanlış yorumlamak yaygın risklerdir. İlan fotoğrafları binanın teknik durumunu kanıtlamaz; düşük aylık taksit de her zaman daha düşük toplam maliyet anlamına gelmez. Karşılaştırma sırasında her seçeneğe aynı soruları sorun, eksik bilgileri işaretleyin ve varsayımları doğrulanmış gerçeklerden ayırın. Bir seçenek bazı ölçütlerde öne çıkarken başka bir ölçütte daha yüksek risk taşıyabilir.'
+      },
+      {
+        heading: 'Karar öncesi uygulama planı',
+        body: 'Önce toplam bütçe ve sürdürülebilir aylık ödeme sınırını belirleyin. Ardından konum ve kullanım ihtiyaçlarına göre seçenekleri daraltın. Her taşınmaz için başlangıç maliyetini ve düzenli giderleri aynı formatta hesaplayın; tapu ve diğer belgelerin doğrulanma durumunu kaydedin. Bina güvenliği, sigorta ve bakım ihtiyaçlarını ayrı başlıklarda inceleyin. Son olarak bilinmeyenleri, uzman görüşü gerektiren noktaları ve sözleşme öncesinde netleştirilecek şartları listeleyin. Kritik bir konu doğrulanamıyorsa takvim baskısı nedeniyle bu kontrolü atlamayın.'
+      }
+    ];
+  }
+
   const blocks = [
     {
       heading: `${h1} için karar çerçevesi`,
@@ -486,7 +607,8 @@ function mergeGuidePage(page) {
     ...getLongformSections(longformKey),
     ...universalSupplementSections(page.slug, page.h1)
   ];
-  const faqs = [...(page.faqs || []), ...(exp.extraFaqs || []), ...SHARED_FAQ_TAIL];
+  const faqTail = page.slug === 'konut-karar-rehberi' ? HOUSING_FAQ_TAIL : SHARED_FAQ_TAIL;
+ const faqs = [...(page.faqs || []), ...(exp.extraFaqs || []), ...faqTail];
 
   return {
     ...page,
