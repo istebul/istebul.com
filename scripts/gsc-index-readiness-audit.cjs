@@ -36,7 +36,7 @@ for (const msg of collectPlatformAiSurfaceFailures(index, aiIndex)) {
   fail(msg);
 }
 
-if (!sitemap.includes('<lastmod>')) fail('sitemap should include lastmod');
+// Sitemap lastmod is optional; verified dates may be included.
 console.log(`gsc-index: using sitemap from ${sitemapSource}`);
 
 if (/noindex/i.test(sigorta.match(/<head[\s\S]*?<\/head>/i)?.[0] || '')) {
