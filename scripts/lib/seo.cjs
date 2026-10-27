@@ -35,6 +35,7 @@ function renderHreflangAlternates(site, canonicalPath) {
 
   const base = site.baseUrl.replace(/\/$/, '');
   const bare = stripLocalePrefixPath(canonicalPath);
+  if (bare !== '/') return '';
   const tags = [];
 
   for (const [id, alt] of Object.entries(locales.alternates)) {
@@ -1218,7 +1219,7 @@ function buildMethodologyPage(distDir, site) {
 function generateSitemap(distDir, { site, landingConfig, hubsConfig, blogPosts = [] }) {
   const urls = [...site.staticUrls];
   const localePrefixes = ['', '/en', '/de', '/ar', '/it', '/fr', '/es', '/ja', '/zh'];
-  const localizedPaths = new Set(['/', '/auto/', '/metodoloji/', '/veri-kaynaklari/', '/konut/', '/tatil/', '/finans/', '/planlar', '/blog', '/duyurular', '/kampanyalar', '/hakkimizda.html', '/iletisim.html', '/en/', '/de/', '/ar/']);
+  const localizedPaths = new Set(['/']);
 
   hubsConfig.hubs.forEach((h) => {
     urls.push({ loc: h.path, priority: '0.85', changefreq: 'weekly' });
@@ -1269,7 +1270,7 @@ function generateSitemap(distDir, { site, landingConfig, hubsConfig, blogPosts =
       const loc = absoluteUrl(site.baseUrl, u.loc);
       const priority = u.priority ? `\n    <priority>${u.priority}</priority>` : '';
       const changefreq = u.changefreq ? `\n    <changefreq>${u.changefreq}</changefreq>` : '';
-      const lastmod = `\n    <lastmod>${u.lastmod || SEO_BUILD_DATE}</lastmod>`;
+      const lastmod = u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : '';
       return `  <url>
     <loc>${loc}</loc>${lastmod}${priority}${changefreq}
   </url>`;
