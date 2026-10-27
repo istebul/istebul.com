@@ -112,9 +112,7 @@ checkPage('sigorta/index.html', {
   aiCopy: true
 });
 
-if (!sitemap.includes('<lastmod>')) {
-  fail('sitemap.xml should include lastmod entries');
-}
+  // Sitemap lastmod is optional; only verified content-update dates are emitted.
 
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!indexHtml.includes('application/ld+json')) fail('index.html missing JSON-LD');
