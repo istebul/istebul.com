@@ -14,6 +14,14 @@ test('resolveRouteSurface maps premium and app paths', () => {
     assert.equal(resolveRouteSurface('/karar-asistani'), 'page-karar-analizi');
 });
 
+test('resolveRouteSurface recognizes every supported non-default locale prefix', () => {
+    for (const locale of ['en', 'de', 'ar', 'it', 'fr', 'es', 'ja', 'zh']) {
+        assert.equal(resolveRouteSurface(`/${locale}/planlar/`), 'page-planlar');
+        assert.equal(resolveRouteSurface(`/${locale}/karsilastir/`), 'compare');
+    }
+    assert.equal(resolveRouteSurface('/planlar/'), 'page-planlar');
+});
+
 test('resolveRouteSurface maps decision-options surface paths to ilanlar', () => {
     assert.equal(resolveRouteSurface('/secenekler'), 'ilanlar');
     assert.equal(resolveRouteSurface('/ilanlar'), 'ilanlar');

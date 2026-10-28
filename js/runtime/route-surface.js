@@ -85,7 +85,7 @@ const EXTERNAL_REDIRECTS = Object.freeze({
 
 export function stripPathname(pathname = '/') {
     const raw = pathname === '/index.html' ? '/' : pathname;
-    const localeMatch = raw.match(/^\/(en|de)(\/|$)/);
+    const localeMatch = raw.match(/^\/(en|de|ar|it|fr|es|ja|zh)(\/|$)/);
     const stripped = localeMatch ? raw.slice(localeMatch[1].length + 1) || '/' : raw;
     return stripped.replace(/\/$/, '') || '/';
 }
