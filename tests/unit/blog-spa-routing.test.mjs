@@ -63,6 +63,14 @@ test('blog filter tabs use canonical category hrefs', () => {
   assert.doesNotMatch(ui, /kategori=\$\{/);
 });
 
+test('init-public-content runs immediately when DOM is already ready', () => {
+  const mod = fs.readFileSync(path.join(root, 'js/runtime/init-public-content.js'), 'utf8');
+
+  assert.match(mod, /if\s*\(document\.readyState === 'loading'\)\s*\{[\s\S]*?addEventListener\('DOMContentLoaded',\s*run,\s*\{ once: true \}\)[\s\S]*?\}\s*else\s*\{\s*run\(\);\s*\}/);
+  assert.match(mod, /window\.addEventListener\('popstate',\s*run\)/);
+  assert.match(mod, /window\.addEventListener\('app:ready',\s*run\)/);
+});
+
 test('init-public-content imports blogSlugFromPath for blog post hydration', () => {
   const mod = fs.readFileSync(path.join(root, 'js/runtime/init-public-content.js'), 'utf8');
   assert.match(mod, /import\s*\{[^}]*blogSlugFromPath[^}]*\}\s*from\s*'\.\/route-surface\.js'/);

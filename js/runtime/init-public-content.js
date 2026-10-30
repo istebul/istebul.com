@@ -56,9 +56,11 @@ export function initPublicContentHub() {
     if (surface) refreshPublicContentSurface(surface);
   };
 
-  document.addEventListener('DOMContentLoaded', () => {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
     run();
-  });
+  }
 
   window.addEventListener('popstate', run);
   window.addEventListener('app:ready', run);
