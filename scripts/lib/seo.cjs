@@ -169,7 +169,7 @@ function webPageSchema(base, { name, description, path, dateModified }) {
     name,
     description,
     inLanguage: 'tr-TR',
-    dateModified: dateModified || SEO_BUILD_DATE,
+    ...(dateModified ? { dateModified } : {}),
     isPartOf: { '@id': `${base}/#website` },
     about: { '@id': `${base}/#organization` },
     publisher: { '@id': `${base}/#organization` }
@@ -751,7 +751,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
         name: page.h1,
         description: page.description,
         path,
-        dateModified: SEO_BUILD_DATE
+        dateModified: page.dateModified
       })
     );
   } else {
