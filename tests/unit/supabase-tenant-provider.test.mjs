@@ -1112,6 +1112,178 @@ describe('Additional resolution and mapping coverage', () => {
     );
   });
 
+  it('creates immutable Supabase result snapshots isolated from source mutations', () => {
+    const sourceTenant = {
+      id: 'tenant-source-001',
+      slug: 'source',
+      displayName: 'Original tenant',
+      domain: 'original.example'
+    };
+    const sourceMembership = {
+      id: 'membership-source-001',
+      identityId: 'identity-source-001',
+      tenantId: 'tenant-source-001',
+      roleLabel: 'viewer',
+      active: true
+    };
+    const sourceMemberships = [sourceMembership];
+    const sourceAccessScope = {
+      accessScopeId: 'scope-source-001',
+      allowedTenantIds: ['tenant-source-001'],
+      crossTenantAllowed: false
+    };
+    const sourceError = {
+      code: 'TenantNotFound',
+      message: 'Original error'
+    };
+    const sourceIssues = [
+      {
+        code: 'SOURCE_WARNING',
+        message: 'Original warning',
+        severity: 'warning'
+      }
+    ];
+    const sourceSummary = [
+      { key: 'source', label: 'Original summary', value: 'original' }
+    ];
+    const sourceTelemetry = {
+      durationMs: 3,
+      startedAt: '2026-07-22T00:00:00.000Z',
+      endedAt: '2026-07-22T00:00:00.003Z',
+      operation: 'resolveTenant',
+      providerId: SUPABASE_TENANT_PROVIDER_ID
+    };
+    const sourceBag = { traceId: 'trace-original' };
+
+    const result = createSupabaseTenantResult({
+      success: false,
+      status: 'unresolved',
+      operation: 'resolveTenant',
+      tenant: sourceTenant,
+      memberships: sourceMemberships,
+      accessScope: sourceAccessScope,
+      error: sourceError,
+      validationIssues: sourceIssues,
+      summaryItems: sourceSummary,
+      telemetry: sourceTelemetry,
+      bag: sourceBag
+    });
+
+    sourceTenant.displayName = 'Mutated tenant';
+    sourceMembership.roleLabel = 'admin';
+    sourceMemberships.push({
+      id: 'injected',
+      identityId: 'injected',
+      tenantId: 'injected',
+      active: true
+    });
+    sourceAccessScope.allowedTenantIds.push('tenant-injected');
+    sourceError.message = 'Mutated error';
+    sourceIssues[0].message = 'Mutated warning';
+    sourceIssues.push({
+      code: 'INJECTED',
+      message: 'Injected issue',
+      severity: 'error'
+    });
+    sourceSummary[0].label = 'Mutated summary';
+    sourceSummary.push({
+      key: 'injected',
+      label: 'Injected',
+      value: true
+    });
+    sourceTelemetry.durationMs = 999;
+    sourceBag.traceId = 'trace-mutated';
+
+    assert.equal(result.tenant?.displayName, 'Original tenant');
+    assert.equal(result.memberships?.length, 1);
+    assert.equal(result.memberships?.[0]?.roleLabel, 'viewer');
+    assert.deepEqual(
+      result.accessScope?.allowedTenantIds,
+      ['tenant-source-001']
+    );
+    assert.equal(result.error?.message, 'Original error');
+    assert.equal(result.validationIssues.length, 1);
+    assert.equal(result.validationIssues[0]?.message, 'Original warning');
+    assert.equal(result.summaryItems[0]?.label, 'Original summary');
+    assert.equal(result.telemetry.durationMs, 3);
+    assert.equal(result.bag?.traceId, 'trace-original');
+
+    assert.equal(Object.isFrozen(result), true);
+    assert.equal(Object.isFrozen(result.tenant), true);
+    assert.equal(Object.isFrozen(result.memberships), true);
+    assert.equal(Object.isFrozen(result.memberships?.[0]), true);
+    assert.equal(Object.isFrozen(result.accessScope), true);
+    assert.equal(
+      Object.isFrozen(result.accessScope?.allowedTenantIds),
+      true
+    );
+    assert.equal(Object.isFrozen(result.error), true);
+    assert.equal(Object.isFrozen(result.validationIssues), true);
+    assert.equal(Object.isFrozen(result.validationIssues[0]), true);
+    assert.equal(Object.isFrozen(result.summaryItems), true);
+    assert.equal(Object.isFrozen(result.summaryItems[0]), true);
+    assert.equal(Object.isFrozen(result.telemetry), true);
+    assert.equal(Object.isFrozen(result.bag), true);
+  });
+
+  it('normalizes external Supabase results before embedding payload in bag', () => {
+    const sourceTenant = {
+      id: 'tenant-external-001',
+      slug: 'external',
+      displayName: 'External tenant'
+    };
+    const sourceMembership = {
+      id: 'membership-external-001',
+      identityId: 'identity-external-001',
+      tenantId: 'tenant-external-001',
+      roleLabel: 'viewer',
+      active: true
+    };
+    const sourceBag = { traceId: 'external-trace' };
+
+    const externalResult = {
+      success: true,
+      status: 'resolved',
+      operation: 'getTenant',
+      providerId: SUPABASE_TENANT_PROVIDER_ID,
+      tenant: sourceTenant,
+      memberships: [sourceMembership],
+      validationIssues: [],
+      summaryItems: [],
+      telemetry: {
+        durationMs: 3,
+        startedAt: '2026-07-22T00:00:00.000Z',
+        endedAt: '2026-07-22T00:00:00.003Z',
+        operation: 'getTenant',
+        providerId: SUPABASE_TENANT_PROVIDER_ID
+      },
+      bag: sourceBag
+    };
+
+    const mapped = toTenantProviderResult(externalResult);
+
+    sourceTenant.displayName = 'Mutated external tenant';
+    sourceMembership.roleLabel = 'admin';
+    sourceBag.traceId = 'mutated-trace';
+
+    assert.equal(
+      mapped.bag?.supabaseTenant?.displayName,
+      'External tenant'
+    );
+    assert.equal(
+      mapped.bag?.supabaseMemberships?.[0]?.roleLabel,
+      'viewer'
+    );
+    assert.equal(mapped.bag?.traceId, 'external-trace');
+    assert.equal(Object.isFrozen(mapped.bag), true);
+    assert.equal(Object.isFrozen(mapped.bag?.supabaseTenant), true);
+    assert.equal(Object.isFrozen(mapped.bag?.supabaseMemberships), true);
+    assert.equal(
+      Object.isFrozen(mapped.bag?.supabaseMemberships?.[0]),
+      true
+    );
+  });
+
   it('createSupabaseTenantResult freezes memberships', () => {
     const result = createSupabaseTenantResult({
       success: true,

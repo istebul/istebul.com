@@ -24,30 +24,30 @@ import { SUPABASE_TENANT_PROVIDER_ID } from './constants';
  * Supabase tenant projeksiyonu.
  */
 export interface SupabaseTenantRecord {
-  id: string;
-  slug: string;
-  displayName: string;
-  domain?: string;
-  status?: string;
+  readonly id: string;
+  readonly slug: string;
+  readonly displayName: string;
+  readonly domain?: string;
+  readonly status?: string;
 }
 
 /**
  * Supabase üyelik projeksiyonu.
  */
 export interface SupabaseMembershipRecord {
-  id: string;
-  identityId: string;
-  tenantId: string;
-  roleLabel?: string;
-  active: boolean;
+  readonly id: string;
+  readonly identityId: string;
+  readonly tenantId: string;
+  readonly roleLabel?: string;
+  readonly active: boolean;
 }
 
 /**
  * Supabase provider hata özeti.
  */
 export interface SupabaseTenantErrorInfo {
-  code: TenantErrorCode;
-  message: string;
+  readonly code: TenantErrorCode;
+  readonly message: string;
 }
 
 /**
@@ -55,31 +55,31 @@ export interface SupabaseTenantErrorInfo {
  */
 export interface SupabaseTenantResult {
   /** Operasyon başarılı mı */
-  success: boolean;
+  readonly success: boolean;
   /** Tenant çözümleme durumu */
-  status: TenantProviderStatus;
+  readonly status: TenantProviderStatus;
   /** Çalıştırılan operasyon */
-  operation: TenantProviderOperation;
+  readonly operation: TenantProviderOperation;
   /** Provider kimliği */
-  providerId: string;
+  readonly providerId: string;
   /** Tenant */
-  tenant?: SupabaseTenantRecord;
+  readonly tenant?: SupabaseTenantRecord;
   /** Üyelikler */
-  memberships?: readonly SupabaseMembershipRecord[];
+  readonly memberships?: readonly SupabaseMembershipRecord[];
   /** Erişim kararı */
-  accessOutcome?: TenantIsolationDecisionOutcome;
+  readonly accessOutcome?: TenantIsolationDecisionOutcome;
   /** Erişim kapsamı */
-  accessScope?: TenantAccessScope;
+  readonly accessScope?: TenantAccessScope;
   /** Hata bilgisi */
-  error?: SupabaseTenantErrorInfo;
+  readonly error?: SupabaseTenantErrorInfo;
   /** Doğrulama bulguları */
-  validationIssues: readonly TenantProviderValidationIssue[];
+  readonly validationIssues: readonly TenantProviderValidationIssue[];
   /** Özet öğeleri */
-  summaryItems: readonly TenantProviderSummaryItem[];
+  readonly summaryItems: readonly TenantProviderSummaryItem[];
   /** Telemetri */
-  telemetry: TenantProviderTelemetry;
+  readonly telemetry: TenantProviderTelemetry;
   /** Ek bag */
-  bag?: Record<string, unknown>;
+  readonly bag?: Readonly<Record<string, unknown>>;
 }
 
 export interface CreateSupabaseTenantResultInput {
@@ -104,32 +104,47 @@ export interface CreateSupabaseTenantResultInput {
 export function createSupabaseTenantResult(
   input: CreateSupabaseTenantResultInput
 ): SupabaseTenantResult {
-  return {
+  return Object.freeze({
     success: input.success,
     status: input.status,
     operation: input.operation,
     providerId: input.providerId ?? SUPABASE_TENANT_PROVIDER_ID,
-    tenant: input.tenant ? { ...input.tenant } : undefined,
+    tenant: input.tenant
+      ? Object.freeze({ ...input.tenant })
+      : undefined,
     memberships: input.memberships
-      ? Object.freeze(input.memberships.map((item) => ({ ...item })))
+      ? Object.freeze(
+          input.memberships.map((item) => Object.freeze({ ...item }))
+        )
       : undefined,
     accessOutcome: input.accessOutcome,
     accessScope: input.accessScope
-      ? {
+      ? Object.freeze({
           ...input.accessScope,
           allowedTenantIds: Object.freeze([
             ...input.accessScope.allowedTenantIds
           ])
-        }
+        })
       : undefined,
-    error: input.error ? { ...input.error } : undefined,
-    validationIssues: Object.freeze([...(input.validationIssues ?? [])]),
-    summaryItems: Object.freeze([...(input.summaryItems ?? [])]),
-    telemetry: { ...input.telemetry },
-    bag: input.bag ? { ...input.bag } : undefined
-  };
+    error: input.error
+      ? Object.freeze({ ...input.error })
+      : undefined,
+    validationIssues: Object.freeze(
+      (input.validationIssues ?? []).map((issue) =>
+        Object.freeze({ ...issue })
+      )
+    ),
+    summaryItems: Object.freeze(
+      (input.summaryItems ?? []).map((item) =>
+        Object.freeze({ ...item })
+      )
+    ),
+    telemetry: Object.freeze({ ...input.telemetry }),
+    bag: input.bag
+      ? Object.freeze({ ...input.bag })
+      : undefined
+  });
 }
-
 /**
  * Supabase tenant kaydını TenantIdentityRef'e dönüştürür.
  */
@@ -183,41 +198,44 @@ export function statusFromTenantErrorCode(
 export function toTenantProviderResult(
   result: SupabaseTenantResult
 ): TenantProviderResult {
-  const tenant = result.tenant
-    ? toTenantIdentityRefFromSupabaseTenant(result.tenant)
-    : undefined;
-  const memberships = result.memberships
-    ? toTenantMembershipsFromSupabase(result.memberships)
-    : undefined;
+  // Normalize results even when they were not created by our factory.
+  const snapshot = createSupabaseTenantResult(result);
 
+  const tenant = snapshot.tenant
+    ? toTenantIdentityRefFromSupabaseTenant(snapshot.tenant)
+    : undefined;
+  const memberships = snapshot.memberships
+    ? toTenantMembershipsFromSupabase(snapshot.memberships)
+    : undefined;
   const issues: TenantProviderValidationIssue[] = [
-    ...result.validationIssues
+    ...snapshot.validationIssues
   ];
-  if (result.error) {
+
+  if (snapshot.error) {
     issues.push({
-      code: result.error.code,
-      message: result.error.message,
+      code: snapshot.error.code,
+      message: snapshot.error.message,
       severity: 'error'
     });
   }
 
   return createTenantProviderResult({
-    success: result.success,
-    status: result.status,
-    operation: result.operation,
-    providerId: result.providerId,
+    success: snapshot.success,
+    status: snapshot.status,
+    operation: snapshot.operation,
+    providerId: snapshot.providerId,
     tenant,
     memberships,
-    accessScope: result.accessScope,
-    accessOutcome: result.accessOutcome,
+    accessScope: snapshot.accessScope,
+    accessOutcome: snapshot.accessOutcome,
     validationIssues: issues,
-    summaryItems: result.summaryItems,
-    telemetry: result.telemetry,
+    summaryItems: snapshot.summaryItems,
+    telemetry: snapshot.telemetry,
     bag: {
-      ...(result.bag ?? {}),
-      supabaseTenant: result.tenant,
-      supabaseMemberships: result.memberships,
-      supabaseTenantError: result.error
+      ...(snapshot.bag ?? {}),
+      supabaseTenant: snapshot.tenant,
+      supabaseMemberships: snapshot.memberships,
+      supabaseTenantError: snapshot.error
     }
   });
 }

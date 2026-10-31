@@ -22,28 +22,28 @@ import { SUPABASE_AUTHENTICATION_PROVIDER_ID } from './constants';
  * Supabase kullanıcı projeksiyonu.
  */
 export interface SupabaseAuthUser {
-  id: string;
-  email?: string;
-  displayName?: string;
-  tenantId?: string;
+  readonly id: string;
+  readonly email?: string;
+  readonly displayName?: string;
+  readonly tenantId?: string;
 }
 
 /**
  * Supabase oturum projeksiyonu.
  */
 export interface SupabaseAuthSession {
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  sessionId?: string;
+  readonly accessToken?: string;
+  readonly refreshToken?: string;
+  readonly expiresAt?: number;
+  readonly sessionId?: string;
 }
 
 /**
  * Supabase provider hata özeti.
  */
 export interface SupabaseAuthenticationErrorInfo {
-  code: AuthenticationErrorCode;
-  message: string;
+  readonly code: AuthenticationErrorCode;
+  readonly message: string;
 }
 
 /**
@@ -51,27 +51,27 @@ export interface SupabaseAuthenticationErrorInfo {
  */
 export interface SupabaseAuthenticationResult {
   /** Operasyon başarılı mı */
-  success: boolean;
+  readonly success: boolean;
   /** Authentication durumu */
-  status: AuthenticationStatus;
+  readonly status: AuthenticationStatus;
   /** Çalıştırılan operasyon */
-  operation: AuthenticationProviderOperation;
+  readonly operation: AuthenticationProviderOperation;
   /** Provider kimliği */
-  providerId: string;
+  readonly providerId: string;
   /** Kullanıcı */
-  user?: SupabaseAuthUser;
+  readonly user?: Readonly<SupabaseAuthUser>;
   /** Oturum */
-  session?: SupabaseAuthSession;
+  readonly session?: Readonly<SupabaseAuthSession>;
   /** Hata bilgisi */
-  error?: SupabaseAuthenticationErrorInfo;
+  readonly error?: Readonly<SupabaseAuthenticationErrorInfo>;
   /** Doğrulama bulguları */
-  validationIssues: readonly AuthenticationProviderValidationIssue[];
+  readonly validationIssues: readonly AuthenticationProviderValidationIssue[];
   /** Özet öğeleri */
-  summaryItems: readonly AuthenticationProviderSummaryItem[];
+  readonly summaryItems: readonly AuthenticationProviderSummaryItem[];
   /** Telemetri */
-  telemetry: AuthenticationProviderTelemetry;
+  readonly telemetry: Readonly<AuthenticationProviderTelemetry>;
   /** Ek bag */
-  bag?: Record<string, unknown>;
+  readonly bag?: Readonly<Record<string, unknown>>;
 }
 
 export interface CreateSupabaseAuthenticationResultInput {
@@ -85,7 +85,7 @@ export interface CreateSupabaseAuthenticationResultInput {
   validationIssues?: readonly AuthenticationProviderValidationIssue[];
   summaryItems?: readonly AuthenticationProviderSummaryItem[];
   telemetry: AuthenticationProviderTelemetry;
-  bag?: Record<string, unknown>;
+  bag?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -94,26 +94,36 @@ export interface CreateSupabaseAuthenticationResultInput {
 export function createSupabaseAuthenticationResult(
   input: CreateSupabaseAuthenticationResultInput
 ): SupabaseAuthenticationResult {
-  return {
+  return Object.freeze({
     success: input.success,
     status: input.status,
     operation: input.operation,
     providerId: input.providerId ?? SUPABASE_AUTHENTICATION_PROVIDER_ID,
-    user: input.user ? { ...input.user } : undefined,
-    session: input.session ? { ...input.session } : undefined,
-    error: input.error ? { ...input.error } : undefined,
-    validationIssues: Object.freeze([...(input.validationIssues ?? [])]),
-    summaryItems: Object.freeze([...(input.summaryItems ?? [])]),
-    telemetry: { ...input.telemetry },
-    bag: input.bag ? { ...input.bag } : undefined
-  };
+    user: input.user ? Object.freeze({ ...input.user }) : undefined,
+    session: input.session ? Object.freeze({ ...input.session }) : undefined,
+    error: input.error ? Object.freeze({ ...input.error }) : undefined,
+    validationIssues: Object.freeze(
+      (input.validationIssues ?? []).map((issue) =>
+        Object.freeze({ ...issue })
+      )
+    ),
+    summaryItems: Object.freeze(
+      (input.summaryItems ?? []).map((item) =>
+        Object.freeze({ ...item })
+      )
+    ),
+    telemetry: Object.freeze({ ...input.telemetry }),
+    bag: input.bag
+      ? Object.freeze({ ...input.bag })
+      : undefined
+  });
 }
 
 /**
  * Supabase kullanıcısını Principal'a dönüştürür.
  */
 export function toPrincipalFromSupabaseUser(
-  user: SupabaseAuthUser
+  user: Readonly<SupabaseAuthUser>
 ): Principal {
   return {
     principalId: `principal-supabase-${user.id}`,
@@ -127,7 +137,7 @@ export function toPrincipalFromSupabaseUser(
  * Supabase oturumunu CredentialReference'a dönüştürür.
  */
 export function toCredentialReferenceFromSupabaseSession(
-  session: SupabaseAuthSession | undefined,
+  session: Readonly<SupabaseAuthSession> | undefined,
   userId: string
 ): CredentialReference {
   const expiresAt =

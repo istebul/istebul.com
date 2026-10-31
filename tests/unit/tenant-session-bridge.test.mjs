@@ -981,30 +981,64 @@ describe('Error mapping', () => {
     );
   });
 
-  it('createTenantSessionBridgeResult freezes issues', () => {
+  it('createTenantSessionBridgeResult freezes its own result snapshots', () => {
+    const issue = { code: 'X', message: 'Y', severity: 'error' };
+    const summaryItem = { key: 'tenant-count', label: 'Tenant Count', value: 1 };
+    const bag = { sessionId: 'session-001' };
+    const telemetry = {
+      durationMs: 1,
+      startedAt: '2026-07-22T00:00:00.000Z',
+      endedAt: '2026-07-22T00:00:00.001Z',
+      tenantSynchronizationCount: 0,
+      membershipSynchronizationCount: 0,
+      validationCount: 0,
+      refreshCount: 0,
+      summaryCount: 1,
+      operation: 'synchronize'
+    };
+
     const result = createTenantSessionBridgeResult({
       success: false,
       operation: 'synchronize',
-      validationIssues: [{ code: 'X', message: 'Y', severity: 'error' }],
-      telemetry: {
-        durationMs: 1,
-        startedAt: '2026-07-22T00:00:00.000Z',
-        endedAt: '2026-07-22T00:00:00.001Z',
-        tenantSynchronizationCount: 0,
-        membershipSynchronizationCount: 0,
-        validationCount: 0,
-        refreshCount: 0,
-        summaryCount: 0,
-        operation: 'synchronize'
-      }
+      validationIssues: [issue],
+      summaryItems: [summaryItem],
+      telemetry,
+      bag
+    });
+
+    assert.ok(Object.isFrozen(result));
+    assert.ok(Object.isFrozen(result.validationIssues));
+    assert.ok(Object.isFrozen(result.validationIssues[0]));
+    assert.ok(Object.isFrozen(result.summaryItems));
+    assert.ok(Object.isFrozen(result.summaryItems[0]));
+    assert.ok(Object.isFrozen(result.telemetry));
+    assert.ok(Object.isFrozen(result.bag));
+
+    assert.throws(() => result.validationIssues.push({}));
+    assert.throws(() => {
+      result.validationIssues[0].message = 'changed';
+    });
+    assert.throws(() => result.summaryItems.push({}));
+    assert.throws(() => {
+      result.summaryItems[0].value = 999;
     });
     assert.throws(() => {
-      result.validationIssues.push({
-        code: 'Z',
-        message: 'W',
-        severity: 'warning'
-      });
+      result.telemetry.durationMs = 999;
     });
+    assert.throws(() => {
+      result.bag.sessionId = 'changed';
+    });
+
+    // Factory girdileri sonuç snapshot'ından bağımsız kalmalı.
+    issue.message = 'source changed';
+    summaryItem.value = 999;
+    bag.sessionId = 'source changed';
+    telemetry.durationMs = 999;
+
+    assert.equal(result.validationIssues[0].message, 'Y');
+    assert.equal(result.summaryItems[0].value, 1);
+    assert.equal(result.bag.sessionId, 'session-001');
+    assert.equal(result.telemetry.durationMs, 1);
   });
 });
 

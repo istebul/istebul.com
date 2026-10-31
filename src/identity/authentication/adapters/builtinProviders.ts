@@ -57,8 +57,12 @@ const BUILTIN_PROVIDER_DEFINITIONS: AuthenticationProviderRegistration[] = [
   }
 ];
 
+const freezeRegistration = (
+  registration: AuthenticationProviderRegistration
+): AuthenticationProviderRegistration => Object.freeze({ ...registration });
+
 export const BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS: readonly AuthenticationProviderRegistration[] =
-  Object.freeze(BUILTIN_PROVIDER_DEFINITIONS);
+  Object.freeze(BUILTIN_PROVIDER_DEFINITIONS.map(freezeRegistration));
 
 export const BUILTIN_AUTHENTICATION_PROVIDER_COUNT =
   BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS.length;

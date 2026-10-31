@@ -110,6 +110,78 @@ describe('AuthorizationRegistry', () => {
     assert.ok(registry.getById('authz-custom-099'));
   });
 
+  it('register stores an immutable snapshot independent of the source', () => {
+    const source = {
+      id: 'authz-immutable-099',
+      identityId: 'identity-immutable',
+      principalId: 'principal-immutable',
+      roles: [{
+        id: 'viewer',
+        name: 'Viewer',
+        scope: 'tenant',
+        permissionIds: ['perm-read']
+      }],
+      permissions: [],
+      policies: [{
+        id: 'policy-viewer',
+        name: 'Viewer',
+        roleIds: ['viewer'],
+        effect: 'allow'
+      }],
+      decisions: [],
+      order: 99,
+      createdAt: '2026-07-22T00:00:00.000Z',
+      updatedAt: '2026-07-22T00:00:00.000Z'
+    };
+
+    registry.register(source);
+
+    source.roles[0].name = 'Changed';
+    source.roles[0].permissionIds.push('perm-admin');
+    source.policies[0].effect = 'deny';
+
+    const stored = registry.getById('authz-immutable-099');
+
+    assert.equal(stored.roles[0].name, 'Viewer');
+    assert.deepEqual(stored.roles[0].permissionIds, ['perm-read']);
+    assert.equal(stored.policies[0].effect, 'allow');
+    assert.ok(Object.isFrozen(stored));
+    assert.ok(Object.isFrozen(stored.roles[0]));
+    assert.ok(Object.isFrozen(stored.roles[0].permissionIds));
+    assert.ok(Object.isFrozen(stored.policies[0]));
+  });
+
+  it('rejects invalid policies and order', () => {
+    const base = {
+      id: 'authz-invalid-099',
+      identityId: 'identity-invalid',
+      principalId: 'principal-invalid',
+      roles: [],
+      permissions: [],
+      policies: [],
+      decisions: [],
+      order: 1,
+      createdAt: '2026-07-22T00:00:00.000Z',
+      updatedAt: '2026-07-22T00:00:00.000Z'
+    };
+
+    assert.throws(
+      () => registry.register({ ...base, policies: null }),
+      /policies bir dizi/
+    );
+
+    for (const order of [0, -1, 1.5, NaN, Infinity]) {
+      assert.throws(
+        () => registry.register({
+          ...base,
+          id: `authz-invalid-order-${String(order)}`,
+          order
+        }),
+        /order/
+      );
+    }
+  });
+
   it('register throws on duplicate id', () => {
     assert.throws(
       () => registry.register(BUILTIN_AUTHORIZATION_MODULES[0]),
@@ -626,6 +698,16 @@ describe('toAuthorizationProjection', () => {
     assert.ok(Object.isFrozen(projection.roles));
     assert.ok(Object.isFrozen(projection.permissions));
     assert.ok(Object.isFrozen(projection.decisions));
+    assert.ok(Object.isFrozen(projection));
+    assert.ok(Object.isFrozen(projection.roles[0]));
+    assert.ok(Object.isFrozen(projection.roles[0].permissionIds));
+    assert.ok(Object.isFrozen(projection.permissions[0]));
+    assert.ok(Object.isFrozen(projection.permissions[0].action));
+    assert.ok(Object.isFrozen(projection.permissions[0].resource));
+    assert.ok(Object.isFrozen(projection.policies[0]));
+    assert.ok(Object.isFrozen(projection.policies[0].roleIds));
+    assert.ok(Object.isFrozen(projection.decisions[0]));
+
   });
 
   it('counts allow and deny decisions', () => {

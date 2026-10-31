@@ -128,6 +128,58 @@ export interface IdentityModule extends Identity {
   updatedAt: string;
 }
 
+function freezeIdentityClaims(claims: IdentityClaims): IdentityClaims {
+  const entries = Object.entries(claims).map(([key, value]) => [
+    key,
+    Array.isArray(value) ? Object.freeze([...value]) : value
+  ]);
+
+  return Object.freeze(Object.fromEntries(entries)) as IdentityClaims;
+}
+
+/**
+ * IdentityModule için bağımsız ve immutable kayıt snapshot'ı üretir.
+ */
+export function freezeIdentityModule(
+  module: IdentityModule
+): IdentityModule {
+  return Object.freeze({
+    ...module,
+    user: Object.freeze({ ...module.user }),
+    tenant: Object.freeze({ ...module.tenant }),
+    roles: Object.freeze(
+      module.roles.map((role) => Object.freeze({ ...role }))
+    ),
+    permissions: Object.freeze(
+      module.permissions.map((permission) =>
+        Object.freeze({ ...permission })
+      )
+    ),
+    claims: freezeIdentityClaims(module.claims),
+    sessionReference: Object.freeze({ ...module.sessionReference })
+  });
+}
+
+function freezeIdentityProjection(
+  projection: IdentityProjection
+): IdentityProjection {
+  return Object.freeze({
+    ...projection,
+    user: Object.freeze({ ...projection.user }),
+    tenant: Object.freeze({ ...projection.tenant }),
+    roles: Object.freeze(
+      projection.roles.map((role) => Object.freeze({ ...role }))
+    ),
+    permissions: Object.freeze(
+      projection.permissions.map((permission) =>
+        Object.freeze({ ...permission })
+      )
+    ),
+    claims: freezeIdentityClaims(projection.claims),
+    sessionReference: Object.freeze({ ...projection.sessionReference })
+  });
+}
+
 /**
  * Identity projeksiyonu — runtime çıktısı.
  */
@@ -150,17 +202,15 @@ export interface IdentityProjection {
 export function toIdentityProjection(
   module: IdentityModule | Identity
 ): IdentityProjection {
-  return {
+  return freezeIdentityProjection({
     identityId: module.id,
     user: { ...module.user },
     tenant: { ...module.tenant },
-    roles: Object.freeze(module.roles.map((role) => ({ ...role }))),
-    permissions: Object.freeze(
-      module.permissions.map((permission) => ({ ...permission }))
-    ),
-    claims: Object.freeze({ ...module.claims }),
+    roles: module.roles.map((role) => ({ ...role })),
+    permissions: module.permissions.map((permission) => ({ ...permission })),
+    claims: { ...module.claims },
     sessionReference: { ...module.sessionReference },
     status: module.status,
     projected: true
-  };
+  });
 }

@@ -119,6 +119,92 @@ describe('TenantIsolationRegistry', () => {
     assert.ok(registry.getById('iso-custom-099'));
   });
 
+  it('register stores an immutable snapshot independent of the source object', () => {
+    const source = structuredClone(BUILTIN_TENANT_ISOLATION_MODULES[0]);
+    source.id = 'iso-custom-immutable-099';
+    source.tenantIdentity.tenantId = 'tenant-custom-immutable';
+    source.boundary.tenantId = 'tenant-custom-immutable';
+
+    const expected = {
+      slug: source.tenantIdentity.slug,
+      boundaryLabel: source.boundary.label,
+      membershipRole: source.memberships[0].roleLabel,
+      scopeTenantId: source.scopes[1].tenantId,
+      ruleName: source.isolationRules[0].name,
+      allowedTenantId: source.accessScope.allowedTenantIds[0],
+      decisionReason: source.decisions[0].reason
+    };
+
+    registry.register(source);
+    const stored = registry.getById(source.id);
+    assert.ok(stored);
+
+    source.tenantIdentity.slug = 'mutated-slug';
+    source.boundary.label = 'mutated-boundary';
+    source.memberships[0].roleLabel = 'mutated-role';
+    source.scopes[1].tenantId = 'mutated-tenant';
+    source.isolationRules[0].name = 'mutated-rule';
+    source.accessScope.allowedTenantIds[0] = 'mutated-allowed-tenant';
+    source.decisions[0].reason = 'mutated-reason';
+
+    assert.equal(stored.tenantIdentity.slug, expected.slug);
+    assert.equal(stored.boundary.label, expected.boundaryLabel);
+    assert.equal(stored.memberships[0].roleLabel, expected.membershipRole);
+    assert.equal(stored.scopes[1].tenantId, expected.scopeTenantId);
+    assert.equal(stored.isolationRules[0].name, expected.ruleName);
+    assert.equal(
+      stored.accessScope.allowedTenantIds[0],
+      expected.allowedTenantId
+    );
+    assert.equal(stored.decisions[0].reason, expected.decisionReason);
+
+    assert.ok(Object.isFrozen(stored));
+    assert.ok(Object.isFrozen(stored.tenantIdentity));
+    assert.ok(Object.isFrozen(stored.boundary));
+    assert.ok(Object.isFrozen(stored.memberships));
+    assert.ok(Object.isFrozen(stored.memberships[0]));
+    assert.ok(Object.isFrozen(stored.scopes));
+    assert.ok(Object.isFrozen(stored.scopes[0]));
+    assert.ok(Object.isFrozen(stored.isolationRules));
+    assert.ok(Object.isFrozen(stored.isolationRules[0]));
+    assert.ok(Object.isFrozen(stored.accessScope));
+    assert.ok(Object.isFrozen(stored.accessScope.allowedTenantIds));
+    assert.ok(Object.isFrozen(stored.decisions));
+    assert.ok(Object.isFrozen(stored.decisions[0]));
+  });
+
+  it('builtin isolation modules and nested records are immutable', () => {
+    assert.ok(Object.isFrozen(BUILTIN_TENANT_ISOLATION_MODULES));
+
+    for (const module of BUILTIN_TENANT_ISOLATION_MODULES) {
+      assert.ok(Object.isFrozen(module));
+      assert.ok(Object.isFrozen(module.tenantIdentity));
+      assert.ok(Object.isFrozen(module.boundary));
+      assert.ok(Object.isFrozen(module.memberships));
+      assert.ok(module.memberships.every((item) => Object.isFrozen(item)));
+      assert.ok(Object.isFrozen(module.scopes));
+      assert.ok(module.scopes.every((item) => Object.isFrozen(item)));
+      assert.ok(Object.isFrozen(module.isolationRules));
+      assert.ok(module.isolationRules.every((item) => Object.isFrozen(item)));
+      assert.ok(Object.isFrozen(module.accessScope));
+      assert.ok(Object.isFrozen(module.accessScope.allowedTenantIds));
+      assert.ok(Object.isFrozen(module.decisions));
+      assert.ok(module.decisions.every((item) => Object.isFrozen(item)));
+    }
+  });
+
+  it('register rejects invalid order values', () => {
+    const invalidOrders = [0, -1, 1.5, NaN, Infinity];
+
+    for (const [index, order] of invalidOrders.entries()) {
+      const module = structuredClone(BUILTIN_TENANT_ISOLATION_MODULES[0]);
+      module.id = `iso-invalid-order-${index}`;
+      module.order = order;
+
+      assert.throws(() => registry.register(module), /order/);
+    }
+  });
+
   it('register throws on duplicate id', () => {
     assert.throws(
       () => registry.register(BUILTIN_TENANT_ISOLATION_MODULES[0]),
@@ -714,9 +800,47 @@ describe('toTenantIsolationProjection', () => {
     const projection = toTenantIsolationProjection(source);
     assert.notEqual(projection.memberships, source.memberships);
     assert.notEqual(projection.decisions, source.decisions);
+    assert.ok(Object.isFrozen(projection));
+    assert.ok(Object.isFrozen(projection.tenantIdentity));
+    assert.ok(Object.isFrozen(projection.boundary));
     assert.ok(Object.isFrozen(projection.memberships));
-    assert.ok(Object.isFrozen(projection.decisions));
+    assert.ok(projection.memberships.every((item) => Object.isFrozen(item)));
+    assert.ok(Object.isFrozen(projection.scopes));
+    assert.ok(projection.scopes.every((item) => Object.isFrozen(item)));
+    assert.ok(Object.isFrozen(projection.isolationRules));
+    assert.ok(
+      projection.isolationRules.every((item) => Object.isFrozen(item))
+    );
+    assert.ok(Object.isFrozen(projection.accessScope));
     assert.ok(Object.isFrozen(projection.accessScope.allowedTenantIds));
+    assert.ok(Object.isFrozen(projection.decisions));
+    assert.ok(projection.decisions.every((item) => Object.isFrozen(item)));
+  });
+
+  it('projection remains independent of a subsequently mutated source', () => {
+    const source = structuredClone(BUILTIN_TENANT_ISOLATION_MODULES[1]);
+    const expectedSlug = source.tenantIdentity.slug;
+    const expectedMembershipRole = source.memberships[0].roleLabel;
+    const expectedRuleName = source.isolationRules[0].name;
+    const expectedAllowedTenantId = source.accessScope.allowedTenantIds[0];
+    const expectedDecisionReason = source.decisions[0].reason;
+
+    const projection = toTenantIsolationProjection(source);
+
+    source.tenantIdentity.slug = 'mutated-slug';
+    source.memberships[0].roleLabel = 'mutated-role';
+    source.isolationRules[0].name = 'mutated-rule';
+    source.accessScope.allowedTenantIds[0] = 'mutated-tenant';
+    source.decisions[0].reason = 'mutated-reason';
+
+    assert.equal(projection.tenantIdentity.slug, expectedSlug);
+    assert.equal(projection.memberships[0].roleLabel, expectedMembershipRole);
+    assert.equal(projection.isolationRules[0].name, expectedRuleName);
+    assert.equal(
+      projection.accessScope.allowedTenantIds[0],
+      expectedAllowedTenantId
+    );
+    assert.equal(projection.decisions[0].reason, expectedDecisionReason);
   });
 
   it('counts allow deny and restrict decisions', () => {
@@ -1076,6 +1200,44 @@ describe('TenantIsolationRuntime.execute', () => {
     assert.ok(Array.isArray(result.validationIssues));
     assert.ok(result.telemetry);
     assert.equal(typeof result.telemetry.durationMs, 'number');
+  });
+  it('TenantIsolationResult and nested snapshots are immutable', () => {
+    const result = createTenantIsolationRuntime().execute(
+      createTenantIsolationContext({ locale: 'xx' })
+    );
+
+    assert.ok(Object.isFrozen(result));
+    assert.ok(Object.isFrozen(result.summary));
+    assert.ok(Object.isFrozen(result.telemetry));
+
+    for (const collection of [
+      result.identityProjections,
+      result.authenticationProjections,
+      result.sessionProjections,
+      result.authorizationProjections,
+      result.isolations,
+      result.summaryItems,
+      result.validationIssues
+    ]) {
+      assert.ok(Object.isFrozen(collection));
+    }
+
+    for (const item of result.summaryItems) {
+      assert.ok(Object.isFrozen(item));
+    }
+
+    for (const issue of result.validationIssues) {
+      assert.ok(Object.isFrozen(issue));
+    }
+
+    assert.throws(() => result.summaryItems.push({}));
+    assert.throws(() => result.validationIssues.push({}));
+    assert.throws(() => {
+      result.summary.tenantCount = 999;
+    });
+    assert.throws(() => {
+      result.telemetry.durationMs = 999;
+    });
   });
 });
 
