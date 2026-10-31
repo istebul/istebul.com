@@ -146,13 +146,13 @@ test('preview product CTA overrides match PR-564 copy', async () => {
   assert.equal(byId.business.statusLabel, 'Canlı');
   assert.equal(byId.business.slogan, 'İşletmeler');
   assert.equal(byId.business.shortDescription, 'İş zekâsı platformu');
-  assert.equal(byId.business.url, '/business/');
+  assert.equal(byId.business.url, '/business-platform/');
 
   assert.equal(byId.warehouseiq.ctaLabel, 'Operasyon Merkezini Aç');
   assert.equal(byId.warehouseiq.statusLabel, 'Pilot');
   assert.equal(byId.warehouseiq.slogan, 'Depo ve lojistik ekipleri');
   assert.equal(byId.warehouseiq.shortDescription, 'Akıllı Depo Yönetimi');
-  assert.equal(byId.warehouseiq.url, '/warehouse/');
+  assert.equal(byId.warehouseiq.url, '/warehouseiq/');
 });
 
 test('initPlatformLandingPreview mounts H1 hero and preview CTAs', async () => {

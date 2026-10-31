@@ -43,6 +43,13 @@ export const PLATFORM_NAV_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[] =
       role: 'product'
     }),
     Object.freeze({
+      id: 'nav-product-warehouseiq',
+      label: 'WarehouseIQ',
+      href: getPlatformProductUrl('warehouseiq', 'current'),
+      productId: 'warehouseiq',
+      role: 'product'
+    }),
+    Object.freeze({
       id: 'nav-product-paraasistan',
       label: 'ParaAsistan',
       href: getPlatformProductUrl('paraasistan', 'current'),
@@ -76,6 +83,13 @@ export const PLATFORM_FOOTER_PRODUCT_LINKS_CURRENT: readonly PlatformChromeLink[
       label: 'İSTEBUL Business',
       href: getPlatformProductUrl('business', 'current'),
       productId: 'business',
+      role: 'product'
+    }),
+    Object.freeze({
+      id: 'footer-product-warehouseiq',
+      label: 'WarehouseIQ',
+      href: getPlatformProductUrl('warehouseiq', 'current'),
+      productId: 'warehouseiq',
       role: 'product'
     }),
     Object.freeze({

@@ -186,6 +186,16 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
+    <loc>https://www.istebul.com/business-platform/</loc>
+    <priority>0.75</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/warehouseiq/</loc>
+    <priority>0.75</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
     <loc>https://www.istebul.com/restoran/</loc>
     <priority>0.75</priority>
     <changefreq>weekly</changefreq>

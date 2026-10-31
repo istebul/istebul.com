@@ -19,14 +19,19 @@ test('URL map active phase is target after PR-568 cutover', async () => {
   assert.equal(PLATFORM_URL_ACTIVE_PHASE, 'target');
   assert.equal(getPlatformProductUrl('istebul-ai'), '/ai/');
   assert.equal(getPlatformProductUrl('garsonai'), '/garson/');
-  assert.equal(getPlatformProductUrl('business'), '/business/');
+  assert.equal(getPlatformProductUrl('business'), '/business-platform/');
+  assert.equal(getPlatformProductUrl('warehouseiq'), '/warehouseiq/');
   assert.equal(getPlatformSurfaceUrl('platform-root'), '/');
   assert.equal(getPlatformSurfaceUrl('ai-landing'), '/ai/');
 
   assert.equal(getPlatformProductUrl('istebul-ai', 'current'), '/');
   const deltas = listPlatformUrlCutoverDeltas();
-  assert.equal(deltas.length, 1);
-  assert.equal(deltas[0].key, 'istebul-ai');
+  assert.equal(deltas.length, 3);
+  assert.deepEqual(deltas.map((row) => row.key), [
+    'istebul-ai',
+    'business',
+    'warehouseiq'
+  ]);
 });
 
 test('PLATFORM_PRODUCTS.url follows active target phase', async () => {
@@ -42,7 +47,7 @@ test('PLATFORM_PRODUCTS.url follows active target phase', async () => {
   assert.equal(PLATFORM_IDENTITY.url, '/');
   assert.equal(PLATFORM_CATALOG.cutoverActive, true);
   assert.equal(PLATFORM_CATALOG.internalLinkPhase, 'target');
-  assert.equal(PLATFORM_CATALOG.version, 3);
+  assert.equal(PLATFORM_CATALOG.version, 4);
 });
 
 test('nav/footer live HTML matches TARGET fasad', async () => {
@@ -60,12 +65,27 @@ test('nav/footer live HTML matches TARGET fasad', async () => {
 
   assert.deepEqual(
     PLATFORM_NAV_PRODUCT_LINKS_TARGET.map((l) => l.href),
-    ['/ai/', '/garson/', '/business/']
+    [
+      '/ai/',
+      '/garson/',
+      '/business-platform/',
+      '/warehouseiq/',
+      'https://paraasistan.istebul.com/'
+    ]
   );
   assert.match(nav, /href="\/ai\/"/);
   assert.match(nav, /href="\/garson\/"/);
   assert.match(foot, /href="\/ai\/"/);
-  assert.equal(PLATFORM_FOOTER_PRODUCT_LINKS_TARGET[0].href, '/ai/');
+  assert.deepEqual(
+    PLATFORM_FOOTER_PRODUCT_LINKS_TARGET.slice(0, 4).map((l) => l.href),
+    [
+      '/ai/',
+      '/garson/',
+      '/business-platform/',
+      '/warehouseiq/'
+    ]
+  );
+  assert.equal(PLATFORM_FOOTER_PRODUCT_LINKS_TARGET[4].href, 'https://paraasistan.istebul.com/');
 });
 
 test('internal link contract phase is target', async () => {

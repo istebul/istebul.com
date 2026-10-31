@@ -134,11 +134,12 @@ test('WarehouseIQ live landing product contract', async () => {
   const byId = Object.fromEntries(products.map((product) => [product.id, product]));
 
   assert.equal(products.length, 5);
-  assert.equal(byId.warehouseiq.url, '/warehouse/');
+  assert.equal(byId.warehouseiq.url, '/warehouseiq/');
   assert.equal(byId.warehouseiq.statusLabel, 'Pilot');
   assert.equal(byId.warehouseiq.slogan, 'Depo ve lojistik ekipleri');
   assert.equal(byId.warehouseiq.shortDescription, 'Akıllı Depo Yönetimi');
-  assert.equal(byId.warehouseiq.ctaLabel, 'Operasyon Merkezini Aç');
+  assert.equal(byId.warehouseiq.ctaLabel, 'WarehouseIQ’yu keşfet');
+  assert.equal(byId.business.statusLabel, 'Beta');
 });
 
 test('PlatformHero headingLevel 1 owns Platform Landing H1', async () => {
@@ -245,7 +246,7 @@ test('initPlatformLanding mounts experience without global İncele override', as
   const texts = stub.collectText(mount);
   assert.ok(texts.includes('Karşılaştırmaya Başla'));
   assert.ok(texts.includes('Restoranımı Dijitalleştir'));
-  assert.ok(texts.includes('İSTEBUL Business’a Git'));
+  assert.ok(texts.includes('İşletme çözümünü keşfet'));
   assert.ok(
     texts.includes('Karşılaştırmaya Başla') && texts.includes('Restoranımı Dijitalleştir'),
     'landing overlay CTAs present'
