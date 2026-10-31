@@ -10,13 +10,21 @@ import type { TenantProviderContext } from './TenantProviderContext';
 import type { TenantProviderRegistry } from './TenantProviderRegistry';
 import type { TenantProviderValidationIssue } from './TenantProviderResult';
 
+function createValidationIssuesSnapshot(
+  issues: readonly TenantProviderValidationIssue[]
+): readonly TenantProviderValidationIssue[] {
+  return Object.freeze(
+    issues.map((issue) => Object.freeze({ ...issue }))
+  );
+}
+
 /**
  * TenantProviderContext doğrular.
  */
 export function validateTenantProviderContext(
   context: TenantProviderContext,
   registry: TenantProviderRegistry
-): TenantProviderValidationIssue[] {
+): readonly TenantProviderValidationIssue[] {
   const issues: TenantProviderValidationIssue[] = [];
 
   if (!context) {
@@ -25,7 +33,7 @@ export function validateTenantProviderContext(
       message: 'TenantProviderContext zorunludur.',
       severity: 'error'
     });
-    return issues;
+    return createValidationIssuesSnapshot(issues);
   }
 
   if (!context.providerId || typeof context.providerId !== 'string') {
@@ -62,7 +70,7 @@ export function validateTenantProviderContext(
     });
   }
 
-  return issues;
+  return createValidationIssuesSnapshot(issues);
 }
 
 /**

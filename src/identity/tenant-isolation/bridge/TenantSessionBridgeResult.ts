@@ -101,7 +101,7 @@ export interface CreateTenantSessionBridgeResultInput {
 export function createTenantSessionBridgeResult(
   input: CreateTenantSessionBridgeResultInput
 ): TenantSessionBridgeResult {
-  return {
+  return Object.freeze({
     success: input.success,
     operation: input.operation,
     providerResult: input.providerResult,
@@ -110,34 +110,44 @@ export function createTenantSessionBridgeResult(
       ? cloneIsolationModule(input.isolationModule)
       : undefined,
     isolationProjection: input.isolationProjection
-      ? { ...input.isolationProjection }
+      ? Object.freeze({ ...input.isolationProjection })
       : undefined,
-    binding: input.binding ? { ...input.binding } : undefined,
-    validationIssues: Object.freeze([...(input.validationIssues ?? [])]),
-    summaryItems: Object.freeze([...(input.summaryItems ?? [])]),
-    telemetry: { ...input.telemetry },
-    bag: input.bag ? { ...input.bag } : undefined
-  };
+    binding: input.binding ? Object.freeze({ ...input.binding }) : undefined,
+    validationIssues: Object.freeze(
+      (input.validationIssues ?? []).map((item) => Object.freeze({ ...item }))
+    ),
+    summaryItems: Object.freeze(
+      (input.summaryItems ?? []).map((item) => Object.freeze({ ...item }))
+    ),
+    telemetry: Object.freeze({ ...input.telemetry }),
+    bag: input.bag ? Object.freeze({ ...input.bag }) : undefined
+  });
 }
 
 function cloneIsolationModule(
   module: TenantIsolationModule
 ): TenantIsolationModule {
-  return {
+  return Object.freeze({
     ...module,
-    tenantIdentity: { ...module.tenantIdentity },
-    boundary: { ...module.boundary },
-    memberships: Object.freeze(module.memberships.map((item) => ({ ...item }))),
-    scopes: Object.freeze(module.scopes.map((item) => ({ ...item }))),
-    isolationRules: Object.freeze(
-      module.isolationRules.map((item) => ({ ...item }))
+    tenantIdentity: Object.freeze({ ...module.tenantIdentity }),
+    boundary: Object.freeze({ ...module.boundary }),
+    memberships: Object.freeze(
+      module.memberships.map((item) => Object.freeze({ ...item }))
     ),
-    accessScope: {
+    scopes: Object.freeze(
+      module.scopes.map((item) => Object.freeze({ ...item }))
+    ),
+    isolationRules: Object.freeze(
+      module.isolationRules.map((item) => Object.freeze({ ...item }))
+    ),
+    accessScope: Object.freeze({
       ...module.accessScope,
       allowedTenantIds: Object.freeze([...module.accessScope.allowedTenantIds])
-    },
-    decisions: Object.freeze(module.decisions.map((item) => ({ ...item })))
-  };
+    }),
+    decisions: Object.freeze(
+      module.decisions.map((item) => Object.freeze({ ...item }))
+    )
+  });
 }
 
 /** Pipeline bag anahtarı */

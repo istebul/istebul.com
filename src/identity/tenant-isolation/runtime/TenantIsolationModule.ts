@@ -180,25 +180,50 @@ export interface TenantIsolationProjection {
 }
 
 /**
- * TenantIsolationModule tanımını projeksiyona dönüştürür.
+ * TenantIsolationModule kayıt tanımını bağımsız ve immutable snapshot'a dönüştürür.
+ * İç içe tüm kayıtlar ve accessScope.allowedTenantIds kopyalanıp dondurulur.
+ */
+export function freezeTenantIsolationModule(
+  module: TenantIsolationModule
+): TenantIsolationModule {
+  return Object.freeze({
+    ...module,
+    tenantIdentity: Object.freeze({ ...module.tenantIdentity }),
+    boundary: Object.freeze({ ...module.boundary }),
+    memberships: Object.freeze(
+      module.memberships.map((item) => Object.freeze({ ...item }))
+    ),
+    scopes: Object.freeze(
+      module.scopes.map((item) => Object.freeze({ ...item }))
+    ),
+    isolationRules: Object.freeze(
+      module.isolationRules.map((item) => Object.freeze({ ...item }))
+    ),
+    accessScope: Object.freeze({
+      ...module.accessScope,
+      allowedTenantIds: Object.freeze([
+        ...module.accessScope.allowedTenantIds
+      ])
+    }),
+    decisions: Object.freeze(
+      module.decisions.map((item) => Object.freeze({ ...item }))
+    )
+  });
+}
+
+/**
+ * TenantIsolationModule tanımını immutable projeksiyona dönüştürür.
  */
 export function toTenantIsolationProjection(
   module: TenantIsolationModule
 ): TenantIsolationProjection {
-  const memberships = Object.freeze(
-    module.memberships.map((item) => ({ ...item }))
-  );
-  const scopes = Object.freeze(module.scopes.map((item) => ({ ...item })));
-  const isolationRules = Object.freeze(
-    module.isolationRules.map((item) => ({ ...item }))
-  );
-  const decisions = Object.freeze(
-    module.decisions.map((item) => ({ ...item }))
-  );
+  const snapshot = freezeTenantIsolationModule(module);
+  const decisions = snapshot.decisions;
 
   let allowCount = 0;
   let denyCount = 0;
   let restrictCount = 0;
+
   for (const decision of decisions) {
     if (decision.outcome === 'allow') {
       allowCount += 1;
@@ -209,23 +234,20 @@ export function toTenantIsolationProjection(
     }
   }
 
-  return {
-    isolationId: module.id,
-    tenantIdentity: { ...module.tenantIdentity },
-    boundary: { ...module.boundary },
-    memberships,
-    scopes,
-    isolationRules,
-    accessScope: {
-      ...module.accessScope,
-      allowedTenantIds: Object.freeze([...module.accessScope.allowedTenantIds])
-    },
+  return Object.freeze({
+    isolationId: snapshot.id,
+    tenantIdentity: snapshot.tenantIdentity,
+    boundary: snapshot.boundary,
+    memberships: snapshot.memberships,
+    scopes: snapshot.scopes,
+    isolationRules: snapshot.isolationRules,
+    accessScope: snapshot.accessScope,
     decisions,
-    membershipCount: memberships.length,
+    membershipCount: snapshot.memberships.length,
     decisionCount: decisions.length,
     allowCount,
     denyCount,
     restrictCount,
     projected: true
-  };
+  });
 }

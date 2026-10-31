@@ -57,8 +57,12 @@ const BUILTIN_PROVIDER_DEFINITIONS: TenantProviderRegistration[] = [
   }
 ];
 
+const freezeRegistration = (
+  registration: TenantProviderRegistration
+): TenantProviderRegistration => Object.freeze({ ...registration });
+
 export const BUILTIN_TENANT_PROVIDER_REGISTRATIONS: readonly TenantProviderRegistration[] =
-  Object.freeze(BUILTIN_PROVIDER_DEFINITIONS);
+  Object.freeze(BUILTIN_PROVIDER_DEFINITIONS.map(freezeRegistration));
 
 export const BUILTIN_TENANT_PROVIDER_COUNT =
   BUILTIN_TENANT_PROVIDER_REGISTRATIONS.length;

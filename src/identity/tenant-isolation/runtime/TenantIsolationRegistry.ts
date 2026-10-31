@@ -3,6 +3,7 @@
  */
 
 import type { TenantIsolationModule } from './TenantIsolationModule';
+import { freezeTenantIsolationModule } from './TenantIsolationModule';
 import { BUILTIN_TENANT_ISOLATION_MODULES } from './builtinModules';
 
 /**
@@ -16,25 +17,34 @@ export class TenantIsolationRegistry {
   constructor(seedBuiltins = true) {
     if (seedBuiltins) {
       for (const definition of BUILTIN_TENANT_ISOLATION_MODULES) {
-        this.byId.set(definition.id, definition);
+        this.byId.set(
+          definition.id,
+          freezeTenantIsolationModule(definition)
+        );
       }
     }
   }
 
   register(definition: TenantIsolationModule): void {
-    if (!definition?.id || typeof definition.id !== 'string') {
+    if (
+      typeof definition?.id !== 'string' ||
+      !definition.id.trim()
+    ) {
       throw new Error('TenantIsolationModule.id zorunludur.');
     }
     if (this.byId.has(definition.id)) {
       throw new Error(`Tenant Isolation zaten kayıtlı: ${definition.id}`);
     }
     const tenantId = definition.tenantIdentity?.tenantId;
-    if (!tenantId || typeof tenantId !== 'string') {
+    if (typeof tenantId !== 'string' || !tenantId.trim()) {
       throw new Error(
         `TenantIsolationModule.tenantIdentity.tenantId zorunludur: ${definition.id}`
       );
     }
-    if (!definition.boundary?.boundaryId) {
+    if (
+      typeof definition.boundary?.boundaryId !== 'string' ||
+      !definition.boundary.boundaryId.trim()
+    ) {
       throw new Error(
         `TenantIsolationModule.boundary.boundaryId zorunludur: ${definition.id}`
       );
@@ -49,7 +59,12 @@ export class TenantIsolationRegistry {
         `TenantIsolationModule.decisions bir dizi olmalıdır: ${definition.id}`
       );
     }
-    this.byId.set(definition.id, definition);
+    if (!Number.isSafeInteger(definition.order) || definition.order < 1) {
+      throw new Error(
+        `TenantIsolationModule.order pozitif güvenli tam sayı olmalıdır: ${definition.id}`
+      );
+    }
+    this.byId.set(definition.id, freezeTenantIsolationModule(definition));
   }
 
   unregister(isolationId: string): boolean {

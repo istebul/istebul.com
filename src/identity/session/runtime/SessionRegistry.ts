@@ -2,7 +2,7 @@
  * İSTEBUL Identity — SessionRegistry (PR-203C).
  */
 
-import type { SessionModule, SessionState } from './SessionModule';
+import { freezeSessionModule, type SessionModule, type SessionState } from './SessionModule';
 import { BUILTIN_SESSION_MODULES } from './builtinModules';
 
 /**
@@ -16,37 +16,56 @@ export class SessionRegistry {
   constructor(seedBuiltins = true) {
     if (seedBuiltins) {
       for (const definition of BUILTIN_SESSION_MODULES) {
-        this.byId.set(definition.id, definition);
+        this.byId.set(definition.id, freezeSessionModule(definition));
       }
     }
   }
 
   register(definition: SessionModule): void {
-    if (!definition?.id || typeof definition.id !== 'string') {
+    if (
+      !definition?.id ||
+      typeof definition.id !== 'string' ||
+      !definition.id.trim()
+    ) {
       throw new Error('SessionModule.id zorunludur.');
     }
     if (this.byId.has(definition.id)) {
       throw new Error(`Session zaten kayıtlı: ${definition.id}`);
     }
+    if (!Number.isSafeInteger(definition.order) || definition.order < 1) {
+      throw new Error('SessionModule.order pozitif güvenli tam sayı olmalıdır.');
+    }
     const sessionId = definition.session?.sessionId;
-    if (!sessionId || typeof sessionId !== 'string') {
+    if (
+      !sessionId ||
+      typeof sessionId !== 'string' ||
+      !sessionId.trim()
+    ) {
       throw new Error(
         `SessionModule.session.sessionId zorunludur: ${definition.id}`
       );
     }
     const identityId = definition.session?.identityId;
-    if (!identityId || typeof identityId !== 'string') {
+    if (
+      !identityId ||
+      typeof identityId !== 'string' ||
+      !identityId.trim()
+    ) {
       throw new Error(
         `SessionModule.session.identityId zorunludur: ${definition.id}`
       );
     }
     const authenticationId = definition.session?.authenticationId;
-    if (!authenticationId || typeof authenticationId !== 'string') {
+    if (
+      !authenticationId ||
+      typeof authenticationId !== 'string' ||
+      !authenticationId.trim()
+    ) {
       throw new Error(
         `SessionModule.session.authenticationId zorunludur: ${definition.id}`
       );
     }
-    this.byId.set(definition.id, definition);
+    this.byId.set(definition.id, freezeSessionModule(definition));
   }
 
   unregister(sessionModuleId: string): boolean {

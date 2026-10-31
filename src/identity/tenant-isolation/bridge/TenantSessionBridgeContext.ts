@@ -63,10 +63,21 @@ export function createTenantSessionBridgeContext(
   }
 ): TenantSessionBridgeContext {
   const { locale, ...rest } = partial;
-  return {
+  const providerContext = rest.providerContext
+    ? Object.freeze({
+        ...rest.providerContext,
+        bag: rest.providerContext.bag
+          ? Object.freeze({ ...rest.providerContext.bag })
+          : undefined
+      })
+    : undefined;
+
+  return Object.freeze({
     ...rest,
+    providerContext,
+    bag: rest.bag ? Object.freeze({ ...rest.bag }) : undefined,
     locale: locale ?? 'tr'
-  };
+  });
 }
 
 /**

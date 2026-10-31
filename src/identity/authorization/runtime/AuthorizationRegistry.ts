@@ -2,7 +2,10 @@
  * İSTEBUL Identity — AuthorizationRegistry (PR-203D).
  */
 
-import type { AuthorizationModule } from './AuthorizationModule';
+import {
+  freezeAuthorizationModule,
+  type AuthorizationModule
+} from './AuthorizationModule';
 import { BUILTIN_AUTHORIZATION_MODULES } from './builtinModules';
 
 /**
@@ -22,38 +25,70 @@ export class AuthorizationRegistry {
   }
 
   register(definition: AuthorizationModule): void {
-    if (!definition?.id || typeof definition.id !== 'string') {
+    if (
+      !definition ||
+      typeof definition.id !== 'string' ||
+      !definition.id.trim() ||
+      definition.id !== definition.id.trim()
+    ) {
       throw new Error('AuthorizationModule.id zorunludur.');
     }
+
     if (this.byId.has(definition.id)) {
       throw new Error(`Authorization zaten kayıtlı: ${definition.id}`);
     }
-    if (!definition.identityId || typeof definition.identityId !== 'string') {
+
+    if (
+      typeof definition.identityId !== 'string' ||
+      !definition.identityId.trim() ||
+      definition.identityId !== definition.identityId.trim()
+    ) {
       throw new Error(
         `AuthorizationModule.identityId zorunludur: ${definition.id}`
       );
     }
-    if (!definition.principalId || typeof definition.principalId !== 'string') {
+
+    if (
+      typeof definition.principalId !== 'string' ||
+      !definition.principalId.trim() ||
+      definition.principalId !== definition.principalId.trim()
+    ) {
       throw new Error(
         `AuthorizationModule.principalId zorunludur: ${definition.id}`
       );
     }
+
     if (!Array.isArray(definition.roles)) {
       throw new Error(
         `AuthorizationModule.roles bir dizi olmalıdır: ${definition.id}`
       );
     }
+
     if (!Array.isArray(definition.permissions)) {
       throw new Error(
         `AuthorizationModule.permissions bir dizi olmalıdır: ${definition.id}`
       );
     }
+
+    if (!Array.isArray(definition.policies)) {
+      throw new Error(
+        `AuthorizationModule.policies bir dizi olmalıdır: ${definition.id}`
+      );
+    }
+
     if (!Array.isArray(definition.decisions)) {
       throw new Error(
         `AuthorizationModule.decisions bir dizi olmalıdır: ${definition.id}`
       );
     }
-    this.byId.set(definition.id, definition);
+
+    if (!Number.isSafeInteger(definition.order) || definition.order < 1) {
+      throw new Error(
+        `AuthorizationModule.order pozitif güvenli bir tam sayı olmalıdır: ${definition.id}`
+      );
+    }
+
+    this.byId.set(definition.id, freezeAuthorizationModule(definition));
   }
 
   unregister(authorizationId: string): boolean {

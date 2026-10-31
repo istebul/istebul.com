@@ -109,6 +109,71 @@ describe('SessionRegistry', () => {
     assert.ok(registry.getById('session-custom-099'));
   });
 
+  it('register stores an immutable snapshot independent of the source object', () => {
+    const source = structuredClone(BUILTIN_SESSION_MODULES[0]);
+    source.id = 'session-custom-immutable-099';
+    source.session.sessionId = 'sess-custom-immutable-099';
+
+    const originalIdentityId = source.session.identityId;
+    const originalStartedAt = source.session.lifetime.startedAt;
+    const originalDeviceLabel = source.session.deviceReference.label;
+
+    registry.register(source);
+
+    source.session.identityId = 'identity-mutated';
+    source.session.lifetime.startedAt = '2099-01-01T00:00:00.000Z';
+    source.session.deviceReference.label = 'Mutated device';
+
+    const stored = registry.getById('session-custom-immutable-099');
+    assert.ok(stored);
+    assert.equal(stored.session.identityId, originalIdentityId);
+    assert.equal(stored.session.lifetime.startedAt, originalStartedAt);
+    assert.equal(stored.session.deviceReference.label, originalDeviceLabel);
+    assert.ok(Object.isFrozen(stored));
+    assert.ok(Object.isFrozen(stored.session));
+    assert.ok(Object.isFrozen(stored.session.lifetime));
+    assert.ok(Object.isFrozen(stored.session.expiration));
+    assert.ok(Object.isFrozen(stored.session.renewalReference));
+    assert.ok(Object.isFrozen(stored.session.activity));
+    assert.ok(Object.isFrozen(stored.session.deviceReference));
+  });
+
+  it('registry getters expose immutable session records', () => {
+    const stored = registry.getById('session-owner-001');
+    assert.ok(stored);
+
+    assert.ok(Object.isFrozen(registry.getAll()));
+    assert.ok(Object.isFrozen(stored));
+
+    assert.throws(() => {
+      stored.session.state = 'revoked';
+    }, TypeError);
+
+    assert.throws(() => {
+      stored.session.activity.activityCount = 999;
+    }, TypeError);
+
+    assert.equal(registry.getById('session-owner-001').session.state, 'active');
+    assert.equal(registry.getById('session-owner-001').session.activity.activityCount, 12);
+  });
+
+  it('builtin session modules and nested records are immutable', () => {
+    const builtin = BUILTIN_SESSION_MODULES[0];
+
+    assert.ok(Object.isFrozen(BUILTIN_SESSION_MODULES));
+    assert.ok(Object.isFrozen(builtin));
+    assert.ok(Object.isFrozen(builtin.session));
+    assert.ok(Object.isFrozen(builtin.session.lifetime));
+    assert.ok(Object.isFrozen(builtin.session.expiration));
+    assert.ok(Object.isFrozen(builtin.session.renewalReference));
+    assert.ok(Object.isFrozen(builtin.session.activity));
+    assert.ok(Object.isFrozen(builtin.session.deviceReference));
+    assert.equal(
+      getBuiltinSessionModule('session-owner-001').session.sessionId,
+      'sess-owner-001'
+    );
+  });
+
   it('register throws on duplicate id', () => {
     assert.throws(
       () => registry.register(BUILTIN_SESSION_MODULES[0]),

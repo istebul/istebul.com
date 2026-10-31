@@ -16,18 +16,18 @@ import type { AuthenticationProviderOperation } from './AuthenticationProviderCo
  * Provider doğrulama bulgusu.
  */
 export interface AuthenticationProviderValidationIssue {
-  code: string;
-  message: string;
-  severity: 'warning' | 'error';
+  readonly code: string;
+  readonly message: string;
+  readonly severity: 'warning' | 'error';
 }
 
 /**
  * Provider özet öğesi.
  */
 export interface AuthenticationProviderSummaryItem {
-  key: string;
-  label: string;
-  value: string | number | boolean;
+  readonly key: string;
+  readonly label: string;
+  readonly value: string | number | boolean;
 }
 
 /**
@@ -35,15 +35,15 @@ export interface AuthenticationProviderSummaryItem {
  */
 export interface AuthenticationProviderTelemetry {
   /** Toplam süre (ms) */
-  durationMs: number;
+  readonly durationMs: number;
   /** Başlangıç ISO */
-  startedAt: string;
+  readonly startedAt: string;
   /** Bitiş ISO */
-  endedAt: string;
+  readonly endedAt: string;
   /** Çalıştırılan operasyon */
-  operation: AuthenticationProviderOperation;
+  readonly operation: AuthenticationProviderOperation;
   /** Provider kimliği */
-  providerId: string;
+  readonly providerId: string;
 }
 
 /**
@@ -51,25 +51,25 @@ export interface AuthenticationProviderTelemetry {
  */
 export interface AuthenticationProviderResult {
   /** Operasyon başarılı mı */
-  success: boolean;
+  readonly success: boolean;
   /** Authentication durumu */
-  status: AuthenticationStatus;
+  readonly status: AuthenticationStatus;
   /** Çalıştırılan operasyon */
-  operation: AuthenticationProviderOperation;
+  readonly operation: AuthenticationProviderOperation;
   /** Kaynak provider kimliği */
-  providerId: string;
+  readonly providerId: string;
   /** Opsiyonel principal */
-  principal?: Principal;
+  readonly principal?: Readonly<Principal>;
   /** Opsiyonel credential referansı */
-  credentialReference?: CredentialReference;
+  readonly credentialReference?: Readonly<CredentialReference>;
   /** Doğrulama bulguları */
-  validationIssues: readonly AuthenticationProviderValidationIssue[];
+  readonly validationIssues: readonly AuthenticationProviderValidationIssue[];
   /** Özet öğeleri */
-  summaryItems: readonly AuthenticationProviderSummaryItem[];
+  readonly summaryItems: readonly AuthenticationProviderSummaryItem[];
   /** Telemetri */
-  telemetry: AuthenticationProviderTelemetry;
+  readonly telemetry: Readonly<AuthenticationProviderTelemetry>;
   /** Ek bag */
-  bag?: Record<string, unknown>;
+  readonly bag?: Readonly<Record<string, unknown>>;
 }
 
 export interface CreateAuthenticationProviderResultInput {
@@ -82,7 +82,7 @@ export interface CreateAuthenticationProviderResultInput {
   validationIssues?: readonly AuthenticationProviderValidationIssue[];
   summaryItems?: readonly AuthenticationProviderSummaryItem[];
   telemetry: AuthenticationProviderTelemetry;
-  bag?: Record<string, unknown>;
+  bag?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -91,22 +91,32 @@ export interface CreateAuthenticationProviderResultInput {
 export function createAuthenticationProviderResult(
   input: CreateAuthenticationProviderResultInput
 ): AuthenticationProviderResult {
-  return {
+  return Object.freeze({
     success: input.success,
     status: input.status,
     operation: input.operation,
     providerId: input.providerId,
     principal: input.principal
-      ? { ...input.principal }
+      ? Object.freeze({ ...input.principal })
       : undefined,
     credentialReference: input.credentialReference
-      ? { ...input.credentialReference }
+      ? Object.freeze({ ...input.credentialReference })
       : undefined,
-    validationIssues: Object.freeze([...(input.validationIssues ?? [])]),
-    summaryItems: Object.freeze([...(input.summaryItems ?? [])]),
-    telemetry: { ...input.telemetry },
-    bag: input.bag ? { ...input.bag } : undefined
-  };
+    validationIssues: Object.freeze(
+      (input.validationIssues ?? []).map((issue) =>
+        Object.freeze({ ...issue })
+      )
+    ),
+    summaryItems: Object.freeze(
+      (input.summaryItems ?? []).map((item) =>
+        Object.freeze({ ...item })
+      )
+    ),
+    telemetry: Object.freeze({ ...input.telemetry }),
+    bag: input.bag
+      ? Object.freeze({ ...input.bag })
+      : undefined
+  });
 }
 
 /**

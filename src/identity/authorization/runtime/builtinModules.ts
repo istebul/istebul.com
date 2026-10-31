@@ -4,7 +4,10 @@
  * Projection-only örnek kayıtlar. Middleware / Policy Engine / RLS yok.
  */
 
-import type { AuthorizationModule } from './AuthorizationModule';
+import {
+  freezeAuthorizationModule,
+  type AuthorizationModule
+} from './AuthorizationModule';
 
 const PLATFORM_READ: AuthorizationModule['permissions'][number] = {
   id: 'perm-platform-read',
@@ -56,7 +59,7 @@ const LOGS_READ: AuthorizationModule['permissions'][number] = {
  * Yerleşik Authorization Module iskeletleri.
  */
 export const BUILTIN_AUTHORIZATION_MODULES: readonly AuthorizationModule[] =
-  Object.freeze([
+  Object.freeze(([
     {
       id: 'authz-owner-001',
       identityId: 'identity-platform-owner-001',
@@ -465,7 +468,7 @@ export const BUILTIN_AUTHORIZATION_MODULES: readonly AuthorizationModule[] =
       createdAt: '2026-07-20T00:00:00.000Z',
       updatedAt: '2026-07-20T01:00:00.000Z'
     }
-  ] as AuthorizationModule[]);
+  ] as AuthorizationModule[]).map(freezeAuthorizationModule));
 
 /** Yerleşik authorization sayısı */
 export const BUILTIN_AUTHORIZATION_MODULE_COUNT =

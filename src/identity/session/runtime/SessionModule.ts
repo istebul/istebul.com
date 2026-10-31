@@ -119,6 +119,28 @@ export interface SessionModule {
 }
 
 /**
+ * SessionModule için bağımsız ve immutable kayıt snapshot'ı üretir.
+ * Session alanları sabit şemalıdır; iç içe nesneler ayrıca kopyalanır.
+ */
+export function freezeSessionModule(
+  module: SessionModule
+): SessionModule {
+  const session = module.session;
+
+  return Object.freeze({
+    ...module,
+    session: Object.freeze({
+      ...session,
+      lifetime: Object.freeze({ ...session.lifetime }),
+      expiration: Object.freeze({ ...session.expiration }),
+      renewalReference: Object.freeze({ ...session.renewalReference }),
+      activity: Object.freeze({ ...session.activity }),
+      deviceReference: Object.freeze({ ...session.deviceReference })
+    })
+  });
+}
+
+/**
  * Session projeksiyonu — runtime çıktısı.
  */
 export interface SessionProjection {
