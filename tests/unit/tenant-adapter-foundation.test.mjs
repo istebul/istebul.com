@@ -158,6 +158,70 @@ describe('TenantProviderRegistry', () => {
     assert.ok(registry.getRegistrationById('provider-tenant-custom-099'));
   });
 
+  it('registerRegistration stores an immutable snapshot isolated from its source', () => {
+    const source = {
+      id: 'provider-tenant-snapshot-098',
+      name: 'Snapshot',
+      description: 'Snapshot tenant provider slot',
+      kind: 'header',
+      providerRegistered: false,
+      order: 98
+    };
+
+    registry.registerRegistration(source);
+
+    const stored = registry.getRegistrationById(source.id);
+    assert.ok(stored);
+    assert.equal(Object.isFrozen(stored), true);
+
+    source.name = 'Changed';
+    source.description = 'Changed description';
+    source.kind = 'claim';
+    source.order = 999;
+
+    assert.equal(stored.name, 'Snapshot');
+    assert.equal(stored.description, 'Snapshot tenant provider slot');
+    assert.equal(stored.kind, 'header');
+    assert.equal(stored.order, 98);
+
+    const all = registry.getAllRegistrations();
+    assert.equal(Object.isFrozen(all), true);
+    assert.ok(all.every((entry) => Object.isFrozen(entry)));
+    assert.equal(Object.isFrozen(registry.getByKind('header')[0]), true);
+  });
+
+  it('registerRegistration rejects invalid metadata fields', () => {
+    const base = {
+      name: 'Invalid',
+      description: 'Invalid metadata test',
+      kind: 'header',
+      providerRegistered: false,
+      order: 99
+    };
+
+    for (const [field, value, pattern] of [
+      ['description', '   ', /description zorunludur/],
+      ['kind', 'unsupported', /kind desteklenmiyor/],
+      ['providerRegistered', 'false', /providerRegistered boolean/],
+      ['providerRegistered', true, /providerRegistered=false/],
+      ['order', 0, /order pozitif/],
+      ['order', -1, /order pozitif/],
+      ['order', 1.5, /order pozitif/],
+      ['order', NaN, /order pozitif/],
+      ['order', Infinity, /order pozitif/]
+    ]) {
+      assert.throws(
+        () =>
+          registry.registerRegistration({
+            ...base,
+            id: `provider-tenant-invalid-${field}-${String(value)}`,
+            [field]: value
+          }),
+        pattern
+      );
+    }
+  });
+
   it('registerRegistration throws on duplicate id', () => {
     assert.throws(
       () =>
@@ -220,7 +284,17 @@ describe('TenantProviderRegistry', () => {
         ?.providerRegistered,
       true
     );
-    assert.ok(registry.getProviderById('provider-tenant-registry-001'));
+    assert.equal(
+      registry.getProviderById('provider-tenant-registry-001'),
+      provider
+    );
+    assert.equal(Object.isFrozen(provider), false);
+    assert.equal(
+      Object.isFrozen(
+        registry.getRegistrationById('provider-tenant-registry-001')
+      ),
+      true
+    );
   });
 
   it('registerProvider throws when metadata missing', () => {
@@ -357,6 +431,20 @@ describe('TenantProviderContext', () => {
     assert.equal(context.providerId, 'provider-tenant-registry-001');
   });
 
+  it('creates an immutable context snapshot', () => {
+    const sourceBag = { traceId: 'trace-original' };
+    const context = createTenantProviderContext({
+      providerId: 'provider-tenant-registry-001',
+      bag: sourceBag
+    });
+
+    sourceBag.traceId = 'trace-mutated';
+
+    assert.equal(context.bag?.traceId, 'trace-original');
+    assert.equal(Object.isFrozen(context), true);
+    assert.equal(Object.isFrozen(context.bag), true);
+  });
+
   it('createTenantProviderContext preserves optional fields', () => {
     const context = createTenantProviderContext({
       locale: 'en',
@@ -388,6 +476,82 @@ describe('TenantProviderResult factories', () => {
     operation: 'resolveTenant',
     providerId: 'provider-tenant-registry-001'
   };
+
+  it('creates immutable snapshots and isolates source mutations', () => {
+    const tenant = {
+      tenantId: 'tenant-original',
+      slug: 'original',
+      displayName: 'Original'
+    };
+    const membership = {
+      membershipId: 'membership-original',
+      identityId: 'identity-001',
+      tenantId: 'tenant-original',
+      roleLabel: 'Admin',
+      active: true
+    };
+    const allowedTenantIds = ['tenant-original'];
+    const accessScope = {
+      accessScopeId: 'scope-001',
+      allowedTenantIds,
+      crossTenantAllowed: false
+    };
+    const issue = {
+      code: 'ISSUE',
+      message: 'Original issue',
+      severity: 'warning'
+    };
+    const summary = {
+      key: 'state',
+      label: 'State',
+      value: 'original'
+    };
+    const sourceTelemetry = { ...telemetry };
+    const sourceBag = { traceId: 'trace-original' };
+
+    const result = createTenantProviderResult({
+      success: true,
+      status: 'resolved',
+      operation: 'resolveTenant',
+      providerId: 'provider-tenant-registry-001',
+      tenant,
+      memberships: [membership],
+      accessScope,
+      validationIssues: [issue],
+      summaryItems: [summary],
+      telemetry: sourceTelemetry,
+      bag: sourceBag
+    });
+
+    tenant.displayName = 'Mutated';
+    membership.roleLabel = 'Mutated';
+    allowedTenantIds.push('tenant-mutated');
+    accessScope.crossTenantAllowed = true;
+    issue.message = 'Mutated issue';
+    summary.label = 'Mutated';
+    sourceTelemetry.durationMs = 999;
+    sourceBag.traceId = 'trace-mutated';
+
+    assert.equal(result.tenant.displayName, 'Original');
+    assert.equal(result.memberships[0].roleLabel, 'Admin');
+    assert.deepEqual(result.accessScope.allowedTenantIds, ['tenant-original']);
+    assert.equal(result.accessScope.crossTenantAllowed, false);
+    assert.equal(result.validationIssues[0].message, 'Original issue');
+    assert.equal(result.summaryItems[0].label, 'State');
+    assert.equal(result.telemetry.durationMs, 5);
+    assert.equal(result.bag.traceId, 'trace-original');
+
+    assert.equal(Object.isFrozen(result), true);
+    assert.equal(Object.isFrozen(result.tenant), true);
+    assert.equal(Object.isFrozen(result.memberships), true);
+    assert.equal(Object.isFrozen(result.memberships[0]), true);
+    assert.equal(Object.isFrozen(result.accessScope), true);
+    assert.equal(Object.isFrozen(result.accessScope.allowedTenantIds), true);
+    assert.equal(Object.isFrozen(result.validationIssues[0]), true);
+    assert.equal(Object.isFrozen(result.summaryItems[0]), true);
+    assert.equal(Object.isFrozen(result.telemetry), true);
+    assert.equal(Object.isFrozen(result.bag), true);
+  });
 
   it('createTenantProviderResult freezes validation issues', () => {
     const result = createTenantProviderResult({
@@ -491,6 +655,41 @@ describe('validateTenantProviderContext', () => {
       registry
     );
     assert.ok(issues.some((item) => item.code === 'KIND_MISMATCH'));
+  });
+
+  it('returns immutable validation issue snapshots', () => {
+    const issues = validateTenantProviderContext(
+      {
+        locale: 'de',
+        providerId: 'provider-tenant-registry-001',
+        kind: 'claim'
+      },
+      registry
+    );
+
+    assert.equal(Object.isFrozen(issues), true);
+    assert.ok(issues.length >= 2);
+    assert.ok(issues.every((issue) => Object.isFrozen(issue)));
+
+    const firstIssue = issues[0];
+    assert.ok(firstIssue);
+
+    const originalMessage = firstIssue.message;
+
+    assert.equal(
+      Reflect.set(firstIssue, 'message', 'mutated'),
+      false
+    );
+    assert.equal(firstIssue.message, originalMessage);
+
+    assert.equal(
+      Reflect.set(issues, '0', {
+        code: 'INJECTED',
+        message: 'Injected',
+        severity: 'error'
+      }),
+      false
+    );
   });
 
   it('hasTenantProviderValidationErrors detects errors only', () => {
@@ -665,6 +864,55 @@ describe('TenantAdapter with mock provider', () => {
     assert.equal(result.tenant?.tenantId, 'tenant-demo-001');
   });
 
+  it('passes an isolated immutable context snapshot to provider', async () => {
+    const sourceBag = { requestId: 'req-original' };
+    const sourceContext = createTenantProviderContext({
+      providerId: 'provider-tenant-registry-001',
+      bag: sourceBag
+    });
+    let providerContext;
+
+    const contextProvider = createMockProvider({
+      resolveTenant: (context) => {
+        providerContext = context;
+        return createTenantProviderSuccess(
+          'resolveTenant',
+          context.providerId,
+          {
+            durationMs: 1,
+            startedAt: '2026-07-22T00:00:00.000Z',
+            endedAt: '2026-07-22T00:00:00.001Z',
+            operation: 'resolveTenant',
+            providerId: context.providerId
+          },
+          createMockTenant()
+        );
+      }
+    });
+
+    registry.unregisterProvider('provider-tenant-registry-001');
+    registry.registerProvider(contextProvider);
+
+    const result = await adapter.resolveTenant(sourceContext);
+
+    assert.equal(result.success, true);
+    assert.notStrictEqual(providerContext, sourceContext);
+    assert.notStrictEqual(providerContext.bag, sourceContext.bag);
+    assert.equal(Object.isFrozen(providerContext), true);
+    assert.equal(Object.isFrozen(providerContext.bag), true);
+    assert.equal(
+      Reflect.set(providerContext, 'tenantId', 'tenant-tampered'),
+      false
+    );
+    assert.equal(
+      Reflect.set(providerContext.bag, 'requestId', 'req-tampered'),
+      false
+    );
+    assert.equal(sourceContext.tenantId, undefined);
+    assert.equal(sourceBag.requestId, 'req-original');
+    assert.equal(result.bag?.requestId, 'req-original');
+  });
+
   it('getTenant delegates to provider', async () => {
     const result = await adapter.getTenant(
       createTenantProviderContext({
@@ -771,6 +1019,124 @@ describe('TenantAdapter with mock provider', () => {
     assert.equal(result.tenant?.displayName, 'Async Tenant');
   });
 
+  it('normalizes mutable provider results into isolated immutable snapshots', async () => {
+    const sourceTenant = createMockTenant();
+    sourceTenant.displayName = 'Original tenant';
+
+    const sourceMembership = createMockMembership();
+    sourceMembership.roleLabel = 'viewer';
+
+    const sourceMemberships = [sourceMembership];
+    const sourceAccessScope = {
+      accessScopeId: 'scope-source-001',
+      allowedTenantIds: ['tenant-demo-001'],
+      crossTenantAllowed: false
+    };
+    const sourceIssue = {
+      code: 'SOURCE_WARNING',
+      message: 'Original warning',
+      severity: 'warning'
+    };
+    const sourceValidationIssues = [sourceIssue];
+    const sourceSummaryItem = {
+      key: 'custom',
+      label: 'Original summary',
+      value: 'original'
+    };
+    const sourceSummaryItems = [sourceSummaryItem];
+    const sourceBag = { traceId: 'trace-original' };
+
+    const mutableProviderResult = {
+      success: true,
+      status: 'resolved',
+      operation: 'resolveTenant',
+      providerId: 'provider-tenant-registry-001',
+      tenant: sourceTenant,
+      memberships: sourceMemberships,
+      accessScope: sourceAccessScope,
+      accessOutcome: 'allow',
+      validationIssues: sourceValidationIssues,
+      summaryItems: sourceSummaryItems,
+      telemetry: {
+        durationMs: 1,
+        startedAt: '2026-07-22T00:00:00.000Z',
+        endedAt: '2026-07-22T00:00:00.001Z',
+        operation: 'resolveTenant',
+        providerId: 'provider-tenant-registry-001'
+      },
+      bag: sourceBag
+    };
+
+    const mutableProvider = createMockProvider({
+      resolveTenant: () => mutableProviderResult
+    });
+
+    registry.unregisterProvider('provider-tenant-registry-001');
+    registry.registerProvider(mutableProvider);
+
+    const result = await adapter.resolveTenant(
+      createTenantProviderContext({
+        providerId: 'provider-tenant-registry-001'
+      })
+    );
+
+    sourceTenant.displayName = 'Mutated tenant';
+    sourceMembership.roleLabel = 'admin';
+    sourceMemberships.push(createMockMembership());
+    sourceAccessScope.allowedTenantIds.push('tenant-injected');
+    sourceIssue.message = 'Mutated warning';
+    sourceValidationIssues.push({
+      code: 'INJECTED',
+      message: 'Injected issue',
+      severity: 'error'
+    });
+    sourceSummaryItem.label = 'Mutated summary';
+    sourceSummaryItems.push({
+      key: 'injected',
+      label: 'Injected summary',
+      value: true
+    });
+    sourceBag.traceId = 'trace-mutated';
+
+    assert.equal(result.tenant?.displayName, 'Original tenant');
+    assert.equal(result.memberships?.length, 1);
+    assert.equal(result.memberships?.[0]?.roleLabel, 'viewer');
+    assert.deepEqual(
+      result.accessScope?.allowedTenantIds,
+      ['tenant-demo-001']
+    );
+    assert.equal(result.validationIssues.length, 1);
+    assert.equal(result.validationIssues[0]?.message, 'Original warning');
+    assert.equal(
+      result.summaryItems.filter((item) => item.key === 'custom').length,
+      1
+    );
+    assert.equal(
+      result.summaryItems.find((item) => item.key === 'custom')?.label,
+      'Original summary'
+    );
+    assert.equal(result.bag?.traceId, 'trace-original');
+
+    assert.equal(Object.isFrozen(result), true);
+    assert.equal(Object.isFrozen(result.tenant), true);
+    assert.equal(Object.isFrozen(result.memberships), true);
+    assert.equal(Object.isFrozen(result.memberships?.[0]), true);
+    assert.equal(Object.isFrozen(result.accessScope), true);
+    assert.equal(
+      Object.isFrozen(result.accessScope?.allowedTenantIds),
+      true
+    );
+    assert.equal(Object.isFrozen(result.validationIssues), true);
+    assert.equal(Object.isFrozen(result.validationIssues[0]), true);
+    assert.equal(Object.isFrozen(result.summaryItems), true);
+    assert.equal(
+      Object.isFrozen(result.summaryItems.find((item) => item.key === 'custom')),
+      true
+    );
+    assert.equal(Object.isFrozen(result.telemetry), true);
+    assert.equal(Object.isFrozen(result.bag), true);
+  });
+
   it('preserves context bag on successful operations when provider has no bag', async () => {
     const result = await adapter.resolveTenant(
       createTenantProviderContext({
@@ -783,6 +1149,20 @@ describe('TenantAdapter with mock provider', () => {
 });
 
 describe('Builtin provider metadata coverage', () => {
+  it('freezes the builtin metadata array and every registration', () => {
+    assert.equal(Object.isFrozen(BUILTIN_TENANT_PROVIDER_REGISTRATIONS), true);
+    assert.ok(
+      BUILTIN_TENANT_PROVIDER_REGISTRATIONS.every((entry) =>
+        Object.isFrozen(entry)
+      )
+    );
+
+    const registry = createTenantProviderRegistry(true);
+    assert.ok(
+      registry.getAllRegistrations().every((entry) => Object.isFrozen(entry))
+    );
+  });
+
   it('covers all tenant provider kinds in builtin registrations', () => {
     const kinds = BUILTIN_TENANT_PROVIDER_REGISTRATIONS.map(
       (entry) => entry.kind

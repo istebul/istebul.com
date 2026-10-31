@@ -108,29 +108,37 @@ export interface CreateTenantProviderResultInput {
 export function createTenantProviderResult(
   input: CreateTenantProviderResultInput
 ): TenantProviderResult {
-  return {
+  return Object.freeze({
     success: input.success,
     status: input.status,
     operation: input.operation,
     providerId: input.providerId,
-    tenant: input.tenant ? { ...input.tenant } : undefined,
+    tenant: input.tenant
+      ? Object.freeze({ ...input.tenant })
+      : undefined,
     memberships: input.memberships
-      ? Object.freeze(input.memberships.map((item) => ({ ...item })))
+      ? Object.freeze(
+          input.memberships.map((item) => Object.freeze({ ...item }))
+        )
       : undefined,
     accessScope: input.accessScope
-      ? {
+      ? Object.freeze({
           ...input.accessScope,
           allowedTenantIds: Object.freeze([
             ...input.accessScope.allowedTenantIds
           ])
-        }
+        })
       : undefined,
     accessOutcome: input.accessOutcome,
-    validationIssues: Object.freeze([...(input.validationIssues ?? [])]),
-    summaryItems: Object.freeze([...(input.summaryItems ?? [])]),
-    telemetry: { ...input.telemetry },
-    bag: input.bag ? { ...input.bag } : undefined
-  };
+    validationIssues: Object.freeze(
+      (input.validationIssues ?? []).map((item) => Object.freeze({ ...item }))
+    ),
+    summaryItems: Object.freeze(
+      (input.summaryItems ?? []).map((item) => Object.freeze({ ...item }))
+    ),
+    telemetry: Object.freeze({ ...input.telemetry }),
+    bag: input.bag ? Object.freeze({ ...input.bag }) : undefined
+  });
 }
 
 /**

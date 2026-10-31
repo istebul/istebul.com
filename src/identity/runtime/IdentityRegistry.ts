@@ -2,7 +2,7 @@
  * İSTEBUL Identity — IdentityRegistry (PR-203A).
  */
 
-import type { IdentityModule, IdentityStatus } from './IdentityModule';
+import { freezeIdentityModule, type IdentityModule, type IdentityStatus } from './IdentityModule';
 import { BUILTIN_IDENTITY_MODULES } from './builtinModules';
 
 /**
@@ -17,25 +17,40 @@ export class IdentityRegistry {
   constructor(seedBuiltins = true) {
     if (seedBuiltins) {
       for (const definition of BUILTIN_IDENTITY_MODULES) {
-        this.byId.set(definition.id, definition);
+        this.byId.set(definition.id, freezeIdentityModule(definition));
       }
     }
   }
 
   register(definition: IdentityModule): void {
-    if (!definition?.id || typeof definition.id !== 'string') {
+    if (
+      !definition?.id ||
+      typeof definition.id !== 'string' ||
+      !definition.id.trim()
+    ) {
       throw new Error('IdentityModule.id zorunludur.');
     }
     if (this.byId.has(definition.id)) {
       throw new Error(`Identity zaten kayıtlı: ${definition.id}`);
     }
-    if (!definition.user?.id || typeof definition.user.id !== 'string') {
+    if (
+      !definition.user?.id ||
+      typeof definition.user.id !== 'string' ||
+      !definition.user.id.trim()
+    ) {
       throw new Error(`IdentityModule.user.id zorunludur: ${definition.id}`);
     }
-    if (!definition.tenant?.id || typeof definition.tenant.id !== 'string') {
+    if (
+      !definition.tenant?.id ||
+      typeof definition.tenant.id !== 'string' ||
+      !definition.tenant.id.trim()
+    ) {
       throw new Error(`IdentityModule.tenant.id zorunludur: ${definition.id}`);
     }
-    this.byId.set(definition.id, definition);
+    if (!Number.isSafeInteger(definition.order) || definition.order < 1) {
+      throw new Error('IdentityModule.order pozitif güvenli tam sayı olmalıdır.');
+    }
+    this.byId.set(definition.id, freezeIdentityModule(definition));
   }
 
   unregister(identityId: string): boolean {

@@ -269,6 +269,74 @@ describe('SupabaseAuthenticationResult mapping', () => {
     });
   });
 
+  it('creates immutable Supabase result snapshots without sharing source records', () => {
+    const user = {
+      id: 'u-source',
+      email: 'before@example.com',
+      displayName: 'Before',
+      tenantId: 'tenant-source'
+    };
+    const session = {
+      accessToken: 'access-source',
+      refreshToken: 'refresh-source',
+      expiresAt: 1700000000,
+      sessionId: 'session-source'
+    };
+    const error = { code: 'InvalidCredentials', message: 'Before' };
+    const issue = { code: 'SOURCE', message: 'Before', severity: 'warning' };
+    const summaryItem = { key: 'state', label: 'State', value: 'before' };
+    const telemetryInput = { ...telemetry };
+    const bagInput = { traceId: 'source-trace' };
+
+    const result = createSupabaseAuthenticationResult({
+      success: false,
+      status: 'unauthenticated',
+      operation: 'authenticate',
+      user,
+      session,
+      error,
+      validationIssues: [issue],
+      summaryItems: [summaryItem],
+      telemetry: telemetryInput,
+      bag: bagInput
+    });
+
+    assert.ok(Object.isFrozen(result));
+    assert.ok(Object.isFrozen(result.user));
+    assert.ok(Object.isFrozen(result.session));
+    assert.ok(Object.isFrozen(result.error));
+    assert.ok(Object.isFrozen(result.validationIssues));
+    assert.ok(Object.isFrozen(result.validationIssues[0]));
+    assert.ok(Object.isFrozen(result.summaryItems));
+    assert.ok(Object.isFrozen(result.summaryItems[0]));
+    assert.ok(Object.isFrozen(result.telemetry));
+    assert.ok(Object.isFrozen(result.bag));
+
+    user.displayName = 'After';
+    session.accessToken = 'access-after';
+    error.message = 'After';
+    issue.message = 'After';
+    summaryItem.value = 'after';
+    telemetryInput.durationMs = 999;
+    bagInput.traceId = 'changed-trace';
+
+    assert.equal(result.user.displayName, 'Before');
+    assert.equal(result.session.accessToken, 'access-source');
+    assert.equal(result.session.refreshToken, 'refresh-source');
+    assert.equal(result.error.message, 'Before');
+    assert.equal(result.validationIssues[0].message, 'Before');
+    assert.equal(result.summaryItems[0].value, 'before');
+    assert.equal(result.telemetry.durationMs, 1);
+    assert.equal(result.bag.traceId, 'source-trace');
+
+    assert.throws(() => {
+      result.session.accessToken = 'mutated';
+    });
+    assert.throws(() => {
+      result.validationIssues[0].message = 'mutated';
+    });
+  });
+
   it('toPrincipalFromSupabaseUser maps fields', () => {
     const principal = toPrincipalFromSupabaseUser({
       id: 'u1',

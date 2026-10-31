@@ -4,13 +4,13 @@
  * Projection-only örnek kayıtlar. Login / Auth / DB yok.
  */
 
-import type { IdentityModule } from './IdentityModule';
+import { freezeIdentityModule, type IdentityModule } from './IdentityModule';
 
 /**
  * Yerleşik Identity Module iskeletleri — Platform + Business Admin ortak kullanım.
  */
 export const BUILTIN_IDENTITY_MODULES: readonly IdentityModule[] = Object.freeze(
-  [
+  ([
     {
       id: 'identity-platform-owner-001',
       user: {
@@ -280,7 +280,7 @@ export const BUILTIN_IDENTITY_MODULES: readonly IdentityModule[] = Object.freeze
       createdAt: '2026-03-20T11:00:00.000Z',
       updatedAt: '2026-07-05T08:00:00.000Z'
     }
-  ] as IdentityModule[]
+  ] as IdentityModule[]).map(freezeIdentityModule)
 );
 
 /** Yerleşik kimlik sayısı */

@@ -22,29 +22,29 @@ export type TenantProviderOperation =
  */
 export interface TenantProviderContext {
   /** Dil */
-  locale: 'tr' | 'en';
+  readonly locale: 'tr' | 'en';
   /** Hedef provider kimliği */
-  providerId: string;
+  readonly providerId: string;
   /** Çalıştırılan operasyon */
-  operation?: TenantProviderOperation;
+  readonly operation?: TenantProviderOperation;
   /** Provider çözümleme türü */
-  kind?: TenantProviderKind;
+  readonly kind?: TenantProviderKind;
   /** Opsiyonel tenant kimliği */
-  tenantId?: string;
+  readonly tenantId?: string;
   /** Opsiyonel tenant slug */
-  tenantSlug?: string;
+  readonly tenantSlug?: string;
   /** Opsiyonel identity kimliği */
-  identityId?: string;
+  readonly identityId?: string;
   /** Opsiyonel üyelik kimliği */
-  membershipId?: string;
+  readonly membershipId?: string;
   /** Opsiyonel oturum kimliği */
-  sessionId?: string;
+  readonly sessionId?: string;
   /** Opsiyonel aktör kimliği */
-  actorId?: string;
+  readonly actorId?: string;
   /** Hedef kaynak / erişim doğrulama için */
-  resourceId?: string;
+  readonly resourceId?: string;
   /** Ek bag */
-  bag?: Record<string, unknown>;
+  readonly bag?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -56,8 +56,9 @@ export function createTenantProviderContext(
   }
 ): TenantProviderContext {
   const { locale, ...rest } = partial;
-  return {
+  return Object.freeze({
     ...rest,
+    bag: rest.bag ? Object.freeze({ ...rest.bag }) : undefined,
     locale: locale ?? 'tr'
-  };
+  });
 }

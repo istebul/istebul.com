@@ -9,6 +9,7 @@
  */
 
 import type { TenantProvider } from './TenantProvider';
+import { createTenantProviderContext } from './TenantProviderContext';
 import type {
   TenantProviderContext,
   TenantProviderOperation
@@ -95,10 +96,11 @@ export class TenantAdapter {
   ): Promise<TenantProviderResult> {
     const timer = startStageTimer();
     const startedAt = timer.startedAt;
-    const enrichedContext: TenantProviderContext = {
-      ...context,
-      operation
-    };
+    const enrichedContext: TenantProviderContext =
+      createTenantProviderContext({
+        ...context,
+        operation
+      });
 
     const validationIssues = validateTenantProviderContext(
       enrichedContext,

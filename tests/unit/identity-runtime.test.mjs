@@ -96,6 +96,81 @@ describe('IdentityRegistry', () => {
     assert.ok(registry.getById('identity-custom-099'));
   });
 
+  it('register stores an immutable snapshot independent of the source object', () => {
+    const source = structuredClone(BUILTIN_IDENTITY_MODULES[0]);
+    source.id = 'identity-custom-immutable-099';
+    source.user.id = 'user-custom-immutable-099';
+    source.claims.customScopes = ['identity:read'];
+
+    const originalUserId = source.user.id;
+    const originalDisplayName = source.user.displayName;
+    const originalRoleName = source.roles[0].name;
+
+    registry.register(source);
+
+    source.user.id = 'user-mutated';
+    source.user.displayName = 'Mutated User';
+    source.tenant.slug = 'mutated-tenant';
+    source.roles[0].name = 'Mutated Role';
+    source.permissions[0].action = 'mutated';
+    source.claims.customScopes.push('identity:write');
+    source.sessionReference.sessionId = 'sess-mutated';
+
+    const stored = registry.getById('identity-custom-immutable-099');
+    assert.ok(stored);
+    assert.equal(stored.user.id, originalUserId);
+    assert.equal(stored.user.displayName, originalDisplayName);
+    assert.equal(stored.tenant.slug, 'istebul-platform');
+    assert.equal(stored.roles[0].name, originalRoleName);
+    assert.equal(stored.permissions[0].action, '*');
+    assert.deepEqual(stored.claims.customScopes, ['identity:read']);
+    assert.equal(stored.sessionReference.sessionId, 'sess-ref-owner-001');
+
+    assert.ok(Object.isFrozen(stored));
+    assert.ok(Object.isFrozen(stored.user));
+    assert.ok(Object.isFrozen(stored.tenant));
+    assert.ok(Object.isFrozen(stored.roles));
+    assert.ok(Object.isFrozen(stored.roles[0]));
+    assert.ok(Object.isFrozen(stored.permissions));
+    assert.ok(Object.isFrozen(stored.permissions[0]));
+    assert.ok(Object.isFrozen(stored.claims));
+    assert.ok(Object.isFrozen(stored.claims.customScopes));
+    assert.ok(Object.isFrozen(stored.sessionReference));
+  });
+
+  it('builtin identity modules and nested records are immutable', () => {
+    const builtin = BUILTIN_IDENTITY_MODULES[0];
+
+    assert.ok(Object.isFrozen(BUILTIN_IDENTITY_MODULES));
+    assert.ok(Object.isFrozen(builtin));
+    assert.ok(Object.isFrozen(builtin.user));
+    assert.ok(Object.isFrozen(builtin.tenant));
+    assert.ok(Object.isFrozen(builtin.roles));
+    assert.ok(Object.isFrozen(builtin.roles[0]));
+    assert.ok(Object.isFrozen(builtin.permissions));
+    assert.ok(Object.isFrozen(builtin.permissions[0]));
+    assert.ok(Object.isFrozen(builtin.claims));
+    assert.ok(Object.isFrozen(builtin.sessionReference));
+    assert.equal(
+      getBuiltinIdentityModule('identity-platform-owner-001').user.displayName,
+      'Platform Owner'
+    );
+  });
+
+  it('register rejects invalid order values', () => {
+    for (const order of [0, -1, 1.5, NaN, Infinity]) {
+      const definition = structuredClone(BUILTIN_IDENTITY_MODULES[0]);
+      definition.id = `identity-invalid-order-${String(order)}`;
+      definition.user.id = `user-invalid-order-${String(order)}`;
+      definition.order = order;
+
+      assert.throws(
+        () => registry.register(definition),
+        /order/
+      );
+    }
+  });
+
   it('register throws on duplicate id', () => {
     assert.throws(
       () => registry.register(BUILTIN_IDENTITY_MODULES[0]),
@@ -391,9 +466,15 @@ describe('toIdentityProjection', () => {
 
   it('freezes role and permission arrays in projection', () => {
     const projection = toIdentityProjection(BUILTIN_IDENTITY_MODULES[2]);
+    assert.ok(Object.isFrozen(projection));
+    assert.ok(Object.isFrozen(projection.user));
+    assert.ok(Object.isFrozen(projection.tenant));
     assert.ok(Object.isFrozen(projection.roles));
+    assert.ok(Object.isFrozen(projection.roles[0]));
     assert.ok(Object.isFrozen(projection.permissions));
+    assert.ok(Object.isFrozen(projection.permissions[0]));
     assert.ok(Object.isFrozen(projection.claims));
+    assert.ok(Object.isFrozen(projection.sessionReference));
   });
 });
 

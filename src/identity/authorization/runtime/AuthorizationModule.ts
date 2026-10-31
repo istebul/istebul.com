@@ -156,56 +156,81 @@ export interface AuthorizationProjection {
 }
 
 /**
- * AuthorizationModule tanımını projeksiyona dönüştürür.
+ * Authorization alt nesnelerini kontrollü şekilde kopyalar ve dondurur.
+ */
+function freezeRole(role: AuthorizationRole): AuthorizationRole {
+  return Object.freeze({
+    ...role,
+    permissionIds: Object.freeze([...role.permissionIds])
+  });
+}
+
+function freezePermission(
+  permission: AuthorizationPermission
+): AuthorizationPermission {
+  return Object.freeze({
+    ...permission,
+    action: Object.freeze({ ...permission.action }),
+    resource: Object.freeze({ ...permission.resource })
+  });
+}
+
+function freezePolicy(policy: AuthorizationPolicy): AuthorizationPolicy {
+  return Object.freeze({
+    ...policy,
+    roleIds: Object.freeze([...policy.roleIds])
+  });
+}
+
+function freezeDecision(
+  decision: AuthorizationDecision
+): AuthorizationDecision {
+  return Object.freeze({ ...decision });
+}
+
+/**
+ * AuthorizationModule için bağımsız ve immutable snapshot üretir.
+ */
+export function freezeAuthorizationModule(
+  module: AuthorizationModule
+): AuthorizationModule {
+  return Object.freeze({
+    ...module,
+    roles: Object.freeze(module.roles.map(freezeRole)),
+    permissions: Object.freeze(module.permissions.map(freezePermission)),
+    policies: Object.freeze(module.policies.map(freezePolicy)),
+    decisions: Object.freeze(module.decisions.map(freezeDecision))
+  });
+}
+
+/**
+ * AuthorizationModule tanımını immutable projeksiyona dönüştürür.
  */
 export function toAuthorizationProjection(
   module: AuthorizationModule
 ): AuthorizationProjection {
-  const roles = Object.freeze(
-    module.roles.map((role) => ({
-      ...role,
-      permissionIds: Object.freeze([...role.permissionIds])
-    }))
-  );
-  const permissions = Object.freeze(
-    module.permissions.map((permission) => ({
-      ...permission,
-      action: { ...permission.action },
-      resource: { ...permission.resource }
-    }))
-  );
-  const policies = Object.freeze(
-    module.policies.map((policy) => ({
-      ...policy,
-      roleIds: Object.freeze([...policy.roleIds])
-    }))
-  );
-  const decisions = Object.freeze(
-    module.decisions.map((decision) => ({ ...decision }))
-  );
+  const snapshot = freezeAuthorizationModule(module);
 
-  let allowCount = 0;
-  let denyCount = 0;
-  for (const decision of decisions) {
-    if (decision.outcome === 'allow') {
-      allowCount += 1;
-    } else {
-      denyCount += 1;
-    }
-  }
+  const allowCount = snapshot.decisions.filter(
+    (decision) => decision.outcome === 'allow'
+  ).length;
 
-  return {
-    authorizationId: module.id,
-    identityId: module.identityId,
-    authenticationId: module.authenticationId,
-    sessionId: module.sessionId,
-    principalId: module.principalId,
-    roles,
-    permissions,
-    policies,
-    decisions,
+  const denyCount = snapshot.decisions.filter(
+    (decision) => decision.outcome === 'deny'
+  ).length;
+
+  return Object.freeze({
+    authorizationId: snapshot.id,
+    identityId: snapshot.identityId,
+    authenticationId: snapshot.authenticationId,
+    sessionId: snapshot.sessionId,
+    principalId: snapshot.principalId,
+    roles: snapshot.roles,
+    permissions: snapshot.permissions,
+    policies: snapshot.policies,
+    decisions: snapshot.decisions,
     allowCount,
     denyCount,
     projected: true
-  };
+  });
 }

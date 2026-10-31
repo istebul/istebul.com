@@ -4,12 +4,12 @@
  * Projection-only örnek kayıtlar. JWT / Cookie / Refresh Token yok.
  */
 
-import type { SessionModule } from './SessionModule';
+import { freezeSessionModule, type SessionModule } from './SessionModule';
 
 /**
  * Yerleşik Session Module iskeletleri.
  */
-export const BUILTIN_SESSION_MODULES: readonly SessionModule[] = Object.freeze([
+export const BUILTIN_SESSION_MODULES: readonly SessionModule[] = Object.freeze(([
   {
     id: 'session-owner-001',
     session: {
@@ -299,7 +299,7 @@ export const BUILTIN_SESSION_MODULES: readonly SessionModule[] = Object.freeze([
     createdAt: '2026-07-20T00:00:00.000Z',
     updatedAt: '2026-07-20T01:00:00.000Z'
   }
-] as SessionModule[]);
+] as SessionModule[]).map(freezeSessionModule));
 
 /** Yerleşik session sayısı */
 export const BUILTIN_SESSION_MODULE_COUNT = BUILTIN_SESSION_MODULES.length;

@@ -12,18 +12,18 @@ import type { TenantIsolationProjection } from './TenantIsolationModule';
  * Tenant Isolation doğrulama bulgusu.
  */
 export interface TenantIsolationValidationIssue {
-  code: string;
-  message: string;
-  severity: 'warning' | 'error';
+  readonly code: string;
+  readonly message: string;
+  readonly severity: 'warning' | 'error';
 }
 
 /**
  * Tenant Isolation özet öğesi.
  */
 export interface TenantIsolationSummaryItem {
-  key: string;
-  label: string;
-  value: string | number | boolean;
+  readonly key: string;
+  readonly label: string;
+  readonly value: string | number | boolean;
 }
 
 /**
@@ -31,31 +31,31 @@ export interface TenantIsolationSummaryItem {
  */
 export interface TenantIsolationSummary {
   /** Genel başarı */
-  success: boolean;
+  readonly success: boolean;
   /** Tenant / isolation kayıt sayısı */
-  tenantCount: number;
+  readonly tenantCount: number;
   /** Üyelik sayısı */
-  membershipCount: number;
+  readonly membershipCount: number;
   /** Isolation decision sayısı */
-  isolationDecisionCount: number;
+  readonly isolationDecisionCount: number;
   /** Allow sayısı */
-  allowCount: number;
+  readonly allowCount: number;
   /** Deny sayısı */
-  denyCount: number;
+  readonly denyCount: number;
   /** Restrict sayısı */
-  restrictCount: number;
+  readonly restrictCount: number;
   /** İstenen kayıt sayısı */
-  requestedCount: number;
+  readonly requestedCount: number;
   /** Bulunamayan kayıt sayısı */
-  unavailableCount: number;
+  readonly unavailableCount: number;
   /** Upstream identity projeksiyon sayısı */
-  identityProjectionCount: number;
+  readonly identityProjectionCount: number;
   /** Upstream authentication projeksiyon sayısı */
-  authenticationProjectionCount: number;
+  readonly authenticationProjectionCount: number;
   /** Upstream session projeksiyon sayısı */
-  sessionProjectionCount: number;
+  readonly sessionProjectionCount: number;
   /** Upstream authorization projeksiyon sayısı */
-  authorizationProjectionCount: number;
+  readonly authorizationProjectionCount: number;
 }
 
 /**
@@ -63,34 +63,34 @@ export interface TenantIsolationSummary {
  */
 export interface TenantIsolationTelemetry {
   /** Toplam süre (ms) */
-  durationMs: number;
+  readonly durationMs: number;
   /** Başlangıç ISO */
-  startedAt: string;
+  readonly startedAt: string;
   /** Bitiş ISO */
-  endedAt: string;
+  readonly endedAt: string;
   /** Tenant sayısı */
-  tenantCount: number;
+  readonly tenantCount: number;
   /** Üyelik sayısı */
-  membershipCount: number;
+  readonly membershipCount: number;
   /** Isolation decision sayısı */
-  isolationDecisionCount: number;
+  readonly isolationDecisionCount: number;
   /** Özet öğe sayısı */
-  summaryItemCount: number;
+  readonly summaryItemCount: number;
 }
 
 /**
  * Tenant Isolation Runtime çıktısı.
  */
 export interface TenantIsolationResult {
-  identityProjections: readonly IdentityProjection[];
-  authenticationProjections: readonly AuthenticationProjection[];
-  sessionProjections: readonly SessionProjection[];
-  authorizationProjections: readonly AuthorizationProjection[];
-  isolations: readonly TenantIsolationProjection[];
-  summary: TenantIsolationSummary;
-  summaryItems: readonly TenantIsolationSummaryItem[];
-  validationIssues: readonly TenantIsolationValidationIssue[];
-  telemetry: TenantIsolationTelemetry;
+  readonly identityProjections: readonly IdentityProjection[];
+  readonly authenticationProjections: readonly AuthenticationProjection[];
+  readonly sessionProjections: readonly SessionProjection[];
+  readonly authorizationProjections: readonly AuthorizationProjection[];
+  readonly isolations: readonly TenantIsolationProjection[];
+  readonly summary: TenantIsolationSummary;
+  readonly summaryItems: readonly TenantIsolationSummaryItem[];
+  readonly validationIssues: readonly TenantIsolationValidationIssue[];
+  readonly telemetry: TenantIsolationTelemetry;
 }
 
 /** Pipeline bag anahtarı */

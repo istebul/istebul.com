@@ -4,13 +4,16 @@
  * Projection-only örnek kayıtlar. Supabase RLS / DB / API yok.
  */
 
-import type { TenantIsolationModule } from './TenantIsolationModule';
+import {
+  freezeTenantIsolationModule,
+  type TenantIsolationModule
+} from './TenantIsolationModule';
 
 /**
  * Yerleşik Tenant Isolation Module iskeletleri.
  */
 export const BUILTIN_TENANT_ISOLATION_MODULES: readonly TenantIsolationModule[] =
-  Object.freeze([
+  Object.freeze(([
     {
       id: 'iso-platform-001',
       tenantIdentity: {
@@ -678,7 +681,7 @@ export const BUILTIN_TENANT_ISOLATION_MODULES: readonly TenantIsolationModule[] 
       createdAt: '2025-11-01T00:00:00.000Z',
       updatedAt: '2026-07-18T16:45:00.000Z'
     }
-  ] as TenantIsolationModule[]);
+  ] as TenantIsolationModule[]).map(freezeTenantIsolationModule));
 
 /** Yerleşik isolation sayısı */
 export const BUILTIN_TENANT_ISOLATION_MODULE_COUNT =

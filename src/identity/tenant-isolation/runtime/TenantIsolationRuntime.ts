@@ -125,17 +125,21 @@ export class TenantIsolationRuntime {
     };
 
     // Aşama 8: TenantIsolationResult
-    return {
+    return Object.freeze({
       identityProjections,
       authenticationProjections,
       sessionProjections,
       authorizationProjections,
       isolations: projections,
-      summary,
-      summaryItems,
-      validationIssues,
-      telemetry
-    };
+      summary: Object.freeze({ ...summary }),
+      summaryItems: Object.freeze(
+        summaryItems.map((item) => Object.freeze({ ...item }))
+      ),
+      validationIssues: Object.freeze(
+        validationIssues.map((issue) => Object.freeze({ ...issue }))
+      ),
+      telemetry: Object.freeze({ ...telemetry })
+    });
   }
 }
 

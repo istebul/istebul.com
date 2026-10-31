@@ -169,6 +169,144 @@ describe('AuthenticationProviderRegistry', () => {
     );
   });
 
+
+  it('registerRegistration rejects unsupported authentication methods', () => {
+    assert.throws(
+      () =>
+        registry.registerRegistration({
+          id: 'provider-invalid-method',
+          name: 'Invalid Method',
+          description: 'Invalid method test',
+          method: 'saml',
+          providerRegistered: false,
+          order: 99
+        }),
+      /method geçersiz/
+    );
+  });
+
+  it('registerRegistration rejects missing description', () => {
+    assert.throws(
+      () =>
+        registry.registerRegistration({
+          id: 'provider-no-description',
+          name: 'No Description',
+          description: '',
+          method: 'password',
+          providerRegistered: false,
+          order: 99
+        }),
+      /description zorunludur/
+    );
+  });
+
+  it('registerRegistration requires boolean providerRegistered', () => {
+    assert.throws(
+      () =>
+        registry.registerRegistration({
+          id: 'provider-invalid-status',
+          name: 'Invalid Status',
+          description: 'Invalid status test',
+          method: 'password',
+          providerRegistered: 'false',
+          order: 99
+        }),
+      /providerRegistered boolean olmalıdır/
+    );
+  });
+
+  it('registerRegistration rejects initially registered metadata', () => {
+    assert.throws(
+      () =>
+        registry.registerRegistration({
+          id: 'provider-pre-registered',
+          name: 'Pre Registered',
+          description: 'Pre registered test',
+          method: 'password',
+          providerRegistered: true,
+          order: 99
+        }),
+      /providerRegistered=false olmalıdır/
+    );
+  });
+
+  it('registerRegistration requires a positive safe integer order', () => {
+    for (const [index, order] of [
+      [0, 0],
+      [1, -1],
+      [2, 1.5],
+      [3, Number.NaN],
+      [4, Number.POSITIVE_INFINITY]
+    ]) {
+      assert.throws(
+        () =>
+          registry.registerRegistration({
+            id: `provider-invalid-order-${index}`,
+            name: 'Invalid Order',
+            description: 'Invalid order test',
+            method: 'password',
+            providerRegistered: false,
+            order
+          }),
+        /order pozitif güvenli tam sayı olmalıdır/
+      );
+    }
+  });
+
+  it('registerRegistration isolates metadata from source object mutations', () => {
+    const source = {
+      id: 'provider-immutable-101',
+      name: 'Original Name',
+      description: 'Original description',
+      method: 'password',
+      providerRegistered: false,
+      order: 101
+    };
+
+    registry.registerRegistration(source);
+
+    source.name = 'Changed Name';
+    source.description = 'Changed description';
+    source.order = 999;
+
+    const stored = registry.getRegistrationById('provider-immutable-101');
+
+    assert.equal(stored.name, 'Original Name');
+    assert.equal(stored.description, 'Original description');
+    assert.equal(stored.order, 101);
+  });
+
+  it('registration metadata returned by registry is immutable', () => {
+    const entry = registry.getRegistrationById('provider-password-001');
+
+    assert.ok(entry);
+    assert.equal(Object.isFrozen(entry), true);
+
+    assert.throws(() => {
+      entry.name = 'Changed Password';
+    }, TypeError);
+
+    assert.equal(
+      registry.getRegistrationById('provider-password-001').name,
+      'Password'
+    );
+  });
+
+  it('registration arrays and their metadata entries are immutable', () => {
+    const entries = registry.getAllRegistrations();
+
+    assert.equal(Object.isFrozen(entries), true);
+    assert.ok(entries.every((entry) => Object.isFrozen(entry)));
+
+    assert.throws(() => {
+      entries[0].name = 'Changed Builtin';
+    }, TypeError);
+
+    assert.throws(() => {
+      entries.push({});
+    }, TypeError);
+  });
+
   it('registerProvider attaches implementation to metadata', () => {
     const provider = createMockProvider();
     registry.registerProvider(provider);
@@ -341,6 +479,66 @@ describe('AuthenticationProviderResult factories', () => {
         message: 'W',
         severity: 'warning'
       });
+    });
+  });
+
+  it('creates immutable provider snapshots without sharing source records', () => {
+    const principal = {
+      principalId: 'p-source',
+      identityId: 'i-source',
+      displayName: 'Before'
+    };
+    const credentialReference = {
+      credentialId: 'c-source',
+      method: 'password'
+    };
+    const issue = { code: 'SOURCE', message: 'Before', severity: 'warning' };
+    const summaryItem = { key: 'state', label: 'State', value: 'before' };
+    const telemetryInput = { ...telemetry };
+    const bagInput = { traceId: 'source-trace' };
+
+    const result = createAuthenticationProviderResult({
+      success: true,
+      status: 'authenticated',
+      operation: 'authenticate',
+      providerId: 'provider-password-001',
+      principal,
+      credentialReference,
+      validationIssues: [issue],
+      summaryItems: [summaryItem],
+      telemetry: telemetryInput,
+      bag: bagInput
+    });
+
+    assert.ok(Object.isFrozen(result));
+    assert.ok(Object.isFrozen(result.principal));
+    assert.ok(Object.isFrozen(result.credentialReference));
+    assert.ok(Object.isFrozen(result.validationIssues));
+    assert.ok(Object.isFrozen(result.validationIssues[0]));
+    assert.ok(Object.isFrozen(result.summaryItems));
+    assert.ok(Object.isFrozen(result.summaryItems[0]));
+    assert.ok(Object.isFrozen(result.telemetry));
+    assert.ok(Object.isFrozen(result.bag));
+
+    principal.displayName = 'After';
+    credentialReference.credentialId = 'c-after';
+    issue.message = 'After';
+    summaryItem.value = 'after';
+    telemetryInput.durationMs = 999;
+    bagInput.traceId = 'changed-trace';
+
+    assert.equal(result.principal.displayName, 'Before');
+    assert.equal(result.credentialReference.credentialId, 'c-source');
+    assert.equal(result.validationIssues[0].message, 'Before');
+    assert.equal(result.summaryItems[0].value, 'before');
+    assert.equal(result.telemetry.durationMs, 5);
+    assert.equal(result.bag.traceId, 'source-trace');
+
+    assert.throws(() => {
+      result.validationIssues[0].message = 'mutated';
+    });
+    assert.throws(() => {
+      result.telemetry.durationMs = 10;
     });
   });
 
@@ -708,6 +906,29 @@ describe('Builtin provider metadata coverage', () => {
     for (const entry of BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS) {
       assert.equal(entry.providerRegistered, false);
     }
+  });
+
+  it('freezes builtin registration collection and every metadata record', () => {
+    assert.ok(Object.isFrozen(BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS));
+
+    for (const entry of BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS) {
+      assert.ok(Object.isFrozen(entry));
+    }
+
+    assert.throws(() => {
+      BUILTIN_AUTHENTICATION_PROVIDER_REGISTRATIONS[0].name = 'Mutated';
+    }, TypeError);
+
+    assert.equal(
+      getBuiltinAuthenticationProviderRegistration('provider-password-001')?.name,
+      'Password'
+    );
+
+    const registry = createAuthenticationProviderRegistry(true);
+    assert.equal(
+      registry.getRegistrationById('provider-password-001')?.name,
+      'Password'
+    );
   });
 
   it('AuthenticationAdapter is constructable via class', () => {
