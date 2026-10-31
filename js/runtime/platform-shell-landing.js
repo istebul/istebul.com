@@ -30,14 +30,14 @@ const LANDING_PRODUCT_COPY = Object.freeze({
   business: Object.freeze({
     slogan: 'İşletmeler',
     shortDescription: 'İş zekâsı platformu',
-    statusLabel: 'Canlı',
-    ctaLabel: 'İSTEBUL Business’a Git'
+    statusLabel: 'Beta',
+    ctaLabel: 'İşletme çözümünü keşfet'
   }),
   warehouseiq: Object.freeze({
     slogan: 'Depo ve lojistik ekipleri',
     shortDescription: 'Akıllı Depo Yönetimi',
     statusLabel: 'Pilot',
-    ctaLabel: 'Operasyon Merkezini Aç'
+    ctaLabel: 'WarehouseIQ’yu keşfet'
   }),
   paraasistan: Object.freeze({
     slogan: 'Bireysel finans',

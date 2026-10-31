@@ -32,13 +32,13 @@ export const PLATFORM_PRODUCT_URLS: Readonly<
   }),
   business: Object.freeze({
     current: '/business/',
-    target: '/business/',
-    note: 'Ürün girişi aynı kalır.'
+    target: '/business-platform/',
+    note: 'Tanıtım sayfası /business-platform; uygulama girişi /business.'
   }),
   warehouseiq: Object.freeze({
     current: '/warehouse/',
-    target: '/warehouse/',
-    note: 'WarehouseIQ operasyon merkezi ürün girişi.'
+    target: '/warehouseiq/',
+    note: 'Tanıtım sayfası /warehouseiq; operasyon merkezi /warehouse.'
   }),
   paraasistan: Object.freeze({
     current: 'https://paraasistan.istebul.com/',
