@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const { onRequestGet, onRequestOptions: healthOptions } = await import('../../functions/api/health.js');
-const { onRequestOptions: aiProxyOptions } = await import('../../functions/ai-proxy.js');
+const {
+  onRequestOptions: aiProxyOptions,
+  onRequestPost: aiProxyPost
+} = await import('../../functions/ai-proxy.js');
 
 test('Cloudflare health endpoint returns no-store ok payload', async () => {
   const response = await onRequestGet();
@@ -30,6 +33,7 @@ test('AI proxy OPTIONS CORS is scoped to production origin', async () => {
   assert.equal(response.status, 204);
   assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://istebul.com');
   assert.notEqual(response.headers.get('Access-Control-Allow-Origin'), '*');
+  assert.equal(response.headers.get('Vary'), 'Origin');
 });
 
 test('AI proxy OPTIONS rejects disallowed origin', async () => {
@@ -39,4 +43,25 @@ test('AI proxy OPTIONS rejects disallowed origin', async () => {
   });
   const response = await aiProxyOptions({ request, env: {} });
   assert.equal(response.status, 403);
+});
+
+
+test('AI proxy POST JSON responses vary by origin', async () => {
+  const request = new Request('https://www.istebul.com/ai-proxy', {
+    method: 'POST',
+    headers: {
+      Origin: 'https://evil.example',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ prompt: 'test' })
+  });
+
+  const response = await aiProxyPost({ request, env: {} });
+
+  assert.equal(response.status, 403);
+  assert.equal(response.headers.get('Vary'), 'Origin');
+  assert.equal(
+    response.headers.get('Access-Control-Allow-Origin'),
+    'https://istebul.com'
+  );
 });
