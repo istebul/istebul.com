@@ -21,7 +21,10 @@ import type {
   BusinessContextBridgeContext,
   BusinessContextBridgeOperation
 } from './BusinessContextBridgeContext';
-import { resolveTenantSessionBridgeContextFromBusiness } from './BusinessContextBridgeContext';
+import {
+  mapBusinessBridgeOperationToTenantBridgeOperation,
+  resolveTenantSessionBridgeContextFromBusiness
+} from './BusinessContextBridgeContext';
 import type {
   BusinessContextBridgeResult,
   BusinessContextBridgeSummaryItem,
@@ -139,7 +142,29 @@ export class BusinessContextBridge {
       const tenantContext =
         resolveTenantSessionBridgeContextFromBusiness(context);
       const tenantBridgeResult =
-        await this.invokeTenantBridge(operation, tenantContext);
+        context.tenantBridgeResult ??
+        (await this.invokeTenantBridge(operation, tenantContext));
+
+      const expectedTenantOperation =
+        mapBusinessBridgeOperationToTenantBridgeOperation(operation);
+      if (tenantBridgeResult.operation !== expectedTenantOperation) {
+        throw new Error(
+          `Tenant bridge operasyonu uyuşmuyor: beklenen ${expectedTenantOperation}, alınan ${tenantBridgeResult.operation}.`
+        );
+      }
+
+      const expectedProviderId =
+        tenantContext.providerContext?.providerId ??
+        tenantContext.providerId;
+      const actualProviderId =
+        tenantBridgeResult.providerResult?.providerId;
+      if (
+        expectedProviderId &&
+        actualProviderId &&
+        expectedProviderId !== actualProviderId
+      ) {
+        throw new Error('Tenant bridge provider kimliği uyuşmuyor.');
+      }
 
       issues.push(
         ...mapUpstreamIssuesToBusinessContextBridgeIssues(tenantBridgeResult)

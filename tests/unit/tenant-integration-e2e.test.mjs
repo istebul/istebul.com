@@ -145,6 +145,7 @@ function createStack(clientOverrides = {}) {
     facade,
     runner,
     adapter,
+    provider,
     tenantSessionBridge,
     businessContextBridge,
     businessRuntime
@@ -614,6 +615,69 @@ describe('Pipeline success path', () => {
     assert.equal(result.summary.providerSucceeded, true);
     assert.equal(result.summary.sessionBridgeSucceeded, true);
     assert.equal(result.summary.businessContextBridgeSucceeded, true);
+  });
+
+  it('calls each Supabase provider operation exactly once across pipeline bridges', async () => {
+    const cases = [
+      { operation: 'synchronize', providerMethod: 'resolveTenant' },
+      { operation: 'refresh', providerMethod: 'refreshTenant' },
+      { operation: 'validate', providerMethod: 'validateAccess' },
+      { operation: 'mapWorkspace', providerMethod: 'getTenant' }
+    ];
+
+    const providerMethods = [
+      'resolveTenant',
+      'refreshTenant',
+      'validateAccess',
+      'getTenant',
+      'listMemberships'
+    ];
+
+    for (const testCase of cases) {
+      const { facade, provider } = createStack();
+      const calls = Object.fromEntries(
+        providerMethods.map((method) => [method, 0])
+      );
+
+      for (const method of providerMethods) {
+        const original = provider[method].bind(provider);
+        provider[method] = (...args) => {
+          calls[method] += 1;
+          return original(...args);
+        };
+      }
+
+      const overrides =
+        testCase.operation === 'mapWorkspace'
+          ? { workspaceId: 'ws-1', workspaceLabel: 'Main' }
+          : {};
+
+      const result = await facade.execute(
+        syncExecution({
+          operation: testCase.operation,
+          ...overrides
+        })
+      );
+
+      assert.equal(
+        result.tenantIntegrationResult.summary.success,
+        true,
+        `${testCase.operation} pipeline should succeed`
+      );
+
+      const expectedCalls = Object.fromEntries(
+        providerMethods.map((method) => [
+          method,
+          method === testCase.providerMethod ? 1 : 0
+        ])
+      );
+
+      assert.deepEqual(
+        calls,
+        expectedCalls,
+        `${testCase.operation} should invoke only ${testCase.providerMethod} once`
+      );
+    }
   });
 
   it('refresh operation succeeds', async () => {

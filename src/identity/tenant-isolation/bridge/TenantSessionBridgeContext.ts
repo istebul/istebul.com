@@ -8,6 +8,7 @@
 
 import type { TenantProviderContext } from '../adapters/TenantProviderContext';
 import { createTenantProviderContext } from '../adapters/TenantProviderContext';
+import type { TenantProviderResult } from '../adapters/TenantProviderResult';
 
 /**
  * Bridge operasyonları.
@@ -32,6 +33,8 @@ export interface TenantSessionBridgeContext {
    * Yoksa providerId + alanlardan üretilir.
    */
   providerContext?: TenantProviderContext;
+  /** Aynı pipeline içinde önceden alınmış provider sonucu */
+  providerResult?: TenantProviderResult;
   /** Hedef provider kimliği (providerContext yoksa zorunlu) */
   providerId?: string;
   /** Opsiyonel bridge binding kimliği */
