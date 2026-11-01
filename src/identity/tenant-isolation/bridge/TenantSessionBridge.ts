@@ -161,10 +161,20 @@ export class TenantSessionBridge {
 
     try {
       const providerContext = resolveTenantBridgeProviderContext(context);
-      const providerResult = await this.invokeProvider(
-        operation,
-        providerContext
-      );
+      const expectedProviderOperation =
+        mapTenantBridgeOperationToProviderOperation(operation);
+      const providerResult =
+        context.providerResult ??
+        (await this.invokeProvider(operation, providerContext));
+
+      if (providerResult.operation !== expectedProviderOperation) {
+        throw new Error(
+          `Provider operasyonu uyuşmuyor: beklenen ${expectedProviderOperation}, alınan ${providerResult.operation}.`
+        );
+      }
+      if (providerResult.providerId !== providerContext.providerId) {
+        throw new Error('Provider kimliği uyuşmuyor.');
+      }
       issues.push(...mapTenantProviderIssuesToBridgeIssues(providerResult));
 
       const existingBinding = this.resolveExistingBinding(

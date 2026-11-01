@@ -7,6 +7,7 @@
 
 import type { TenantSessionBridgeContext } from '../../tenant-isolation/bridge/TenantSessionBridgeContext';
 import { createTenantSessionBridgeContext } from '../../tenant-isolation/bridge/TenantSessionBridgeContext';
+import type { TenantSessionBridgeResult } from '../../tenant-isolation/bridge/TenantSessionBridgeResult';
 
 /**
  * Business Context Bridge operasyonları.
@@ -30,6 +31,8 @@ export interface BusinessContextBridgeContext {
    * Yoksa providerId / tenant alanlarından üretilir.
    */
   tenantBridgeContext?: TenantSessionBridgeContext;
+  /** Aynı pipeline içinde önceden üretilmiş tenant bridge sonucu */
+  tenantBridgeResult?: TenantSessionBridgeResult;
   /** Hedef tenant provider kimliği (tenantBridgeContext yoksa zorunlu) */
   providerId?: string;
   /** Opsiyonel business context bridge binding kimliği */
