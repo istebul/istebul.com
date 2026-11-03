@@ -46,19 +46,20 @@ test("WarehouseIQ ilk boyamada demo sayı göstermez", async () => {
 });
 
 test("WarehouseIQ tarayıcı oturumu ile korumalı API'yi çağırır", async () => {
-  const [html, js] = await Promise.all([
+  const [html, js, supabaseClient] = await Promise.all([
     readFile("warehouse/index.html", "utf8"),
-    readFile("js/warehouse/operations-center.js", "utf8")
+    readFile("js/warehouse/operations-center.js", "utf8"),
+    readFile("js/warehouse/supabase-browser.js", "utf8")
   ]);
 
   assert.match(html, /<script src="\/env\.js"><\/script>/);
   assert.match(
     html,
-    /<script type="module" src="\/js\/warehouse\/operations-center\.js"><\/script>/
+    /<script type="module" src="\/js\/warehouse\/operations-center\.js(?:\?[^"]*)?"><\/script>/
   );
 
   assert.match(
-    js,
+    supabaseClient,
     /https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\.49\.8\/\+esm/
   );
   assert.match(js, /istebul-auth-public-v1/);

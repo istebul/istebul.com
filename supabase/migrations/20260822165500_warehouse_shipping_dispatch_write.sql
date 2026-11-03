@@ -301,7 +301,7 @@ begin
 
   if not found then
     raise exception
-      'Sevkiyat kaydı bulunamadı: ' ||
+      'Sevkiyat kaydı bulunamadı: %',
       p_shipping_id::text
       using errcode = 'P0001';
   end if;
@@ -353,7 +353,7 @@ begin
 
     if not found then
       raise exception
-        'Taşıyıcı bulunamadı: ' ||
+        'Taşıyıcı bulunamadı: %',
         v_shipping.carrier_id::text
         using errcode = 'P0001';
     end if;
