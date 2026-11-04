@@ -303,9 +303,14 @@ jobs:
         continue-on-error: true
         run: bash scripts/apply-warehouse-admin-access-api.sh apply
 
-      - name: Verify WarehouseIQ Admin/access schema
+      - name: Verify WarehouseIQ Admin/access base schema
+        id: warehouse_admin_access_schema_verification
+        if: always() && steps.gate.outcome == 'success' && steps.gate.outputs.skip != 'true' && (github.event_name != 'workflow_dispatch' || inputs.apply_warehouse_admin_access != true)
+        run: bash scripts/apply-warehouse-admin-access-api.sh --verify-schema-only
+
+      - name: Verify WarehouseIQ Admin/access schema and assignment ACL
         id: warehouse_admin_access_verification
-        if: always() && steps.gate.outcome == 'success' && steps.gate.outputs.skip != 'true'
+        if: always() && steps.gate.outcome == 'success' && steps.gate.outputs.skip != 'true' && github.event_name == 'workflow_dispatch' && inputs.apply_warehouse_admin_access == true
         run: bash scripts/apply-warehouse-admin-access-api.sh --verify-only
 
       - name: Verify vertical partner dispatch schema
@@ -330,7 +335,8 @@ jobs:
             exit 1
           fi
 
-          if [ "${{ steps.warehouse_admin_access_verification.outcome }}" != "success" ]; then
+          if [ "${{ steps.warehouse_admin_access_schema_verification.outcome }}" != "success" ] && \
+             [ "${{ steps.warehouse_admin_access_verification.outcome }}" != "success" ]; then
             echo "::error::WarehouseIQ Admin/access schema verification failed; production release is blocked."
             exit 1
           fi

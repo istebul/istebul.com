@@ -102,7 +102,7 @@ test('Admin/access verification runs after an ambiguous apply failure', () => {
   );
   assert.match(
     workflow,
-    /id: warehouse_admin_access_verification\n\s+if: always\(\) && steps\.gate\.outcome == 'success' && steps\.gate\.outputs\.skip != 'true'\n\s+run: bash scripts\/apply-warehouse-admin-access-api\.sh --verify-only/,
+    /id: warehouse_admin_access_verification\n\s+if: always\(\) && steps\.gate\.outcome == 'success' && steps\.gate\.outputs\.skip != 'true' && github\.event_name == 'workflow_dispatch' && inputs\.apply_warehouse_admin_access == true\n\s+run: bash scripts\/apply-warehouse-admin-access-api\.sh --verify-only/,
   );
   assert.match(
     workflow,

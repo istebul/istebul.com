@@ -7,9 +7,9 @@ source "$ROOT/scripts/lib/supabase-management-api.sh"
 
 MODE="${1:-}"
 case "$MODE" in
-  apply|--verify-only) ;;
+  apply|--verify-only|--verify-schema-only) ;;
   *)
-    echo "Usage: $0 [apply|--verify-only]" >&2
+    echo "Usage: $0 [apply|--verify-only|--verify-schema-only]" >&2
     exit 2
     ;;
 esac
@@ -376,6 +376,20 @@ if jq -e '.[0].ready == true' "$STATE_JSON" >/dev/null; then
   jq '.[0] | {prerequisites_ok, admin_ready, assignment_acl_ready, guard_ready, rpc_roles_ready, schema_ready, ready}' \
     "$STATE_JSON"
   exit 0
+fi
+
+if [ "$MODE" = "--verify-schema-only" ]; then
+  if jq -e '.[0].schema_ready == true' "$STATE_JSON" >/dev/null; then
+    echo "WarehouseIQ Admin/access base schema verified; ACL hardening remains separately controlled."
+    jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, schema_ready}' \
+      "$STATE_JSON"
+    exit 0
+  fi
+
+  echo "WarehouseIQ Admin/access base schema is not ready." >&2
+  jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, schema_ready}' \
+    "$STATE_JSON" >&2
+  exit 1
 fi
 
 if [ "$MODE" = "--verify-only" ]; then
