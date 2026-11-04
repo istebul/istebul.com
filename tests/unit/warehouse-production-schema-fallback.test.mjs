@@ -155,6 +155,20 @@ test('WarehouseIQ Admin/access has its own controlled apply and verify gates', (
   assert.match(adminRunner, /BEGIN;/i);
   assert.match(adminRunner, /COMMIT;/i);
   assert.match(adminRunner, /--verify-only/);
+  assert.match(adminRunner, /--verify-schema-only/);
+  assert.match(adminRunner, /schema_ready == true/);
+  assert.match(
+    workflow,
+    /Verify WarehouseIQ Admin\/access base schema[\s\S]*warehouse_admin_access_schema_verification[\s\S]*inputs\.apply_warehouse_admin_access != true[\s\S]*apply-warehouse-admin-access-api\.sh --verify-schema-only/
+  );
+  assert.match(
+    workflow,
+    /Verify WarehouseIQ Admin\/access schema and assignment ACL[\s\S]*warehouse_admin_access_verification[\s\S]*inputs\.apply_warehouse_admin_access == true[\s\S]*apply-warehouse-admin-access-api\.sh --verify-only/
+  );
+  assert.match(
+    workflow,
+    /warehouse_admin_access_schema_verification\.outcome[\s\S]*&&[\s\S]*warehouse_admin_access_verification\.outcome/
+  );
   assert.match(adminRunner, /prerequisites_ok/);
   assert.match(adminRunner, /rpc_roles_ready/);
   assert.doesNotMatch(adminRunner, /schema_migrations|migration repair|supabase\s+db\s+push|--include-all/i);

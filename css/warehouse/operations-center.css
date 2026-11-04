@@ -644,3 +644,43 @@ article[id]{
   }
 }
 
+/* WarehouseIQ - Depo Yönetimi */
+.warehouse-management-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: start;
+  gap: 24px;
+  min-width: 0;
+}
+
+.warehouse-form-section {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  background: var(--panel-inner, rgba(255, 255, 255, 0.02));
+}
+
+.warehouse-list {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+#depo-yonetim-listesi {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  .warehouse-management-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .warehouse-form-section {
+    padding: 16px;
+  }
+}
