@@ -35,7 +35,7 @@ CREATE INDEX IF NOT EXISTS warehouse_user_warehouse_assignments_user_idx
 CREATE INDEX IF NOT EXISTS warehouse_user_warehouse_assignments_warehouse_idx
   ON public.warehouse_user_warehouse_assignments(account_id, warehouse_id);
 ALTER TABLE public.warehouse_user_warehouse_assignments ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.warehouse_user_warehouse_assignments FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.warehouse_user_warehouse_assignments FROM PUBLIC, anon;
 GRANT SELECT, INSERT, DELETE ON TABLE public.warehouse_user_warehouse_assignments TO authenticated;
 
 DROP POLICY IF EXISTS warehouse_user_warehouse_assignments_select ON public.warehouse_user_warehouse_assignments;

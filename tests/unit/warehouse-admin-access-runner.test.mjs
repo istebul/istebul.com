@@ -12,10 +12,44 @@ const workflow = readFileSync(
   'utf8',
 );
 
-test('runner applies only the three explicitly approved WarehouseIQ access migrations', () => {
+test('runner verifies the complete assignment table privilege allowlist', () => {
+  const aclStart = runner.indexOf(') AS assignment_acl_ready');
+  assert.notEqual(aclStart, -1);
+
+  const aclBlock = runner.slice(
+    runner.lastIndexOf('    (', aclStart),
+    aclStart,
+  );
+
+  for (const privilege of ['SELECT', 'INSERT', 'DELETE']) {
+    assert.match(
+      aclBlock,
+      new RegExp('has_table_privilege\\([\\s\\S]*?' + privilege + "'"),
+    );
+  }
+
+  for (const privilege of [
+    'UPDATE',
+    'TRUNCATE',
+    'REFERENCES',
+    'TRIGGER',
+    'MAINTAIN',
+  ]) {
+    assert.match(
+      aclBlock,
+      new RegExp('NOT has_table_privilege\\([\\s\\S]*?' + privilege + "'"),
+    );
+  }
+});
+
+test('runner separates schema setup from assignment ACL hardening', () => {
   assert.match(runner, /20261011190000_warehouse_admin_user_access\.sql/);
   assert.match(runner, /20261011200000_warehouse_operational_access_guards\.sql/);
   assert.match(runner, /20261011210000_warehouse_rpc_role_alignment\.sql/);
+  assert.match(runner, /20261104090000_warehouse_assignment_acl_hardening\.sql/);
+  assert.match(runner, /assignment_acl_ready/);
+  assert.match(runner, /schema_ready/);
+  assert.match(runner, /if jq -e '\.\[0\]\.schema_ready == true'/);
   assert.match(runner, /MIGRATIONS=\(/);
 });
 
@@ -32,6 +66,8 @@ test('runner fails closed when prerequisites are missing and verifies final stat
   assert.match(runner, /admin_ready/);
   assert.match(runner, /guard_ready/);
   assert.match(runner, /rpc_roles_ready/);
+  assert.match(runner, /assignment_acl_ready/);
+  assert.match(runner, /schema_ready/);
   assert.match(runner, /if \[ "\$MODE" = "--verify-only" \]/);
   assert.match(runner, /Migration sonrası doğrulama başarısız/);
 });
@@ -74,32 +110,39 @@ test('Admin/access verification runs after an ambiguous apply failure', () => {
   );
 });
 
-const adminAccessMigration = readFileSync(
+const historicalAdminAccessMigration = readFileSync(
   new URL('../../supabase/migrations/20261011190000_warehouse_admin_user_access.sql', import.meta.url),
   'utf8',
 );
 
-test('warehouse assignment table ACL is restricted to the required privileges', () => {
-  const rls = adminAccessMigration.indexOf(
-    'ALTER TABLE public.warehouse_user_warehouse_assignments ENABLE ROW LEVEL SECURITY;',
+const assignmentAclMigration = readFileSync(
+  new URL('../../supabase/migrations/20261104090000_warehouse_assignment_acl_hardening.sql', import.meta.url),
+  'utf8',
+);
+
+test('historical Admin/access migration remains unchanged', () => {
+  assert.match(
+    historicalAdminAccessMigration,
+    /REVOKE ALL ON TABLE public\.warehouse_user_warehouse_assignments FROM PUBLIC, anon;/,
   );
-
-  const revoke = adminAccessMigration.indexOf(
-    'REVOKE ALL ON TABLE public.warehouse_user_warehouse_assignments FROM PUBLIC, anon, authenticated;',
-  );
-
-  const grant = adminAccessMigration.indexOf(
-    'GRANT SELECT, INSERT, DELETE ON TABLE public.warehouse_user_warehouse_assignments TO authenticated;',
-  );
-
-  assert.notEqual(rls, -1, 'RLS must be enabled');
-  assert.notEqual(revoke, -1, 'Existing authenticated privileges must be revoked');
-  assert.notEqual(grant, -1, 'Only the required authenticated privileges must be granted');
-  assert.ok(rls < revoke && revoke < grant, 'ACL statements must execute in the correct order');
-
   assert.doesNotMatch(
-    adminAccessMigration,
-    /GRANT\s+(?:ALL|UPDATE|TRUNCATE|REFERENCES|TRIGGER|MAINTAIN)[\s\S]{0,180}warehouse_user_warehouse_assignments[\s\S]{0,100}\bTO\s+authenticated\b/i,
-    'No broad privileges may be granted to authenticated on this table',
+    historicalAdminAccessMigration,
+    /FROM PUBLIC, anon, authenticated;/,
+  );
+});
+
+test('forward ACL migration revokes broad privileges before restoring required privileges', () => {
+  const revoke = assignmentAclMigration.indexOf('REVOKE ALL');
+  const grant = assignmentAclMigration.indexOf(
+    'GRANT SELECT, INSERT, DELETE',
+  );
+
+  assert.notEqual(revoke, -1, 'Existing authenticated privileges must be revoked');
+  assert.notEqual(grant, -1, 'Only required authenticated privileges must be granted');
+  assert.ok(revoke < grant, 'REVOKE must execute before GRANT');
+  assert.doesNotMatch(assignmentAclMigration, /\\bBEGIN;|\\bCOMMIT;/i);
+  assert.doesNotMatch(
+    assignmentAclMigration,
+    /GRANT\\s+(?:ALL|UPDATE|TRUNCATE|REFERENCES|TRIGGER|MAINTAIN)[\\s\\S]{0,180}warehouse_user_warehouse_assignments[\\s\\S]{0,100}\\bTO\\s+authenticated\\b/i,
   );
 });

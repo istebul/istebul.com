@@ -165,6 +165,53 @@ state AS (
     ) AS admin_ready,
 
     (
+      CASE
+        WHEN to_regclass('public.warehouse_user_warehouse_assignments') IS NOT NULL THEN
+          has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'SELECT'
+          )
+          AND has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'INSERT'
+          )
+          AND has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'DELETE'
+          )
+          AND NOT has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'UPDATE'
+          )
+          AND NOT has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'TRUNCATE'
+          )
+          AND NOT has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'REFERENCES'
+          )
+          AND NOT has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'TRIGGER'
+          )
+          AND NOT has_table_privilege(
+            'authenticated',
+            'public.warehouse_user_warehouse_assignments',
+            'MAINTAIN'
+          )
+        ELSE false
+      END
+    ) AS assignment_acl_ready,
+
+    (
       to_regprocedure('public.warehouse_has_warehouse_permission(uuid,uuid,text[])') IS NOT NULL
       AND to_regprocedure('public.warehouse_resolve_operational_warehouse(uuid,text,jsonb)') IS NOT NULL
       AND to_regprocedure('public.warehouse_operational_permissions_for_table(text)') IS NOT NULL
@@ -282,6 +329,14 @@ SELECT
     AND admin_ready
     AND guard_ready
     AND rpc_roles_ready
+  ) AS schema_ready,
+  assignment_acl_ready,
+  (
+    prerequisites_ok
+    AND admin_ready
+    AND guard_ready
+    AND rpc_roles_ready
+    AND assignment_acl_ready
   ) AS ready
 FROM state;
 SQL
@@ -297,7 +352,7 @@ read_state() {
     return 1
   fi
 
-  if ! jq -e 'type == "array" and length > 0 and (.[0] | has("prerequisites_ok"))' \
+  if ! jq -e 'type == "array" and length > 0 and (.[0] | has("prerequisites_ok") and has("schema_ready") and has("assignment_acl_ready") and has("ready"))' \
     "$response_file" >/dev/null 2>&1; then
     echo "Unexpected state-query response; refusing to apply." >&2
     cat "$response_file" >&2 || true
@@ -311,30 +366,38 @@ fi
 
 if ! jq -e '.[0].prerequisites_ok == true' "$STATE_JSON" >/dev/null; then
   echo "HATA: Admin/access migration önkoşulları üretimde doğrulanamadı." >&2
-  jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, ready}' \
+  jq '.[0] | {prerequisites_ok, admin_ready, assignment_acl_ready, guard_ready, rpc_roles_ready, schema_ready, ready}' \
     "$STATE_JSON" >&2
   exit 1
 fi
 
 if jq -e '.[0].ready == true' "$STATE_JSON" >/dev/null; then
-  echo "WarehouseIQ Admin/access schema already ready; no migration replay needed."
-  jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, ready}' \
+  echo "WarehouseIQ Admin/access schema and assignment ACL already ready; no migration needed."
+  jq '.[0] | {prerequisites_ok, admin_ready, assignment_acl_ready, guard_ready, rpc_roles_ready, schema_ready, ready}' \
     "$STATE_JSON"
   exit 0
 fi
 
 if [ "$MODE" = "--verify-only" ]; then
-  echo "WarehouseIQ Admin/access schema is not ready." >&2
-  jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, ready}' \
+  echo "WarehouseIQ Admin/access schema or assignment ACL is not ready." >&2
+  jq '.[0] | {prerequisites_ok, admin_ready, assignment_acl_ready, guard_ready, rpc_roles_ready, schema_ready, ready}' \
     "$STATE_JSON" >&2
   exit 1
 fi
 
-MIGRATIONS=(
-  "20261011190000_warehouse_admin_user_access.sql"
-  "20261011200000_warehouse_operational_access_guards.sql"
-  "20261011210000_warehouse_rpc_role_alignment.sql"
-)
+if jq -e '.[0].schema_ready == true' "$STATE_JSON" >/dev/null; then
+  echo "WarehouseIQ schema is ready; applying only assignment ACL hardening."
+  MIGRATIONS=(
+    "20261104090000_warehouse_assignment_acl_hardening.sql"
+  )
+else
+  MIGRATIONS=(
+    "20261011190000_warehouse_admin_user_access.sql"
+    "20261011200000_warehouse_operational_access_guards.sql"
+    "20261011210000_warehouse_rpc_role_alignment.sql"
+    "20261104090000_warehouse_assignment_acl_hardening.sql"
+  )
+fi
 
 {
   printf 'BEGIN;\n'
@@ -411,11 +474,11 @@ fi
 
 if ! jq -e '.[0].ready == true' "$STATE_JSON" >/dev/null; then
   echo "HATA: Migration sonrası doğrulama başarısız." >&2
-  jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, ready}' \
+  jq '.[0] | {prerequisites_ok, admin_ready, assignment_acl_ready, guard_ready, rpc_roles_ready, schema_ready, ready}' \
     "$STATE_JSON" >&2
   exit 1
 fi
 
 echo "WarehouseIQ Admin/access schema verified after atomic apply."
-jq '.[0] | {prerequisites_ok, admin_ready, guard_ready, rpc_roles_ready, ready}' \
+jq '.[0] | {prerequisites_ok, admin_ready, assignment_acl_ready, guard_ready, rpc_roles_ready, schema_ready, ready}' \
   "$STATE_JSON"
