@@ -73,3 +73,33 @@ test('Admin/access verification runs after an ambiguous apply failure', () => {
     /name: Require controlled schema applies\n\s+if: always\(\) && steps\.gate\.outcome == 'success' && steps\.gate\.outputs\.skip != 'true'/,
   );
 });
+
+const adminAccessMigration = readFileSync(
+  new URL('../../supabase/migrations/20261011190000_warehouse_admin_user_access.sql', import.meta.url),
+  'utf8',
+);
+
+test('warehouse assignment table ACL is restricted to the required privileges', () => {
+  const rls = adminAccessMigration.indexOf(
+    'ALTER TABLE public.warehouse_user_warehouse_assignments ENABLE ROW LEVEL SECURITY;',
+  );
+
+  const revoke = adminAccessMigration.indexOf(
+    'REVOKE ALL ON TABLE public.warehouse_user_warehouse_assignments FROM PUBLIC, anon, authenticated;',
+  );
+
+  const grant = adminAccessMigration.indexOf(
+    'GRANT SELECT, INSERT, DELETE ON TABLE public.warehouse_user_warehouse_assignments TO authenticated;',
+  );
+
+  assert.notEqual(rls, -1, 'RLS must be enabled');
+  assert.notEqual(revoke, -1, 'Existing authenticated privileges must be revoked');
+  assert.notEqual(grant, -1, 'Only the required authenticated privileges must be granted');
+  assert.ok(rls < revoke && revoke < grant, 'ACL statements must execute in the correct order');
+
+  assert.doesNotMatch(
+    adminAccessMigration,
+    /GRANT\s+(?:ALL|UPDATE|TRUNCATE|REFERENCES|TRIGGER|MAINTAIN)[\s\S]{0,180}warehouse_user_warehouse_assignments[\s\S]{0,100}\bTO\s+authenticated\b/i,
+    'No broad privileges may be granted to authenticated on this table',
+  );
+});
