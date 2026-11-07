@@ -567,3 +567,30 @@ html.ib-ds-v4.ib-premium-v7 #trust .ib-trust-diff-grid {
     justify-content: center;
   }
 }
+
+
+/* Desktop nav fit: prevent logo and product menu overlap */
+@media (min-width: 1181px) and (max-width: 1279px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon.nav-links-group {
+    justify-content: flex-start;
+    gap: 0.08rem;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon .nav-link,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon .nav-dropdown-btn {
+    padding-inline: 0.14rem;
+    font-size: 0.72rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon.nav-links-group {
+    justify-content: flex-start;
+    gap: 0.12rem;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon .nav-link,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon .nav-dropdown-btn {
+    padding-inline: 0.22rem;
+  }
+}
