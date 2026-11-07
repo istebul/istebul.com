@@ -594,3 +594,26 @@ html.ib-ds-v4.ib-premium-v7 #trust .ib-trust-diff-grid {
     padding-inline: 0.22rem;
   }
 }
+
+
+/* Desktop nav grid: separate anonymous menu and actions */
+@media (min-width: 1280px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise:not(.nav-signed-in) .nav-container {
+    grid-template-columns: 240px minmax(0, 1fr) auto !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise:not(.nav-signed-in) .nav-brand {
+    width: 240px !important;
+    max-width: 240px !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise:not(.nav-signed-in) .nav-menu {
+    grid-column: 2 !important;
+    min-width: 0 !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise:not(.nav-signed-in) .nav-controls {
+    grid-column: 3 !important;
+    min-width: 0 !important;
+  }
+}
