@@ -617,3 +617,11 @@ html.ib-ds-v4.ib-premium-v7 #trust .ib-trust-diff-grid {
     min-width: 0 !important;
   }
 }
+
+
+/* Mobile header: hide desktop authentication group */
+@media (max-width: 1180px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-auth {
+    display: none !important;
+  }
+}
