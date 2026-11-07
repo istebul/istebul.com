@@ -64,8 +64,19 @@ export function getPlatformLandingProducts() {
  */
 export function initPlatformLanding() {
   const mount = document.getElementById(MOUNT_ID);
-  if (!mount || mount.dataset.platformLandingMounted === '1') {
-    return Boolean(mount?.dataset.platformLandingMounted === '1');
+  if (!mount) return false;
+
+  // Build-time prerender varsa mevcut DOM'u benimse; ikinci kez oluşturma.
+  if (mount.dataset.platformLandingMounted === '1') {
+    const section = document.getElementById(SECTION_ID);
+    if (section) {
+      section.dataset.platformLandingReady = '1';
+      section.dataset.platformCutover = '1';
+    }
+    if (document.documentElement?.dataset) {
+      document.documentElement.dataset.ibPlatformLanding = '1';
+    }
+    return true;
   }
 
   const identity = PLATFORM_CATALOG.identity;

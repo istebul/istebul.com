@@ -848,7 +848,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_footer" data-analytics-placement="footer" data-i18n="footer.freeAnalysis">Ön değerlendirmeye başla</a>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" data-i18n-aria="footerNav.cookieAria" aria-label="Çerez ve analiz tercihi">
-                <p data-i18n-html="footer.cookieHtml">Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a></p>
+                <p data-i18n-html="footer.cookieHtml">Analitik ve isteğe bağlı oturum kaydı (ör. Microsoft Clarity), GA4 ve Cloudflare ölçümü yalnızca <strong>Kabul Et</strong> sonrası çalışır; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a></p>
                 <div>
                     <button type="button" class="btn btn-outline" data-cookie-decline data-i18n="footer.cookieDecline">Reddet</button>
                     <button type="button" class="btn btn-primary" data-cookie-accept data-i18n="footer.cookieAccept">Kabul Et</button>
@@ -867,6 +867,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     </footer>
 
     <!-- Scripts (guides via app bundle; social after idle) -->
+    <script type="module" src="/js/runtime/platform-landing-boot.js"></script>
     <script type="module" src="js/app.bundle.js"></script>
     <script type="module" src="/js/runtime/site-social-deferred-boot.js"></script>
 </body>

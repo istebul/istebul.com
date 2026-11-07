@@ -266,3 +266,35 @@ test('PlatformÜrünIzgarası dört ürün için 4 sütunu tip olarak destekler'
     /PlatformUrunIzgarasiColumns = 1 \| 2 \| 3 \| 4/
   );
 });
+
+
+test('initPlatformLanding adopts prerendered DOM without duplicating components', async () => {
+  const stub = installDomStubs();
+  globalThis.document.documentElement = { dataset: {} };
+
+  const mount = stub.register(
+    'platform-landing-mount',
+    new stub.FakeEl('div')
+  );
+  mount.dataset.platformLandingMounted = '1';
+
+  const existingHero = new stub.FakeEl('section');
+  existingHero.textContent = 'Statik Platform Hero';
+  mount.append(existingHero);
+
+  const section = stub.register(
+    'platform-landing',
+    new stub.FakeEl('section')
+  );
+
+  const { initPlatformLanding } = await import(
+    '../../js/runtime/platform-shell-landing.js'
+  );
+
+  assert.equal(initPlatformLanding(), true);
+  assert.equal(mount.children.length, 1);
+  assert.equal(mount.children[0], existingHero);
+  assert.equal(section.dataset.platformLandingReady, '1');
+  assert.equal(section.dataset.platformCutover, '1');
+  assert.equal(document.documentElement.dataset.ibPlatformLanding, '1');
+});

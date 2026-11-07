@@ -17,16 +17,18 @@ function sectionBetween(startMarker, endMarker) {
   return html.slice(start, end);
 }
 
-test('platform products menu lists AI, GarsonAI, Business and WarehouseIQ with existing URLs', () => {
+test('platform products menu lists all five products with their active public URLs', () => {
   const platform = sectionBetween('id="nav-platform-list"', 'id="nav-product-menu"');
   assert.match(platform, /href="\/ai\/"/);
   assert.match(platform, /href="\/garson\/"/);
-  assert.match(platform, /href="\/business\/"/);
-  assert.match(platform, /href="\/warehouse\/"/);
+  assert.match(platform, /href="\/business-platform\/"/);
+  assert.match(platform, /href="\/warehouseiq\/"/);
   assert.match(platform, /İSTEBUL AI|ISTEBUL AI/);
   assert.match(platform, /GarsonAI/);
   assert.match(platform, /İSTEBUL Business|ISTEBUL Business/);
   assert.match(platform, /WarehouseIQ/);
+  assert.match(platform, /href="https:\/\/paraasistan\.istebul\.com\//);
+  assert.match(platform, /ParaAsistan/);
 });
 
 test('decision categories menu excludes non-decision platform products', () => {
@@ -34,8 +36,11 @@ test('decision categories menu excludes non-decision platform products', () => {
   assert.doesNotMatch(categories, /GarsonAI/);
   assert.doesNotMatch(categories, /\/garson\//);
   assert.doesNotMatch(categories, /\/business\//);
+  assert.doesNotMatch(categories, /\/business-platform\//);
   assert.doesNotMatch(categories, /WarehouseIQ/);
   assert.doesNotMatch(categories, /\/warehouse\//);
+  assert.doesNotMatch(categories, /\/warehouseiq\//);
+  assert.doesNotMatch(categories, /ParaAsistan/);
   assert.match(categories, /href="\/auto\/"/);
   assert.match(categories, /href="\/konut\/"/);
 });

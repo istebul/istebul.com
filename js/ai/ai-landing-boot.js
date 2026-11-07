@@ -7,13 +7,6 @@
 
 import { bootstrapLocale } from '../runtime/locale-bootstrap.js';
 import '../features/i18n/i18n.js';
-import { initHomeCategories } from '../runtime/home-categories.js';
-import { initHomeEconomicIndicators } from '../features/home/home-economic-indicators.js';
-import { initCategoryGuidesHub } from '../runtime/init-category-guides.js';
-import { initLandingFaq } from '../runtime/marketing-shell.js';
-import { ensureRevenueManager } from '../runtime/lazy-app-modules.js';
-import { initPricingCardsMotion } from '../runtime/pricing-cards-motion.js';
-import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
 import {
   AI_LANDING_SECTION_IDS,
   initAiLandingFoundation
@@ -51,16 +44,110 @@ async function hydrateAiPricing() {
   const homeRoot = document.querySelector('#pricing #pricing-plans-root');
   if (!homeRoot) return;
 
-  await window.__ibI18n?.ready;
   try {
+    await window.__ibI18n?.ready;
+
+    const [{ ensureRevenueManager }, { initPricingCardsMotion }] = await Promise.all([
+      import('../runtime/lazy-app-modules.js'),
+      import('../runtime/pricing-cards-motion.js')
+    ]);
+
     const revenueManager = await ensureRevenueManager();
     if (!revenueManager?.renderPricingCards) return;
+
     homeRoot.innerHTML = revenueManager.renderPricingCards({ layout: 'default' });
     revenueManager.initPricingControls?.(homeRoot);
     initPricingCardsMotion(document);
   } catch {
     // Keep static teaser fallback already in HTML.
   }
+}
+
+/**
+ * Pricing is below the fold. Load its implementation only as the visitor
+ * approaches the section; the static HTML teaser remains available meanwhile.
+ */
+function schedulePricingHydration() {
+  const section = document.getElementById('pricing');
+  const homeRoot = section?.querySelector('#pricing-plans-root');
+  if (!homeRoot) return;
+
+  const hydrate = () => {
+    void hydrateAiPricing();
+  };
+
+  if (typeof IntersectionObserver !== 'function') {
+    window.setTimeout(hydrate, 1200);
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    observer.disconnect();
+    hydrate();
+  }, { rootMargin: '480px 0px' });
+
+  observer.observe(section || homeRoot);
+}
+
+/**
+ * Hydrate a secondary section only when it approaches the viewport.
+ * Wait for locale initialization at the point of use, not during first paint.
+ */
+function hydrateWhenNear(selector, hydrate, rootMargin = '560px 0px') {
+  const target = document.querySelector(selector);
+  if (!target) return;
+
+  let started = false;
+
+  const start = () => {
+    if (started) return;
+    started = true;
+
+    Promise.resolve()
+      .then(async () => {
+        await window.__ibI18n?.ready;
+        await hydrate();
+      })
+      .catch(() => {
+        // Secondary content failures must not block the main landing page.
+      });
+  };
+
+  if (typeof IntersectionObserver !== 'function') {
+    window.setTimeout(start, 1800);
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    observer.disconnect();
+    start();
+  }, { rootMargin });
+
+  observer.observe(target);
+}
+
+/** Let the browser paint the server-provided hero before loading secondary sections. */
+function waitForInitialPaint() {
+  return new Promise((resolve) => {
+    let completed = false;
+
+    const timer = window.setTimeout(finish, 250);
+
+    function finish() {
+      if (completed) return;
+      completed = true;
+      window.clearTimeout(timer);
+      resolve();
+    }
+
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(finish);
+      });
+    }
+  });
 }
 
 /**
@@ -81,22 +168,54 @@ export async function initAiLandingClone() {
   }
 
   bootstrapLocale();
-  await window.__ibI18n?.ready;
 
+  // These operations are small and do not wait for below-the-fold modules.
   initAiLandingFoundation();
   initAiHeroRender();
   initAiLandingAnchors();
-  initLandingFaq();
-  initHomeCategories();
-  initHomeEconomicIndicators();
-  initCategoryGuidesHub();
-  await hydrateAiPricing();
 
-  scheduleLucideIcons();
-  await refreshLucideIcons();
-  document.addEventListener('ib:refresh-icons', () => {
-    void refreshLucideIcons();
+  // Give the browser an opportunity to paint the existing HTML hero first.
+  await waitForInitialPaint();
+
+  // Register secondary sections without importing their modules up front.
+  hydrateWhenNear('#home-vertical-focus', async () => {
+    const { initHomeCategories } = await import('../runtime/home-categories.js');
+    initHomeCategories();
   });
+
+  hydrateWhenNear('#home-economic-indicators', async () => {
+    const { initHomeEconomicIndicators } = await import(
+      '../features/home/home-economic-indicators.js'
+    );
+    initHomeEconomicIndicators();
+  });
+
+  hydrateWhenNear('#landing-faq', async () => {
+    const { initLandingFaq } = await import('../runtime/marketing-shell.js');
+    initLandingFaq();
+  });
+
+  hydrateWhenNear('#home-guides-strip', async () => {
+    const { initCategoryGuidesHub } = await import('../runtime/init-category-guides.js');
+    initCategoryGuidesHub();
+  });
+
+  // Only load the icon library when its section approaches the viewport.
+  let lucideLoaderPromise = null;
+
+  document.addEventListener('ib:refresh-icons', () => {
+    if (!lucideLoaderPromise) return;
+    void lucideLoaderPromise.then(({ refreshLucideIcons }) => refreshLucideIcons());
+  });
+
+  hydrateWhenNear('#how-it-works', async () => {
+    lucideLoaderPromise = import('../runtime/lucide-loader.js');
+    const { refreshLucideIcons } = await lucideLoaderPromise;
+    await refreshLucideIcons();
+  }, '320px 0px');
+
+  // Pricing implementation is loaded only near its section.
+  schedulePricingHydration();
 
   root.dataset.aiLandingCloneReady = '1';
   document.documentElement.dataset.aiLandingClone = '1';

@@ -6,6 +6,7 @@
 import { supabase } from './supabase.js';
 import {
   fetchAiListingsSettings,
+  getAiListingsSettingsFromBootstrap,
   isAiListingsPublicEnabledFromBootstrap
 } from '../runtime/ai-listings-integrations.js';
 
@@ -74,34 +75,33 @@ export async function getPublishedAiListings(options = {}) {
 
   let query = supabase
     .from('ai_listings')
-    .select('*')
+    .select('*,ai_listing_analyses(ai_score,risk_score,market_score,price_score,confidence,summary,pros,cons,tags,created_at)')
     .eq('status', 'published')
     .order('updated_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (category) query = query.eq('category', category);
 
+  query = query
+    .order('created_at', {
+      ascending: false,
+      referencedTable: 'ai_listing_analyses'
+    })
+    .limit(1, { referencedTable: 'ai_listing_analyses' });
+
   const { data, error } = await query;
   if (error) throw error;
 
-  const listings = data ?? [];
-  const enriched = await Promise.all(
-    listings.map(async (listing) => {
-      const { data: analysisRows } = await supabase
-        .from('ai_listing_analyses')
-        .select('ai_score,risk_score,market_score,price_score,confidence,summary,pros,cons,tags,created_at')
-        .eq('listing_id', listing.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+  return (data ?? []).map((listing) => {
+    const analyses = Array.isArray(listing.ai_listing_analyses)
+      ? listing.ai_listing_analyses
+      : [];
 
-      return mapPublishedListing({
-        ...listing,
-        latest_analysis: analysisRows?.[0] ?? null
-      });
-    })
-  );
-
-  return enriched;
+    return mapPublishedListing({
+      ...listing,
+      latest_analysis: analyses[0] ?? null
+    });
+  });
 }
 
 /**
@@ -134,16 +134,16 @@ export async function getPublishedAiListingsViaEdge(env = {}) {
  * @returns {Promise<Array<Record<string, unknown>>>}
  */
 export async function loadPublicAiListings(env = {}, options = {}) {
-  const settings = await fetchAiListingsSettings();
+  const bootstrappedSettings = getAiListingsSettingsFromBootstrap();
+  const settings = bootstrappedSettings ?? await fetchAiListingsSettings();
   const enabled = settings.aiListingsPublicEnabled || isAiListingsPublicEnabled(env);
   if (!enabled) return [];
 
   try {
-    const direct = await getPublishedAiListings(options);
-    if (direct.length > 0) return direct;
+    // A successful empty result is authoritative; Edge is only an error fallback.
+    return await getPublishedAiListings(options);
   } catch {
     // Fall back to edge public route when direct RLS read is unavailable.
+    return getPublishedAiListingsViaEdge(env);
   }
-
-  return getPublishedAiListingsViaEdge(env);
 }

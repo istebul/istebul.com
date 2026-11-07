@@ -33,6 +33,21 @@ test('ROUTE_DOCUMENT_META has canonical paths per surface', () => {
     assert.equal(ROUTE_DOCUMENT_META['page-planlar'].path, '/planlar');
     assert.equal(ROUTE_DOCUMENT_META.profil.path, '/profil');
     assert.equal(ROUTE_DOCUMENT_META.ilanlar.path, '/secenekler');
-    assert.ok(ROUTE_DOCUMENT_META.home.title.includes('isteBul'));
+    assert.equal(
+        ROUTE_DOCUMENT_META.home.title,
+        'İSTEBUL | Yapay zekâ destekli dijital ürünler platformu'
+    );
+    for (const product of [
+        'İSTEBUL AI',
+        'GarsonAI',
+        'İSTEBUL Business',
+        'WarehouseIQ',
+        'ParaAsistan'
+    ]) {
+        assert.ok(
+            ROUTE_DOCUMENT_META.home.description.includes(product),
+            `Home description should include ${product}`
+        );
+    }
     assert.equal(SITE_ORIGIN, 'https://www.istebul.com');
 });

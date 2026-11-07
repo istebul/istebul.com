@@ -101,3 +101,45 @@ test('ai-landing-boot wires shared home hydrators (no platform shell import)', (
   assert.doesNotMatch(boot, /from ['"].*platform-shell-home/);
   assert.doesNotMatch(boot, /initPlatformShellHome/);
 });
+
+
+test('AI landing defers secondary hydration until after first paint', () => {
+  const boot = fs.readFileSync(path.join(root, 'js/ai/ai-landing-boot.js'), 'utf8');
+
+  assert.match(boot, /await waitForInitialPaint\(\)/);
+  assert.match(boot, /import\(['"]\.\.\/runtime\/home-categories\.js['"]\)/);
+  assert.match(boot, /import\(\s*['"]\.\.\/features\/home\/home-economic-indicators\.js['"]\s*\)/);
+  assert.match(boot, /import\(['"]\.\.\/runtime\/init-category-guides\.js['"]\)/);
+  assert.match(boot, /IntersectionObserver/);
+  assert.match(boot, /schedulePricingHydration\(\)/);
+  assert.doesNotMatch(boot, /import \{\s*initHomeCategories/);
+});
+
+test('AI secondary sections and Lucide hydrate near their viewport', () => {
+  const boot = fs.readFileSync(path.join(root, 'js/ai/ai-landing-boot.js'), 'utf8');
+
+  assert.match(boot, /function hydrateWhenNear\(/);
+  assert.match(boot, /hydrateWhenNear\('#home-vertical-focus'/);
+  assert.match(boot, /hydrateWhenNear\('#home-economic-indicators'/);
+  assert.match(boot, /hydrateWhenNear\('#landing-faq'/);
+  assert.match(boot, /hydrateWhenNear\('#home-guides-strip'/);
+  assert.match(boot, /hydrateWhenNear\('#how-it-works'/);
+  assert.match(boot, /lucideLoaderPromise = import\(['"]\.\.\/runtime\/lucide-loader\.js['"]\)/);
+  assert.doesNotMatch(
+    boot,
+    /import \{\s*initHomeCategories\s*\} from ['"]\.\.\/runtime\/home-categories/
+  );
+});
+
+test('production build emits AI landing boot with hashed split chunks', () => {
+  const build = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');
+  const start = build.indexOf('/* PR-566 — İSTEBUL AI Landing Clone boot');
+  const end = build.indexOf('const emitRuntimeScript', start);
+  assert.ok(start >= 0 && end > start, 'AI boot build block must exist');
+
+  const block = build.slice(start, end);
+  assert.match(block, /splitting:\s*true/);
+  assert.match(block, /entryNames:\s*'ai-landing-boot'/);
+  assert.match(block, /chunkNames:\s*'chunks\/ai-landing\/\[name\]-\[hash\]'/);
+  assert.match(block, /outdir:\s*aiLandingBootDir/);
+});

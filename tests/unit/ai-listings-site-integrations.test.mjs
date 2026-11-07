@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 const {
   AI_LISTINGS_PUBLIC_SETTING_KEY,
   parseBool,
-  fetchAiListingsSettings
+  fetchAiListingsSettings,
+  getAiListingsSettingsFromBootstrap
 } = await import('../../js/runtime/ai-listings-integrations.js');
 const { mapLegacyListingToAiPayload } = await import('../../js/core/ai-listings-bridge.js');
 
@@ -37,4 +38,30 @@ test('mapLegacyListingToAiPayload uses user_listing source type', () => {
   assert.equal(payload.source_type, 'user_listing');
   assert.equal(payload.status, 'draft');
   assert.equal(payload.owner_user_id, 'user-1');
+});
+
+test('AI listings bootstrap distinguishes a loaded false setting from an unavailable setting', () => {
+  const originalWindow = globalThis.window;
+
+  try {
+    globalThis.window = {};
+    assert.equal(getAiListingsSettingsFromBootstrap(), null);
+
+    globalThis.window.__ibAiListings = {
+      aiListingsPublicEnabled: false,
+      loaded: true
+    };
+    assert.deepEqual(getAiListingsSettingsFromBootstrap(), {
+      aiListingsPublicEnabled: false
+    });
+
+    globalThis.window.__ibAiListings.loaded = false;
+    assert.equal(getAiListingsSettingsFromBootstrap(), null);
+  } finally {
+    if (originalWindow === undefined) {
+      delete globalThis.window;
+    } else {
+      globalThis.window = originalWindow;
+    }
+  }
 });

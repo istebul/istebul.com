@@ -108,9 +108,21 @@ test('/ai is indexable and listed in sitemap after cutover', () => {
 test('root uses platform-graph and Platform Landing mount', () => {
   const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const appJs = fs.readFileSync(path.join(root, 'js/app.js'), 'utf8');
+  const bootJs = fs.readFileSync(
+    path.join(root, 'js/runtime/platform-landing-boot.js'), 'utf8'
+  );
+  const buildJs = fs.readFileSync(
+    path.join(root, 'scripts/production-build.cjs'), 'utf8'
+  );
   assert.match(indexHtml, /platform-graph\.json/);
   assert.match(indexHtml, /id="platform-landing"/);
   assert.match(indexHtml, /platform-landing-mount/);
-  assert.match(appJs, /initPlatformLanding/);
+  assert.match(indexHtml, /src="\/js\/runtime\/platform-landing-boot\.js/);
+  assert.match(bootJs, /initPlatformLanding/);
+  assert.match(bootJs, /ibRoute === ['"]home['"]/);
+  assert.match(bootJs, /addEventListener\(['"]routeChanged['"]/);
+  assert.match(bootJs, /event\.detail\?\.route === ['"]home['"]/);
+  assert.match(buildJs, /platformLandingBootOut/);
+  assert.doesNotMatch(appJs, /initPlatformLanding/);
   assert.doesNotMatch(indexHtml, /id="hero-v4-title"/);
 });

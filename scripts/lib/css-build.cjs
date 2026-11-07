@@ -1,8 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
+const { HOMEPAGE_EXTENSION } = require('./css-bundles.cjs');
 
-const CSS_BUNDLE_ENTRIES = new Set(['css/style.css']);
+const HOMEPAGE_BUNDLE_ENTRY = 'css/bundles/homepage.bundle.css';
+const CSS_BUNDLE_ENTRIES = new Set([
+  'css/style.css',
+  HOMEPAGE_BUNDLE_ENTRY
+]);
 
 /**
  * Rewrite relative @import paths to hashed filenames produced in the same build.
@@ -29,6 +34,84 @@ function rewriteCssImports(css, assetRefs, originalPath, root) {
       return `@import '${relImport}';`;
     }
   );
+}
+
+/**
+ * Rebase relative URLs from the homepage CSS sources to public root URLs.
+ * All current homepage bundle source files must share one CSS directory.
+ *
+ * @param {string} css
+ * @param {string} root
+ * @param {string} sourceDir
+ */
+function rewriteBundledCssAssetUrls(css, root, sourceDir) {
+  const projectRoot = path.resolve(root);
+  const sourceBaseDir = path.resolve(projectRoot, sourceDir);
+
+  return css.replace(
+    /url\(\s*(?:(["'])(.*?)\1|([^)]*?))\s*\)/gi,
+    (match, quote, quoted, unquoted) => {
+      const raw = String(quoted ?? unquoted ?? '').trim();
+
+      if (
+        !raw ||
+        raw.startsWith('/') ||
+        /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(raw) ||
+        /^(?:var|attr)\(/i.test(raw)
+      ) {
+        return match;
+      }
+
+      const suffixIndex = raw.search(/[?#]/);
+      const pathname = suffixIndex >= 0 ? raw.slice(0, suffixIndex) : raw;
+      const suffix = suffixIndex >= 0 ? raw.slice(suffixIndex) : '';
+
+      if (!pathname) return match;
+
+      let decodedPath;
+      try {
+        decodedPath = decodeURIComponent(pathname);
+      } catch {
+        throw new Error(`Invalid encoded CSS asset URL: ${raw}`);
+      }
+
+      const absolutePath = path.resolve(sourceBaseDir, decodedPath);
+      const relativePath = path.relative(projectRoot, absolutePath);
+
+      if (
+        relativePath === '..' ||
+        relativePath.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relativePath)
+      ) {
+        throw new Error(`CSS asset resolves outside project root: ${raw}`);
+      }
+
+      if (!fs.existsSync(absolutePath)) {
+        throw new Error(`CSS asset does not exist: ${raw} (${absolutePath})`);
+      }
+
+      const publicPath = '/' + relativePath
+        .split(path.sep)
+        .map(segment => encodeURIComponent(segment))
+        .join('/');
+
+      return `url("${publicPath}${suffix}")`;
+    }
+  );
+}
+
+function getHomepageBundleSourceDir() {
+  const sourceDirs = new Set(
+    HOMEPAGE_EXTENSION.map(source => path.dirname(source))
+  );
+
+  if (sourceDirs.size !== 1) {
+    throw new Error(
+      'Homepage CSS sources must share one directory before URL rebasing.'
+    );
+  }
+
+  return [...sourceDirs][0];
 }
 
 /**
@@ -59,14 +142,28 @@ function buildHashedCssAssets(opts) {
     let code;
 
     if (CSS_BUNDLE_ENTRIES.has(originalPath)) {
+      const isHomepageBundle = originalPath === HOMEPAGE_BUNDLE_ENTRY;
+
       const bundle = esbuild.buildSync({
         entryPoints: [file],
         bundle: true,
         write: false,
         loader: { '.css': 'css' },
-        minify: true
+        minify: true,
+        ...(isHomepageBundle
+          ? { external: ['/assets/*', '../assets/*'] }
+          : {})
       });
+
       code = bundle.outputFiles[0].text;
+
+      if (isHomepageBundle) {
+        code = rewriteBundledCssAssetUrls(
+          code,
+          root,
+          getHomepageBundleSourceDir()
+        );
+      }
     } else {
       code = esbuild.transformSync(source, { loader: 'css', minify: true }).code;
     }
@@ -120,4 +217,9 @@ function buildHashedCssAssets(opts) {
   }
 }
 
-module.exports = { buildHashedCssAssets, rewriteCssImports, CSS_BUNDLE_ENTRIES };
+module.exports = {
+  buildHashedCssAssets,
+  rewriteCssImports,
+  rewriteBundledCssAssetUrls,
+  CSS_BUNDLE_ENTRIES
+};

@@ -124,15 +124,13 @@ export async function handlePublicListingsRoute(repos, env, origin) {
     );
   }
 
-  const listings = await repos.listListings({ status: 'published', limit: 100 });
-  const enriched = await Promise.all(
-    listings
-      .filter((listing) => isListingPubliclyVisible(listing.status, env))
-      .map(async (listing) => ({
-        ...listing,
-        latest_analysis: await repos.getLatestAnalysis(listing.id)
-      }))
-  );
+  const listings = await repos.listPublishedListingsWithLatestAnalyses(100);
+  const enriched = listings
+    .filter((listing) => isListingPubliclyVisible(listing.status, env))
+    .map((listing) => ({
+      ...listing,
+      latest_analysis: listing.latest_analysis ?? null
+    }));
 
   return jsonResponse(successBody({ listings: enriched, count: enriched.length }), 200, origin);
 }
