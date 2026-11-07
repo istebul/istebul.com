@@ -280,6 +280,22 @@ buildHashedCssAssets({
   walk
 });
 
+const { renderPlatformLandingMount } = require('./lib/render-platform-landing.cjs');
+
+const platformLandingBootOut = path.join(dist, 'js/runtime/platform-landing-boot.js');
+ensureDir(platformLandingBootOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/platform-landing-boot.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: platformLandingBootOut
+});
+const platformLandingBootHash = hashContent(fs.readFileSync(platformLandingBootOut));
+
 esbuild.buildSync({
   entryPoints: [path.join(root, 'js/app.js')],
   bundle: true,
@@ -304,6 +320,10 @@ pendingStaticFiles.forEach(({ file, source }) => {
   let html = injectAsyncFonts(rewriteAssetRefs(source));
   if (file === 'index.html') {
     html = injectRouteBootstrap(html);
+    html = html.replace(
+      '/js/runtime/platform-landing-boot.js',
+      `/js/runtime/platform-landing-boot.js?v=${platformLandingBootHash}`
+    );
     const bootstrapHash = hashContent(
       fs.readFileSync(path.join(root, 'js/runtime/route-bootstrap-head.js'), 'utf8')
     );
@@ -312,6 +332,25 @@ pendingStaticFiles.forEach(({ file, source }) => {
       `/js/runtime/route-bootstrap-head.js?v=${bootstrapHash}`
     );
     html = injectPremiumPrerender(html);
+
+    // Platform Landing'i aynı ürün bileşenlerinden build sırasında üret.
+    const platformLandingMountPattern =
+      /<div\b(?=[^>]*\bid="platform-landing-mount")(?=[^>]*\bclass="ib-platform-landing-preview__mount")[^>]*><\/div>/;
+
+    if (!platformLandingMountPattern.test(html)) {
+      throw new Error('Platform Landing static mount placeholder is missing.');
+    }
+
+    html = html.replace(
+      platformLandingMountPattern,
+      renderPlatformLandingMount()
+    );
+
+    html = html.replace(
+      /(<section\b(?=[^>]*\bid="platform-landing")(?=[^>]*\bdata-platform-cutover="1")[^>]*)(>)/,
+      '$1 data-platform-landing-ready="1"$2'
+    );
+
     /* PR-568: AI category prerender lives on /ai/, not Platform Landing root */
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
@@ -472,9 +511,9 @@ esbuild.buildSync({
   outfile: aiLandingFoundationOut
 });
 
-/* PR-566 — İSTEBUL AI Landing Clone boot (hydrate /ai; does not touch /) */
-const aiLandingBootOut = path.join(dist, 'js/ai/ai-landing-boot.js');
-ensureDir(aiLandingBootOut);
+/* PR-566 — İSTEBUL AI Landing Clone boot (split ES modules; does not touch /) */
+const aiLandingBootDir = path.join(dist, 'js/ai');
+ensureDir(path.join(aiLandingBootDir, 'ai-landing-boot.js'));
 esbuild.buildSync({
   entryPoints: [path.join(root, 'js/ai/ai-landing-boot.js')],
   bundle: true,
@@ -483,7 +522,10 @@ esbuild.buildSync({
   target: 'es2020',
   minify: true,
   sourcemap: false,
-  outfile: aiLandingBootOut
+  splitting: true,
+  entryNames: 'ai-landing-boot',
+  chunkNames: 'chunks/ai-landing/[name]-[hash]',
+  outdir: aiLandingBootDir
 });
 
 const emitRuntimeScript = (relativePath) => {

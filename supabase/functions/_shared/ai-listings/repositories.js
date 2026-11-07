@@ -210,6 +210,44 @@ export function createEdgeRepositories(client) {
       return data ? analysisFromRow(data) : null;
     },
 
+    async listPublishedListingsWithLatestAnalyses(limit = 100) {
+      const safeLimit = Math.min(
+        100,
+        Math.max(1, Math.trunc(Number(limit) || 100))
+      );
+
+      const analysisFields =
+        'id,listing_id,ai_score,risk_score,market_score,price_score,confidence,summary,pros,cons,tags,analysis_version,created_at';
+
+      const { data, error } = await client
+        .from(TABLES.LISTINGS)
+        .select(`*,${TABLES.ANALYSES}(${analysisFields})`)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .range(0, safeLimit - 1)
+        .order('created_at', {
+          ascending: false,
+          referencedTable: TABLES.ANALYSES
+        })
+        .limit(1, { referencedTable: TABLES.ANALYSES });
+
+      if (error) throw mapDbError(error);
+
+      return (data ?? []).map((row) => {
+        const analyses = Array.isArray(row[TABLES.ANALYSES])
+          ? row[TABLES.ANALYSES]
+          : [];
+
+        const listingRow = { ...row };
+        delete listingRow[TABLES.ANALYSES];
+
+        return {
+          ...listingFromRow(listingRow),
+          latest_analysis: analyses[0] ? analysisFromRow(analyses[0]) : null
+        };
+      });
+    },
+
     async createEvent(input) {
       const row = {
         listing_id: input.listing_id,

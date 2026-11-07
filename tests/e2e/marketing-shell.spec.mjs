@@ -35,14 +35,19 @@ const forceTurkishLocale = async (page) => {
 };
 
 const clickPlatformProductCta = async (page, productId) => {
-  const cta = page.locator(`[data-platform-product-id="${productId}"][data-platform-cta]`);
+  const card = page.locator(
+    `[data-platform-component="platform-urun-karti"][data-platform-product-id="${productId}"]`
+  );
+  const cta = card.locator('[data-platform-cta="product-inspect"]');
+  await expect(card).toBeVisible({ timeout: 15000 });
   await expect(cta).toBeVisible({ timeout: 15000 });
   await Promise.all([
     page.waitForURL((url) => {
       const path = url.pathname.replace(/\/$/, '') || '/';
       if (productId === 'istebul-ai') return path === '/ai';
       if (productId === 'garsonai') return path === '/garson';
-      if (productId === 'business') return path === '/business';
+      if (productId === 'business') return path === '/business-platform';
+      if (productId === 'warehouseiq') return path === '/warehouseiq';
       return false;
     }, { timeout: 20000 }),
     cta.click()
@@ -162,14 +167,14 @@ test.describe('EPIC-003 Platform production history + product entries', () => {
     await expect(page.locator('#hero-v4-title')).toHaveCount(0);
   });
 
-  test('Business card → /business → Back → Platform Landing', async ({ page }) => {
+  test('Business card → /business-platform → Back → Platform Landing', async ({ page }) => {
     await forceTurkishLocale(page);
     await page.goto('/');
     await waitForPlatformReady(page);
 
     await clickPlatformProductCta(page, 'business');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/business\/?/);
+    await expect(page).toHaveURL(/\/business-platform\/?/);
 
     await page.goBack();
     await waitForPlatformReady(page);

@@ -24,12 +24,12 @@ export function parseBool(value) {
 }
 
 /**
- * @returns {Promise<{ aiListingsPublicEnabled: boolean }>}
+ * @returns {Promise<{ aiListingsPublicEnabled: boolean, loaded: boolean }>}
  */
 export async function fetchAiListingsSettings() {
   const { SUPABASE_URL: url, SUPABASE_ANON_KEY: key } = env();
   if (!url || !key || String(key).includes('placeholder')) {
-    return { aiListingsPublicEnabled: false };
+    return { aiListingsPublicEnabled: false, loaded: false };
   }
 
   try {
@@ -39,14 +39,15 @@ export async function fetchAiListingsSettings() {
         headers: { apikey: key, Authorization: `Bearer ${key}` }
       }
     );
-    if (!res.ok) return { aiListingsPublicEnabled: false };
+    if (!res.ok) return { aiListingsPublicEnabled: false, loaded: false };
     const rows = await res.json();
     const map = settingsMap(rows);
     return {
-      aiListingsPublicEnabled: parseBool(map[AI_LISTINGS_PUBLIC_SETTING_KEY])
+      aiListingsPublicEnabled: parseBool(map[AI_LISTINGS_PUBLIC_SETTING_KEY]),
+      loaded: true
     };
   } catch {
-    return { aiListingsPublicEnabled: false };
+    return { aiListingsPublicEnabled: false, loaded: false };
   }
 }
 
@@ -66,9 +67,23 @@ export async function bootstrapAiListingsIntegrations() {
 }
 
 /**
+ * Returns a successfully loaded bootstrap setting.
+ * A loaded false value is distinct from a missing or failed bootstrap.
+ * @returns {{ aiListingsPublicEnabled: boolean } | null}
+ */
+export function getAiListingsSettingsFromBootstrap() {
+  if (typeof window === 'undefined') return null;
+
+  const settings = window.__ibAiListings;
+  if (typeof settings?.aiListingsPublicEnabled !== 'boolean') return null;
+  if (settings.loaded === false) return null;
+
+  return { aiListingsPublicEnabled: settings.aiListingsPublicEnabled };
+}
+
+/**
  * @returns {boolean}
  */
 export function isAiListingsPublicEnabledFromBootstrap() {
-  if (typeof window === 'undefined') return false;
-  return Boolean(window.__ibAiListings?.aiListingsPublicEnabled);
+  return Boolean(getAiListingsSettingsFromBootstrap()?.aiListingsPublicEnabled);
 }

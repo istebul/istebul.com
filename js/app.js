@@ -7,7 +7,6 @@ import {
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
-import { initPlatformLanding } from './runtime/platform-shell-landing.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
 import {
@@ -192,13 +191,15 @@ class App {
 
     async init() {
         try {
-            this.marketData = await bootstrapLiveDataIntegrations(this.marketData);
-            await bootstrapAiListingsIntegrations();
+            // Independent startup operations run concurrently.
+            const [marketData, , enterpriseUx] = await Promise.all([
+                bootstrapLiveDataIntegrations(this.marketData),
+                bootstrapAiListingsIntegrations(),
+                import('./runtime/enterprise-ux.js')
+            ]);
 
-            const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
-            initEnterpriseUx();
-            // PR-568: / is Platform Landing; AI marketing hydrators live on /ai/
-            initPlatformLanding();
+            this.marketData = marketData;
+            enterpriseUx.initEnterpriseUx();
 
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {

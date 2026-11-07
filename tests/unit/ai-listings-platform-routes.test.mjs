@@ -142,31 +142,24 @@ test('handler serves learning insights and personalization profile routes', asyn
   assert.equal(personalization.status, 200);
 });
 
-test('public listings route works without secret when publish flag is enabled', async () => {
+test('public listings route uses embedded latest analyses without requiring an edge secret', async () => {
   const repos = {
-    async listListings() {
+    async listPublishedListingsWithLatestAnalyses(limit) {
+      assert.equal(limit, 100);
       return [
         {
           id: 'pub-1',
-          category: 'vehicle',
           title: 'Published Car',
-          description: '',
-          location: 'İstanbul',
-          price: 1000000,
-          currency: 'TRY',
-          images: [],
-          attributes: {},
           status: 'published',
-          source_type: 'manual',
-          source_url: null,
-          owner_user_id: null,
-          created_at: '2026-06-07T10:00:00.000Z',
-          updated_at: '2026-06-07T10:00:00.000Z'
+          latest_analysis: { ai_score: 80, summary: 'Latest' }
+        },
+        {
+          id: 'pub-2',
+          title: 'Published Vehicle',
+          status: 'published',
+          latest_analysis: { ai_score: 92, summary: 'Second listing' }
         }
       ];
-    },
-    async getLatestAnalysis() {
-      return { ai_score: 80, summary: 'Good' };
     }
   };
 
@@ -178,6 +171,8 @@ test('public listings route works without secret when publish flag is enabled', 
 
   assert.equal(response.status, 200);
   const json = await response.json();
-  assert.equal(json.data.count, 1);
+  assert.equal(json.data.count, 2);
   assert.equal(json.data.listings[0].status, 'published');
+  assert.equal(json.data.listings[0].latest_analysis.ai_score, 80);
+  assert.equal(json.data.listings[1].latest_analysis.ai_score, 92);
 });
