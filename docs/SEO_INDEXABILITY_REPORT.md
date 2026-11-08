@@ -1,26 +1,34 @@
 # SEO Indexability Report
 
-**Generated:** 2026-08-29  
+**Generated:** 2026-11-08
 **Build artifact:** `dist/` present
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| noindex pages (repo scan) | 125 |
-| sitemap URL count | 180 |
+| noindex pages (repo scan) | 141 |
+| sitemap URL count | 86 |
 | canonical issues | 0 |
-| orphan HTML (vs sitemap) | 44 |
-| internal /rehber/ links (sample) | 358 |
+| indexable orphan HTML (vs sitemap) | 0 |
+| internal /rehber/ links (sample) | 352 |
 | FAQ schema pages (scan) | 24 |
 | Rehber BreadcrumbList pages | 14 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 72 |
+| Indexable public HTML (estimate) | 65 |
 
 ## noindex pages
 
+- `abonelik-iptal.html`
 - `apps/restaurant-admin-erp/index.html`
 - `apps/restaurant-customer-cx/index.html`
+- `business/analizler/index.html`
+- `business/ayarlar/index.html`
+- `business/bildirimler/index.html`
+- `business/danisman/index.html`
+- `business/index.html`
+- `business/raporlar/index.html`
+- `business/veri-merkezi/index.html`
 - `garson/basvuru/index.html`
 - `garson/demo/index.html`
 - `garson/giris/index.html`
@@ -46,6 +54,7 @@
 - `r/onay/index.html`
 - `warehouse/index.html`
 - `warehouse/offline.html`
+- `dist/abonelik-iptal.html`
 - `dist/admin/acquisition-exit/index.html`
 - `dist/admin/ai-listings/index.html`
 - `dist/admin/ai-listings.html`
@@ -108,6 +117,13 @@
 - `dist/admin/vacation-settings/index.html`
 - `dist/admin/vertical-leads/index.html`
 - `dist/admin-panel.html`
+- `dist/business/analizler/index.html`
+- `dist/business/ayarlar/index.html`
+- `dist/business/bildirimler/index.html`
+- `dist/business/danisman/index.html`
+- `dist/business/index.html`
+- `dist/business/raporlar/index.html`
+- `dist/business/veri-merkezi/index.html`
 - `dist/garson/basvuru/index.html`
 - `dist/garson/demo/index.html`
 - `dist/garson/erp/checkin/index.html`
@@ -161,7 +177,7 @@
 | arac-alim-karar-asistani | 1223 | yes |
 | ticari-arac-alimi-rehberi | 1209 | yes |
 | arac-sigortasi-karsilastirma | 1209 | yes |
-| konut-karar-rehberi | 1055 | no |
+| konut-karar-rehberi | 1487 | yes |
 
 ## Canonical issues
 

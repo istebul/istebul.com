@@ -1290,14 +1290,6 @@ ${body}
 function generateRobots(distDir, site) {
   const robots = `User-agent: *
 Allow: /
-Disallow: /admin-panel
-Disallow: /admin-panel.html
-Disallow: /admin/
-Disallow: /profil/
-Disallow: /favoriler/
-Disallow: /gecmis/
-Disallow: /messages/
-Disallow: /ilan-ekle/
 
 User-agent: GPTBot
 Disallow: /
