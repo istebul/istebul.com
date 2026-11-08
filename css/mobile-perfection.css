@@ -218,6 +218,7 @@ body.modal-open {
   padding: 1rem 1.25rem;
   border-radius: 16px 16px 0 0;
   box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.14);
+  height: min(254px, 42vh);
   max-height: min(42vh, 320px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
