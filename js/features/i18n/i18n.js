@@ -98,7 +98,9 @@ export class I18nManager {
 
     document.querySelectorAll('[data-i18n-html]').forEach((el) => {
       const key = el.dataset.i18nHtml;
-      if (key) el.innerHTML = this.t(key);
+      if (!key) return;
+      const translatedHtml = this.t(key);
+      if (el.innerHTML !== translatedHtml) el.innerHTML = translatedHtml;
     });
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
