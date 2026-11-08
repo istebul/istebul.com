@@ -113,33 +113,47 @@ function orphanEstimate(sitemapLocs, distFiles) {
     '/docs/site-owner'
   ];
 
-  const htmlPaths = new Set(
-    distFiles
-      .map((f) => {
-        const rel = path.relative(dist, f).replace(/\\/g, '/');
-        if (rel === 'index.html') return 'https://www.istebul.com/';
-        if (rel.endsWith('/index.html')) {
-          const dir = rel.replace(/\/index\.html$/, '');
-          return `https://www.istebul.com/${dir}/`;
-        }
-        if (rel.endsWith('.html')) {
-          return `https://www.istebul.com/${rel}`;
-        }
-        return null;
-      })
-      .filter(Boolean)
-  );
-
   const sitemapSet = new Set(sitemapLocs);
+  const htmlFiles = [...new Set(distFiles.filter((file) => file.endsWith('.html')))];
   let orphans = 0;
-  htmlPaths.forEach((loc) => {
+
+  for (const file of htmlFiles) {
+    const absoluteFile = path.isAbsolute(file) ? file : path.join(dist, file);
+    const rel = path.relative(dist, absoluteFile).split(path.sep).join('/');
+    let loc;
+
+    if (rel === 'index.html') {
+      loc = 'https://www.istebul.com/';
+    } else if (rel.endsWith('/index.html')) {
+      const dir = rel.replace(/\/index\.html$/, '');
+      loc = `https://www.istebul.com/${dir}/`;
+    } else if (rel.endsWith('.html')) {
+      loc = `https://www.istebul.com/${rel}`;
+    } else {
+      continue;
+    }
+
     const pathOnly = loc.replace('https://www.istebul.com', '');
-    if (EXCLUDED_PREFIXES.some((p) => pathOnly.startsWith(p))) return;
-    if (!sitemapSet.has(loc) && !sitemapSet.has(loc.replace(/\/$/, ''))) orphans += 1;
-  });
+    if (EXCLUDED_PREFIXES.some((prefix) => pathOnly.startsWith(prefix))) continue;
+
+    const html = fs.readFileSync(absoluteFile, 'utf8');
+    const metaTags = html.match(/<meta\b[^>]*>/gi) || [];
+    const explicitlyNoindex = metaTags.some((tag) => {
+      const name = tag.match(/\bname\s*=\s*["']([^"']+)["']/i)?.[1] || '';
+      if (!/^(robots|googlebot|bingbot)$/i.test(name)) return false;
+      const content = tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)?.[1] || '';
+      return /\bnoindex\b/i.test(content);
+    });
+
+    if (explicitlyNoindex) continue;
+
+    if (!sitemapSet.has(loc) && !sitemapSet.has(loc.replace(/\/$/, ''))) {
+      orphans += 1;
+    }
+  }
+
   return orphans;
 }
-
 function assertPlatformAiIndexabilityContract() {
   const indexPath = path.join(root, 'index.html');
   const aiPath = path.join(root, 'ai/index.html');
@@ -185,7 +199,7 @@ function main() {
 
   const body = `# SEO Indexability Report
 
-**Generated:** ${SEO_BUILD_DATE}  
+**Generated:** ${SEO_BUILD_DATE}
 **Build artifact:** \`dist/\` ${distHtml.length ? 'present' : 'not found — run npm run build'}
 
 ## Summary
@@ -195,7 +209,7 @@ function main() {
 | noindex pages (repo scan) | ${noindexPages.length} |
 | sitemap URL count | ${sitemapCount} |
 | canonical issues | ${canonIssues.length} |
-| orphan HTML (vs sitemap) | ${orphanEstimate(sitemapLocs, distHtml)} |
+| indexable orphan HTML (vs sitemap) | ${orphanEstimate(sitemapLocs, distHtml)} |
 | internal /rehber/ links (sample) | ${rehberLinks} |
 | FAQ schema pages (scan) | ${schema.faqPages} |
 | Rehber BreadcrumbList pages | ${schema.breadcrumbGuides} |
