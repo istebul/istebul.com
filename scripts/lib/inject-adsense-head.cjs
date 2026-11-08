@@ -19,6 +19,12 @@ function injectAdSenseHead(html, clientId = ADSENSE_CLIENT_ID) {
   if (hasAdSenseHead(html)) return html;
 
   const snippet = adsenseHeadSnippet(clientId);
+  const stylePreloads = [...html.matchAll(/<link\b(?=[^>]*\brel=["']preload["'])(?=[^>]*\bas=["']style["'])[^>]*>/gi)];
+  if (stylePreloads.length) {
+    const last = stylePreloads[stylePreloads.length - 1];
+    const position = last.index + last[0].length;
+    return html.slice(0, position) + "\n    " + snippet + html.slice(position);
+  }
   if (/<meta\s+charset/i.test(html)) {
     return html.replace(/(<meta\s+charset[^>]*>)/i, `$1\n    ${snippet}`);
   }
