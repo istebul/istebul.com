@@ -91,4 +91,136 @@
 /docs/site-owner/*
   X-Robots-Tag: noindex, nofollow
 
+# Private, account, admin and non-indexable product surfaces
 
+/admin-panel
+  X-Robots-Tag: noindex, nofollow
+
+/admin-panel.html
+  X-Robots-Tag: noindex, nofollow
+
+/admin
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+
+/profil
+  X-Robots-Tag: noindex, nofollow
+
+/profil/*
+  X-Robots-Tag: noindex, nofollow
+
+/favoriler
+  X-Robots-Tag: noindex, nofollow
+
+/favoriler/*
+  X-Robots-Tag: noindex, nofollow
+
+/gecmis
+  X-Robots-Tag: noindex, nofollow
+
+/gecmis/*
+  X-Robots-Tag: noindex, nofollow
+
+/messages
+  X-Robots-Tag: noindex, nofollow
+
+/messages/*
+  X-Robots-Tag: noindex, nofollow
+
+/ilan-ekle
+  X-Robots-Tag: noindex, nofollow
+
+/ilan-ekle/*
+  X-Robots-Tag: noindex, nofollow
+
+/business
+  X-Robots-Tag: noindex, nofollow
+
+/business/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/giris
+  X-Robots-Tag: noindex, nofollow
+
+/garson/giris/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/basvuru
+  X-Robots-Tag: noindex, nofollow
+
+/garson/basvuru/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/demo
+  X-Robots-Tag: noindex, nofollow
+
+/garson/demo/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/erp
+  X-Robots-Tag: noindex, nofollow
+
+/garson/erp/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/mutfak
+  X-Robots-Tag: noindex, nofollow
+
+/garson/mutfak/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/panel
+  X-Robots-Tag: noindex, nofollow
+
+/garson/panel/*
+  X-Robots-Tag: noindex, nofollow
+
+/garson/zeka
+  X-Robots-Tag: noindex, nofollow
+
+/garson/zeka/*
+  X-Robots-Tag: noindex, nofollow
+
+/r
+  X-Robots-Tag: noindex, nofollow
+
+/r/*
+  X-Robots-Tag: noindex, nofollow
+
+/warehouse
+  X-Robots-Tag: noindex, nofollow
+
+/warehouse/*
+  X-Robots-Tag: noindex, nofollow
+
+/ilan-analizi
+  X-Robots-Tag: noindex, nofollow
+
+/ilan-analizi/*
+  X-Robots-Tag: noindex, nofollow
+
+/partner-basvuru.html
+  X-Robots-Tag: noindex, nofollow
+
+/partner-onboarding.html
+  X-Robots-Tag: noindex, nofollow
+
+/partner-closing-kit.html
+  X-Robots-Tag: noindex, nofollow
+
+/platform-preview
+  X-Robots-Tag: noindex, nofollow
+
+/platform-preview/*
+  X-Robots-Tag: noindex, nofollow
+
+/abonelik-iptal.html
+  X-Robots-Tag: noindex, nofollow
+
+/apps/restaurant-admin-erp/*
+  X-Robots-Tag: noindex, nofollow
+
+/apps/restaurant-customer-cx/*
+  X-Robots-Tag: noindex, nofollow
