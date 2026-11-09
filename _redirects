@@ -72,28 +72,46 @@
 # --- Locale homepages; untranslated deep paths use base-language canonicals ---
 /en /en/ 301
 /en/ /en/index.html 200
-/en/* /:splat 301
+/en/index.html /en/ 301
 /de /de/ 301
 /de/ /de/index.html 200
-/de/* /:splat 301
+/de/index.html /de/ 301
 /ar /ar/ 301
 /ar/ /ar/index.html 200
-/ar/* /:splat 301
+/ar/index.html /ar/ 301
 /it /it/ 301
 /it/ /it/index.html 200
-/it/* /:splat 301
+/it/index.html /it/ 301
 /fr /fr/ 301
 /fr/ /fr/index.html 200
-/fr/* /:splat 301
+/fr/index.html /fr/ 301
 /es /es/ 301
 /es/ /es/index.html 200
-/es/* /:splat 301
+/es/index.html /es/ 301
 /ja /ja/ 301
 /ja/ /ja/index.html 200
-/ja/* /:splat 301
+/ja/index.html /ja/ 301
 /zh /zh/ 301
 /zh/ /zh/index.html 200
-/zh/* /:splat 301
+/zh/index.html /zh/ 301
+
+# --- Only non-empty locale deep paths redirect to base-language canonicals ---
+/en/:first /:first 301
+/en/:first/* /:first/:splat 301
+/de/:first /:first 301
+/de/:first/* /:first/:splat 301
+/ar/:first /:first 301
+/ar/:first/* /:first/:splat 301
+/it/:first /:first 301
+/it/:first/* /:first/:splat 301
+/fr/:first /:first 301
+/fr/:first/* /:first/:splat 301
+/es/:first /:first 301
+/es/:first/* /:first/:splat 301
+/ja/:first /:first 301
+/ja/:first/* /:first/:splat 301
+/zh/:first /:first 301
+/zh/:first/* /:first/:splat 301
 
 # --- App deep-link SPA shells ---
 /profil/* /profil/index.html 200
