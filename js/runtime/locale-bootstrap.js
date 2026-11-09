@@ -11,9 +11,9 @@ import {
 } from '../platform/locale-registry.js';
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
 
-function readStoredLocale() {
+function readStoredLocalePreference() {
   try {
-    return readStorageRaw(STORAGE_KEYS.LOCALE) || '';
+    return readStorageRaw(STORAGE_KEYS.LOCALE_PREFERENCE) || '';
   } catch {
     return '';
   }
@@ -25,8 +25,7 @@ export function bootstrapLocale() {
   const localeId = resolveLocale({
     pathname: window.location.pathname,
     search: window.location.search,
-    stored: readStoredLocale(),
-    acceptLanguage: navigator.language || ''
+    stored: readStoredLocalePreference()
   });
 
   setActiveLocale(localeId);
@@ -41,6 +40,7 @@ export function switchLocale(localeId) {
 
   setActiveLocale(localeId);
   applyDocumentLocale(localeId);
+  writeStorageRaw(STORAGE_KEYS.LOCALE_PREFERENCE, localeId);
   writeStorageRaw(STORAGE_KEYS.LOCALE, localeId);
 
   const { pathname } = stripLocalePrefix(window.location.pathname);

@@ -19,8 +19,8 @@ body.ib-product-page {
   color: var(--pp-ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-.ib-product-page--business { --pp-accent: #2563eb; --pp-accent-soft: #eff6ff; }
-.ib-product-page--warehouse { --pp-accent: #0f766e; --pp-accent-soft: #ccfbf1; }
+body.ib-product-page.ib-product-page--business { --pp-accent: #2563eb; --pp-accent-soft: #eff6ff; }
+body.ib-product-page.ib-product-page--warehouse { --pp-accent: #0f766e; --pp-accent-soft: #ccfbf1; }
 .pp-header {
   min-height: 76px;
   display: flex;
@@ -215,4 +215,85 @@ body.ib-product-page {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* Shared Business / WarehouseIQ landing refinement */
+body.ib-product-page .pp-hero {
+  gap: clamp(1.75rem, 4.5vw, 4rem);
+  padding-top: 3rem;
+  padding-bottom: 4rem;
+}
+
+body.ib-product-page .pp-hero h1 {
+  font-size: clamp(2.4rem, 4.15vw, 3.7rem);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
+body.ib-product-page .pp-hero__description {
+  margin-top: 1.15rem;
+  font-size: clamp(1rem, 1.35vw, 1.1rem);
+  line-height: 1.65;
+}
+
+body.ib-product-page .pp-actions {
+  margin-top: 1.45rem;
+}
+
+@media (max-width: 800px) {
+  body.ib-product-page .pp-hero {
+    gap: 1.75rem;
+    padding-top: 2.25rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (max-width: 560px) {
+  body.ib-product-page .pp-hero {
+    gap: 1.5rem;
+    padding-top: 1.75rem;
+    padding-bottom: 2.5rem;
+  }
+
+  body.ib-product-page .pp-hero h1 {
+    font-size: clamp(2.05rem, 9.2vw, 2.45rem);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+  }
+
+  body.ib-product-page .pp-hero__description {
+    margin-top: 0.9rem;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  body.ib-product-page .pp-actions {
+    gap: 0.65rem;
+    margin-top: 1.2rem;
+  }
+
+  body.ib-product-page .pp-hero__note {
+    margin-top: 0.75rem;
+    line-height: 1.5;
+  }
+
+  body.ib-product-page .pp-preview {
+    padding: 1.2rem;
+    border-radius: 18px;
+  }
+
+  body.ib-product-page .pp-preview__top h2 {
+    font-size: 1.25rem;
+  }
+
+  body.ib-product-page .pp-preview__list {
+    gap: 0.6rem;
+    margin: 1.2rem 0 0.9rem;
+  }
+
+  body.ib-product-page .pp-preview__list li {
+    min-height: 44px;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
 }

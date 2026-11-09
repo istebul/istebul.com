@@ -49,3 +49,338 @@
     min-height: 14rem;
   }
 }
+
+/* İSTEBUL Platform Landing — 2026 Premium Visual Refresh */
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero--landing {
+  min-height: clamp(25rem, 40vw, 32rem);
+  padding: clamp(4rem, 8vw, 6.5rem) 1.25rem;
+  color: #f8fafc;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(44rem 25rem at 86% 8%, rgba(59, 130, 246, 0.22), transparent 68%),
+    radial-gradient(34rem 22rem at 14% 92%, rgba(20, 184, 166, 0.12), transparent 70%),
+    linear-gradient(135deg, #081323 0%, #0b172a 56%, #101d32 100%);
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__inner {
+  width: min(100%, 72rem);
+  text-align: center;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__brand {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  color: #93c5fd;
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__title {
+  max-width: 18ch;
+  margin-inline: auto;
+  color: #ffffff;
+  font-size: clamp(2.8rem, 6vw, 5.2rem);
+  font-weight: 750;
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__description {
+  max-width: 54rem;
+  margin: 1.25rem auto 1.75rem;
+  color: #cbd5e1;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  line-height: 1.75;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__actions {
+  align-items: center;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__cta {
+  min-height: 3.25rem;
+  padding-inline: 1.6rem;
+  border-radius: 12px;
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.25);
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__cta:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-landing-preview__lead {
+  width: min(780px, 100%);
+  padding: clamp(3.25rem, 6vw, 4.5rem) 1.25rem 2.5rem;
+  text-align: center;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-landing-preview__lead-title {
+  color: #0f172a;
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-landing-preview__lead-text {
+  max-width: 44rem;
+  margin-inline: auto;
+  color: #64748b;
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-landing-preview__products {
+  width: min(1220px, 100%);
+  padding: 1rem 1.5rem clamp(3.5rem, 6vw, 5rem);
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-landing-preview__products-title {
+  margin-bottom: 1.5rem;
+  color: #0f172a;
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-izgarasi__grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.15rem;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti {
+  min-height: 19rem;
+  height: 100%;
+  padding: 1.5rem;
+  gap: 1.1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.025), 0 14px 36px rgba(15, 23, 42, 0.055);
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__accent {
+  height: 4px;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__header {
+  min-height: 3rem;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__logo-img {
+  height: 32px;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__title {
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__slogan {
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__description {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__cta {
+  min-height: 2.9rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ib-puc-accent) 68%, #0b1528);
+  border-color: transparent;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti__cta:focus-visible {
+  outline: 3px solid var(--ib-puc-accent);
+  outline-offset: 3px;
+}
+
+body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti:focus-within {
+  border-color: color-mix(in srgb, var(--ib-puc-accent) 55%, #ffffff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ib-puc-accent) 12%, transparent);
+}
+
+@media (min-width: 640px) {
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-izgarasi__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1080px) {
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-izgarasi__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--ib-puc-accent) 38%, #e2e8f0);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.09);
+  }
+}
+
+@media (max-width: 639px) {
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-hero--landing {
+    min-height: 0;
+    padding: 3.75rem 1rem 3.25rem;
+  }
+
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__title {
+    font-size: clamp(2.45rem, 11vw, 3.6rem);
+  }
+
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-landing-preview__products {
+    padding-inline: 1rem;
+  }
+
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti {
+    min-height: 0;
+    padding: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti,
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__cta {
+    transition: none;
+  }
+
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-urun-karti:hover,
+  body.ib-platform-landing-live-page #platform-landing .ib-platform-hero__cta:hover {
+    transform: none;
+  }
+}
+
+/* Homepage live landing: navigation, rationale and footer refinement */
+body.ib-platform-landing-live-page nav.navbar {
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.045);
+}
+
+body.ib-platform-landing-live-page nav.navbar a:focus-visible,
+body.ib-platform-landing-live-page nav.navbar button:focus-visible {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16) !important;
+  border-radius: 8px;
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why {
+  width: min(1160px, calc(100% - 3rem));
+  max-width: none;
+  margin: clamp(3rem, 6vw, 5rem) auto;
+  padding: clamp(2.5rem, 5vw, 4rem);
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.05);
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why-title {
+  color: #0f172a;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why-lead {
+  max-width: 42rem;
+  margin-bottom: 2rem;
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list {
+  gap: 1rem;
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list li {
+  padding: 1.35rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.045);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list strong {
+  color: #0f172a;
+  font-size: 1.02rem;
+  font-weight: 750;
+}
+
+body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list span {
+  color: #475569;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+body.ib-platform-landing-live-page footer.footer-premium.ib-footer-v7 {
+  color: #334155;
+}
+
+body.ib-platform-landing-live-page footer.footer-premium.ib-footer-v7 .footer-section h4,
+body.ib-platform-landing-live-page footer.footer-premium.ib-footer-v7 .footer-section .ib-footer-v7__subhead,
+body.ib-platform-landing-live-page footer.footer-premium.ib-footer-v7 .footer-section .ib-footer-v7__sublist a {
+  color: #475569;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list li:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.075);
+  }
+}
+
+@media (max-width: 639px) {
+  body.ib-platform-landing-live-page .ib-platform-landing-preview__why {
+    width: calc(100% - 2rem);
+    margin: 2.5rem auto;
+    padding: 2.25rem 1.1rem;
+    border-radius: 20px;
+  }
+
+  body.ib-platform-landing-live-page .ib-platform-landing-preview__why-lead {
+    margin-bottom: 1.5rem;
+  }
+
+  body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list li {
+    padding: 1.1rem;
+    border-radius: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list li {
+    transition: none;
+  }
+
+  body.ib-platform-landing-live-page .ib-platform-landing-preview__why-list li:hover {
+    transform: none;
+  }
+}

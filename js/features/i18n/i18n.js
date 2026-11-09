@@ -57,6 +57,7 @@ export class I18nManager {
   async setLanguage(lang) {
     if (!this.translations[lang]) return;
     this.currentLang = lang;
+    writeStorageRaw(STORAGE_KEYS.LOCALE_PREFERENCE, lang);
     writeStorageRaw(STORAGE_KEYS.LOCALE, lang);
     state.set('lang', lang);
     setActiveLocale(lang);
