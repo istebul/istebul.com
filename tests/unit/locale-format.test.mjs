@@ -18,6 +18,18 @@ test('resolveLocale prefers path prefix', () => {
   assert.equal(resolveLocale({ pathname: '/' }), 'tr');
 });
 
+test('resolveLocale honors query before explicit stored preference', () => {
+  assert.equal(resolveLocale({ pathname: '/', search: '?lang=de', stored: 'en' }), 'de');
+});
+
+test('resolveLocale honors an explicit stored preference', () => {
+  assert.equal(resolveLocale({ pathname: '/', stored: 'en' }), 'en');
+});
+
+test('resolveLocale defaults to Turkish regardless of browser language', () => {
+  assert.equal(resolveLocale({ pathname: '/', acceptLanguage: 'en-US' }), 'tr');
+});
+
 test('stripLocalePrefix returns routable path', () => {
   const en = stripLocalePrefix('/en/karsilastir');
   assert.equal(en.localeId, 'en');

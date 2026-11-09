@@ -926,3 +926,30 @@
 }
 
 /* Hide legacy vacation header on enterprise landing (none present) */
+
+
+/* ── Tablet layout refinement ── */
+@media (min-width: 641px) and (max-width: 960px) {
+  .gai-features__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gai-feature-card--wide {
+    grid-column: auto;
+  }
+
+  .garsonai-page .garson-launch-steps__list,
+  .garsonai-page .garson-launch-pricing__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .garsonai-page .garson-launch-pricing-card:last-child {
+    grid-column: 1 / -1;
+    width: calc((100% - var(--gai-space-4)) / 2);
+    justify-self: center;
+  }
+
+  .gai-dashboard__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

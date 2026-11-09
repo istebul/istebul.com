@@ -144,13 +144,12 @@ export function setActiveLocale(localeId) {
 }
 
 /**
- * Resolve locale from URL path segment, query, storage, or Accept-Language.
+ * Resolve locale from URL path, query, explicit user preference, or default.
  */
 export function resolveLocale({
   pathname = '/',
   search = '',
-  stored = '',
-  acceptLanguage = ''
+  stored = ''
 } = {}) {
   const pathLocale = localeFromPathname(pathname);
   if (pathLocale) return pathLocale;
@@ -160,14 +159,6 @@ export function resolveLocale({
   if (queryLang && LOCALE_DEFINITIONS[queryLang]) return queryLang;
 
   if (stored && LOCALE_DEFINITIONS[stored]) return stored;
-
-  const headerTag = String(acceptLanguage || '').split(',')[0]?.trim().toLowerCase();
-  if (headerTag) {
-    if (headerTag.startsWith('zh')) return 'zh';
-    if (headerTag.startsWith('ja')) return 'ja';
-    const short = headerTag.slice(0, 2);
-    if (LOCALE_DEFINITIONS[short]) return short;
-  }
 
   return DEFAULT_LOCALE;
 }
