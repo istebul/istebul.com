@@ -1,6 +1,6 @@
 # SEO Indexability Report
 
-**Generated:** 2026-11-08
+**Generated:** 2026-11-14
 **Build artifact:** `dist/` present
 
 ## Summary
@@ -9,13 +9,17 @@
 |--------|-------|
 | noindex pages (repo scan) | 141 |
 | sitemap URL count | 86 |
-| canonical issues | 0 |
+| sitemap URLs with generated HTML | 86/86 |
+| sitemap URLs missing generated HTML | 0 |
+| sitemap URLs blocked by noindex | 0 |
+| invalid sitemap URLs | 0 |
+| canonical issues (all sitemap URLs) | 0 |
 | indexable orphan HTML (vs sitemap) | 0 |
 | internal /rehber/ links (sample) | 352 |
 | FAQ schema pages (scan) | 24 |
 | Rehber BreadcrumbList pages | 14 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 65 |
+| Indexable sitemap HTML candidates | 86 |
 
 ## noindex pages
 
@@ -181,7 +185,7 @@
 
 ## Canonical issues
 
-_None detected on core vertical pages._
+_None detected across sitemap URLs._
 
 ## Schema validation
 
@@ -208,6 +212,8 @@ _None detected on core vertical pages._
 | `/ai/` (`ai/index.html`) | `#hero-v4-title`, `#how-it-works`, `#pricing`, `#landing-faq` | OK |
 
 ## Notes
+
+- Sitemap HTML candidates are technically eligible URLs, not a count of pages actually indexed by Google. Verify actual indexing status in Search Console.
 
 - Rehber pages are generated at build into `dist/rehber/{slug}/`.
 - Legacy URLs `/index.php/*`, `/cgi-sys/*`, `/2025/*` → 410; `/category/*` → 301 home.

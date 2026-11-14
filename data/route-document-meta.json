@@ -9,7 +9,7 @@
     "page-karar-analizi": {
       "title": "Karar Asistanı | isteBul — Hangi kategoride karar vermek istiyorsunuz?",
       "description": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk analizini tek merkezden başlatın.",
-      "path": "/karar-asistani"
+      "path": "/karar-asistani/"
     },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
@@ -39,7 +39,7 @@
     "ilanlar": {
       "title": "Değerlendirilebilir Seçenekler | isteBul",
       "description": "Karar skoruna göre sıralanmış değerlendirilebilir seçenekleri keşfedin — karar platformu yüzeyi.",
-      "path": "/secenekler"
+      "path": "/secenekler/"
     },
     "listing-detail": {
       "title": "Seçenek Detayı | isteBul",
@@ -49,7 +49,7 @@
     "compare": {
       "title": "Karar Kriteri Karşılaştırma | isteBul",
       "description": "Seçenekleri skor, maliyet, risk, uygunluk ve gerekçe boyutunda yan yana karşılaştırın.",
-      "path": "/karsilastir"
+      "path": "/karsilastir/"
     },
     "favoriler": {
       "title": "Favoriler | isteBul",

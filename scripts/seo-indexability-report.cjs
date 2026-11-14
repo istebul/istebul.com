@@ -35,36 +35,112 @@ function countNoindex(files) {
   return pages;
 }
 
-function countSitemapUrls() {
-  const { xml } = resolveSitemapArtifact(root);
-  return (xml.match(/<loc>/g) || []).length;
-}
+function auditSitemapIndexability(sitemapLocs, distRoot) {
+  const base = path.resolve(distRoot);
+  const audit = {
+    available: fs.existsSync(base),
+    mapped: 0,
+    missingHtml: [],
+    invalidUrls: [],
+    noindex: [],
+    canonicalIssues: [],
+    indexable: []
+  };
 
-function canonicalIssues(files) {
-  const issues = [];
-  const publicPaths = [
-    'index.html',
-    'ai/index.html',
-    'auto/index.html',
-    'konut/index.html',
-    'tatil/index.html',
-    'finans/index.html',
-    'metodoloji/index.html',
-    'veri-kaynaklari/index.html',
-    'sigorta/index.html',
-    'kasko/index.html'
-  ];
-  publicPaths.forEach((rel) => {
-    const full = path.join(root, rel);
-    if (!fs.existsSync(full)) return;
-    const html = fs.readFileSync(full, 'utf8');
-    if (!/rel=["']canonical["']/i.test(html)) issues.push(`${rel}: missing canonical`);
-    const m = html.match(/rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
-    if (m && !m[1].startsWith('https://www.istebul.com')) {
-      issues.push(`${rel}: non-www canonical ${m[1]}`);
+  if (!audit.available) return audit;
+
+  function getAttribute(tag, name) {
+    const pattern = /([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+    for (const match of tag.matchAll(pattern)) {
+      if (match[1].toLowerCase() === name.toLowerCase()) {
+        return match[2] ?? match[3] ?? match[4] ?? '';
+      }
     }
-  });
-  return issues;
+    return '';
+  }
+
+  for (const rawLoc of sitemapLocs) {
+    let pageUrl;
+    let pathname;
+
+    try {
+      pageUrl = new URL(rawLoc);
+      pathname = decodeURIComponent(pageUrl.pathname);
+    } catch {
+      audit.invalidUrls.push(rawLoc + ': invalid URL or path encoding');
+      continue;
+    }
+
+    if (pageUrl.origin !== 'https://www.istebul.com') {
+      audit.invalidUrls.push(rawLoc + ': unexpected origin ' + pageUrl.origin);
+      continue;
+    }
+
+    const relative = pathname.replace(/^\/+/, '');
+    const candidates = pathname.endsWith('.html')
+      ? [path.resolve(base, relative)]
+      : [
+          path.resolve(base, relative, 'index.html'),
+          ...(relative ? [path.resolve(base, relative + '.html')] : [])
+        ];
+
+    const htmlFile = candidates.find((candidate) => {
+      const insideDist = candidate.startsWith(base + path.sep);
+      return insideDist && fs.existsSync(candidate) && fs.statSync(candidate).isFile();
+    });
+
+    if (!htmlFile) {
+      audit.missingHtml.push(rawLoc);
+      continue;
+    }
+
+    audit.mapped += 1;
+    const html = fs.readFileSync(htmlFile, 'utf8');
+    const metaTags = html.match(/<meta\b[^>]*>/gi) || [];
+
+    const blocked = metaTags.some((tag) => {
+      const name = getAttribute(tag, 'name');
+      const content = getAttribute(tag, 'content');
+      return /^(robots|googlebot|bingbot)$/i.test(name) &&
+        /\b(?:noindex|none)\b/i.test(content);
+    });
+
+    if (blocked) audit.noindex.push(rawLoc);
+
+    const linkTags = html.match(/<link\b[^>]*>/gi) || [];
+    const canonicals = linkTags.filter((tag) =>
+      getAttribute(tag, 'rel').toLowerCase().split(/\s+/).includes('canonical')
+    );
+
+    let canonicalValid = false;
+
+    if (canonicals.length === 0) {
+      audit.canonicalIssues.push(rawLoc + ': missing canonical');
+    } else if (canonicals.length > 1) {
+      audit.canonicalIssues.push(rawLoc + ': duplicate canonical tags');
+    } else {
+      const href = getAttribute(canonicals[0], 'href');
+
+      if (!href) {
+        audit.canonicalIssues.push(rawLoc + ': canonical href missing');
+      } else {
+        try {
+          const actual = new URL(href.replace(/&amp;/g, '&'), pageUrl).href;
+          if (actual !== pageUrl.href) {
+            audit.canonicalIssues.push(rawLoc + ': canonical mismatch -> ' + actual);
+          } else {
+            canonicalValid = true;
+          }
+        } catch {
+          audit.canonicalIssues.push(rawLoc + ': invalid canonical URL');
+        }
+      }
+    }
+
+    if (!blocked && canonicalValid) audit.indexable.push(rawLoc);
+  }
+
+  return audit;
 }
 
 function schemaValidation(files) {
@@ -182,20 +258,20 @@ function main() {
   const distHtml = walkHtml(dist);
   const rootHtml = walkHtml(root).filter((f) => !f.includes(`${path.sep}dist${path.sep}`) && !f.includes('/admin'));
   const noindexPages = countNoindex([...rootHtml, ...distHtml]);
-  const sitemapCount = countSitemapUrls();
   const { xml: sitemapXml } = resolveSitemapArtifact(root);
-  const sitemapLocs = [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  const canonIssues = canonicalIssues(rootHtml);
+  const sitemapLocs = [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map((match) => match[1].trim().replace(/&amp;/g, '&'));
+  const sitemapCount = sitemapLocs.length;
+  const indexabilityAudit = auditSitemapIndexability(sitemapLocs, dist);
+  const canonIssues = indexabilityAudit.canonicalIssues;
   const schema = schemaValidation(distHtml.length ? distHtml : rootHtml);
   const rehberLinks = internalLinkCount(
     (distHtml.length ? distHtml : rootHtml).filter((f) => f.includes(`${path.sep}index.html`))
   );
 
-  const indexableEstimate =
-    rootHtml.filter((f) => {
-      const html = fs.readFileSync(f, 'utf8');
-      return !/noindex/i.test(html) && /<title>/i.test(html);
-    }).length + (distHtml.length ? distHtml.filter((f) => f.includes('rehber')).length : 0);
+  const indexableSitemapCandidates = indexabilityAudit.available
+    ? indexabilityAudit.indexable.length
+    : null;
 
   const body = `# SEO Indexability Report
 
@@ -208,13 +284,17 @@ function main() {
 |--------|-------|
 | noindex pages (repo scan) | ${noindexPages.length} |
 | sitemap URL count | ${sitemapCount} |
-| canonical issues | ${canonIssues.length} |
-| indexable orphan HTML (vs sitemap) | ${orphanEstimate(sitemapLocs, distHtml)} |
+| sitemap URLs with generated HTML | ${indexabilityAudit.available ? indexabilityAudit.mapped + '/' + sitemapCount : 'not evaluated (dist missing)'} |
+| sitemap URLs missing generated HTML | ${indexabilityAudit.available ? indexabilityAudit.missingHtml.length : 'not evaluated'} |
+| sitemap URLs blocked by noindex | ${indexabilityAudit.available ? indexabilityAudit.noindex.length : 'not evaluated'} |
+| invalid sitemap URLs | ${indexabilityAudit.available ? indexabilityAudit.invalidUrls.length : 'not evaluated'} |
+| canonical issues (all sitemap URLs) | ${indexabilityAudit.available ? canonIssues.length : 'not evaluated (dist missing)'} |
+| indexable orphan HTML (vs sitemap) | ${indexabilityAudit.available ? orphanEstimate(sitemapLocs, distHtml) : 'not evaluated (dist missing)'} |
 | internal /rehber/ links (sample) | ${rehberLinks} |
 | FAQ schema pages (scan) | ${schema.faqPages} |
 | Rehber BreadcrumbList pages | ${schema.breadcrumbGuides} |
 | Invalid JSON-LD blocks | ${schema.invalidJson} |
-| Indexable public HTML (estimate) | ${indexableEstimate} |
+| Indexable sitemap HTML candidates | ${indexabilityAudit.available ? indexableSitemapCandidates : 'not evaluated (dist missing)'} |
 
 ## noindex pages
 
@@ -228,7 +308,7 @@ ${guideStats.map((g) => `| ${g.slug} | ${g.words} | ${g.meetsTarget ? 'yes' : 'n
 
 ## Canonical issues
 
-${canonIssues.length ? canonIssues.map((c) => `- ${c}`).join('\n') : '_None detected on core vertical pages._'}
+${!indexabilityAudit.available ? '_Not evaluated: run npm run build._' : (canonIssues.length ? canonIssues.map((item) => '- ' + item).join('\n') : '_None detected across sitemap URLs._')}
 
 ## Schema validation
 
@@ -253,6 +333,8 @@ ${['/', '/ai/', '/auto/', '/konut/', '/tatil/', '/finans/', '/metodoloji/', '/ka
 | \`/ai/\` (\`ai/index.html\`) | \`#hero-v4-title\`, \`#how-it-works\`, \`#pricing\`, \`#landing-faq\` | OK |
 
 ## Notes
+
+- Sitemap HTML candidates are technically eligible URLs, not a count of pages actually indexed by Google. Verify actual indexing status in Search Console.
 
 - Rehber pages are generated at build into \`dist/rehber/{slug}/\`.
 - Legacy URLs \`/index.php/*\`, \`/cgi-sys/*\`, \`/2025/*\` → 410; \`/category/*\` → 301 home.
