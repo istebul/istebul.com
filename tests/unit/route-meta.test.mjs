@@ -32,7 +32,9 @@ test('resolveRouteSurface maps decision-options surface paths to ilanlar', () =>
 test('ROUTE_DOCUMENT_META has canonical paths per surface', () => {
     assert.equal(ROUTE_DOCUMENT_META['page-planlar'].path, '/planlar');
     assert.equal(ROUTE_DOCUMENT_META.profil.path, '/profil');
-    assert.equal(ROUTE_DOCUMENT_META.ilanlar.path, '/secenekler');
+    assert.equal(ROUTE_DOCUMENT_META['page-karar-analizi'].path, '/karar-asistani/');
+    assert.equal(ROUTE_DOCUMENT_META.ilanlar.path, '/secenekler/');
+    assert.equal(ROUTE_DOCUMENT_META.compare.path, '/karsilastir/');
     assert.equal(
         ROUTE_DOCUMENT_META.home.title,
         'İSTEBUL | Yapay zekâ destekli dijital ürünler platformu'
