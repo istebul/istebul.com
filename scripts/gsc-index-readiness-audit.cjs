@@ -77,6 +77,70 @@ if (!aiSchema.includes('https://www.istebul.com/sigorta/')) {
 
 if (!index.includes('rel="sitemap"')) fail('index should link sitemap');
 
+// Verify the JSON-LD actually shipped in generated HTML, not only its source files.
+const distRoot = path.join(root, 'dist');
+
+if (fs.existsSync(distRoot)) {
+  const builtJsonLdPages = [
+    {
+      label: 'dist/index.html',
+      htmlPath: path.join(distRoot, 'index.html'),
+      schemaPath: path.join(root, 'data/schema/platform-graph.json')
+    },
+    {
+      label: 'dist/ai/index.html',
+      htmlPath: path.join(distRoot, 'ai/index.html'),
+      schemaPath: path.join(root, 'data/schema/ai-landing-graph.json')
+    }
+  ];
+
+  for (const page of builtJsonLdPages) {
+    if (fs.existsSync(page.htmlPath) === false) {
+      fail(page.label + ' is missing; run production build');
+      continue;
+    }
+
+    try {
+      const html = fs.readFileSync(page.htmlPath, 'utf8');
+      const expected = JSON.parse(fs.readFileSync(page.schemaPath, 'utf8'));
+      const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
+        .filter(([, attributes]) =>
+          /\btype\s*=\s*["']application\/ld\+json["']/i.test(attributes)
+        );
+
+      if (scripts.length !== 1) {
+        fail(page.label + ' must contain exactly one JSON-LD block; found ' + scripts.length);
+        continue;
+      }
+
+      const [, attributes, content] = scripts[0];
+
+      if (/\bsrc\s*=/.test(attributes)) {
+        fail(page.label + ' JSON-LD must be inline in generated HTML');
+        continue;
+      }
+
+      if (content.trim().length === 0) {
+        fail(page.label + ' contains an empty JSON-LD block');
+        continue;
+      }
+
+      const actual = JSON.parse(content.trim());
+
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        fail(page.label + ' JSON-LD differs from its source graph');
+        continue;
+      }
+
+      console.log('gsc-index: ' + page.label + ' JSON-LD valid and source-matched');
+    } catch (error) {
+      fail(page.label + ' JSON-LD verification failed: ' + error.message);
+    }
+  }
+} else {
+  console.log('gsc-index: dist not found — generated HTML JSON-LD check skipped');
+}
+
 const siteSeo = JSON.parse(fs.readFileSync(path.join(root, 'data/seo/site.json'), 'utf8'));
 const aiEntry = (siteSeo.staticUrls || siteSeo.urls || []).find((u) => u.loc === '/ai/');
 if (!aiEntry) {

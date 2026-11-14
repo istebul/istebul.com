@@ -36,7 +36,7 @@ test('Ürünler column lists platform products with preserved URLs', () => {
 
   assert.match(products, /href="\/ai\/"/);
   assert.match(products, /href="\/garson\/"/);
-  assert.match(products, /href="\/business\/"/);
+  assert.match(products, /href="\/business-platform\/"/);
   assert.match(products, /href="\/planlar"/);
   assert.match(products, /İSTEBUL AI|ISTEBUL AI/);
   assert.match(products, /GarsonAI/);
@@ -75,7 +75,7 @@ test('footer product links resolve after cutover', () => {
   assert.match(html, /id="platform-landing"/);
   assert.match(html, /href="\/ai\/"/);
   assert.match(html, /href="\/garson\/"/);
-  assert.match(html, /href="\/business\/"/);
+  assert.match(html, /href="\/business-platform\/"/);
 });
 
 test('SEO contracts: Platform Landing schema on root', () => {
