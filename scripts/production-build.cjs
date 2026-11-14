@@ -108,6 +108,30 @@ const copyFile = (relativePath) => {
   ensureDir(target);
   fs.copyFileSync(path.join(root, relativePath), target);
 };
+const injectJsonLdGraph = (html, schemaRelativePath) => {
+  const schemaPath = path.join(root, schemaRelativePath);
+  if (fs.existsSync(schemaPath) === false) {
+    throw new Error('Missing JSON-LD schema source: ' + schemaRelativePath);
+  }
+
+  const graph = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+  const placeholderPattern = /<script\b(?=[^>]*\btype=["']application\/ld\+json["'])(?=[^>]*\bsrc=["'][^"']+["'])[^>]*>\s*<\/script>/gi;
+  const placeholders = [...html.matchAll(placeholderPattern)];
+
+  if (placeholders.length !== 1) {
+    throw new Error(
+      'Expected exactly one external JSON-LD placeholder in page using ' + schemaRelativePath +
+      '; found ' + placeholders.length
+    );
+  }
+
+  const serialized = JSON.stringify(graph).replace(/</g, '\\u003c');
+  return html.replace(
+    placeholderPattern,
+    '<script type="application/ld+json">' + serialized + '</script>'
+  );
+};
+
 const shouldSkipEntry = (name) => name.startsWith('.') || name === 'Thumbs.db';
 const copyDir = (relativePath) => {
   const normalized = relativePath.split(path.sep).join('/');
@@ -358,6 +382,9 @@ pendingStaticFiles.forEach(({ file, source }) => {
 
   if (file === 'ai/index.html') {
     html = runInjectHomeCategoryPrerender(html);
+    html = injectJsonLdGraph(html, 'data/schema/ai-landing-graph.json');
+  } else if (file === 'index.html') {
+    html = injectJsonLdGraph(html, 'data/schema/platform-graph.json');
   }
 
   writeFile(file, minifyHtml(html));
